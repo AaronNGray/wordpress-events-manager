@@ -98,7 +98,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
-= 5.6.0.1 =
+= 5.6.0.1 (dev) =
 * fixed no arguments being passed onto em_get_post_meta_pre and em_get_post_pre
 * fixed minor PHP warning when viewing settings in paged tab mode
 * fixed em_event_save_pre and em_lovation_save_pre firing before the get_post and validate functions/filters via the save_post action in the WP dashboard
