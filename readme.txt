@@ -3,8 +3,8 @@ Contributors: netweblogic, nutsmuggler
 Donate link: http://wp-events-plugin.com
 Tags: events, event, event registration, event calendar, events calendar, event management, paypal, registration, ticket, tickets, ticketing, tickets, theme, widget, locations, maps, booking, attendance, attendee, buddypress, calendar, gigs, payment, payments, sports,
 Requires at least: 3.5
-Tested up to: 4.3
-Stable tag: 5.6
+Tested up to: 4.2.2
+Stable tag: 5.5.7.1
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
 
@@ -102,7 +102,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * fixed potential XSS and a potential code injection vulnerabilities (props to the team at bit9.com)
 * updated Czech, Danish, Dutch, English (UK), Spanish, Estonian, French, German, Hungarian, Italian, Japanese, Norwegian, Persian, Polish, Portuguese (Brazil), Russian and Slovenian language files
 * added Greek and Slovak languages
-* added MultiLingual abstract layer rewritten and various modifications throughout EM to enable multilingual interfacing with plugins like WPML
+* add MultiLingual abstract layer rewritten and various modifications throughout EM to enable multilingual interfacing with plugins like WPML
  * created abstract multilingual layer classes, a complete rewrite and overhaul
  * fixed em_events_get_bookings filter not allowing replacement of EM_Booking object
  * changed booking form placeholder template to reference EM_Bookings->event_id rather than EM_Event->event_id
@@ -125,7 +125,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * changed some deprecated is_main_blog() functions to is_main_site()
 * fixed JS DOM conflict by naming submit buttons 'submit'
 * fixed 'Email Sent' being shown when no emails sent during booking status change
-* fixed em_wp_the_title() unnecessarily filtering all the_title instances on event, location and EM pages rather than just the main title
+* fixed em_wp_the_title() unecessarily filtering all the_title instances on event, location and EM pages rather than just the main title
 * fixed long_events=0 not being considered for the WP Fullcalendar plugin
 * fixed issue where when saving via WP admin the global $EM_Event object doesn't refresh all data before passing onto save_event filter
 * added em_rewrite_rules_array_events filter for permalink rewrites
@@ -137,7 +137,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * added some esc_ functions to calendar links and templates an extra safety precaution
 * added EM_CSV_DELIMITER constant check to allow overriding CSV delimiters
 * added em_booking_output_event filter
-* improved booking email sending so contact and extra admin emails sent in one go rather than in separate send functions
+* improved booking email sending so contact and extra admin emails sent in one go rather than in seperate send functions
 * added em_booking_js hook with intention of replacing em_gateway_js hook in the distant future
 * fixed booking price rounding issues in EM_Booking::get_price()
 * fixed event save_post hook issues when a new location CPT is created within it, which fixes ACF plugin saving issues
