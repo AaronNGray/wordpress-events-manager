@@ -479,7 +479,7 @@ class EM_Event extends EM_Object{
 						$this->event_rsvp_time = $EM_Ticket->ticket_meta['recurrences']['end_time'];
 					}
 				}else{
-					if( array_key_exists('recurrence_rsvp_days', $_POST) && is_numeric($_POST['recurrence_rsvp_days']) ){
+					if( array_key_exists('recurrence_rsvp_days', $_POST) ){
 						if( !empty($_POST['recurrence_rsvp_days_when']) && $_POST['recurrence_rsvp_days_when'] == 'after' ){
 							$this->recurrence_rsvp_days = absint($_POST['recurrence_rsvp_days']);
 						}else{ //by default the start date is the point of reference
