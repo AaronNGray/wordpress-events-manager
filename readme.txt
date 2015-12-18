@@ -108,7 +108,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * fixed Norwegian incorrectly translated placeholders
 * fixed custom decimal separator not used in tax rate display
 * minor js fix which fixes a grecaptcha related error notice
-* fixed recurrence_byday db value saving as null for weekly Sunday events (kudos to Shaun Santa Cruz)
+* fixed recurrence_byday db value saving as null for weekly Sunday events (kudos @giventofly76)
 * removed _event_date_created and _event_date_modified from the postmeta table as these are inaccurate, use the records from the wp_em_meta table or directly via EM_Event->event_date_created or EM_Event->event_date_modified
 * changed settings/admin capability from list_users to manage_options
 * added EM_DISABLE_AUTO_BOOKINGSFORM which prevents booking form showing below post if format overriding disabled
