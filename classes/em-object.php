@@ -999,6 +999,24 @@ class EM_Object {
 	        case 'EM_Ticket_Booking':
 	            return $this->ticket_booking_id;
 	    }
+	    return 0;
+	}
+	
+	/**
+	 * Returns the user id for the owner (author) of a particular object in the table it is stored, be it Event (event_owner) or Location (location_owner).
+	 * This function accounts for the fact that previously the property $this->owner was used by objects as a shortcut and consequently in code in EM_Object, which should now use this method instead.
+	 * Extending classes should override this and provide the relevant user id that owns this object instance. 
+	 * @return int
+	 */	
+	function get_owner(){
+		if( !empty($this->owner) ) return $this->owner;
+	    switch( get_class($this) ){
+	        case 'EM_Event':
+	            return $this->event_owner;
+	        case 'EM_Location':
+	            return $this->location_owner;
+	    }
+	    return 0;
 	}
 	
 	/**
@@ -1017,7 +1035,8 @@ class EM_Object {
 	    }
 	    if( empty($user->ID) ) $user = wp_get_current_user();
 		//do they own this?
-		$is_owner = ( (!empty($this->owner) && ($this->owner == get_current_user_id()) || !$this->get_id() || (!empty($user) && $this->owner == $user->ID)) );
+		$owner_id = $this->get_owner();
+		$is_owner = ( (!empty($owner_id) && ($owner_id == get_current_user_id()) || !$this->get_id() || (!empty($user) && $owner_id == $user->ID)) );
 		//now check capability
 		$can_manage = false;
 		if( $is_owner && $owner_capability && $user->has_cap($owner_capability) ){
@@ -1084,7 +1103,8 @@ class EM_Object {
 	 */
 	function compat_keys(){
 		foreach($this->fields as $key => $fieldinfo){
-			if(!empty($this->$key)) $this->$fieldinfo['name'] = $this->$key;
+		    $field_name = $fieldinfo['name'];
+			if(!empty($this->$key)) $this->$field_name = $this->$key;
 		}
 	}
 
@@ -1396,22 +1416,34 @@ class EM_Object {
 	function image_delete($force_delete=true) {
 		$type = $this->get_image_type();
 		if( $type ){
+            $this->image_url = '';
 			if( $this->get_image_url() == '' ){
 				$result = true;
 			}else{
 				$post_thumbnail_id = get_post_thumbnail_id( $this->post_id );
-				$delete_attachment = wp_delete_attachment($post_thumbnail_id, $force_delete);
-				if( $delete_attachment !== false ){
-					//check legacy image
-					$type_id_name = $type.'_id';
-					$file_name= EM_IMAGE_UPLOAD_DIR.$this->get_image_type(true)."-".$this->$type_id_name;
-					$result = false;
-					foreach($this->mime_types as $mime_type) { 
-						if (file_exists($file_name.".".$mime_type)){
-					  		$result = unlink($file_name.".".$mime_type);
-					  		$this->image_url = '';
-						}
-					}
+				//check that this image isn't being used by another CPT
+                global $wpdb;
+                $sql = $wpdb->prepare('SELECT count(*) FROM '.$wpdb->postmeta." WHERE meta_key='_thumbnail_id' AND meta_value=%d", array($post_thumbnail_id));
+				if( $wpdb->get_var($sql) <= 1 ){
+				    //not used by any other CPT, so just delete the image entirely (would usually only be used via front-end which has no media manager)
+				    //@todo add setting option to delete images from filesystem/media if not used by other posts
+    				$delete_attachment = wp_delete_attachment($post_thumbnail_id, $force_delete);
+    				if( false === $delete_attachment ){
+    					//check legacy image
+    					$type_id_name = $type.'_id';
+    					$file_name= EM_IMAGE_UPLOAD_DIR.$this->get_image_type(true)."-".$this->$type_id_name;
+    					$result = false;
+    					foreach($this->mime_types as $mime_type) { 
+    						if (file_exists($file_name.".".$mime_type)){
+    					  		$result = unlink($file_name.".".$mime_type);
+    						}
+    					}
+    				}else{
+    				    $result = true;
+    				}
+				}else{
+				    //just delete image association
+				    delete_post_meta($this->post_id, '_thumbnail_id');
 				}
 			}
 		}

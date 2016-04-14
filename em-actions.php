@@ -450,7 +450,18 @@ function em_init_actions() {
 				}	
 			}
 			do_action('em_booking_modify_person', $EM_Event, $EM_Booking);
+		}elseif( $_REQUEST['action'] == 'bookings_add_note' && $EM_Booking->can_manage('manage_bookings','manage_others_bookings') ) {
+			em_verify_nonce('bookings_add_note');
+			if( $EM_Booking->add_note(stripslashes($_REQUEST['booking_note'])) ){
+				$EM_Notices->add_confirm($EM_Booking->feedback_message, true);
+				$redirect = !empty($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : wp_get_referer();
+				wp_redirect( $redirect );
+				exit();
+			}else{
+				$EM_Notices->add_error($EM_Booking->errors);
+			}
 		}
+	
 		if( $result && defined('DOING_AJAX') ){
 			$return = array('result'=>true, 'message'=>$feedback);
 			header( 'Content-Type: application/javascript; charset=UTF-8', true ); //add this for HTTP -> HTTPS requests which assume it's a cross-site request

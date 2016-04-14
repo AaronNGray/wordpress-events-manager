@@ -221,6 +221,12 @@ class EM_Events extends EM_Object {
 	
 	/**
 	 * Generate a grouped list of events by year, month, week or day.
+	 * 
+	 * There is a nuance with this function, long_events won't work unless you add a limit of 0. The reason is because this won't work with pagination, due to the fact
+	 * that you need to alter the event total count to reflect each time an event is displayed in a time range. e.g. if an event lasts 2 days and it's daily grouping,
+	 * then that event would count as 2 events for pagination purposes. For that you need to count every single event and calculate date range etc. which is too resource
+	 * heavy and not scalabale, therefore we've added this limitation.
+	 * 
 	 * @since 5.4.4.2
 	 * @param array $args
 	 * @return string
@@ -252,11 +258,21 @@ class EM_Events extends EM_Object {
 					//go through the events and put them into a monthly array
 					$format = (!empty($args['date_format'])) ? $args['date_format']:'Y';
 					$events_dates = array();
-					foreach($EM_Events as $EM_Event){
-						$events_dates[date_i18n($format,$EM_Event->start)][] = $EM_Event;
+					foreach($EM_Events as $EM_Event){ /* @var $EM_Event EM_Event */
+						$year = date('Y',$EM_Event->start);
+						$events_dates[$year][] = $EM_Event;
+						//if long events requested, add event to other dates too
+						if( empty($args['limit']) && !empty($args['long_events']) && $EM_Event->event_end_date != $EM_Event->event_start_date ) {
+							$next_year = $year + 1;
+							$year_end = date('Y', $EM_Event->end);
+							while( $next_year <= $year_end ){
+								$events_dates[$next_year][] = $EM_Event;
+								$next_year = $next_year + 1;
+							}
+						}
 					}
 					foreach ($events_dates as $year => $events){
-						echo str_replace('#s', $year, $args['header_format']);
+						echo str_replace('#s', date_i18n($format,strtotime($year.'-01-01', current_time('timestamp'))), $args['header_format']);
 						echo self::output($events, $atts);
 					}
 					break;
@@ -265,10 +281,18 @@ class EM_Events extends EM_Object {
 					$format = (!empty($args['date_format'])) ? $args['date_format']:'M Y';
 					$events_dates = array();
 					foreach($EM_Events as $EM_Event){
-						$events_dates[date_i18n($format, $EM_Event->start)][] = $EM_Event;
+						$events_dates[date('Y-m-'.'01', $EM_Event->start)][] = $EM_Event;
+						//if long events requested, add event to other dates too
+						if( empty($args['limit']) && !empty($args['long_events']) && $EM_Event->event_end_date != $EM_Event->event_start_date ) {
+							$next_month = strtotime("+1 Month", $EM_Event->start);
+							while( $next_month <= $EM_Event->end ){
+								$events_dates[date('Y-m-'.'01',$next_month)][] = $EM_Event;
+								$next_month = strtotime("+1 Month", $next_month);
+							}
+						}
 					}
 					foreach ($events_dates as $month => $events){
-						echo str_replace('#s', $month, $args['header_format']);
+						echo str_replace('#s', date_i18n($format, strtotime($month, current_time('timestamp'))), $args['header_format']);
 						echo self::output($events, $atts);
 					}
 					break;
@@ -284,6 +308,14 @@ class EM_Events extends EM_Object {
 						$offset = $offset * 60*60*24; //days in seconds
 						$start_day = strtotime($EM_Event->start_date);
 						$events_dates[$start_day - $offset][] = $EM_Event;
+						//if long events requested, add event to other dates too
+						if( empty($args['limit']) && !empty($args['long_events']) && $EM_Event->event_end_date != $EM_Event->event_start_date ) {
+							$next_week = $start_day - $offset + (86400 * 7);
+							while( $next_week <= $EM_Event->end ){
+								$events_dates[$next_week][] = $EM_Event;
+								$next_week = $next_week + (86400 * 7);
+							}
+						}
 					}
 					foreach ($events_dates as $event_day_ts => $events){
 						echo str_replace('#s', date_i18n($format,$event_day_ts). get_option('dbem_dates_separator') .date_i18n($format,$event_day_ts+(60*60*24*6)), $args['header_format']);
@@ -295,7 +327,16 @@ class EM_Events extends EM_Object {
 					$format = (!empty($args['date_format'])) ? $args['date_format']:get_option('date_format');
 					$events_dates = array();
 					foreach($EM_Events as $EM_Event){
-						$events_dates[strtotime($EM_Event->start_date)][] = $EM_Event;
+						$event_start_date = strtotime($EM_Event->start_date);
+						$events_dates[$event_start_date][] = $EM_Event;
+						//if long events requested, add event to other dates too
+						if( empty($args['limit']) && !empty($args['long_events']) && $EM_Event->event_end_date != $EM_Event->event_start_date ) {
+							$tomorrow = $event_start_date + 86400;
+							while( $tomorrow <= $EM_Event->end ){
+								$events_dates[$tomorrow][] = $EM_Event;
+								$tomorrow = $tomorrow + 86400;
+							}
+						}
 					}
 					foreach ($events_dates as $event_day_ts => $events){
 						echo str_replace('#s', date_i18n($format,$event_day_ts), $args['header_format']);
@@ -421,6 +462,8 @@ class EM_Events extends EM_Object {
 	 */
 	public static function build_sql_orderby( $args, $accepted_fields, $default_order = 'ASC' ){
 	    self::$context = EM_POST_TYPE_EVENT;
+	    $accepted_fields[] = 'event_date_modified';
+	    $accepted_fields[] = 'event_date_created';
 		return apply_filters( 'em_events_build_sql_orderby', parent::build_sql_orderby($args, $accepted_fields, get_option('dbem_events_default_order')), $args, $accepted_fields, $default_order );
 	}
 	

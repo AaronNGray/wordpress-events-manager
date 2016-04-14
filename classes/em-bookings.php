@@ -572,6 +572,8 @@ class EM_Bookings extends EM_Object implements Iterator{
 	
 
 	//List of patients in the patient database, that a user can choose and go on to edit any previous treatment data, or add a new admission.
+	//Deprecated
+	//@todo remove in 6.0
 	function export_csv() {
 		global $EM_Event;
 		if($EM_Event->event_id != $this->event_id ){

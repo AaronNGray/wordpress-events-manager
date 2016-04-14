@@ -285,8 +285,8 @@ function em_admin_options_page() {
 	?>
 	<script type="text/javascript" charset="utf-8"><?php include(EM_DIR.'/includes/js/admin-settings.js'); ?></script>
 	<style type="text/css">.postbox h3 { cursor:pointer; }</style>
-	<div class="wrap <?php if(empty($tabs_enabled)) echo 'tabs-active' ?>">		
-		<div id='icon-options-general' class='icon32'><br /></div>
+	<div class="wrap <?php if(empty($tabs_enabled)) echo 'tabs-active' ?>">
+		<h1 id="em-options-title"><?php _e ( 'Event Manager Options', 'events-manager'); ?></h1>
 		<h2 class="nav-tab-wrapper">
 			<a href="<?php echo $general_tab_link; ?>#general" id="em-menu-general" class="nav-tab nav-tab-active"><?php _e('General','events-manager'); ?></a>
 			<a href="<?php echo $pages_tab_link; ?>#pages" id="em-menu-pages" class="nav-tab"><?php _e('Pages','events-manager'); ?></a>
@@ -296,7 +296,6 @@ function em_admin_options_page() {
 			<?php endif; ?>
 			<a href="<?php echo $emails_tab_link; ?>#emails" id="em-menu-emails" class="nav-tab"><?php _e('Emails','events-manager'); ?></a>
 		</h2>
-		<h3 id="em-options-title"><?php _e ( 'Event Manager Options', 'events-manager'); ?></h3>
 		<form id="em-options-form" method="post" action="">
 			<div class="metabox-holder">         
 			<!-- // TODO Move style in css -->
