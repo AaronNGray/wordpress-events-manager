@@ -959,8 +959,7 @@ class EM_Event extends EM_Object{
 			do_action('em_event_delete_meta_event_pre', $this);
 			$result = $wpdb->query ( $wpdb->prepare("DELETE FROM ". EM_EVENTS_TABLE ." WHERE event_id=%d", $this->event_id) );
 			if( $result !== false ){
-				$this->delete_bookings();
-				$this->delete_tickets();
+				$this->get_bookings()->delete();
 				//Delete the recurrences then this recurrence event
 				if( $this->is_recurring() ){
 					$result = $this->delete_events(); //was true at this point, so false if fails
@@ -975,6 +974,7 @@ class EM_Event extends EM_Object{
 	}
 	
 	/**
+	 * Deprecated, use $this->get_bookings->delete() instead.
 	 * Shortcut function for $this->get_bookings()->delete(), because using the EM_Bookings requires loading previous bookings, which isn't neceesary. 
 	 */
 	function delete_bookings(){
@@ -989,6 +989,7 @@ class EM_Event extends EM_Object{
 	}
 	
 	/**
+	 * Deprecated, use $this->get_bookings->delete() instead.
 	 * Shortcut function for $this->get_bookings()->delete(), because using the EM_Bookings requires loading previous bookings, which isn't neceesary. 
 	 */
 	function delete_tickets(){

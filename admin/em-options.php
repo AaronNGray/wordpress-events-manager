@@ -67,7 +67,7 @@ function em_options_save(){
 		update_option('dbem_flush_needed',1);
 		do_action('em_options_save');
 		$EM_Notices->add_confirm('<strong>'.__('Changes saved.', 'events-manager').'</strong>', true);
-		wp_redirect(wp_get_referer());
+		wp_redirect(em_wp_get_referer());
 		exit();
 	}
 	//Migration
@@ -149,7 +149,7 @@ function em_options_save(){
 		delete_transient('update_plugins');
 		delete_site_transient('update_plugins');
 		$EM_Notices->add_confirm(__('If there are any new updates, you should now see them in your Plugins or Updates admin pages.','events-manager'), true);
-		wp_redirect(wp_get_referer());
+		wp_redirect(em_wp_get_referer());
 		exit();
 	}
 	//Flag version checking to look at trunk, not tag
@@ -159,7 +159,7 @@ function em_options_save(){
 		delete_site_transient('update_plugins');
 		update_option('em_check_dev_version', true);
 		$EM_Notices->add_confirm(__('Checking for dev versions.','events-manager').' '. __('If there are any new updates, you should now see them in your Plugins or Updates admin pages.','events-manager'), true);
-		wp_redirect(wp_get_referer());
+		wp_redirect(em_wp_get_referer());
 		exit();
 	}
 	
@@ -218,7 +218,7 @@ function em_admin_options_reset_page(){
 			<p style="font-weight:bold;"><?php _e('All your settings, including email templates and template formats for Events Manager will be deleted.','events-manager')?></p>
 			<p>
 				<a href="<?php echo esc_url(add_query_arg(array('_wpnonce2' => wp_create_nonce('em_reset_'.get_current_user_id().'_confirmed'), 'confirmed'=>1))); ?>" class="button-primary"><?php _e('Reset Events Manager','events-manager'); ?></a>
-				<a href="<?php echo wp_get_referer(); ?>" class="button-secondary"><?php _e('Cancel','events-manager'); ?></a>
+				<a href="<?php echo esc_url(em_wp_get_referer()); ?>" class="button-secondary"><?php _e('Cancel','events-manager'); ?></a>
 			</p>
 		</div>		
 		<?php
@@ -235,7 +235,7 @@ function em_admin_options_uninstall_page(){
 			<p><?php echo sprintf(__('If you just want to deactivate the plugin, <a href="%s">go to your plugins page</a>.','events-manager'), wp_nonce_url(admin_url('plugins.php'))); ?></p>
 			<p>
 				<a href="<?php echo esc_url(add_query_arg(array('_wpnonce2' => wp_create_nonce('em_uninstall_'.get_current_user_id().'_confirmed'), 'confirmed'=>1))); ?>" class="button-primary"><?php _e('Uninstall and Deactivate','events-manager'); ?></a>
-				<a href="<?php echo wp_get_referer(); ?>" class="button-secondary"><?php _e('Cancel','events-manager'); ?></a>
+				<a href="<?php echo esc_url(em_wp_get_referer()); ?>" class="button-secondary"><?php _e('Cancel','events-manager'); ?></a>
 			</p>
 		</div>		
 		<?php

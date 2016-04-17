@@ -165,7 +165,7 @@ class EM_Object {
 		$defaults['limit'] = (is_numeric($defaults['limit'])) ? $defaults['limit']:$super_defaults['limit'];
 		$defaults['offset'] = (is_numeric($defaults['offset'])) ? $defaults['offset']:$super_defaults['offset'];
 		$defaults['recurring'] = $defaults['recurring'] === 'include' ?  $defaults['recurring']:($defaults['recurring'] == true);
-		$defaults['search'] = ($defaults['search']) ? trim(esc_sql($wpdb->esc_like($defaults['search']))):false;
+		$defaults['search'] = ($defaults['search']) ? trim($defaults['search']):false;
 		//Calculate offset if event page is set
 		if($defaults['page'] > 1){
 			$defaults['offset'] = $defaults['limit'] * ($defaults['page']-1);	
@@ -966,7 +966,7 @@ class EM_Object {
 			$unique_args['action'] = $pag_args['action'] = $search_action;
 		}
 		//if we're in an ajax call, make sure we aren't calling admin-ajax.php
-		if( defined('DOING_AJAX') ) $page_url = wp_get_referer();
+		if( defined('DOING_AJAX') ) $page_url = em_wp_get_referer();
 		//finally, glue the url with querystring and pass onto pagination function
 		$page_link_template = em_add_get_params($page_url, $pag_args, false); //don't html encode, so em_paginate does its thing;
 		if( empty($args['ajax']) || defined('DOING_AJAX') ) $unique_args = array(); //don't use data method if ajax is disabled or if we're already in an ajax request (SERP irrelevenat)

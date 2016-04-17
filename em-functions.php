@@ -269,6 +269,20 @@ function em_verify_nonce($action, $nonce_name='_wpnonce'){
 }
 
 /**
+ * Since WP 4.5 em_wp_get_referer() returns false if URL is the same. We use it to get a safe referrer url, so we use the new wp_get_raw_referer() argument instead.
+ * @since 5.6.3
+ * @return string 
+ */
+function em_wp_get_referer(){
+	if( function_exists('wp_get_raw_referer') ){
+		//do essentially what em_wp_get_referer does, but potentially returning the same url as before
+		return wp_validate_redirect(wp_get_raw_referer(), false );
+	}else{
+		return wp_get_referer();
+	}
+}
+
+/**
  * Gets all WP users
  * @return array
  */

@@ -4,8 +4,8 @@ Donate link: http://wp-events-plugin.com
 Tags: bookings, buddypress, calendar, event, event management, events, google maps, maps, locations, registration, registration, tickets
 Text Domain: events-manager
 Requires at least: 3.5
-Tested up to: 4.4
-Stable tag: 5.6.2
+Tested up to: 4.5
+Stable tag: 5.6.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
 
@@ -99,7 +99,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
-= 5.6.2.1 (Dev) = 
+= 5.6.3 = 
 * fixed events disappearing from calendar with WP FullCalendar plugin
 * fixed PHP warning for delete booking when a user can't manage booking
 * removed our EM_PHPMailer class and started using the one shipped with WordPress
@@ -127,6 +127,12 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * fixed buddypress activity stream items being created twice for new bookings
 * fixed booking admin notes not being added in the front-end
 * updated google maps api version and removed deprecated sensor parameter
+* fixed searches not working for search terms containing apostrophes
+* fixed blank settings pages due to 4.5 code changes to wp_get_referer()
+* added em_bookings_deleted action which will execute when one or more bookings are deleted
+* added em_bookings_delete filter for when a group of bookings are deleted with event(s)
+* fixed EM_Bookings->delete() not deleting bookings properly
+* deprecated use of EM_Event->delete_bookings() and EM_Event->delete_tickets() in favor of EM_Event->EM_Bookings->delete()
 
 = 5.6.2 =
 * changed translation gettext domain from dbem to events-manager inline with new wordpress.org translation features

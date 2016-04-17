@@ -747,6 +747,7 @@ class EM_Booking extends EM_Object{
 				$this->add_error(sprintf(__('%s could not be deleted', 'events-manager'), __('Booking','events-manager')));
 			}
 		}
+		do_action('em_bookings_deleted', $result, array($this->booking_id));
 		return apply_filters('em_booking_delete',( $result !== false ), $this);
 	}
 	
