@@ -99,6 +99,10 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
+= 5.6.3.1 (Dev) = 
+* fixed WP FullCalendar (versions using FC 2.x library) not showing events outside current month
+* fixed long events not showing on last day in WP FullCalendar
+
 = 5.6.3 = 
 * fixed events disappearing from calendar with WP FullCalendar plugin
 * fixed PHP warning for delete booking when a user can't manage booking
