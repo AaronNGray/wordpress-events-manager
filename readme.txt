@@ -99,6 +99,11 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
+= 5.6.4.1 (dev) =
+* added option to add Google Maps API key
+* fixed category image uploader not working properly on some specific setups
+* fixed display issues of first/last names mixing middle names in booking admin tables under no-user mode
+
 = 5.6.4 = 
 * fixed WP FullCalendar (versions using FC 2.x library) not showing events outside current month
 * fixed long events not showing on last day in WP FullCalendar
