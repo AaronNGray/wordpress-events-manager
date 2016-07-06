@@ -663,7 +663,7 @@ class EM_Booking extends EM_Object{
 	    $registration = true;
 	    if( empty($this->booking_meta['registration']) ) $this->booking_meta['registration'] = array();
 	    // Check the e-mail address
-	    $user_email = stripslashes($_REQUEST['user_email']); //apostrophes will not be allowed otherwise
+	    $user_email = trim(stripslashes($_REQUEST['user_email'])); //apostrophes will not be allowed otherwise
 	    if ( $user_email == '' ) {
 	    	$registration = false;
 	    	$this->add_error(__( '<strong>ERROR</strong>: Please type your e-mail address.', 'events-manager') );
