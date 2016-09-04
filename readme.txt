@@ -5,7 +5,7 @@ Tags: bookings, buddypress, calendar, event, event management, events, google ma
 Text Domain: events-manager
 Requires at least: 3.5
 Tested up to: 4.6.1
-Stable tag: 5.6.6
+Stable tag: 5.6.6.1
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
 
@@ -99,6 +99,9 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
+= 5.6.6.1 =
+* fixed search forms disappearing in latest update when Styling Options for search forms are turned off
+
 = 5.6.6 =
 * improvements to ical formatting, including static/unique UIDs, more accurate locations with geo coordinates, categories and featured image
 * replaced code using stripslashes() with wp_unslash() (kudos @webaware)
@@ -109,7 +112,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * changed calendar templates to stop using ucfirst() to uppercase month first letters since it breaks some languages and the languages that need it don't capitalize their months anyway 
 * fixed anonymous event submitter info not showing in recurring event admin area
 * fixed wrong nav id in BuddyPress (kudos @lyevalley)
-* fixed 'no location' checkbox not remaining checked if event submission returns an validation error
+* fixed 'no location' checkbox not remaining checked if event submission returns a validation error
 * tweaked templates/forms/event/location.php and added some extra output sanitization
 * fixed 404 errors in calendar links to eventful day list for a specific location
 * fixed syncing of tables when WP uses utf8mb4 collation which causes errors when saving emojis in post content
