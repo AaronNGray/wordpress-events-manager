@@ -100,7 +100,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 
 == Changelog ==
 = 5.6.6.1 =
-* fixed search forms disappearing in latest update when Styling Options for search forms are turned off
+* fixed search forms disappearing in latest update when Styling Options for search forms are turned off (props @factchecker)
 
 = 5.6.6 =
 * improvements to ical formatting, including static/unique UIDs, more accurate locations with geo coordinates, categories and featured image
