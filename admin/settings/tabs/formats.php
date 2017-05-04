@@ -103,8 +103,8 @@
 			?>
 			<tr class="em-subheader"><td colspan="2"><h5><?php esc_html_e( 'Country', 'events-manager'); ?></h5></td></tr>
 			<?php
-			em_options_radio_binary ( __( 'Show countries?', 'events-manager'), 'dbem_search_form_countries', '', '', '#dbem_search_form_country_label_row, #dbem_search_form_countries_label_row' );
-			em_options_select ( __( 'Default Country', 'events-manager'), 'dbem_search_form_default_country', em_get_countries(__('no default country', 'events-manager')), __('Search form will be pre-selected with this country, if searching by country is disabled above, only search results from this country will be returned.','events-manager') );
+			em_options_radio_binary ( __( 'Show countries?', 'events-manager'), 'dbem_search_form_countries', '', '', '#dbem_search_form_default_country_row, #dbem_search_form_country_label_row, #dbem_search_form_countries_label_row' );
+			em_options_select ( __( 'Default Country', 'events-manager'), 'dbem_search_form_default_country', em_get_countries(__('no default country', 'events-manager')), __('Search form will be pre-selected with this country.','events-manager') );
 			em_options_input_text ( __( 'Label', 'events-manager'), 'dbem_search_form_country_label', __('Appears as the label for this search option.','events-manager') );
 			em_options_input_text ( __( 'All countries text', 'events-manager'), 'dbem_search_form_countries_label', __('Appears as the first default search option.','events-manager') );
 			?>

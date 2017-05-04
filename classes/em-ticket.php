@@ -325,7 +325,7 @@ class EM_Ticket extends EM_Object{
 	 * @param boolean $format
 	 */
 	function get_price_with_tax( $format = false ){
-	    $price = $this->get_price_without_tax() * (1 + $this->get_event()->get_tax_rate()/100);
+	    $price = $this->get_price_without_tax() * (1 + $this->get_event()->get_tax_rate( true ));
 	    if( $format ) return $this->format_price($price);
 	    return $price; 
 	}

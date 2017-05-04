@@ -42,7 +42,7 @@ $(document).on('submit', '.em-booking-form', function(e){
 				}
 				$(document).trigger('em_booking_error', [response]);
 			}
-		    $('html, body').animate({ scrollTop: em_booking_form.parent().offset().top - 30 }); //sends user back to top of form
+		    $('html, body').animate({ scrollTop: $('.em-booking-message').offset().top - EM.booking_offset }); //sends user back to top of form
 			em_booking_doing_ajax = false;
 			//run extra actions after showing the message here
 			if( response.gateway != null ){
