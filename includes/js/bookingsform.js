@@ -26,6 +26,9 @@ $(document).on('submit', '.em-booking-form', function(e){
 				em_booking_form.hide();
 				$('.em-booking-login').hide();
 				$(document).trigger('em_booking_success', [response]);
+				if( response.redirect ){ //custom redirect hook
+					window.location.href = response.redirect;
+				}
 			}else{
 				if( response.errors != null ){
 					if( $.isArray(response.errors) && response.errors.length > 0 ){

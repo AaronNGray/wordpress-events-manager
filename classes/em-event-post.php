@@ -130,7 +130,8 @@ class EM_Event_Post {
 				}elseif( !post_password_required() ){
 					$EM_Event = em_get_event($post);
 					if( $EM_Event->event_rsvp && (!defined('EM_DISABLE_AUTO_BOOKINGSFORM') || !EM_DISABLE_AUTO_BOOKINGSFORM) ){
-					    $content .= $EM_Event->output('<h2>Bookings</h2>#_BOOKINGFORM');
+						$content .= '<h2>'.esc_html__('Bookings','events-manager').'</h2>';
+					    $content .= $EM_Event->output('#_BOOKINGFORM');
 					}
 				}
 			}

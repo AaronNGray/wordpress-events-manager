@@ -606,6 +606,22 @@ class EM_Booking extends EM_Object{
 	    return $summary;
 	}
 	
+	/**
+	 * Returns the amount paid for this booking. By default, a booking is considered either paid in full or not at all depending on whether the booking is confirmed or not.
+	 * @param boolean $format If set to true a currency-formatted string value is returned
+	 * @return string|float
+	 */
+	function get_total_paid( $format = false ){
+		$status = ($this->booking_status == 0 && !get_option('dbem_bookings_approval') ) ? 1:$this->booking_status;
+		$total = $status ? $this->get_price() : 0;
+		$total = apply_filters('em_booking_get_total_paid', $total, $this);
+		if( $format ){
+			return $this->format_price($total);
+		}
+		return $total;
+	}
+	
+	
 	/* Get Objects linked to booking */
 	
 	/**
