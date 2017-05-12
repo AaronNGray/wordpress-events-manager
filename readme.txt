@@ -99,7 +99,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
-= 5.6.8 (dev) =
+= 5.6.9 (dev) =
 * added em_events_admin_args filter allowing modification of event search arguments
 * removed jQuery UI localize files for the datepicker in favor of WP 4.6 native localization
 * fixed potential bug where modified ticket spaces aren't saving correctly when editing a booking
@@ -164,6 +164,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * fixed 'Bookings' header not being translated when formats are disabled and booking form is added just after content
 * fixed ticket availability status indicator showing false to admins when ticket is restricted to guests
 * added get_total_paid function (mainly for hooking purposes in Pro add-ons)
+* added support for Google Maps styles via services like the Google Maps Style Wizard or Snazzy Maps 
 
 = 5.6.6.1 =
 * fixed search forms disappearing in latest update when Styling Options for search forms are turned off (props @factchecker)
