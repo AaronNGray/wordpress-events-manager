@@ -879,7 +879,8 @@ function em_maps_load_locations(el){
 		if(data.length > 0){
 			//define default options and allow option for extension via event triggers
 			  var map_options = { mapTypeId: google.maps.MapTypeId.ROADMAP };
-			  if( typeof EM.google_maps_styles !== 'undefined' ){ map_options.styles = EM.google_maps_styles; }
+			  if( typeof EM.google_map_id_styles == 'object' && typeof EM.google_map_id_styles[map_id] !== 'undefined' ){ console.log(EM.google_map_id_styles[map_id]); map_options.styles = EM.google_map_id_styles[map_id]; }
+			  else if( typeof EM.google_maps_styles !== 'undefined' ){ map_options.styles = EM.google_maps_styles; }
 			  jQuery(document).triggerHandler('em_maps_locations_map_options', map_options);
 			  var marker_options = {};
 			  jQuery(document).triggerHandler('em_maps_location_marker_options', marker_options);
@@ -932,7 +933,8 @@ function em_maps_load_location(el){
 	    mapTypeControl: false,
 	    scrollwheel: is_touch
 	};
-	if( typeof EM.google_maps_styles !== 'undefined' ){ map_options.styles = EM.google_maps_styles; } 
+	if( typeof EM.google_map_id_styles == 'object' && typeof EM.google_map_id_styles[map_id] !== 'undefined' ){ console.log(EM.google_map_id_styles[map_id]); map_options.styles = EM.google_map_id_styles[map_id]; }
+	else if( typeof EM.google_maps_styles !== 'undefined' ){ map_options.styles = EM.google_maps_styles; }
 	jQuery(document).triggerHandler('em_maps_location_map_options', map_options);
 	maps[map_id] = new google.maps.Map( document.getElementById('em-location-map-'+map_id), map_options);
 	if( !is_touch ){
@@ -1062,13 +1064,15 @@ function em_maps() {
 		if(jQuery('#em-map').length > 0){
 			var em_LatLng = new google.maps.LatLng(0, 0);
 			var is_touch = 'ontouchstart' in window || navigator.maxTouchPoints;
-			map = new google.maps.Map( document.getElementById('em-map'), {
-			    zoom: 14,
-			    center: em_LatLng,
-			    mapTypeId: google.maps.MapTypeId.ROADMAP,
-			    mapTypeControl: false,
-			    scrollwheel: is_touch
-			});
+			var map_options = {
+				    zoom: 14,
+				    center: em_LatLng,
+				    mapTypeId: google.maps.MapTypeId.ROADMAP,
+				    mapTypeControl: false,
+				    scrollwheel: is_touch
+			};
+			if( typeof EM.google_maps_styles !== 'undefined' ){ map_options.styles = EM.google_maps_styles; }
+			map = new google.maps.Map( document.getElementById('em-map'), map_options);
 			if( !is_touch ){
 				map.addListener('click', function(){ map.setOptions({ scrollwheel:true }); });
 				map.addListener('mouseout', function(){ map.setOptions({ scrollwheel:false }); });

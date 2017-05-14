@@ -781,7 +781,7 @@ class EM_Location extends EM_Object {
 					$glue = $result == '#_LOCATIONFULLLINE' ? ', ':'<br />';
 					$replace = $this->get_full_address($glue);
 					break;
-				case '#_MAP': //Depricated (but will remain)
+				case '#_MAP': //Deprecated (but will remain)
 				case '#_LOCATIONMAP':
 					ob_start();
 					$args = array();

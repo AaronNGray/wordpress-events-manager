@@ -39,8 +39,18 @@ function em_get_locations_map_shortcode($args){
 	$args['height'] = $height;
 	//assign random number for element id reference
 	$args['random_id'] = substr(md5(rand().rand()),0,5);
+	if( !empty($args['map_style']) ){
+		$style= base64_decode($args['map_style']);
+		$style_json= json_decode($style);
+		if( is_array($style_json) || is_object($style_json) ){
+			$style = preg_replace('/[\r\n\t\s]/', '', $style);
+		}else{
+			$style = '';
+		}
+		unset($args['map_style']);
+	}
 	ob_start();
-	em_locate_template('templates/map-global.php',true, array('args'=>$args)); 
+	em_locate_template('templates/map-global.php',true, array('args'=>$args, 'map_json_style' => $style)); 
 	return ob_get_clean();
 }
 add_shortcode('locations_map', 'em_get_locations_map_shortcode');
@@ -64,8 +74,18 @@ function em_get_events_map_shortcode($args){
 	$args['height'] = $height;
 	//assign random number for element id reference
 	$args['random_id'] = substr(md5(rand().rand()),0,5);
+	if( !empty($args['map_style']) ){
+		$style= base64_decode($args['map_style']);
+		$style_json= json_decode($style);
+		if( is_array($style_json) || is_object($style_json) ){
+			$style = preg_replace('/[\r\n\t\s]/', '', $style);
+		}else{
+			$style = '';
+		}
+		unset($args['map_style']);
+	}
 	ob_start();
-	em_locate_template('templates/map-global.php',true, array('args'=>$args));
+	em_locate_template('templates/map-global.php',true, array('args'=>$args, 'map_json_style' => $style));
 	return ob_get_clean();
 }
 add_shortcode('events_map', 'em_get_events_map_shortcode');
