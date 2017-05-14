@@ -1,10 +1,10 @@
 === Events Manager ===
 Contributors: netweblogic, nutsmuggler
 Donate link: http://wp-events-plugin.com
-Tags: bookings, buddypress, calendar, event, event management, events, google maps, maps, locations, registration, registration, tickets
+Tags: bookings, calendar, tickets, events, buddypress, event management, google maps, maps, locations, registration
 Text Domain: events-manager
 Requires at least: 3.5
-Tested up to: 4.7
+Tested up to: 4.7.4
 Stable tag: 5.7
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
@@ -164,7 +164,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * fixed 'Bookings' header not being translated when formats are disabled and booking form is added just after content
 * fixed ticket availability status indicator showing false to admins when ticket is restricted to guests
 * added get_total_paid function (mainly for hooking purposes in Pro add-ons)
-* added support for Google Maps styles via services like the Google Maps Style Wizard or Snazzy Maps 
+* added support for Google Maps styles via services like the Google Maps Style Wizard or Snazzy Maps
 
 = 5.6.6.1 =
 * fixed search forms disappearing in latest update when Styling Options for search forms are turned off (props @factchecker)
