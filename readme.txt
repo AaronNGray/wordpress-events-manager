@@ -99,6 +99,9 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
+= 5.7.0.1 =
+* fix for wierd headers PHP error due to corrupted <?php on line 1 of admin/em-ms-options.php
+
 = 5.7 =
 * added em_events_admin_args filter allowing modification of event search arguments
 * removed jQuery UI localize files for the datepicker in favor of WP 4.6 native localization

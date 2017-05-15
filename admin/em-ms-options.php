@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 function em_ms_upgrade( $blog_id ){
 	?>
 	<div class="wrap">		
@@ -27,11 +27,11 @@ function em_ms_upgrade( $blog_id ){
 			echo "<p>Done Upgrading</p>";
 		}else{
 			?>
-			 <form action="" method="post">
-			 	<p><?php esc_html_e('To update your network blogs with the latest Events Manager automatically, click the update button below.','events-manager'); ?></p>
-			 	<input type="hidden" name="_wpnonce" value="<?php echo wp_create_nonce('em_ms_ugrade_'.get_current_user_id()); ?>" />
-			 	<input type="hidden" name="action" value="upgrade" />
-			 	<input type="submit" value="<?php esc_attr_e('Update','events-manager'); ?>" />
+			<form action="" method="post">
+				<p><?php esc_html_e('To update your network blogs with the latest Events Manager automatically, click the update button below.','events-manager'); ?></p>
+				<input type="hidden" name="_wpnonce" value="<?php echo wp_create_nonce('em_ms_ugrade_'.get_current_user_id()); ?>" />
+				<input type="hidden" name="action" value="upgrade" />
+				<input type="submit" value="<?php esc_attr_e('Update','events-manager'); ?>" />
 			</form>
 			<?php
 		}
