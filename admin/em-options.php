@@ -163,7 +163,7 @@ function em_options_save(){
 		exit();
 	}
 	//import EM settings
-	if( !empty($_REQUEST['action']) && ($_REQUEST['action'] == 'import_em_settings' && check_admin_referer('import_em_settings')) || (is_multisite() && $_REQUEST['action'] == 'import_em_ms_settings' && check_admin_referer('import_em_ms_settings')) && is_super_admin() ){
+	if( !empty($_REQUEST['action']) && ( ($_REQUEST['action'] == 'import_em_settings' && check_admin_referer('import_em_settings')) || (is_multisite() && $_REQUEST['action'] == 'import_em_ms_settings' && check_admin_referer('import_em_ms_settings')) ) && is_super_admin() ){
 		//upload uniquely named file to system for usage later
 		if( !empty($_FILES['import_settings_file']['size']) && is_uploaded_file($_FILES['import_settings_file']['tmp_name']) ){
 			$settings = file_get_contents($_FILES['import_settings_file']['tmp_name']);
