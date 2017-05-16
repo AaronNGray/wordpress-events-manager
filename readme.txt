@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 3.5
 Tested up to: 4.7.4
-Stable tag: 5.7.1
+Stable tag: 5.7.2
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
 
@@ -99,6 +99,11 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
+= 5.7.2 =
+* fixed subsite events in MS Global mode not being able to save new events and resulting in orphaned entries in wp_em_events table
+* added admin tool to allow removal of orphaned events in wp_em_events database table
+* improved detection and handling of orphaned events when being displayed
+
 = 5.7.1 =
 * fix for wierd headers PHP error due to corrupted <?php on line 1 of admin/em-ms-options.php
 * fixed minor PHP warning on settings page

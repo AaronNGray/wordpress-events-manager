@@ -254,7 +254,7 @@ class EM_Event extends EM_Object{
 			if($search_by == 'event_id' && !$is_post ){
 				//search by event_id, get post_id and blog_id (if in ms mode) and load the post
 				$results = $wpdb->get_row($wpdb->prepare("SELECT post_id, blog_id FROM ".EM_EVENTS_TABLE." WHERE event_id=%d",$id), ARRAY_A);
-				if( !empty($results['post_id']) ){ $this->post_id = $results['post_id']; }
+				if( !empty($results['post_id']) ){ $this->post_id = $results['post_id']; $this->event_id = $id; }
 				if( is_multisite() && (is_numeric($results['blog_id']) || $results['blog_id']=='' ) ){
 				    if( $results['blog_id']=='' )  $results['blog_id'] = get_current_site()->blog_id;
 					$event_post = get_blog_post($results['blog_id'], $results['post_id']);
@@ -290,7 +290,8 @@ class EM_Event extends EM_Object{
 	}
 	
 	function load_postdata($event_post, $search_by = false){
-		if( is_object($event_post) ){
+		//load event post object if it's an actual object and also a post type of our event CPT names
+		if( is_object($event_post) && ($event_post->post_type == 'event-recurring' || $event_post->post_type == EM_POST_TYPE_EVENT) ){
 			//load post data - regardless
 			$this->post_id = $event_post->ID;
 			$this->event_name = $event_post->post_title;
@@ -348,7 +349,15 @@ class EM_Event extends EM_Object{
 			//we have an orphan... show it, so that we can at least remove it on the front-end
 			global $wpdb;
 			if( EM_MS_GLOBAL ){ //if MS Global mode enabled, make sure we search by blog too so there's no cross-post confusion
-				$event_array = $wpdb->get_row($wpdb->prepare("SELECT * FROM ".EM_EVENTS_TABLE." WHERE post_id=%d && blog_id=%d",$this->post_id, $this->blog_id), ARRAY_A);
+				if( !empty($this->event_id) ){
+					$event_array = $wpdb->get_row($wpdb->prepare("SELECT * FROM ".EM_EVENTS_TABLE." WHERE event_id=%d",$this->event_id), ARRAY_A);
+				}else{
+					if( $this->blog_id == get_current_blog_id() || empty($this->blog_id) ){
+						$event_array = $wpdb->get_row($wpdb->prepare("SELECT * FROM ".EM_EVENTS_TABLE." WHERE post_id=%d AND (blog_id=%d OR blog_id IS NULL)",$this->post_id, $this->blog_id), ARRAY_A);
+					}else{
+						$event_array = $wpdb->get_row($wpdb->prepare("SELECT * FROM ".EM_EVENTS_TABLE." WHERE post_id=%d AND blog_id=%d",$this->post_id, $this->blog_id), ARRAY_A);
+					}
+				}
 			}else{
 				$event_array = $wpdb->get_row($wpdb->prepare("SELECT * FROM ".EM_EVENTS_TABLE." WHERE post_id=%d",$this->post_id), ARRAY_A);
 			}
@@ -731,10 +740,6 @@ class EM_Event extends EM_Object{
 			//unless events can be submitted by an anonymous user (and this is a new event), user must have permissions.
 			return apply_filters('em_event_save', false, $this);
 		}
-		//sort out multisite blog id if appliable
-		if( is_multisite() && empty($this->blog_id) ){
-			$this->blog_id = get_current_blog_id();
-		}
 		//start saving process
 		do_action('em_event_save_pre', $this);
 		$post_array = array();
@@ -814,6 +819,11 @@ class EM_Event extends EM_Object{
 	
 	function save_meta(){
 		global $wpdb;
+		//sort out multisite blog id if appliable
+		if( is_multisite() && empty($this->blog_id) ){
+			$this->blog_id = get_current_blog_id();
+		}
+		//continue with saving if permissions allow
 		if( ( get_option('dbem_events_anonymous_submissions') && empty($this->event_id)) || $this->can_manage('edit_events', 'edit_others_events') ){
 			do_action('em_event_save_meta_pre', $this);
 			//first save location
@@ -1048,7 +1058,7 @@ class EM_Event extends EM_Object{
 			}
 			if( !$result && !empty($this->orphaned_event) ){
 			    //this is an orphaned event, so the wp delete posts would have never worked, so we just delete the row in our events table
-			    $this->delete_meta();
+				$result = $this->delete_meta();
 			}
 		}else{
 			$result = false;

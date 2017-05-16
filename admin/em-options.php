@@ -139,9 +139,34 @@ function em_options_save(){
 			}
 			//go back to plugin options page
 			$EM_Notices->add_confirm(__('Settings have been reset back to default. Your events, locations and categories have not been modified.','events-manager'), true);
-			wp_redirect(EM_ADMIN_URL.'&page=events-manager-options');
+			wp_redirect(em_wp_get_referer());
 			exit();
 		}
+	}
+	//Cleanup Event Orphans
+	if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'cleanup_event_orphans' && check_admin_referer('em_cleanup_event_orphans_'.get_current_user_id().'_wpnonce') && is_super_admin() ){
+		//Firstly, get all orphans
+		global $wpdb;
+		$sql = 'SELECT event_id FROM '.EM_EVENTS_TABLE.' WHERE post_id NOT IN (SELECT ID FROM ' .$wpdb->posts. ' WHERE post_type="'. EM_POST_TYPE_EVENT .'" OR post_type="event-recurring")';
+		if( EM_MS_GLOBAL ){
+			if( is_main_site() ){
+				$sql .= $wpdb->prepare(' AND (blog_id=%d or blog_id IS NULL)', get_current_blog_id());
+			}else{
+				$sql .= $wpdb->prepare(' AND blog_id=%d', get_current_blog_id());
+			}
+		}
+		$results = $wpdb->get_col($sql);
+		$deleted_events = 0;
+		foreach( $results as $event_id ){
+			$EM_Event = new EM_Event($event_id);
+			if( !empty($EM_Event->orphaned_event) && $EM_Event->delete() ){
+				$deleted_events++;
+			}
+		}
+		//go back to plugin options page
+		$EM_Notices->add_confirm(sprintf(__('Found %d orphaned events, deleted %d successfully','events-manager'), count($results), $deleted_events), true);
+		wp_redirect(em_wp_get_referer());
+		exit();
 	}
 	//Force Update Recheck - Workaround for now
 	if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'recheck_updates' && check_admin_referer('em_recheck_updates_'.get_current_user_id().'_wpnonce') && is_super_admin() ){
@@ -617,6 +642,7 @@ function em_admin_option_box_uninstall(){
 		$uninstall_url = admin_url().'network/admin.php?page=events-manager-options&amp;action=uninstall&amp;_wpnonce='.wp_create_nonce('em_uninstall_'.get_current_user_id().'_wpnonce');
 		$reset_url = admin_url().'network/admin.php?page=events-manager-options&amp;action=reset&amp;_wpnonce='.wp_create_nonce('em_reset_'.get_current_user_id().'_wpnonce');
 		$recheck_updates_url = admin_url().'network/admin.php?page=events-manager-options&amp;action=recheck_updates&amp;_wpnonce='.wp_create_nonce('em_recheck_updates_'.get_current_user_id().'_wpnonce');
+		$cleanup_event_orphans_url = admin_url().'network/admin.php?page=events-manager-options&amp;action=cleanup_event_orphans&amp;_wpnonce='.wp_create_nonce('em_cleanup_event_orphans_'.get_current_user_id().'_wpnonce');
 		$check_devs = admin_url().'network/admin.php?page=events-manager-options&amp;action=check_devs&amp;_wpnonce='.wp_create_nonce('em_check_devs_wpnonce');
 		$export_settings_url = admin_url().'network/admin.php?page=events-manager-options&amp;action=export_em_ms_settings&amp;_wpnonce='.wp_create_nonce('export_em_ms_settings');
 		$import_nonce = wp_create_nonce('import_em_ms_settings');
@@ -624,6 +650,7 @@ function em_admin_option_box_uninstall(){
 		$uninstall_url = EM_ADMIN_URL.'&amp;page=events-manager-options&amp;action=uninstall&amp;_wpnonce='.wp_create_nonce('em_uninstall_'.get_current_user_id().'_wpnonce');
 		$reset_url = EM_ADMIN_URL.'&amp;page=events-manager-options&amp;action=reset&amp;_wpnonce='.wp_create_nonce('em_reset_'.get_current_user_id().'_wpnonce');
 		$recheck_updates_url = EM_ADMIN_URL.'&amp;page=events-manager-options&amp;action=recheck_updates&amp;_wpnonce='.wp_create_nonce('em_recheck_updates_'.get_current_user_id().'_wpnonce');
+		$cleanup_event_orphans_url= EM_ADMIN_URL.'&amp;page=events-manager-options&amp;action=cleanup_event_orphans&amp;_wpnonce='.wp_create_nonce('em_cleanup_event_orphans_'.get_current_user_id().'_wpnonce');
 		$check_devs = EM_ADMIN_URL.'&amp;page=events-manager-options&amp;action=check_devs&amp;_wpnonce='.wp_create_nonce('em_check_devs_wpnonce');
 		$export_settings_url = EM_ADMIN_URL.'&amp;page=events-manager-options&amp;action=export_em_settings&amp;_wpnonce='.wp_create_nonce('export_em_settings');
 		$import_nonce = wp_create_nonce('import_em_settings');
@@ -683,6 +710,34 @@ function em_admin_option_box_uninstall(){
     			    <td><?php esc_html_e('Export your Events Manager settings and restore them here or on another website running this plugin.','events-manager'); ?></td>
 				</tr>
 			</table>
+			
+			
+			<table class="form-table">
+    		    <tr class="em-header"><td colspan="2">
+    		        <h4><?php esc_html_e( 'Database Cleanup', 'events-manager'); ?></h4>
+    		    </td></tr>
+				<tr>
+    			    <th style="text-align:right;"><a href="<?php echo $cleanup_event_orphans_url; ?>" class="button-secondary admin-tools-db-cleanup"><?php _e('Remove Orphaned Events','events-manager'); ?></a></th>
+    			    <td>
+    			    	<?php 
+    			    		global $wpdb;
+    			    		$sql = 'SELECT count(*) FROM '.EM_EVENTS_TABLE.' WHERE post_id NOT IN (SELECT ID FROM ' .$wpdb->posts. ' WHERE post_type="'. EM_POST_TYPE_EVENT .'" OR post_type="event-recurring")';
+    			    		if( EM_MS_GLOBAL ){
+    			    			if( is_main_site() ){
+    			    				$sql .= $wpdb->prepare(' AND (blog_id=%d or blog_id IS NULL)', get_current_blog_id());
+    			    			}else{
+    			    				$sql .= $wpdb->prepare(' AND blog_id=%d', get_current_blog_id());
+    			    			}
+    			    		}
+    			    		$results = $wpdb->get_var($sql);
+    			    		echo sprintf(esc_html__('Orphaned events may show on your event lists but not point to real event pages, and can be deleted. %d potentially orphaned events have been found.', 'events-manager'), $results);
+    			    	?>
+    			    </td>
+    			</tr>
+			</table>
+			<script type="text/javascript">
+				if( typeof EM == 'object' ){ EM.admin_db_cleanup_warning = '<?php echo esc_js(__('Are you sure you want to proceed? We recommend you back up your database first, just in case!', 'events-manager')); ?>'; }
+			</script>
 			
 			<table class="form-table">
     		    <tr class="em-header"><td colspan="2">
