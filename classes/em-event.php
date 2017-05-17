@@ -2313,7 +2313,7 @@ class EM_Event extends EM_Object{
 			 	}
 			 	//delete all meta
 			 	if( !empty($post_ids) ){
-			 		$wpdb->query("DELETE FROM {$wpdb->postmeta} WHERE post_id IN (".implode(',', array_keys($post_ids)).")");
+			 		$wpdb->query("DELETE FROM {$wpdb->postmeta} WHERE post_id IN (".implode(',', $post_ids).")");
 			 	}
 			 	//insert the metas in one go, faster than one by one
 			 	if( count($meta_inserts) > 0 ){

@@ -99,6 +99,9 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
+= 5.7.2.1 (dev) =
+* fixed previous meta not getting deleted from recurrences resulting in non-saved information such as a changed featured image or location
+
 = 5.7.2 =
 * fixed subsite events in MS Global mode not being able to save new events and resulting in orphaned entries in wp_em_events table
 * added admin tool to allow removal of orphaned events in wp_em_events database table
