@@ -2184,6 +2184,10 @@ class EM_Event extends EM_Object{
 		global $wpdb;
 		$event_ids = $post_ids = array();
 		if( $this->can_manage('edit_events','edit_others_events') && ($this->is_published() || 'future' == $this->post_status) ){
+			//check if there's any events already created, if not (such as when an event is first submitted for approval and then published), force a reschedule.
+			if( $wpdb->get_var('SELECT COUNT(event_id) FROM '.EM_EVENTS_TABLE.' WHERE recurrence_id='. absint($this->event_id)) == 0 ){
+				$this->recurring_reschedule = true;
+			}
 			do_action('em_event_save_events_pre', $this); //actions/filters only run if event is recurring
 			//Make template event index, post, and meta (we change event dates, timestamps, rsvp dates and other recurrence-relative info whilst saving each event recurrence)
 			$event = $this->to_array(true); //event template - for index
