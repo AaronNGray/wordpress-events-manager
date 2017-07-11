@@ -1495,6 +1495,27 @@ class EM_Object {
 	/*
 	 * END IMAGE UPlOAD FUNCTIONS
 	 */
+	
+	function output_excerpt($excerpt_length = 55, $excerpt_more = '[...]', $cut_excerpt = true){
+		if( !empty($this->post_excerpt) ){
+			$replace = $this->post_excerpt;
+		}else{
+			$replace = $this->post_content;
+		}
+		if( empty($this->post_excerpt) || $cut_excerpt ){
+			if ( preg_match('/<!--more(.*?)?-->/', $replace, $matches) ) {
+				$content = explode($matches[0], $replace, 2);
+				$replace = force_balance_tags($content[0]);
+			}
+			if( !empty($excerpt_length) ){
+				//shorten content by supplied number - copied from wp_trim_excerpt
+				$replace = strip_shortcodes( $replace );
+				$replace = str_replace(']]>', ']]&gt;', $replace);
+				$replace = wp_trim_words( $replace, $excerpt_length, $excerpt_more );
+			}
+		}
+		return $replace;
+	}
 
 	function sanitize_time( $time ){
 		if( !empty($time) && preg_match ( '/^([01]\d|2[0-3]):([0-5]\d) ?(AM|PM)?$/', $time, $match ) ){

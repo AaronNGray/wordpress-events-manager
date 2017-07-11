@@ -302,6 +302,9 @@ function em_get_wp_users( $args = array(), $extra_users = array() ) {
 }
 
 function em_get_attributes($lattributes = false){
+	$attributes = array('names'=>array(), 'values'=>array());
+	if( !$lattributes && !get_option('dbem_attributes_enabled') ) return $attributes;
+	if( $lattributes && !get_option('dbem_location_attributes_enabled') ) return $attributes;
 	//We also get a list of attribute names and create a ddm list (since placeholders are fixed)
 	$formats =
 		get_option ( 'dbem_placeholders_custom' ).
@@ -324,7 +327,6 @@ function em_get_attributes($lattributes = false){
 		preg_match_all('/#_ATT\{([^}]+)\}(\{([^}]+)\})?/', $formats, $matches);
 	}
 	//Now grab all the unique attributes we can use in our event.
-	$attributes = array('names'=>array(), 'values'=>array());
 	foreach($matches[1] as $key => $attribute) {
 		if( !in_array($attribute, $attributes['names']) ){
 			$attributes['names'][] = $attribute ;

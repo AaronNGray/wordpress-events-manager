@@ -1,126 +1,55 @@
 <?php
-class EM_Categories_Taxonomy{
+/**
+ * This class extends the EM_Taxonomy_Admin and adds category images and colors to the admin area.
+ * 
+ * Currently, all functions here serve the purpose of getting around lack of late static binding in PHP < 5.3. 
+ * Eventually only certain class properties need to be defined for use in the parent class via static:: 
+ *
+ */
+class EM_Categories_Taxonomy extends EM_Taxonomy_Admin{
+	
+	public static $taxonomy_name;
+	public static $this_class = 'EM_Categories_Taxonomy'; //needed until 5.3 minimum is enforced for late static binding
+	public static $tax_class = 'EM_Category';
+	public static $option_name = 'category';
+	public static $name_singular = 'category';
+	public static $name_plural = 'categories';
+	public static $placeholder_image = '#_CATEGORYIMAGE';
+	public static $placeholder_color = '#_CATEGORYCOLOR';
+	
 	public static function init(){
-		add_action( EM_TAXONOMY_CATEGORY.'_edit_form_fields', array('EM_Categories_Taxonomy','form'), 10, 1);
-		add_action( EM_TAXONOMY_CATEGORY.'_add_form_fields', array('EM_Categories_Taxonomy','form'), 10, 1);
-		add_action( 'edited_'.EM_TAXONOMY_CATEGORY, array('EM_Categories_Taxonomy','save'), 10, 2);
-		add_action( 'create_'.EM_TAXONOMY_CATEGORY, array('EM_Categories_Taxonomy','save'), 10, 2);
-		add_action( 'delete_'.EM_TAXONOMY_CATEGORY, array('EM_Categories_Taxonomy','delete'), 10, 2);
-		
-		add_filter('manage_edit-'.EM_TAXONOMY_CATEGORY.'_columns' , array('EM_Categories_Taxonomy','columns_add'));
-		add_filter('manage_'.EM_TAXONOMY_CATEGORY.'_custom_column' , array('EM_Categories_Taxonomy','columns_output'),10,3);
-		
-		self::admin_init();
-	}
-
-	
-	public static function columns_add($columns) {
-		//prepend ID after checkbox
-	    $columns['cat-id'] = __('ID','events-manager');
-	    return $columns;
+		self::$taxonomy_name = EM_TAXONOMY_CATEGORY;
+		self::static_binding();
+		parent::init();
 	}
 	
-	public static function columns_output( $val, $column, $term_id ) {
-		switch ( $column ) {
-			case 'cat-id':
-				return $term_id;
-				break;
-		}
-		return $val;
+	public static function form_edit($tag){
+		self::static_binding();
+		parent::form_edit();
 	}
 	
-	public static function admin_init(){
-		global $pagenow;
-		if( ($pagenow == 'edit-tags.php' || $pagenow == 'term.php') && !empty($_GET['taxonomy']) && $_GET['taxonomy'] == EM_TAXONOMY_CATEGORY){
-			wp_enqueue_media();
-			wp_enqueue_script( 'em-categories-admin', plugins_url().'/events-manager/includes/js/categories-admin.js', array( 'jquery','media-upload','thickbox','farbtastic' ) );
-		}
-	}
-	
-	public static function form($tag){ 
-		$category_color = '#FFFFFF';
-		$category_image = $category_image_id = '';
-		if( $tag != EM_TAXONOMY_CATEGORY ){ //not an add new tag form
-			$EM_Category = new EM_Category($tag);
-			$category_color = $EM_Category->get_color();
-			$category_image = $EM_Category->get_image_url();
-			$category_image_id = $EM_Category->get_image_id();
-		}
-		?>
-	    <tr class="form-field">
-	        <th scope="row" valign="top"><label for="category-bgcolor"><?php esc_html_e('Color','events-manager'); ?></label></th>
-	        <td>
-	            <input type="text" name="category_bgcolor" id="category-bgcolor" class="colorwell" value="<?php echo esc_attr($category_color); ?>" style="width:100px;"/><br />
-	            <p class="description"><?php echo sprintf(__('Choose a color for your category. You can access this using the %s placeholder.','events-manager'),'<code>#_CATEGORYCOLOR</code>'); ?></p>
-	            <div id="picker" style="position:absolute; display:none; background:#DEDEDE"></div>
-	        </td>
-	    </tr>
-	    <tr class="form-field">
-	        <th scope="row" valign="top"><label for="category-image"><?php esc_html_e('Image','events-manager'); ?></label></th>
-	        <td id="event-tax-image">
-	        	<div class="img-container">
-	        		<?php if( !empty($category_image) ): ?>
-	        		<img src="<?php echo $category_image; ?>" />
-	        		<?php endif; ?>
-	        	</div>
-	            <input type="text" name="category_image" id="category-image" class="img-url" value="<?php echo esc_attr($category_image); ?>" />
-	            <input type="hidden" name="category_image_id" id="category-image-id" class="img-id" value="<?php echo esc_attr($category_image_id); ?>" />
-	            <p class="hide-if-no-js">
-		            <input id="upload_image_button" type="button" value="<?php _e('Choose/Upload Image','events-manager'); ?>" class="upload-img-button button-secondary" />
-		            <input id="delete_image_button" type="button" value="<?php _e('Remove Image','events-manager'); ?>" class="delete-img-button button-secondary" <?php if( empty($category_image) ) echo 'style="display:none;"'; ?> />
-				</p>
-	            <br />
-	            <p class="description"><?php echo sprintf(__('Choose an image for your category, which can be displayed using the %s placeholder.','events-manager'),'<code>#_CATEGORYIMAGE</code>'); ?></p>
-	        </td>
-	    </tr>
-	    <?php
-	}
-	
-	public static function save($term_id, $tt_id){
-		global $wpdb;
-	    if (!$term_id) return;
-		if( !empty($_POST['category_bgcolor']) && preg_match('/^#[a-zA-Z0-9]{6}$/', $_POST['category_bgcolor']) ){
-			//get results and save/update
-			$prev_settings = $wpdb->get_results('SELECT meta_value FROM '.EM_META_TABLE." WHERE object_id='{$term_id}' AND meta_key='category-bgcolor'");
-			if( count($prev_settings) > 0 ){
-				$wpdb->update(EM_META_TABLE, array('object_id'=>$term_id,'meta_value'=>$_POST['category_bgcolor']), array('object_id'=>$term_id,'meta_key'=>'category-bgcolor'));
-			}else{
-				$wpdb->insert(EM_META_TABLE, array('object_id'=>$term_id,'meta_key'=>'category-bgcolor','meta_value'=>$_POST['category_bgcolor']));
-			}
-		}
-		if( !empty($_POST['category_image']) ){
-			//get results and save/update
-			$prev_settings = $wpdb->get_results('SELECT meta_value FROM '.EM_META_TABLE." WHERE object_id='{$term_id}' AND meta_key='category-image'");
-			if( count($prev_settings) > 0 ){
-				$wpdb->update(EM_META_TABLE, array('object_id'=>$term_id,'meta_value'=>$_POST['category_image']), array('object_id'=>$term_id,'meta_key'=>'category-image'));
-			}else{
-				$wpdb->insert(EM_META_TABLE, array('object_id'=>$term_id,'meta_key'=>'category-image','meta_value'=>$_POST['category_image']));
-			}
-			if( !empty($_POST['category_image_id']) && is_numeric($_POST['category_image_id']) ){
-				//get results and save/update
-				$prev_settings = $wpdb->get_results('SELECT meta_value FROM '.EM_META_TABLE." WHERE object_id='{$term_id}' AND meta_key='category-image-id'");
-				if( count($prev_settings) > 0 ){
-					$wpdb->update(EM_META_TABLE, array('object_id'=>$term_id,'meta_value'=>$_POST['category_image_id']), array('object_id'=>$term_id,'meta_key'=>'category-image-id'));
-				}else{
-					$wpdb->insert(EM_META_TABLE, array('object_id'=>$term_id,'meta_key'=>'category-image-id','meta_value'=>$_POST['category_image_id']));
-				}
-			}
-		}else{
-			//check if an image exists, if so remove association
-			$prev_settings = $wpdb->get_results('SELECT meta_value FROM '.EM_META_TABLE." WHERE object_id='{$term_id}' AND meta_key='category-image'");
-			if( count($prev_settings) > 0 ){
-				$wpdb->delete(EM_META_TABLE, array('object_id'=>$term_id,'meta_key'=>'category-image'));
-				$wpdb->delete(EM_META_TABLE, array('object_id'=>$term_id,'meta_key'=>'category-image-id'));
-			}
-		}
+	public static function save( $term_id, $tt_id ){
+		self::static_binding();
+		self::save( $term_id, $tt_id );
 	}
 	
 	public static function delete( $term_id ){
-		global $wpdb;
-		//delete category image and color
-		$wpdb->query('DELETE FROM '.EM_META_TABLE." WHERE object_id='$term_id' AND (meta_key='category-image' OR meta_key='category-bgcolor')");
-		//delete all events category relations
-		$wpdb->query('DELETE FROM '.EM_META_TABLE." WHERE meta_value='{$term_id}' AND meta_key='event-category'");
+		self::static_binding();
+		self::delete( $term_id );
+	}
+	
+	/**
+	 * Temporary function until WP requires PHP 5.3, so that we can make use of late static binding. 
+	 * Until then, all functions needing LST should run this function before calling the parent. If all extending classes do this we shouldn't have a problem.  
+	 */
+	public static function static_binding(){
+		EM_Taxonomy_Admin::$taxonomy_name = self::$taxonomy_name; 
+		EM_Taxonomy_Admin::$tax_class = self::$tax_class;
+		EM_Taxonomy_Admin::$option_name = self::$option_name;
+		EM_Taxonomy_Admin::$name_singular = self::$name_singular;
+		EM_Taxonomy_Admin::$name_plural = self::$name_plural;
+		EM_Taxonomy_Admin::$placeholder_image = self::$placeholder_image;
+		EM_Taxonomy_Admin::$placeholder_color = self::$placeholder_color;
 	}
 }
 add_action('admin_init',array('EM_Categories_Taxonomy','init'));

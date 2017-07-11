@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Events Manager
-Version: 5.7.3
+Version: 5.7.3.1
 Plugin URI: http://wp-events-plugin.com
 Description: Event registration and booking management for WordPress. Recurring events, locations, google maps, rss, ical, booking registration and more!
 Author: Marcus Sykes
@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 // Setting constants
-define('EM_VERSION', 5.7); //self expanatory
+define('EM_VERSION', 5.731); //self expanatory
 define('EM_PRO_MIN_VERSION', 2.392); //self expanatory
 define('EM_PRO_MIN_VERSION_CRITICAL', 2.377); //self expanatory
 define('EM_DIR', dirname( __FILE__ )); //an absolute path to this directory
@@ -65,8 +65,11 @@ function dbem_debug_mode(){
 //add_action('plugins_loaded', 'dbem_debug_mode');
 
 // INCLUDES
-include('classes/em-object.php'); //Base object, any files below may depend on this
-include("em-posts.php"); //set up events as posts
+//Base classes
+include('classes/em-object.php');
+include('classes/em-taxonomy.php');
+//set up events as posts
+include("em-posts.php");
 //Template Tags & Template Logic
 include("em-actions.php");
 include("em-events.php");
@@ -123,7 +126,9 @@ if( is_admin() ){
 	include('classes/em-event-posts-admin.php');
 	include('classes/em-location-post-admin.php');
 	include('classes/em-location-posts-admin.php');
+	include('classes/em-taxonomy-admin.php');
 	include('classes/em-categories-taxonomy.php');
+	include('classes/em-tags-taxonomy.php');
 	//bookings folder
 		include('admin/bookings/em-cancelled.php');
 		include('admin/bookings/em-confirmed.php');
@@ -219,7 +224,7 @@ class EM_Scripts_and_Styles {
             if( is_page($pages) ){
                 $script_deps['jquery'] = 'jquery';
             }
-            if( (!empty($pages['events']) && is_page($pages['events']) &&  get_option('dbem_events_page_search_form')) || get_option('dbem_js_limit_search') === '0' || in_array($obj_id, explode(',', get_option('dbem_js_limit_search'))) ){ 
+            if( (!empty($pages['events']) && is_page($pages['events']) && ( get_option('dbem_events_page_search_form') || (EM_MS_GLOBAL && !get_site_option('dbem_ms_global_events_links', true)) )) || get_option('dbem_js_limit_search') === '0' || in_array($obj_id, explode(',', get_option('dbem_js_limit_search')))  ){ 
                 //events page only needs datepickers
                 $script_deps['jquery-ui-core'] = 'jquery-ui-core';
                 $script_deps['jquery-ui-datepicker'] = 'jquery-ui-datepicker';
@@ -263,7 +268,7 @@ class EM_Scripts_and_Styles {
 	        	'jquery-ui-autocomplete'=>'jquery-ui-autocomplete',
 	        	'jquery-ui-dialog'=>'jquery-ui-dialog'
             );
-        }            			
+        }
         $script_deps = apply_filters('em_public_script_deps', $script_deps);
         if( !empty($script_deps) ){ //given we depend on jQuery, there must be at least a jQuery dep for our file to be loaded
 			wp_enqueue_script('events-manager', plugins_url('includes/js/events-manager.js',__FILE__), array_values($script_deps), EM_VERSION); //jQuery will load as dependency
@@ -293,7 +298,8 @@ class EM_Scripts_and_Styles {
 	
 	public static function admin_enqueue( $hook_suffix = false ){
 		if( $hook_suffix == 'post.php' || (!empty($_GET['page']) && substr($_GET['page'],0,14) == 'events-manager') || (!empty($_GET['post_type']) && in_array($_GET['post_type'], array(EM_POST_TYPE_EVENT,EM_POST_TYPE_LOCATION,'event-recurring'))) ){
-			wp_enqueue_script('events-manager', plugins_url('includes/js/events-manager.js',__FILE__), array('jquery', 'jquery-ui-core','jquery-ui-widget','jquery-ui-position','jquery-ui-sortable','jquery-ui-datepicker','jquery-ui-autocomplete','jquery-ui-dialog'), EM_VERSION);
+			wp_enqueue_style( 'wp-color-picker' );
+			wp_enqueue_script('events-manager', plugins_url('includes/js/events-manager.js',__FILE__), array('jquery', 'jquery-ui-core','jquery-ui-widget','jquery-ui-position','jquery-ui-sortable','jquery-ui-datepicker','jquery-ui-autocomplete','jquery-ui-dialog','wp-color-picker'), EM_VERSION);
 		    do_action('em_enqueue_admin_scripts');
 			wp_enqueue_style('events-manager-admin', plugins_url('includes/css/events_manager_admin.css',__FILE__), array(), EM_VERSION);
 			do_action('em_enqueue_admin_styles');

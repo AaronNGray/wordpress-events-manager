@@ -102,7 +102,6 @@ class EM_Event extends EM_Object{
 		'recurrence_id' => array( 'name'=>'recurrence_id', 'type'=>'%d', 'null'=>true ),
 		'event_status' => array( 'name'=>'status', 'type'=>'%d', 'null'=>true ),
 		'event_private' => array( 'name'=>'status', 'type'=>'%d', 'null'=>true ),
-		'event_attributes' => array( 'name'=>'attributes', 'type'=>'%s', 'null'=>true ),
 		'blog_id' => array( 'name'=>'blog_id', 'type'=>'%d', 'null'=>true ),
 		'group_id' => array( 'name'=>'group_id', 'type'=>'%d', 'null'=>true ),
 		'recurrence' => array( 'name'=>'recurrence', 'type'=>'%d', 'null'=>true ), //is this a recurring event template
@@ -306,11 +305,12 @@ class EM_Event extends EM_Object{
 			//load meta data and other related information
 			if( $event_post->post_status != 'auto-draft' ){
 			    $event_meta = $this->get_event_meta($search_by);
+			    $atts = em_get_attributes();
 				//Get custom fields and post meta
 				foreach($event_meta as $event_meta_key => $event_meta_val){
 					$field_name = substr($event_meta_key, 1);
 					if($event_meta_key[0] != '_'){
-						$this->event_attributes[$event_meta_key] = ( count($event_meta_val) > 1 ) ? $event_meta_val:$event_meta_val[0];					
+						$this->event_attributes[$event_meta_key] = ( is_array($event_meta_val) ) ? $event_meta_val[0]:$event_meta_val;					
 					}elseif( is_string($field_name) && !in_array($field_name, $this->post_fields) ){
 						if( array_key_exists($field_name, $this->fields) ){
 							$this->$field_name = $event_meta_val[0];
@@ -840,18 +840,20 @@ class EM_Event extends EM_Object{
 				}
 			}
 			//Update Post Meta
-			foreach($this->fields as $key => $field_info){
+			foreach( $this->fields as $key => $field_info ){
 				if( !in_array($key, $this->post_fields) && $key != 'event_attributes' ){
 					update_post_meta($this->post_id, '_'.$key, $this->$key);
-				}elseif($key == 'event_attributes'){
-					//attributes get saved as individual keys
-					$this->event_attributes = maybe_unserialize($this->event_attributes);
-					foreach($this->event_attributes as $event_attribute_key => $event_attribute){
-						if( !empty($event_attribute) ){
-							update_post_meta($this->post_id, $event_attribute_key, $event_attribute);
-						}else{
-							delete_post_meta($this->post_id, $event_attribute_key);
-						}
+				}
+			}
+			if( get_option('dbem_attributes_enabled') ){
+				//attributes get saved as individual keys
+				$atts = em_get_attributes(); //get available attributes that EM manages
+				$this->event_attributes = maybe_unserialize($this->event_attributes);
+				foreach( $atts['names'] as $event_attribute_key ){
+					if( !empty($this->event_attributes[$event_attribute_key]) ){
+						update_post_meta($this->post_id, $event_attribute_key, $this->event_attributes[$event_attribute_key]);
+					}else{
+						delete_post_meta($this->post_id, $event_attribute_key);
 					}
 				}
 			}
@@ -867,8 +869,6 @@ class EM_Event extends EM_Object{
 			unset($event_array['event_id']);
 			//decide whether or not event is private at this point
 			$event_array['event_private'] = ( $this->post_status == 'private' ) ? 1:0;
-			//save event_attributes just in case
-			$event_array['event_attributes'] = serialize($this->event_attributes);
 			//check if event truly exists, meaning the event_id is actually a valid event id
 			if( !empty($this->event_id) ){
 				$blog_condition = '';
@@ -1000,6 +1000,7 @@ class EM_Event extends EM_Object{
 				$event_meta_inserts = array();
 			 	//Get custom fields and post meta - adapted from $this->load_post_meta()
 			 	foreach($event_meta as $event_meta_key => $event_meta_vals){
+			 		if( $event_meta_key == '_wpas_' ) continue; //allow JetPack Publicize to detect this as a new post when published
 			 		if($event_meta_key[0] == '_' && is_array($event_meta_vals)){
 			 		    $field_name = substr($event_meta_key, 1);
 			 			if($field_name != 'event_attributes' && !array_key_exists($event_meta_key, $new_event_meta) &&  !in_array($field_name, array('edit_last', 'edit_lock', 'event_owner_name','event_owner_anonymous','event_owner_email')) ){
@@ -1459,7 +1460,7 @@ class EM_Event extends EM_Object{
 		}
 	 	//First let's do some conditional placeholder removals
 	 	for ($i = 0 ; $i < EM_CONDITIONAL_RECURSIONS; $i++){ //you can add nested recursions by modifying this setting in your wp_options table
-			preg_match_all('/\{([a-zA-Z0-9_\-]+)\}(.+?)\{\/\1\}/s', $event_string, $conditionals);
+			preg_match_all('/\{([a-zA-Z0-9_\-,]+)\}(.+?)\{\/\1\}/s', $event_string, $conditionals);
 			if( count($conditionals[0]) > 0 ){
 				//Check if the language we want exists, if not we take the first language there
 				foreach($conditionals[1] as $key => $condition){
@@ -1572,18 +1573,18 @@ class EM_Event extends EM_Object{
 								$show_condition = !in_array($attendee_booking_status, $user_bookings);
 							}
 						}
-					}elseif ( preg_match('/^has_category_([a-zA-Z0-9_\-]+)$/', $condition, $category_match)){
+					}elseif ( preg_match('/^has_category_([a-zA-Z0-9_\-,]+)$/', $condition, $category_match)){
 					    //event is in this category
-					    $show_condition = has_term($category_match[1], EM_TAXONOMY_CATEGORY, $this->post_id);
-					}elseif ( preg_match('/^no_category_([a-zA-Z0-9_\-]+)$/', $condition, $category_match)){
+						$show_condition = has_term(explode(',', $category_match[1]), EM_TAXONOMY_CATEGORY, $this->post_id);
+					}elseif ( preg_match('/^no_category_([a-zA-Z0-9_\-,]+)$/', $condition, $category_match)){
 					    //event is NOT in this category
-					    $show_condition = !has_term($category_match[1], EM_TAXONOMY_CATEGORY, $this->post_id);
-					}elseif ( preg_match('/^has_tag_([a-zA-Z0-9_\-]+)$/', $condition, $tag_match)){
+						$show_condition = !has_term(explode(',', $category_match[1]), EM_TAXONOMY_CATEGORY, $this->post_id);
+					}elseif ( preg_match('/^has_tag_([a-zA-Z0-9_\-,]+)$/', $condition, $tag_match)){
 					    //event has this tag
-					    $show_condition = has_term($tag_match[1], EM_TAXONOMY_TAG, $this->post_id);
-					}elseif ( preg_match('/^no_tag_([a-zA-Z0-9_\-]+)$/', $condition, $tag_match)){
+						$show_condition = has_term(explode(',', $tag_match[1]), EM_TAXONOMY_TAG, $this->post_id);
+					}elseif ( preg_match('/^no_tag_([a-zA-Z0-9_\-,]+)$/', $condition, $tag_match)){
 					   //event doesn't have this tag
-					    $show_condition = !has_term($tag_match[1], EM_TAXONOMY_TAG, $this->post_id);
+						$show_condition = !has_term(explode(',', $tag_match[1]), EM_TAXONOMY_TAG, $this->post_id);
 					}
 					//other potential ones - has_attribute_... no_attribute_... has_categories_...
 					$show_condition = apply_filters('em_event_output_show_condition', $show_condition, $condition, $conditionals[0][$key], $this);
@@ -1618,25 +1619,23 @@ class EM_Event extends EM_Object{
 					$replace = $this->event_name;
 					break;
 				case '#_NOTES': //deprecated
-				case '#_EXCERPT': //deprecated
 				case '#_EVENTNOTES':
+					$replace = $this->post_content;
+					break;
+				case '#_EXCERPT': //deprecated
 				case '#_EVENTEXCERPT':
 				case '#_EVENTEXCERPTCUT':
-					$replace = $this->post_content;
-					if($result == "#_EXCERPT" || $result == "#_EVENTEXCERPT" || $result == "#_EVENTEXCERPTCUT" ){
-						if( !empty($this->post_excerpt) && $result != "#_EVENTEXCERPTCUT" ){
-							$replace = $this->post_excerpt;
-						}else{
-							$excerpt_length = 55;
-							$excerpt_more = apply_filters('em_excerpt_more', ' ' . '[...]');
-							if( !empty($placeholders[3][$key]) ){
-								$trim = true;
-								$ph_args = explode(',', $placeholders[3][$key]);
-								if( is_numeric($ph_args[0]) ) $excerpt_length = $ph_args[0];
-								if( !empty($ph_args[1]) ) $excerpt_more = $ph_args[1];
-							}
-							$replace = $this->output_excerpt($excerpt_length, $excerpt_more);
+					if( !empty($this->post_excerpt) && $result != "#_EVENTEXCERPTCUT" ){
+						$replace = $this->post_excerpt;
+					}else{
+						$excerpt_length = ( $result == "#_EVENTEXCERPTCUT" ) ? 55:false;
+						$excerpt_more = apply_filters('em_excerpt_more', ' ' . '[...]');
+						if( !empty($placeholders[3][$key]) ){
+							$ph_args = explode(',', $placeholders[3][$key]);
+							if( is_numeric($ph_args[0]) || empty($ph_args[0]) ) $excerpt_length = $ph_args[0];
+							if( !empty($ph_args[1]) ) $excerpt_more = $ph_args[1];
 						}
+						$replace = $this->output_excerpt($excerpt_length, $excerpt_more, $result == "#_EVENTEXCERPTCUT");
 					}
 					break;
 				case '#_EVENTIMAGEURL':
@@ -1773,11 +1772,12 @@ class EM_Event extends EM_Object{
 					}
 					break;
 				case '#_EVENTPRICEMIN':
+				case '#_EVENTPRICEMINALL':
 					//get the range of prices
 					$min = false;
 					foreach( $this->get_tickets()->tickets as $EM_Ticket ){
 						/* @var $EM_Ticket EM_Ticket */
-						if( $EM_Ticket->is_available()|| get_option('dbem_bookings_tickets_show_unavailable') ){
+						if( $EM_Ticket->is_available() || $result == '#_EVENTPRICEMINALL'){
 							if( $EM_Ticket->get_price() < $min || $min === false){
 								$min = $EM_Ticket->get_price();
 							}
@@ -1787,11 +1787,12 @@ class EM_Event extends EM_Object{
 					$replace = em_get_currency_formatted($min);
 					break;
 				case '#_EVENTPRICEMAX':
+				case '#_EVENTPRICEMAXALL':
 					//get the range of prices
 					$max = 0;
 					foreach( $this->get_tickets()->tickets as $EM_Ticket ){
 						/* @var $EM_Ticket EM_Ticket */
-						if( $EM_Ticket->is_available()|| get_option('dbem_bookings_tickets_show_unavailable') ){
+						if( $EM_Ticket->is_available() || $result == '#_EVENTPRICEMAXALL'){
 							if( $EM_Ticket->get_price() > $max ){
 								$max = $EM_Ticket->get_price();
 							}
@@ -2069,27 +2070,6 @@ class EM_Event extends EM_Object{
 			$replace = date_i18n($date_format, $this->start). get_option('dbem_dates_separator') . date_i18n($date_format, $this->end);
 		}else{
 			$replace = date_i18n($date_format, $this->start);
-		}
-		return $replace;
-	}
-	
-	function output_excerpt($excerpt_length = 55, $excerpt_more = '[...]', $cut_excerpt = true){
-		if( !empty($this->post_excerpt) ){
-			$replace = $this->post_excerpt;
-		}else{
-			$replace = $this->post_content;
-		}
-		if( empty($this->post_excerpt) || $cut_excerpt ){
-			if ( preg_match('/<!--more(.*?)?-->/', $replace, $matches) ) {
-				$content = explode($matches[0], $replace, 2);
-				$replace = force_balance_tags($content[0]);
-			}
-			if( !empty($excerpt_length) ){
-				//shorten content by supplied number - copied from wp_trim_excerpt
-				$replace = strip_shortcodes( $replace );
-				$replace = str_replace(']]>', ']]&gt;', $replace);
-				$replace = wp_trim_words( $replace, $excerpt_length, $excerpt_more );
-			}
 		}
 		return $replace;
 	}

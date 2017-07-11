@@ -149,8 +149,10 @@ function em_docs_init($force_init = false){
 							'#_BOOKINGSLINK' => array( 'desc' => 'Shows a link to the admin, front-end or buddypress (if activated) bookings management page for this event. Only shown if user is logged in and able to manage bookings.' ),
 							'#_EVENTPRICERANGE' => array( 'desc' => 'Shows a "maximum - minimum" price range for available tickets at the time of display, or a single price if there is no range. Once bookings are closed this will show a 0 value, if you have enabled \'Show unavailable tickets\' in your booking settings these will be included. Price is formatted according to currency formatting in your settings page.' ),
 							'#_EVENTPRICERANGEALL' => array( 'desc' => 'Like #_EVENTPRICERANGE but shows all tickets price range whether or not bookings or individual tickets are available.' ),
-							'#_EVENTPRICEMIN' => array( 'desc' => 'Shows the lowest ticket price for this event.' ),
-							'#_EVENTPRICEMAX' => array( 'desc' => 'Shows the highest ticket price for this event.' ),								
+							'#_EVENTPRICEMIN' => array( 'desc' => 'Shows the lowest available ticket price for this event. Will display a value of 0 if no ticket is available.' ),
+							'#_EVENTPRICEMAX' => array( 'desc' => 'Shows the highest available ticket price for this event. Will display a value of 0 if no ticket is avaialble.' ),
+							'#_EVENTPRICEMINALL' => array( 'desc' => 'Shows the lowest ticket price for this event, whether available or not.' ),
+							'#_EVENTPRICEMAXALL' => array( 'desc' => 'Shows the highest ticket price for this event, whether available or not.' ),
 						)
 					),
 					'Contact Details' => array(
@@ -184,7 +186,7 @@ function em_docs_init($force_init = false){
 							'#_CATEGORYNAME' => array( 'desc' => 'Shows the category name.' ),
 							'#_CATEGORYID' => array( 'desc' => 'Shows the category ID.' ),
 							'#_CATEGORYSLUG' => array( 'desc' => 'Shows the category slug.' ),
-							'#_CATEGORYCOLOR' => array( 'desc' => 'Shows the category color (useful for inline styling), in hex format, if no color is defined #FFFFFF (white) will be used.' ),
+							'#_CATEGORYCOLOR' => array( 'desc' => 'Shows the category color (useful for inline styling), in hex format, if no color is defined the default category color from your settings page will be used.' ),
 							'#_CATEGORYIMAGE' => array( 'desc' => 'Shows the category image, if available.' ),
 							'#_CATEGORYIMAGE{x,y}' => array( 'desc' => 'Shows the category image thumbnail if available, x and y are width and height respectively, both being numbers e.g. <code>#_CATEGORYIMAGE{100,100}</code>. If 0 is used for either width or height, the corresponding dimension will be proportionally sized.' ),
 							'#_CATEGORYIMAGEURL' => array( 'desc' => 'Shows the category image url, if available.' ),
@@ -216,7 +218,11 @@ function em_docs_init($force_init = false){
 							'#_TAGNAME' => array( 'desc' => 'Shows the tag name.' ),
 							'#_TAGID' => array( 'desc' => 'Shows the tag ID.' ),
 							'#_TAGSLUG' => array( 'desc' => 'Shows the tag slug.' ),
-							'#_TAGNOTES' => array( 'desc' => 'Shows the tag description.' )
+							'#_TAGNOTES' => array( 'desc' => 'Shows the tag description.' ),
+							'#_TAGCOLOR' => array( 'desc' => 'Shows the tag color (useful for inline styling), in hex format, if no color is defined the default tag color from your settings page will be used.' ),
+							'#_TAGIMAGE' => array( 'desc' => 'Shows the tag image, if available.' ),
+							'#_TAGIMAGE{x,y}' => array( 'desc' => 'Shows the tag image thumbnail if available, x and y are width and height respectively, both being numbers e.g. <code>#_TAGIMAGE{100,100}</code>. If 0 is used for either width or height, the corresponding dimension will be proportionally sized.' ),
+							'#_TAGIMAGEURL' => array( 'desc' => 'Shows the tag image url, if available.' ),
 						)
 					),			
 					'Related Events' => array(
@@ -256,6 +262,7 @@ function em_docs_init($force_init = false){
 							'#_LOCATIONNOTES' => array( 'desc' => 'Shows the location description.' ),
 							'#_LOCATIONEXCERPT' => array( 'desc' => 'If an excerpt has been added to the location, it will be used. If you added a <a href="http://en.support.wordpress.com/splitting-content/more-tag/">more tag</a> to your location description, only the content before this tag will show.' ),
 							'#_LOCATIONEXCERPT{words, ...}' => array( 'desc' => 'If an excerpt has not been added to the location, only a specific length is shown, e.g. <code>#_EVENTEXCERPT{10,...}</code> where 10 is the number of words to show and ... is what is used at the cut-off point.' ),
+							'#_LOCATIONEXCERPTCUT' => array( 'desc' => 'Same as <code>#_LOCATIONEXCERPT</code> (and also accepts the <code>{words,...}</code> arguments) but will also cut excerpts as well as post content. Default word limit is 55 and cut-off is <code>[...]</code>' ),
 							'#_LOCATIONIMAGE' => array( 'desc' => 'Shows the location image.' ),
 							'#_LOCATIONIMAGE{x,y}' => array( 'desc' => 'Shows the location image thumbnail, x and y are width and height respectively, both being numbers e.g. <code>#_LOCATIONIMAGE{100,100}</code>. If 0 is used for either width or height, the corresponding dimension will be proportionally sized.' ),
 							'#_LOCATIONIMAGEURL' => array( 'desc' => 'Shows the location image url, if available.' ),

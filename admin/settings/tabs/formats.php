@@ -334,6 +334,9 @@
 	<div class="handlediv" title="<?php __('Click to toggle', 'events-manager'); ?>"><br /></div><h3><span><?php _e ( 'Event Tags', 'events-manager'); ?> </span></h3>
 	<div class="inside">
     	<table class="form-table">
+    		<?php
+    		em_options_input_text(sprintf(esc_html__('Default %s color','events-manager'), esc_html__('tag','events-manager')), 'dbem_tag_default_color', sprintf(esc_html_x('Colors must be in a valid %s format, such as #FF00EE.', 'hex format', 'events-manager'), '<a href="http://en.wikipedia.org/wiki/Web_colors">hex</a>'));
+    		?>
 		 	<tr class="em-header"><td colspan="2"><h4><?php echo sprintf(__('%s Page','events-manager'),__('Tags','events-manager')); ?></h4></td></tr>
 			<?php
 			em_options_textarea ( sprintf(__('%s list header format','events-manager'),__('Tags','events-manager')), 'dbem_tags_list_item_format_header', sprintf(__( 'This content will appear just above your code for the %s list format below. Default is blank', 'events-manager'), __('tags','events-manager')) );

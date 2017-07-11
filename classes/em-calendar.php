@@ -158,9 +158,16 @@ class EM_Calendar extends EM_Object {
 		}
 	   
 		$days_initials_array = array();
-		foreach($weekdays as $weekday) {
-			$days_initials_array[] = esc_html(self::translate_and_trim($weekday, $day_initials_length));
-		} 
+		//translate day names, some languages may have special circumstances
+		if( $day_initials_length == 1 && in_array(EM_ML::$current_language, array('zh_CN', 'zh_TW')) ){
+			//Chinese single initial day names are different
+			$days_initials_array = array('日','一','二','三','四','五','六');
+		}else{
+			//all other languages
+			foreach($weekdays as $weekday) {
+				$days_initials_array[] = esc_html(self::translate_and_trim($weekday, $day_initials_length));
+			}
+		}
 		
 		$calendar_array['links'] = array( 'previous_url'=>$previous_url, 'next_url'=>$next_url);
 		$calendar_array['row_headers'] = $days_initials_array;

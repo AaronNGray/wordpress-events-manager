@@ -150,7 +150,6 @@ function em_create_events_table() {
 		location_id bigint(20) unsigned NULL DEFAULT NULL,
 		recurrence_id bigint(20) unsigned NULL DEFAULT NULL,
   		event_category_id bigint(20) unsigned NULL DEFAULT NULL,
-  		event_attributes text NULL DEFAULT NULL,
   		event_date_created datetime NULL DEFAULT NULL,
   		event_date_modified datetime NULL DEFAULT NULL,
 		recurrence bool NOT NULL DEFAULT 0,
@@ -591,6 +590,7 @@ function em_add_options() {
 		'dbem_tag_event_single_format' => '#_EVENTLINK - #_EVENTDATES - #_EVENTTIMES',
 		'dbem_tag_no_event_message' => __('No events with this tag', 'events-manager'),
 		'dbem_tag_event_list_limit' => 20,
+		'dbem_tag_default_color' => '#a8d145',
 		//RSS Stuff
 		'dbem_rss_limit' => 0,
 		'dbem_rss_scope' => 'future',

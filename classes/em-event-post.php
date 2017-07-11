@@ -330,8 +330,8 @@ class EM_Event_Post {
 		  	}
 		  	if( is_admin() ){
 		  		//admin areas don't need special ordering, so make it simple
-			  	$wp_query->query_vars['orderby'] = (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby']:'meta_value_num';
-			  	$wp_query->query_vars['meta_key'] = '_start_ts'; 
+			  	$wp_query->query_vars['orderby'] = (!empty($_REQUEST['orderby']) && $_REQUEST['orderby'] != 'date-time') ? $_REQUEST['orderby']:'meta_value_num';
+			  	$wp_query->query_vars['meta_key'] = '_start_ts';
 				$wp_query->query_vars['order'] = (!empty($_REQUEST['order'])) ? $_REQUEST['order']:'ASC';
 		  	}else{
 			  	if( get_option('dbem_events_default_archive_orderby') == 'title'){

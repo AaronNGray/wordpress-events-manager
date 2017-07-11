@@ -20,18 +20,9 @@ function em_get_tag($id = false) {
 		return new EM_Tag($id);
 	}
 }
-class EM_Tag extends EM_Object {	
-	//Taxonomy Fields
-	var $id = '';
-	var $term_id;
-	var $name;
-	var $slug;
-	var $term_group;
-	var $term_taxonomy_id;
-	var $taxonomy;
-	var $description = '';
-	var $parent = 0;
-	var $count;
+class EM_Tag extends EM_Taxonomy {
+	
+	public $option_name = 'tag';
 	
 	/**
 	 * Gets data from POST (default), supplied array, or from the database if an ID is supplied
@@ -141,6 +132,15 @@ class EM_Tag extends EM_Object {
 					if( $result == '#_TAGRSSLINK' ){
 						$replace = '<a href="'.esc_url($replace).'">RSS</a>';
 					}
+					break;
+				case '#_TAGIMAGEURL':
+					$replace = esc_url($this->get_image_url());
+					break;
+				case '#_TAGIMAGE':
+					$replace = $this->placeholder_image($replace, $placeholders, $key);
+					break;
+				case '#_TAGCOLOR':
+					$replace = $this->get_color(); 
 					break;
 				case '#_TAGNOTES':
 					$replace = $this->description;

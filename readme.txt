@@ -99,6 +99,24 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
+= (dev) 5.7.3.1 =
+* fixed category color picker and image uploader problems
+* created base classes for EM taxonomies to make adding custom EM taxonomies even easier in the future,
+* added tag image and color settings/data
+* added sortable option for date columns of events and recurring events in the admin area
+* fixed saving an event recreating ticket_meta and wiping out ML settings
+* fixed multilingual translations of event in WPML not hiding/showing right meta boxes
+* fixed saving multilingual translation of event overwriting original language ticket names
+* changed admin headers to use new and accessible WP inline HTML structure
+* fixed serialization problems for deprecated event/location attributes and attributes with multiple post meta entries for one post
+* removed deprecated attributes editor from admin area as this is confusing and error prone when combined with other plugins manipulating custom fields
+* fixed #_EVENTEXCERPT without arguments stripping HTML since 5.7
+* added ability to list multiple categories/tags in conditional placeholders e.g. {has_tag_123,1234,tagname}...
+* added #_EVENTPRICEMINALL and #_EVENTPRICEMAXALL to show prices of unavailable tickets as well
+* fixed JS issues with MS Global mode and JS file limiting when displaying subsite single event pages on main blog
+* fixed single initial abbreviation issues in Chinese calendars
+* fixed duplicate events not being published to social networks via jetpack publicize (kudos @gnaag)
+
 = 5.7.3 =
 * fixed previous meta not getting deleted from recurrences resulting in non-saved information such as a changed featured image or location
 * fixed newly submitted recurrences first saved in draft or pending mode not creating new events without a reschedule

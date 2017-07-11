@@ -128,13 +128,18 @@ class EM_Tickets extends EM_Object implements Iterator{
 	function get_post(){
 		//Build Event Array
 		do_action('em_tickets_get_post_pre', $this);
+		$current_tickets = $this->tickets; //save previous tickets so things like ticket_meta doesn't get overwritten
 		$this->tickets = array(); //clean current tickets out
 		if( !empty($_POST['em_tickets']) && is_array($_POST['em_tickets']) ){
 			//get all ticket data and create objects
 			global $allowedposttags;
 			foreach($_POST['em_tickets'] as $row => $ticket_data){
 			    if( $row > 0 ){
-					$EM_Ticket = new EM_Ticket();
+			    	if( !empty($ticket_data['ticket_id']) && !empty($current_tickets[$ticket_data['ticket_id']]) ){
+			    		$EM_Ticket = $current_tickets[$ticket_data['ticket_id']];
+			    	}else{
+			    		$EM_Ticket = new EM_Ticket();
+			    	}
 					$ticket_data['event_id'] = $this->event_id;
 					$EM_Ticket->get_post($ticket_data);
 					if( $EM_Ticket->ticket_id ){

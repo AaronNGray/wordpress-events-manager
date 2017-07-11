@@ -114,4 +114,6 @@ jQuery(document).ready(function($){
 			return false;
 		}
 	});
+	//color pickers
+	$('#dbem_category_default_color, #dbem_tag_default_color').wpColorPicker();
 });

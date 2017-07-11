@@ -169,7 +169,7 @@ class EM_Location extends EM_Object {
 						}
 					}
 					if(!$found && $location_meta_key[0] != '_'){
-						$this->location_attributes[$location_meta_key] = ( count($location_meta_val) > 1 ) ? $location_meta_val:$location_meta_val[0];					
+						$this->location_attributes[$location_meta_key] = ( is_array($location_meta_val) ) ? $location_meta_val[0]:$location_meta_val;
 					}
 				}	
 			}
@@ -370,9 +370,18 @@ class EM_Location extends EM_Object {
 					update_post_meta($this->post_id, '_'.$key, $this->$key);
 				}
 			}
-			//Update Post Attributes
-			foreach($this->location_attributes as $location_attribute_key => $location_attribute){
-				update_post_meta($this->post_id, $location_attribute_key, $location_attribute);
+			//Update Post Custom Fields and attributes
+			if( get_option('dbem_location_attributes_enabled') ){
+				//attributes get saved as individual keys or deleted if non-existent anymore
+				$atts = em_get_attributes( true ); //get available attributes that EM manages
+				$this->location_attributes= maybe_unserialize($this->location_attributes);
+				foreach( $atts['names'] as $location_attribute_key ){
+					if( !empty($this->location_attributes[$location_attribute_key]) ){
+						update_post_meta($this->post_id, $location_attribute_key, $this->location_attributes[$location_attribute_key]);
+					}else{
+						delete_post_meta($this->post_id, $location_attribute_key);
+					}
+				}
 			}
 			$this->get_status();
 			$this->location_status = (count($this->errors) == 0) ? $this->location_status:null; //set status at this point, it's either the current status, or if validation fails, null
@@ -799,34 +808,24 @@ class EM_Location extends EM_Object {
 				case '#_LOCATIONLATITUDE':
 					$replace = $this->location_latitude;
 					break;
-				case '#_DESCRIPTION':  //Depricated
-				case '#_EXCERPT': //Depricated
+				case '#_DESCRIPTION':  //Deprecated
 				case '#_LOCATIONNOTES':
-				case '#_LOCATIONEXCERPT':	
 					$replace = $this->post_content;
-					if($result == "#_EXCERPT" || $result == "#_LOCATIONEXCERPT"){
-						if( !empty($this->post_excerpt) ){
-							$replace = $this->post_excerpt;
-						}else{
-						    $excerpt_length = 55;
-							$excerpt_more = apply_filters('em_excerpt_more', ' ' . '[...]');
-						    if( !empty($placeholders[3][$key]) ){
-						        $trim = true;
-						        $ph_args = explode(',', $placeholders[3][$key]);
-						        if( is_numeric($ph_args[0]) ) $excerpt_length = $ph_args[0];
-						        if( !empty($ph_args[1]) ) $excerpt_more = $ph_args[1];
-						    }
-							if ( preg_match('/<!--more(.*?)?-->/', $replace, $matches) ) {
-								$content = explode($matches[0], $replace, 2);
-								$replace = force_balance_tags($content[0]);
-							}
-							if( !empty($trim) ){
-							    //shorten content by supplied number - copied from wp_trim_excerpt
-							    $replace = strip_shortcodes( $replace );
-							    $replace = str_replace(']]>', ']]&gt;', $replace);
-							    $replace = wp_trim_words( $replace, $excerpt_length, $excerpt_more );
-							}
+					break;
+				case '#_EXCERPT': //Deprecated
+				case '#_LOCATIONEXCERPT':
+				case '#_LOCATIONEXCERPTCUT':
+					if( !empty($this->post_excerpt) && $result != "#_LOCATIONEXCERPTCUT" ){
+						$replace = $this->post_excerpt;
+					}else{
+						$excerpt_length = ( $result == "#_LOCATIONEXCERPTCUT" ) ? 55 : false;
+						$excerpt_more = apply_filters('em_excerpt_more', ' ' . '[...]');
+						if( !empty($placeholders[3][$key]) ){
+							$ph_args = explode(',', $placeholders[3][$key]);
+							if( is_numeric($ph_args[0]) || empty($ph_args[0]) ) $excerpt_length = $ph_args[0];
+							if( !empty($ph_args[1]) ) $excerpt_more = $ph_args[1];
 						}
+						$replace = $this->output_excerpt($excerpt_length, $excerpt_more, $result == "#_LOCATIONEXCERPTCUT");
 					}
 					break;
 				case '#_LOCATIONIMAGEURL':

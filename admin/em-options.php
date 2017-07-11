@@ -17,7 +17,7 @@ function em_options_save(){
 				if( in_array($postKey, array('dbem_bookings_notify_admin','dbem_event_submitted_email_admin','dbem_js_limit_events_form','dbem_js_limit_search','dbem_js_limit_general','dbem_css_limit_include','dbem_css_limit_exclude','dbem_search_form_geo_distance_options')) ){ $postValue = str_replace(' ', '', $postValue); } //clean up comma separated emails, no spaces needed
 				if( in_array($postKey,$numeric_options) && !is_numeric($postValue) ){
 					//Do nothing, keep old setting.
-				}elseif( $postKey == 'dbem_category_default_color' && !preg_match("/^#([abcdef0-9]{3}){1,2}?$/i",$postValue)){
+				}elseif( ($postKey == 'dbem_category_default_color' || $postKey == 'dbem_tag_default_color') && !preg_match("/^#([abcdef0-9]{3}){1,2}?$/i",$postValue)){
 					$EM_Notices->add_error( sprintf(esc_html_x('Colors must be in a valid %s format, such as #FF00EE.', 'hex format', 'events-manager'), '<a href="http://en.wikipedia.org/wiki/Web_colors">hex</a>').' '. esc_html__('This setting was not changed.', 'events-manager'), true);					
 				}else{
 					//TODO slashes being added?
