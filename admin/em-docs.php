@@ -174,6 +174,8 @@ function em_docs_init($force_init = false){
 						'placeholders' => array(
 							'#_EVENTICALURL' => array( 'desc' => 'Displays the URL of the event ical feed (ics file format).' ),
 							'#_EVENTICALLINK' => array( 'desc' => 'Displays an html link to the event ical feed (ics file format).' ),
+							'#_EVENTICALURL' => array( 'desc' => 'Displays the URL of the event webcal feed (ical/ics file format) which will open up various calendar apps automatically including iCalendar, Outlook and Google Calendar.' ),
+							'#_EVENTICALLINK' => array( 'desc' => 'Displays an html link to the event webcal feed (ical/ics file format),  which will open up various calendar apps automatically including iCalendar, Outlook and Google Calendar.' ),
 							'#_EVENTGCALURL' => array( 'desc' => 'Displays URL which would take the user to Google Calendar and pre-fill their add new event form.' ),
 							'#_EVENTGCALLINK' => array( 'desc' => 'Displays a button which would take the user to Google Calendar and pre-fill their add new event form.' )
 						)
@@ -204,8 +206,10 @@ function em_docs_init($force_init = false){
 					),
 					'iCal/RSS Feeds' => array(
 						'placeholders' => array(
-							'#_CATEGORYICALURL' => array( 'desc' => 'Displays the URL of the event ical feed (ics file format) which shows all events happening in this category.', 'since'=>'5.5.2' ),
-							'#_CATEGORYICALLINK' => array( 'desc' => 'Displays an html link to the event ical feed (ics file format) which shows all events happening in this category.', 'since'=>'5.5.2' ),
+							'#_CATEGORYICALURL' => array( 'desc' => 'Displays the URL of the event ical feed (ics file format) which shows all events with this category.', 'since'=>'5.5.2' ),
+							'#_CATEGORYICALLINK' => array( 'desc' => 'Displays an html link to the event ical feed (ics file format) which shows all events with this category.', 'since'=>'5.5.2' ),
+							'#_CATEGORYWEBCALURL' => array( 'desc' => 'Displays the URL of the event webcal feed (ical/ics file format) which shows all events with this category.', 'since'=>'5.8' ),
+							'#_CATEGORYWEBCALLINK' => array( 'desc' => 'Displays an html link to the event webcal feed (ical/ics file format) which shows all events with this category.' , 'since'=>'5.8'),
 							'#_CATEGORYRSSURL' => array( 'desc' => 'Displays the URL of an RSS feed showing all upcoming events happening in this category.', 'since'=>'5.5.2' ),
 							'#_CATEGORYRSSLINK' => array( 'desc' => 'Displays an html link to an RSS feed showing all upcoming events happening in this category.', 'since'=>'5.5.2' )
 						)
@@ -236,8 +240,10 @@ function em_docs_init($force_init = false){
 					),
 					'iCal/RSS Feeds' => array(
 						'placeholders' => array(
-							'#_TAGICALURL' => array( 'desc' => 'Displays the URL of the event ical feed (ics file format) which shows all events happening in this tag.', 'since'=>'5.5.2' ),
-							'#_TAGICALLINK' => array( 'desc' => 'Displays an html link to the event ical feed (ics file format) which shows all events happening in this tag.' , 'since'=>'5.5.2'),
+							'#_TAGICALURL' => array( 'desc' => 'Displays the URL of the event ical feed (ics file format) which shows all events with this tag.', 'since'=>'5.5.2' ),
+							'#_TAGICALLINK' => array( 'desc' => 'Displays an html link to the event ical feed (ics file format) which shows all events with this tag.' , 'since'=>'5.5.2'),
+							'#_TAGWEBCALURL' => array( 'desc' => 'Displays the URL of the event webcal feed (ical/ics file format) which shows all events with this tag.', 'since'=>'5.8' ),
+							'#_TAGWEBCALLINK' => array( 'desc' => 'Displays an html link to the event webcal feed (ical/ics file format) which shows all events with this tag.' , 'since'=>'5.8'),
 							'#_TAGRSSURL' => array( 'desc' => 'Displays the URL of an RSS feed showing all upcoming events happening in this tag.', 'since'=>'5.5.2' ),
 							'#_TAGRSSLINK' => array( 'desc' => 'Displays an html link to an RSS feed showing all upcoming events happening in this tag.', 'since'=>'5.5.2' )
 						)
@@ -299,6 +305,8 @@ function em_docs_init($force_init = false){
 						'placeholders' => array(
 							'#_LOCATIONICALURL' => array( 'desc' => 'Displays the URL of the location ical feed (ics file format) which shows all events happening at that location.', 'since'=>'5.5.2' ),
 							'#_LOCATIONICALLINK' => array( 'desc' => 'Displays an html link to the event ical feed (ics file format) which shows all events happening at that location.', 'since'=>'5.5.2' ),
+							'#_LOCATIONWEBCALURL' => array( 'desc' => 'Displays the URL of the location webcal feed (ical/ics file format) which shows all events happening at that location.', 'since'=>'5.8' ),
+							'#_LOCATIONWEBCALLINK' => array( 'desc' => 'Displays an html link to the event webcal feed (ical/ics file format) which shows all events happening at that location.', 'since'=>'5.8' ),
 							'#_LOCATIONRSSURL' => array( 'desc' => 'Displays the URL of an RSS feed showing all upcoming events happening at this location.', 'since'=>'5.5.2' ),
 							'#_LOCATIONRSSLINK' => array( 'desc' => 'Displays an html link to an RSS feed showing all upcoming events happening at this location.', 'since'=>'5.5.2' )
 						)

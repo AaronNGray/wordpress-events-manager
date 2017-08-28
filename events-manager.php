@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Events Manager
-Version: 5.7.3.1
+Version: 5.7.3.2
 Plugin URI: http://wp-events-plugin.com
 Description: Event registration and booking management for WordPress. Recurring events, locations, google maps, rss, ical, booking registration and more!
 Author: Marcus Sykes
@@ -10,7 +10,7 @@ Text Domain: events-manager
 */
 
 /*
-Copyright (c) 2016, Marcus Sykes
+Copyright (c) 2017, Marcus Sykes
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 // Setting constants
-define('EM_VERSION', 5.731); //self expanatory
+define('EM_VERSION', 5.732); //self expanatory
 define('EM_PRO_MIN_VERSION', 2.392); //self expanatory
 define('EM_PRO_MIN_VERSION_CRITICAL', 2.377); //self expanatory
 define('EM_DIR', dirname( __FILE__ )); //an absolute path to this directory
@@ -43,7 +43,7 @@ if( !defined('EM_AJAX') ){
 if( !defined('EM_CONDITIONAL_RECURSIONS') ) define('EM_CONDITIONAL_RECURSIONS', get_option('dbem_conditional_recursions', 1)); //allows for conditional recursios to be nested
 
 //EM_MS_GLOBAL
-if( get_site_option('dbem_ms_global_table') && is_multisite() ){
+if( is_multisite() && get_site_option('dbem_ms_global_table') ){
 	define('EM_MS_GLOBAL', true);
 }else{
 	define('EM_MS_GLOBAL',false);
@@ -67,7 +67,9 @@ function dbem_debug_mode(){
 // INCLUDES
 //Base classes
 include('classes/em-object.php');
-include('classes/em-taxonomy.php');
+include('classes/em-taxonomy-term.php');
+include('classes/em-taxonomy-terms.php');
+include('classes/em-taxonomy-frontend.php');
 //set up events as posts
 include("em-posts.php");
 //Template Tags & Template Logic
@@ -91,8 +93,8 @@ include('classes/em-bookings.php');
 include("classes/em-bookings-table.php") ;
 include('classes/em-calendar.php');
 include('classes/em-category.php');
-include('classes/em-category-taxonomy.php');
 include('classes/em-categories.php');
+include('classes/em-categories-frontend.php');
 include('classes/em-event.php');
 include('classes/em-event-post.php');
 include('classes/em-events.php');
@@ -105,8 +107,8 @@ include('classes/em-people.php');
 include('classes/em-person.php');
 include('classes/em-permalinks.php');
 include('classes/em-tag.php');
-include('classes/em-tag-taxonomy.php');
 include('classes/em-tags.php');
+include('classes/em-tags-frontend.php');
 include('classes/em-ticket-booking.php');
 include('classes/em-ticket.php');
 include('classes/em-tickets-bookings.php');
@@ -127,8 +129,8 @@ if( is_admin() ){
 	include('classes/em-location-post-admin.php');
 	include('classes/em-location-posts-admin.php');
 	include('classes/em-taxonomy-admin.php');
-	include('classes/em-categories-taxonomy.php');
-	include('classes/em-tags-taxonomy.php');
+	include('classes/em-categories-admin.php');
+	include('classes/em-tags-admin.php');
 	//bookings folder
 		include('admin/bookings/em-cancelled.php');
 		include('admin/bookings/em-confirmed.php');
@@ -153,7 +155,6 @@ if( EM_MS_GLOBAL ){
 }else{
 	$prefix = $wpdb->prefix;
 }
-	define('EM_CATEGORIES_TABLE', $prefix.'em_categories'); //TABLE NAME
 	define('EM_EVENTS_TABLE',$prefix.'em_events'); //TABLE NAME
 	define('EM_TICKETS_TABLE', $prefix.'em_tickets'); //TABLE NAME
 	define('EM_TICKETS_BOOKINGS_TABLE', $prefix.'em_tickets_bookings'); //TABLE NAME
@@ -366,13 +367,13 @@ class EM_Scripts_and_Styles {
 		//logged in messages that visitors shouldn't need to see
 		if( is_user_logged_in() || is_page(get_option('dbem_edit_events_page')) ){
 		    if( get_option('dbem_recurrence_enabled') ){
-		    	if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'edit' && !empty($_REQUEST['event_id'])){
-					$em_localized_js['event_reschedule_warning'] = __('Are you sure you want to continue?', 'events-manager') .PHP_EOL.PHP_EOL;
+		    	if( !empty($_REQUEST['action']) && ($_REQUEST['action'] == 'edit' || $_REQUEST['action'] == 'event_save') && !empty($_REQUEST['event_id']) ){
+					$em_localized_js['event_reschedule_warning'] = __('Are you sure you want to continue?', 'events-manager') .PHP_EOL;
 					$em_localized_js['event_reschedule_warning'] .= __('Modifications to event times will cause all recurrences of this event to be deleted and recreated, previous bookings will be deleted.', 'events-manager');
-					$em_localized_js['event_recurrence_overwrite'] = __('Are you sure you want to continue?', 'events-manager') .PHP_EOL.PHP_EOL;
-					$em_localized_js['event_recurrence_overwrite'] .= __( 'Modifications to recurring events will be applied to all recurrences and will overwrite any changes made to those individual event recurrences.', 'events-manager') .PHP_EOL.PHP_EOL;
+					$em_localized_js['event_recurrence_overwrite'] = __('Are you sure you want to continue?', 'events-manager') .PHP_EOL;
+					$em_localized_js['event_recurrence_overwrite'] .= __( 'Modifications to recurring events will be applied to all recurrences and will overwrite any changes made to those individual event recurrences.', 'events-manager') .PHP_EOL;
 					$em_localized_js['event_recurrence_overwrite'] .= __( 'Bookings to individual event recurrences will be preserved if event times and ticket settings are not modified.', 'events-manager');
-					$em_localized_js['event_recurrence_bookings'] = __('Are you sure you want to continue?', 'events-manager') .PHP_EOL.PHP_EOL;
+					$em_localized_js['event_recurrence_bookings'] = __('Are you sure you want to continue?', 'events-manager') .PHP_EOL;
 					$em_localized_js['event_recurrence_bookings'] .= __('Modifications to event tickets will cause all bookings to individual recurrences of this event to be deleted.', 'events-manager');
 		    	}
 				$em_localized_js['event_detach_warning'] = __('Are you sure you want to detach this event? By doing so, this event will be independent of the recurring set of events.', 'events-manager');
@@ -592,12 +593,12 @@ if( is_multisite() ){
 				$return = get_site_option(str_replace('pre_option_','',$filter_name));
 				return $return;
 			}elseif( strstr($filter_name, 'pre_update_option_') !== false ){
-				if( is_super_admin() ){
+				if( em_wp_is_super_admin() ){
 					update_site_option(str_replace('pre_update_option_','',$filter_name), $value[0]);
 				}
 				return $value[1];
 			}elseif( strstr($filter_name, 'add_option_') !== false ){
-				if( is_super_admin() ){
+				if( em_wp_is_super_admin() ){
 					update_site_option(str_replace('add_option_','',$filter_name),$value[0]);
 				}
 				delete_option(str_replace('pre_option_','',$filter_name));

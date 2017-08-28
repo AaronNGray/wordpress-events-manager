@@ -161,7 +161,7 @@ class EM_Event_Post_Admin{
 					$where_array = array($EM_Event->event_name, $EM_Event->event_owner, $EM_Event->event_slug, $EM_Event->event_private, $EM_Event->event_id);
 					$sql = $wpdb->prepare("UPDATE ".EM_EVENTS_TABLE." SET event_name=%s, event_owner=%d, event_slug=%s, event_status={$event_status}, event_private=%d WHERE event_id=%d", $where_array);
 					$wpdb->query($sql);
-					if( $EM_Event->is_recurring() &&  $EM_Event->is_published()){
+					if( $EM_Event->is_recurring() && ($EM_Event->is_published() || (defined('EM_FORCE_RECURRENCES_SAVE') && EM_FORCE_RECURRENCES_SAVE)) ){
 						//recurrences are (re)saved only if event is published
 						$EM_Event->save_events();
 					}

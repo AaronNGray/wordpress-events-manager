@@ -1,14 +1,44 @@
 <?php
 /**
- * gets a location
+ * Get an event in a db friendly way, by checking globals, cache and passed variables to avoid extra class instantiations.
  * @param mixed $id
  * @param mixed $search_by
  * @return EM_Location
  */
 function em_get_location($id = false, $search_by = 'location_id') {
+	global $EM_Location;
+	//check if it's not already global so we don't instantiate again
+	if( is_object($EM_Location) && get_class($EM_Location) == 'EM_Location' ){
+		if( is_object($id) && $EM_Location->post_id == $id->ID ){
+			return apply_filters('em_get_location', $EM_Location);
+		}elseif( !is_object($id) ){
+			if( $search_by == 'location_id' && $EM_Location->location_id == $id ){
+				return apply_filters('em_get_location', $EM_Location);
+			}elseif( $search_by == 'post_id' && $EM_Location->post_id == $id ){
+				return apply_filters('em_get_location', $EM_Location);
+			}
+		}
+	}
 	if( is_object($id) && get_class($id) == 'EM_Location' ){
 		return apply_filters('em_get_location', $id);
 	}else{
+		//check the cache first
+		$location_id = false;
+		if( is_numeric($id) ){
+			if( $search_by == 'location_id' ){
+				$location_id = $id;
+			}elseif( $search_by == 'post_id' ){
+				$location_id = wp_cache_get($id, 'em_locations_ids');
+			}
+		}elseif( !empty($id->ID) && !empty($id->post_type) && $id->post_type == EM_POST_TYPE_LOCATION ){
+			$location_id = wp_cache_get($id->ID, 'em_locations_ids');
+		}
+		if( $location_id ){
+			$location = wp_cache_get($location_id, 'em_locations');
+			if( is_object($location) && !empty($location->location_id) && $location->location_id){
+				return apply_filters('em_get_location', $location);
+			}
+		}
 		return apply_filters('em_get_location', new EM_Location($id,$search_by));
 	}
 }
@@ -53,7 +83,7 @@ class EM_Location extends EM_Object {
 		'location_owner' => array('name'=>'owner','type'=>'%d', 'null'=>true),
 		'location_status' => array('name'=>'status','type'=>'%d', 'null'=>true)
 	);
-	var $post_fields = array('post_id','location_slug','location_name','post_content','location_owner');
+	var $post_fields = array('post_id','location_slug','location_status', 'location_name','post_content','location_owner');
 	var $location_attributes = array();
 	var $image_url = '';
 	var $required_fields = array();
@@ -144,6 +174,11 @@ class EM_Location extends EM_Object {
 			$this->load_postdata($location_post, $search_by);
 		}
 		$this->compat_keys();
+		//add this location to the cache
+		if( $this->location_id && $this->post_id ){
+			wp_cache_set($this->location_id, $this, 'em_locations');
+			wp_cache_set($this->post_id, $this->location_id, 'em_locations_ids');
+		}
 		do_action('em_location', $this, $id, $search_by);
 	}
 	
@@ -365,9 +400,12 @@ class EM_Location extends EM_Object {
 				$this->blog_id = get_current_blog_id();
 			}
 			//Update Post Meta
+			$current_meta_values = get_post_meta($this->post_id);
 			foreach( array_keys($this->fields) as $key ){
-				if( !in_array($key, $this->post_fields) ){
+				if( !in_array($key, $this->post_fields) && $key != 'blog_id' && $this->$key != '' ){
 					update_post_meta($this->post_id, '_'.$key, $this->$key);
+				}elseif( array_key_exists('_'.$key, $current_meta_values) ){ //we should delete event_attributes, but maybe something else uses it without us knowing
+					delete_post_meta($this->post_id, '_'.$key);
 				}
 			}
 			//Update Post Custom Fields and attributes
@@ -426,6 +464,12 @@ class EM_Location extends EM_Object {
 			$this->add_error( sprintf(__('You do not have permission to create/edit %s.','events-manager'), __('locations','events-manager')) );
 		}
 		$this->compat_keys();
+		$result = count($this->errors) == 0;
+		//add this location to the cache
+		if( $result ){
+			wp_cache_set($this->location_id, $this, 'em_locations');
+			wp_cache_set($this->post_id, $this->location_id, 'em_locations_ids');
+		}
 		return apply_filters('em_location_save_meta', count($this->errors) == 0, $this);
 	}
 	
@@ -505,7 +549,7 @@ class EM_Location extends EM_Object {
 			}
 			if($set_post_status){
 				$wpdb->update( $wpdb->posts, array( 'post_status' => $post_status, 'post_name' => $this->post_name ), array( 'ID' => $this->post_id ) );
-			}elseif( $set_post_name ){
+			}elseif( !empty($set_post_name) ){
 				//if we've added a post slug then update wp_posts anyway
 				$wpdb->update( $wpdb->posts, array( 'post_name' => $this->post_name ), array( 'ID' => $this->post_id ) );
 			}
@@ -570,10 +614,8 @@ class EM_Location extends EM_Object {
 	
 	function has_events( $status = 1 ){
 		global $wpdb;	
-		$events_table = EM_EVENTS_TABLE;
-		$sql = $wpdb->prepare("SELECT count(event_id) as events_no FROM $events_table WHERE location_id=%d AND event_status=%d", $this->location_id, $status);
-	 	$affected_events = $wpdb->get_var($sql);
-		return apply_filters('em_location_has_events', $affected_events > 0, $this);
+		$events_count = EM_Events::count(array('location_id' => $this->location_id, 'status' => $status));
+		return apply_filters('em_location_has_events', $events_count > 0, $this);
 	}
 	
 	/**
@@ -896,6 +938,14 @@ class EM_Location extends EM_Object {
 						$replace = '<a href="'.esc_url($replace).'">iCal</a>';
 					}
 					break;
+				case '#_LOCATIONWEBCALURL':
+				case '#_LOCATIONWEBCALLINK':
+					$replace = $this->get_ical_url();
+					$replace = str_replace(array('http://','https://'), 'webcal://', $replace);
+					if( $result == '#_LOCATIONWEBCALLINK' ){
+						$replace = '<a href="'.esc_url($replace).'">Webcal</a>';
+					}
+					break;
 				case '#_LOCATIONRSSURL':
 				case '#_LOCATIONRSSLINK':
 					$replace = $this->get_rss_url();
@@ -918,18 +968,16 @@ class EM_Location extends EM_Object {
 					if ( $result == '#_LOCATIONPASTEVENTS'){ $scope = 'past'; }
 					elseif ( $result == '#_LOCATIONNEXTEVENTS' ){ $scope = 'future'; }
 					else{ $scope = 'all'; }
-					$events_count = EM_Events::count( array('location'=>$this->location_id, 'scope'=>$scope) );
-					if ( $events_count > 0 ){
-					    $args = array('location'=>$this->location_id, 'scope'=>$scope, 'pagination'=>1, 'ajax'=>0);
-					    $args['format_header'] = get_option('dbem_location_event_list_item_header_format');
-					    $args['format_footer'] = get_option('dbem_location_event_list_item_footer_format');
-					    $args['format'] = get_option('dbem_location_event_list_item_format');
-						$args['limit'] = get_option('dbem_location_event_list_limit');
-						$args['page'] = (!empty($_REQUEST['pno']) && is_numeric($_REQUEST['pno']) )? $_REQUEST['pno'] : 1;
-					    $replace = EM_Events::output($args);
-					} else {
-						$replace = get_option('dbem_location_no_events_message');
-					}
+				    $args = array('location'=>$this->location_id, 'scope'=>$scope, 'pagination'=>1, 'ajax'=>0);
+				    $args['format_header'] = get_option('dbem_location_event_list_item_header_format');
+				    $args['format_footer'] = get_option('dbem_location_event_list_item_footer_format');
+				    $args['format'] = get_option('dbem_location_event_list_item_format');
+				    $args['no_results_msg'] = get_option('dbem_location_no_events_message');
+					$args['limit'] = get_option('dbem_location_event_list_limit');
+					$args['orderby'] = get_option('dbem_location_event_list_orderby');
+					$args['order'] = get_option('dbem_location_event_list_order');
+					$args['page'] = (!empty($_REQUEST['pno']) && is_numeric($_REQUEST['pno']) )? $_REQUEST['pno'] : 1;
+				    $replace = EM_Events::output($args);
 					break;
 				case '#_LOCATIONNEXTEVENT':
 					$events = EM_Events::get( array('location'=>$this->location_id, 'scope'=>'future', 'limit'=>1, 'orderby'=>'event_start_date,event_start_time') );

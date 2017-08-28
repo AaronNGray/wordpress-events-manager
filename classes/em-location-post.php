@@ -7,8 +7,11 @@ class EM_Location_Post {
 			add_filter('the_content', array('EM_Location_Post','the_content'));
 			//override excerpts?
 			if( get_option('dbem_cp_locations_excerpt_formats') ){
-			    add_filter('the_excerpt', array('EM_Location_Post','the_excerpt'));
+			    add_filter('get_the_excerpt', array('EM_Location_Post','the_excerpt'), 9);
 			}
+			//excerpts can trigger the_content which isn't ideal, so we disable the_content between the first and last excerpt calls within WP logic
+			add_filter('get_the_excerpt', array('EM_Location_Post','disable_the_content'), 1);
+			add_filter('get_the_excerpt', array('EM_Location_Post','enable_the_content'), 100);
 			//display as page or other template?
 			if( get_option('dbem_cp_locations_template') ){
 				add_filter('single_template',array('EM_Location_Post','single_template'));
@@ -68,7 +71,7 @@ class EM_Location_Post {
 	/**
 	 * Overrides the_excerpt if this is an location post type
 	 */
-	public static function the_excerpt($content){
+	public static function get_the_excerpt($content){
 		global $post;
 		if( $post->post_type == EM_POST_TYPE_LOCATION ){
 			$EM_Location = em_get_location($post);
@@ -76,6 +79,14 @@ class EM_Location_Post {
 			$content = $EM_Location->output($output);
 		}
 		return $content;
+	}
+	public static function the_excerpt($content){ return self::get_the_excerpt($content); }
+	
+	public static function enable_the_content(){
+		add_filter('the_content', array('EM_Location_Post','the_content'));
+	}
+	public static function disable_the_content(){
+		remove_filter('the_content', array('EM_Location_Post','the_content'));
 	}
 	
 	public static function the_content( $content ){

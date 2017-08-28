@@ -376,12 +376,14 @@ class EM_Booking extends EM_Object{
 	    return $price;
 	}
 	
-	function get_price_pre_taxes( $format = false ){
+	function get_price_pre_taxes( $format = false, $include_adjustments = true ){
 	    $price = $base_price = $this->get_price_base();
 	    //apply pre-tax discounts
-	    $price -= $this->get_price_adjustments_amount('discounts', 'pre', $base_price);
-	    $price += $this->get_price_adjustments_amount('surcharges', 'pre', $base_price);
-	    $price = apply_filters('em_booking_get_price_pre_taxes', $price, $base_price, $this);
+	    if( $include_adjustments ){
+		    $price -= $this->get_price_adjustments_amount('discounts', 'pre', $base_price);
+		    $price += $this->get_price_adjustments_amount('surcharges', 'pre', $base_price);
+	    }
+	    $price = apply_filters('em_booking_get_price_pre_taxes', $price, $base_price, $this, $include_adjustments);
 	    if( $price < 0 ){ $price = 0; } //no negative prices
 	    //return amount of taxes applied, formatted or not
 	    if( $format ) return $this->format_price($price);
@@ -393,9 +395,9 @@ class EM_Booking extends EM_Object{
 	 * @param boolean $format
 	 * @return double|string
 	 */
-	function get_price_post_taxes( $format = false ){
+	function get_price_post_taxes( $format = false, $include_adjustments = true ){
 	    //get price before taxes
-	    $price = $this->get_price_pre_taxes();
+	    $price = $this->get_price_pre_taxes( false, $include_adjustments );
 	    //add taxes to price
 	    if( $this->get_tax_rate() > 0 ){
 	        $this->booking_taxes = $price * ($this->get_tax_rate()/100); //calculate and save tax amount
@@ -404,9 +406,11 @@ class EM_Booking extends EM_Object{
 	    }
 	    //apply post-tax discounts
 	    $price_after_taxes = $price;
-	    $price -= $this->get_price_adjustments_amount('discounts', 'post', $price_after_taxes);
-	    $price += $this->get_price_adjustments_amount('surcharges', 'post', $price_after_taxes);
-	    $price = apply_filters('em_booking_get_price_post_taxes', $price, $price_after_taxes, $this);
+	    if( $include_adjustments ){
+		    $price -= $this->get_price_adjustments_amount('discounts', 'post', $price_after_taxes);
+		    $price += $this->get_price_adjustments_amount('surcharges', 'post', $price_after_taxes);
+	    }
+	    $price = apply_filters('em_booking_get_price_post_taxes', $price, $price_after_taxes, $this, $include_adjustments);
 	    if( $price < 0 ){ $price = 0; } //no negative prices
 	    //return amount of taxes applied, formatted or not
 	    if( $format ) return $this->format_price($price);
