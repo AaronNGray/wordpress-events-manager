@@ -647,7 +647,7 @@ function em_init_actions() {
 		$EM_Bookings = $EM_Bookings_Table->get_bookings();
 		$handle = fopen("php://output", "w");
 		fputcsv($handle, $EM_Bookings_Table->get_headers(true), $delimiter);
-		while(!empty($EM_Bookings->bookings)){
+		while( !empty($EM_Bookings->bookings) ){
 			foreach( $EM_Bookings->bookings as $EM_Booking ) {
 				//Display all values
 				/* @var $EM_Booking EM_Booking */

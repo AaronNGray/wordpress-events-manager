@@ -56,9 +56,16 @@ class EM_Events extends EM_Object {
 		foreach( array_keys($EM_Location->fields) as $field_name ){
 			if( !in_array($field_name, $event_fields) ) $location_fields[] = $field_name;
 		}
-		$accepted_fields = array_merge($event_fields, $location_fields);
+		if( get_option('dbem_locations_enabled') ){
+			$accepted_fields = array_merge($event_fields, $location_fields);
+		}else{
+			//if locations disabled then we don't accept location-specific fields
+			$accepted_fields = $event_fields;
+		}
 		
-		//Create the SQL statement and execute
+		//Start SQL statement
+		
+		//Create the SQL statement selectors
 		$calc_found_rows = $limit && ( $args['pagination'] || $args['offset'] > 0 || $args['page'] > 0 );
 		if( $count ){
 			$selectors = 'COUNT(DISTINCT '.$events_table . '.event_id)';
@@ -102,7 +109,6 @@ class EM_Events extends EM_Object {
 		$join_locations = apply_filters('em_events_get_join_locations_table', $join_locations, $args, $count);
 		//depending on whether to join we do certain things like add a join SQL, change specific values like status search
 		$location_optional_join = $join_locations ? "LEFT JOIN $locations_table ON {$locations_table}.location_id={$events_table}.location_id" : '';
-		$args['location_status'] = $args['location_status'] === false ? $join_locations : $args['location_status']; //if we're joining events table, by default we want status to match that of locations in this search
 		
 		//Build ORDER BY and WHERE SQL statements here, after we've done all the pre-processing necessary
 		$conditions = self::build_sql_conditions($args);
@@ -189,7 +195,7 @@ $where
 $orderby_sql
 $limit $offset";
 		}
-		
+	
 		//THE Query filter
 		$sql = apply_filters('em_events_get_sql', $sql, $args);
 		//if( em_wp_is_super_admin() && WP_DEBUG_DISPLAY ){ echo "<pre>"; print_r($sql); echo '</pre>'; }
@@ -511,8 +517,30 @@ $limit $offset";
 		global $wpdb;
 		//continue with conditions
 		$conditions = parent::build_sql_conditions($args);
+		//specific location query conditions if locations are enabled
+		if( get_option('dbem_locations_enabled') ){
+			//events with or without locations
+			if( !empty($args['has_location']) ){
+				$conditions['has_location'] = '('.EM_EVENTS_TABLE.'.location_id IS NOT NULL AND '.EM_EVENTS_TABLE.'.location_id != 0)';
+			}elseif( !empty($args['no_location']) ){
+				$conditions['no_location'] = '('.EM_EVENTS_TABLE.'.location_id IS NULL OR '.EM_EVENTS_TABLE.'.location_id = 0)';			
+			}elseif( !empty($conditions['location_status']) ){
+				$location_specific_args = array('town', 'state', 'country', 'region', 'near', 'geo', 'search');
+				foreach( $location_specific_args as $location_arg ){
+					if( !empty($args[$location_arg]) ) $skip_location_null_condition = true;
+				}
+				if( empty($skip_location_null_condition) ){
+					$conditions['location_status'] = '('.$conditions['location_status'].' OR '.EM_LOCATIONS_TABLE.'.location_id IS NULL)';
+				}
+			}
+		}
+		//search conditions
 		if( !empty($args['search']) ){
-			$like_search = array('event_name',EM_EVENTS_TABLE.'.post_content','location_name','location_address','location_town','location_postcode','location_state','location_country','location_region');
+			if( get_option('dbem_locations_enabled') ){
+				$like_search = array('event_name',EM_EVENTS_TABLE.'.post_content','location_name','location_address','location_town','location_postcode','location_state','location_country','location_region');
+			}else{
+				$like_search = array('event_name',EM_EVENTS_TABLE.'.post_content');
+			}
 			$like_search_string = '%'.$wpdb->esc_like($args['search']).'%';
 			$like_search_strings = array();
 			foreach( $like_search as $v ) $like_search_strings[] = $like_search_string;
@@ -547,12 +575,6 @@ $limit $offset";
 			}else{
 				$conditions['post_id'] = "(".EM_EVENTS_TABLE.".post_id={$args['post_id']})";
 			}
-		}
-		//events with or without locations
-		if( !empty($args['has_location']) ){
-			$conditions['has_location'] = '('.EM_EVENTS_TABLE.'.location_id IS NOT NULL AND '.EM_EVENTS_TABLE.'.location_id != 0)';
-		}elseif( !empty($args['no_location']) ){
-			$conditions['no_location'] = '('.EM_EVENTS_TABLE.'.location_id IS NULL OR '.EM_EVENTS_TABLE.'.location_id = 0)';			
 		}
 		return apply_filters( 'em_events_build_sql_conditions', $conditions, $args );
 	}
@@ -614,7 +636,7 @@ $limit $offset";
 	public static function get_default_search( $array_or_defaults = array(), $array = array() ){
 	    self::$context = EM_POST_TYPE_EVENT;
 		$defaults = array(
-			'recurring' => false, //we don't initially look for recurring events
+			'recurring' => false, //we don't initially look for recurring events only events and recurrences of recurring events
 			'orderby' => get_option('dbem_events_default_orderby'),
 			'order' => get_option('dbem_events_default_order'),
 			'groupby' => false,
@@ -654,7 +676,27 @@ $limit $offset";
 				$defaults['status'] = false; //by default, admins see pending and live events
 			}
 		}
-		return apply_filters('em_events_get_default_search', parent::get_default_search($defaults,$array), $array, $defaults);
+		//check if we're doing any location-specific searching, if so then we (by default) want to match the status of events
+		if( !empty($array['has_location']) ){
+			//we're looking for events with locations, so we match the status we're searching for events unless there's an argument passed on for something different
+			$defaults['location_status'] = true;
+		}elseif( !empty($array['no_location']) ){
+			//if no location is being searched for, we should ignore any status searches for location
+			$defaults['location_status'] = $array['location_status'] = false;
+		}else{
+			$location_specific_args = array('town', 'state', 'country', 'region', 'near', 'geo', 'search');
+			foreach( $location_specific_args as $location_arg ){
+				if( !empty($array[$location_arg]) ) $defaults['location_status'] = true;
+			}
+		}
+		$args = parent::get_default_search($defaults,$array);
+		//do some post-parnet cleaning up here if locations are enabled or disabled
+		if( !get_option('dbem_locations_enabled') ){
+			//locations disabled, wipe any args to do with locations so they're ignored
+			$location_args = array('town', 'state', 'country', 'region', 'has_location', 'no_location', 'location_status', 'location', 'geo', 'near', 'location_id');
+			foreach( $location_args as $arg ) $args[$arg] = false;
+		}
+		return apply_filters('em_events_get_default_search', $args, $array, $defaults);
 	}
 }
 ?>

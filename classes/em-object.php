@@ -221,12 +221,18 @@ class EM_Object {
 		// if a specific status search value is given i.e. not true and not false then that's used to generate the right condition for that specific field
 		// e.g. if in events, search for 'publish' events and 0 location_status, it'll find events with a location pending review.
 		foreach( array('event_status', 'location_status') as $status_type ){
+			//find out whether the main status context we're after is an event or location i.e. are we running an events or location query
 			$is_location_status = $status_type == "location_status" && self::$context == EM_POST_TYPE_LOCATION;
 			$is_event_status = $status_type == "event_status" && self::$context == EM_POST_TYPE_EVENT;
+			//$is_joined_status decides whether this status we're dealing with is part of a joined table or the main table
 			$is_joined_status = (!$is_location_status || !$is_event_status) && $args[$status_type] !== false;
+			//we add a status condition if this is the main status context or if joining a table and joined status arg is not exactly false
 			if( $is_location_status || $is_event_status || $args[$status_type] !== false ){
-				$condition_status = $is_joined_status ? $status_type : 'status';
+				$condition_status = $is_joined_status ? $status_type : 'status'; //the key for this condition type
+				//if this is the status belonging to the joined table, if set to true we match the main context status otherwise we check the specific status
 				$status_arg = $is_joined_status && $args[$status_type] !== true ? $args[$status_type] : $args['status'];
+				//if joining by event or location, we may mistakenly omit any results without a complementing event or location, we need to account for that here
+				//other parts of the condition can negate whether or not eventful locations or events with/without locations should be included
 				$conditions[$condition_status] = "(`{$status_type}` >= 0 )"; //shows pending & published if not defined
 				if( is_numeric($status_arg) ){
 					$conditions[$condition_status] = "(`{$status_type}`={$status_arg})"; //pending or published
@@ -259,7 +265,7 @@ class EM_Object {
 		    if( $recurrences !== null ){
 		    	$conditions['recurrences'] = $recurrences ? "(`recurrence_id` > 0 )":"(`recurrence_id` IS NULL OR `recurrence_id`=0 )";
 		    }
-		    //if we get here and $recurring is not exactly null, it was set to false or 0 meaning recurring events shouldn't be included
+		    //if we get here and $recurring is not exactly null (meaning ignored), it was set to false or 0 meaning recurring events shouldn't be included
 		    if( $recurring !== null ){
 		    	$conditions['recurring'] = "(`recurrence`!=1 OR `recurrence` IS NULL)";
 		    }

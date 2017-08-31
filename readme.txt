@@ -99,7 +99,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
-= (dev) 5.7.3.2 =
+= 5.7.3.3 =
 * fixed category color picker and image uploader problems
 * created base classes for EM taxonomies to make adding custom EM taxonomies even easier in the future,
 * added tag image and color settings/data

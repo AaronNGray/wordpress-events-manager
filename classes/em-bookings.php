@@ -66,6 +66,23 @@ class EM_Bookings extends EM_Object implements Iterator{
 		}
 	}
 	
+	/**
+	 * Counter-intuitive but __isset works against isset() but for our purpose it's mainly aimed at empty() calls, which also references this function.
+	 * We don't expect nor do we want people using isset on things like the bookings property.
+	 * Assume every property in EM_Bookings isset() == true and avoid it, only use empty() calls to check if there's anything in that property.
+	 * Therefore, we'd return !empty($this->bookings) because if there's bookings, isset() should return true 
+	 * @param string $var
+	 * @return boolean
+	 */
+	public function __isset( $var ){
+		//if isset is invoked on $EM_Bookings->bookings then we'll assume it's only set if the bookings property is empty, not if null.
+		$result = false;
+		if( $var == 'bookings' ){
+			$result = !empty($this->bookings);
+		}
+		return $result;
+	}
+	
 	public function load( $refresh = false ){
 		if( $refresh || $this->bookings === null ){
 			global $wpdb;
