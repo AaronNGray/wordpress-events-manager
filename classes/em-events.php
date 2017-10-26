@@ -364,6 +364,7 @@ $limit $offset";
 		$args['mode'] = !empty($args['mode']) ? $args['mode'] : get_option('dbem_event_list_groupby');
 		$args['header_format'] = !empty($args['header_format']) ? $args['header_format'] :  get_option('dbem_event_list_groupby_header_format', '<h2>#s</h2>');
 		$args['date_format'] = !empty($args['date_format']) ? $args['date_format'] :  get_option('dbem_event_list_groupby_format','');
+		$args = apply_filters('em_events_output_grouped_args', self::get_default_search($args));
 		//Reset some vars for counting events and displaying set arrays of events
 		$atts = (array) $args;
 		$atts['pagination'] = false;
@@ -651,6 +652,10 @@ $limit $offset";
 			'private' => current_user_can('read_private_events'),
 			'private_only' => false,
 			'post_id' => false,
+			//ouput_grouped specific arguments
+			'mode' => false,
+			'header_format' => false,
+			'date_format' => false,
 			//event-specific search attributes
 			'has_location' => false, //search events with a location
 			'no_location' => false, //search events without a location

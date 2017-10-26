@@ -104,18 +104,31 @@ class EM_Tickets extends EM_Object implements Iterator{
 		global $wpdb;
 		//get all the ticket ids
 		$result = false;
-		$ticket_ids = array();
-		foreach( $this->tickets as $EM_Ticket ){
-			$ticket_ids[] = $EM_Ticket->ticket_id;
-		}
-		//check that tickets don't have bookings
-		if(count($ticket_ids) > 0){
-			$bookings = $wpdb->get_var("SELECT COUNT(*) FROM ". EM_TICKETS_BOOKINGS_TABLE." WHERE ticket_id IN (".implode(',',$ticket_ids).")");
+		if( !empty($this->tickets) ){
+			//get ticket ids if tickets are already preloaded into the object
+			$ticket_ids = array();
+			foreach( $this->tickets as $EM_Ticket ){
+				$ticket_ids[] = $EM_Ticket->ticket_id;
+			}
+			//check that tickets don't have bookings
+			if(count($ticket_ids) > 0){
+				$bookings = $wpdb->get_var("SELECT COUNT(*) FROM ". EM_TICKETS_BOOKINGS_TABLE." WHERE ticket_id IN (".implode(',',$ticket_ids).")");
+				if( $bookings > 0 ){
+					$result = false;
+					$this->add_error(__('You cannot delete tickets if there are any bookings associated with them. Please delete these bookings first.','events-manager'));
+				}else{
+					$result = $wpdb->query("DELETE FROM ".EM_TICKETS_TABLE." WHERE ticket_id IN (".implode(',',$ticket_ids).")");
+				}
+			}
+		}elseif( !empty($this->event_id) ){
+			//if tickets aren't preloaded into object and this belongs to an event, delete via the event ID without loading any tickets
+			$event_id = absint($this->event_id);
+			$bookings = $wpdb->get_var("SELECT COUNT(*) FROM ". EM_TICKETS_BOOKINGS_TABLE." WHERE ticket_id IN (SELECT ticket_id FROM ".EM_TICKETS_TABLE." WHERE event_id='$event_id')");
 			if( $bookings > 0 ){
 				$result = false;
 				$this->add_error(__('You cannot delete tickets if there are any bookings associated with them. Please delete these bookings first.','events-manager'));
 			}else{
-				$result = $wpdb->query("DELETE FROM ".EM_TICKETS_TABLE." WHERE ticket_id IN (".implode(',',$ticket_ids).")");
+				$result = $wpdb->query("DELETE FROM ".EM_TICKETS_TABLE." WHERE event_id='$event_id'");
 			}
 		}
 		return ($result !== false);

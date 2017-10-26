@@ -99,7 +99,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
-= 5.7.3.3 =
+= 5.7.3.4 (dev) =
 * fixed category color picker and image uploader problems
 * created base classes for EM taxonomies to make adding custom EM taxonomies even easier in the future,
 * added tag image and color settings/data
@@ -162,6 +162,11 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * improved optimized loading of EM_Location via em_get_location() by checking globals first,
 * changed bookings/tickets template for event editor to avoid loading all bookings for counting purposes
 * added $include_adjustments argument to get_price_pre_taxes and get_price_post_taxes for calculation of prices without discounts/surcharges (those making use of the em_booking_get_price_post_taxes and em_booking_get_price_pre_taxes filters should check for this passed argument in their custom code)
+* fixed bug where event categories saved via quick or bulk edit in multisite global mode aren't reflected in subsite event lists filtering by that category
+* fixed events created before changing to multisite and enabling global mode not displaying images via placeholders
+* fixed bug in filter em_ticket_get_post where function argument $post was not passed on
+* improved taxonomy color retrieval so it makes use of caching
+* improved/optimized deletion of multiple bookings and tickets at once if belonging to an event
 
 = 5.7.3 =
 * fixed previous meta not getting deleted from recurrences resulting in non-saved information such as a changed featured image or location

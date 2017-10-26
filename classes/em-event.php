@@ -280,6 +280,9 @@ class EM_Event extends EM_Object{
 					$event_post = get_post($results['post_id']);	
 				}
 			}else{
+				//if searching specifically by post_id and in MS Global mode, then assume we're looking in the current blog we're in
+				if( $search_by == 'post_id' && EM_MS_GLOBAL ) $search_by = get_current_blog_id();
+				//get post data based on ID and search context
 				if(!$is_post){
 					if( is_multisite() && (is_numeric($search_by) || $search_by == '') ){
 					    if( $search_by == '' ) $search_by = get_current_site()->blog_id;
@@ -402,9 +405,11 @@ class EM_Event extends EM_Object{
 			$this->end = strtotime($this->event_end_date." ".$this->event_end_time, current_time('timestamp'));
 		}
 		if( empty($this->location_id) && !empty($this->event_id) ) $this->location_id = 0; //just set location_id to 0 and avoid any doubt
+		if( EM_MS_GLOBAL && empty($this->blog_id) ) $this->blog_id = get_current_site()->blog_id; //events created before going multisite may have null values, so we set it to main site id
 	}
 	
 	function get_event_meta($blog_id = false){
+		if( !empty($this->blog_id) ) $blog_id = $this->blog_id; //if there's a blog id already, there's no doubt where to look for
 		if( is_numeric($blog_id) && $blog_id > 0 && is_multisite() ){
 			// if in multisite mode, switch blogs quickly to get the right post meta.
 			switch_to_blog($blog_id);

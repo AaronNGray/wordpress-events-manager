@@ -102,7 +102,7 @@ class EM_Booking extends EM_Object{
 	var $manage_override;
 	
 	/**
-	 * Creates booking object and retreives booking data (default is a blank booking object). Accepts either array of booking data (from db) or a booking id.
+	 * Creates booking object and retrieves booking data (default is a blank booking object). Accepts either array of booking data (from db) or a booking id.
 	 * @param mixed $booking_data
 	 * @return null
 	 */
@@ -115,7 +115,7 @@ class EM_Booking extends EM_Object{
 			if( is_array($booking_data) ){
 				$booking = $booking_data;
 			}elseif( is_numeric($booking_data) ){
-				//Retreiving from the database
+				//Retrieving from the database
 				$sql = "SELECT * FROM ". EM_BOOKINGS_TABLE ." WHERE booking_id ='$booking_data'";
 				$booking = $wpdb->get_row($sql, ARRAY_A);
 			}
@@ -140,7 +140,7 @@ class EM_Booking extends EM_Object{
 		//do some legacy checking here for bookings made prior to 5.4, due to how taxes are calculated
 		$this->get_tax_rate();
 		if( !empty($this->legacy_tax_rate) ){
-			//reset booking_price, it'll be recalculated later (if you're using this property directly, don't, use $this->get_price())
+			//reset booking_price, it'll be recalculated later (if you're using this property directly, don't use $this->get_price())
 	    	$this->booking_price = $this->booking_taxes = null;
 		}
 		do_action('em_booking', $this, $booking_data);
@@ -224,7 +224,7 @@ class EM_Booking extends EM_Object{
 	}
 	
 	/**
-	 * Load an record into this object by passing an associative array of table criterie to search for. 
+	 * Load an record into this object by passing an associative array of table criteria to search for. 
 	 * Returns boolean depending on whether a record is found or not. 
 	 * @param $search
 	 * @return boolean
@@ -285,7 +285,7 @@ class EM_Booking extends EM_Object{
 			//get person
 			$this->get_person();
 			//re-run compatiblity keys function
-			$this->compat_keys(); //depricating in 6.0
+			$this->compat_keys(); //depracating in 6.0
 		}
 		return apply_filters('em_booking_get_post',count($this->errors) == 0,$this);
 	}
@@ -329,7 +329,7 @@ class EM_Booking extends EM_Object{
 	}
 	
 	/**
-	 * Get the total number of spaces booked in THIS booking. Seting $force_refresh to true will recheck spaces, even if previously done so.
+	 * Get the total number of spaces booked in THIS booking. Setting $force_refresh to true will recheck spaces, even if previously done so.
 	 * @param unknown_type $force_refresh
 	 * @return mixed
 	 */
@@ -629,7 +629,7 @@ class EM_Booking extends EM_Object{
 	/* Get Objects linked to booking */
 	
 	/**
-	 * Gets the event this booking belongs to and saves a refernece in the event property
+	 * Gets the event this booking belongs to and saves a reference in the event property
 	 * @return EM_Event
 	 */
 	function get_event(){
@@ -847,7 +847,7 @@ class EM_Booking extends EM_Object{
 	
 	function cancel($email = true){
 		if( $this->person->ID == get_current_user_id() ){
-			$this->manage_override = true; //normally, users can't manage a bookiing, only event owners, so we allow them to mod their booking status in this case only.
+			$this->manage_override = true; //normally, users can't manage a booking, only event owners, so we allow them to mod their booking status in this case only.
 		}
 		return $this->set_status(3, $email);
 	}

@@ -66,6 +66,16 @@ class EM_Bookings extends EM_Object implements Iterator{
 		}
 	}
 	
+	public function __set( $var, $val ){
+		if( $var == 'bookings' ){
+			if( is_array($val) ){
+				$this->bookings = $val;
+			}else{
+				$this->bookings = null;
+			}
+		}
+	}
+	
 	/**
 	 * Counter-intuitive but __isset works against isset() but for our purpose it's mainly aimed at empty() calls, which also references this function.
 	 * We don't expect nor do we want people using isset on things like the bookings property.
@@ -283,16 +293,26 @@ class EM_Bookings extends EM_Object implements Iterator{
 	function delete(){
 		global $wpdb;
 		$booking_ids = array();
-		//get the booking ids tied to this event
-		foreach( $this->bookings as $EM_Booking ){
-			$booking_ids[] = $EM_Booking->booking_id;
-		}
-		$result_tickets = true;
-		$result = true;
-		if( count($booking_ids) > 0 ){
-			//Delete bookings and ticket bookings
-			$result_tickets = $wpdb->query("DELETE FROM ". EM_TICKETS_BOOKINGS_TABLE ." WHERE booking_id IN (".implode(',',$booking_ids).");");
-			$result = $wpdb->query("DELETE FROM ".EM_BOOKINGS_TABLE." WHERE booking_id IN (".implode(',',$booking_ids).")");
+		if( !empty($this->bookings) ){
+			//get the booking ids tied to this event or preloaded into this object
+			foreach( $this->bookings as $EM_Booking ){
+				$booking_ids[] = $EM_Booking->booking_id;
+			}
+			$result_tickets = true;
+			$result = true;
+			if( count($booking_ids) > 0 ){
+				//Delete bookings and ticket bookings
+				$result_tickets = $wpdb->query("DELETE FROM ". EM_TICKETS_BOOKINGS_TABLE ." WHERE booking_id IN (".implode(',',$booking_ids).");");
+				$result = $wpdb->query("DELETE FROM ".EM_BOOKINGS_TABLE." WHERE booking_id IN (".implode(',',$booking_ids).")");
+			}
+		}elseif( !empty($this->event_id) ){
+			//faster way of deleting bookings for an event circumventing the need to load all bookings if it hasn't been loaded already
+			$event_id = absint($this->event_id);
+			$booking_ids = $wpdb->get_col("SELECT booking_id FROM ".EM_BOOKINGS_TABLE." WHERE event_id = '$event_id'");
+			$result_tickets = $wpdb->query("DELETE FROM ". EM_TICKETS_BOOKINGS_TABLE ." WHERE booking_id IN (SELECT booking_id FROM ".EM_BOOKINGS_TABLE." WHERE event_id = '$event_id')");
+			$result = $wpdb->query("DELETE FROM ".EM_BOOKINGS_TABLE." WHERE event_id = '$event_id'");
+		}else{
+			$result = $result_tickets == true;
 		}
 		do_action('em_bookings_deleted', $result, $booking_ids);
 		return apply_filters('em_bookings_delete', $result !== false && $result_tickets !== false, $booking_ids, $this);

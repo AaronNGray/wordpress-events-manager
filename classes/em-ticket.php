@@ -232,7 +232,7 @@ class EM_Ticket extends EM_Object{
 			}
 		}
 		$this->compat_keys();
-		do_action('em_ticket_get_post', $this);
+		do_action('em_ticket_get_post', $this, $post);
 	}
 	
 
