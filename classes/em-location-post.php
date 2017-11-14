@@ -82,11 +82,13 @@ class EM_Location_Post {
 	}
 	public static function the_excerpt($content){ return self::get_the_excerpt($content); }
 	
-	public static function enable_the_content(){
+	public static function enable_the_content( $content ){
 		add_filter('the_content', array('EM_Location_Post','the_content'));
+		return $content;
 	}
-	public static function disable_the_content(){
+	public static function disable_the_content( $content ){
 		remove_filter('the_content', array('EM_Location_Post','the_content'));
+		return $content;
 	}
 	
 	public static function the_content( $content ){

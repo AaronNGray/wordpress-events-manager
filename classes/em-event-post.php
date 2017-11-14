@@ -118,11 +118,13 @@ class EM_Event_Post {
 		return $content;
 	}
 	
-	public static function enable_the_content(){
+	public static function enable_the_content( $content ){
 		add_filter('the_content', array('EM_Event_Post','the_content'));
+		return $content;
 	}
-	public static function disable_the_content(){
+	public static function disable_the_content( $content ){
 		remove_filter('the_content', array('EM_Event_Post','the_content'));
+		return $content;
 	}
 	
 	public static function the_content( $content ){
