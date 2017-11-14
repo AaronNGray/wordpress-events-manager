@@ -374,6 +374,6 @@ add_shortcode ( 'locations_search', 'em_get_location_search_form_shortcode');
  * @return string
  */
 function em_get_my_bookings_shortcode(){
-	return em_my_bookings();
+	return em_get_my_bookings();
 }
 add_shortcode ( 'my_bookings', 'em_get_my_bookings_shortcode');

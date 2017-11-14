@@ -339,7 +339,6 @@ class EM_Event extends EM_Object{
 			//load meta data and other related information
 			if( $event_post->post_status != 'auto-draft' ){
 			    $event_meta = $this->get_event_meta($search_by);
-			    $atts = em_get_attributes();
 				//Get custom fields and post meta
 				foreach($event_meta as $event_meta_key => $event_meta_val){
 					$field_name = substr($event_meta_key, 1);
@@ -891,8 +890,9 @@ class EM_Event extends EM_Object{
 				if( !in_array($key, $this->post_fields) && $key != 'event_attributes' ){
 					//ignore certain fields and delete if not new
 					$save_meta_key = true;
-					$recurrence_array = array('recurrence_id', 'recurrence', 'recurrence_interval', 'recurrence_freq', 'recurrence_days', 'recurrence_byday', 'recurrence_byweekno', 'recurrence_rsvp_days');
+					$recurrence_array = array('recurrence', 'recurrence_interval', 'recurrence_freq', 'recurrence_days', 'recurrence_byday', 'recurrence_byweekno', 'recurrence_rsvp_days');
 					if( !$this->is_recurring() && in_array($key, $recurrence_array) ) $save_meta_key = false;
+					if( !$this->is_recurrence() && $key == 'recurrence_id' ) $save_meta_key = false;
 					$ignore_zero_keys = array('location_id', 'group_id', 'event_all_day' );
 					if( in_array($key, $ignore_zero_keys) && empty($this->$key) ) $save_meta_key = false;
 					if( $key == 'blog_id' ) $save_meta_key = false; //not needed, given postmeta is stored on the actual blog table in MultiSite
@@ -2214,7 +2214,7 @@ class EM_Event extends EM_Object{
 			//remove recurrence id from post meta and index table
 			$url = $this->get_attach_url($this->recurrence_id);
 			$wpdb->update(EM_EVENTS_TABLE, array('recurrence_id'=>null), array('event_id' => $this->event_id));
-			update_post_meta($this->post_id, '_recurrence_id', null);
+			delete_post_meta($this->post_id, '_recurrence_id');
 			$this->feedback_message = __('Event detached.','events-manager') . ' <a href="'.$url.'">'.__('Undo','events-manager').'</a>';
 			$this->recurrence_id = 0;
 			return true;
@@ -2248,7 +2248,7 @@ class EM_Event extends EM_Object{
 		global $wpdb;
 		$event_ids = $post_ids = $event_dates = array();
 		if( !$this->can_manage('edit_events','edit_others_events') ) return apply_filters('em_event_save_events', false, $this, $event_ids, $post_ids);
-		if( ($this->is_published() || 'future' == $this->post_status) ){
+		if( $this->is_published() || 'future' == $this->post_status ){
 			//check if there's any events already created, if not (such as when an event is first submitted for approval and then published), force a reschedule.
 			if( $wpdb->get_var('SELECT COUNT(event_id) FROM '.EM_EVENTS_TABLE.' WHERE recurrence_id='. absint($this->event_id)) == 0 ){
 				$this->recurring_reschedule = true;
@@ -2435,12 +2435,12 @@ class EM_Event extends EM_Object{
 			 				$ticket['ticket_start'] = $ticket['ticket_end'] = 'NULL';
 			 				//sort out cut-of dates
 			 				if( !empty($ticket_meta_recurrences) ){
-			 					if( array_key_exists('start_days', $ticket_meta_recurrences) ){
+			 					if( array_key_exists('start_days', $ticket_meta_recurrences) && $ticket_meta_recurrences['start_days'] !== false  ){
 			 						$ticket_start_days = $ticket_meta_recurrences['start_days'] >= 0 ? '+'. $ticket_meta_recurrences['start_days']: $ticket_meta_recurrences['start_days'];
 			 						$ticket_start_date = date('Y-m-d',  strtotime($ticket_start_days.' days', $event_dates[$event_id]));
 			 						$ticket['ticket_start'] = "'". $ticket_start_date . ' '. $ticket_meta_recurrences['start_time'] ."'";
 			 					}
-			 					if( array_key_exists('end_days', $ticket_meta_recurrences) ){
+			 					if( array_key_exists('end_days', $ticket_meta_recurrences) && $ticket_meta_recurrences['end_days'] !== false ){
 			 						$ticket_end_days = $ticket_meta_recurrences['end_days'] >= 0 ? '+'. $ticket_meta_recurrences['end_days']: $ticket_meta_recurrences['end_days'];
 			 						$ticket_end_date = date('Y-m-d',  strtotime($ticket_end_days.' days', $event_dates[$event_id]));
 			 						$ticket['ticket_end'] = "'". $ticket_end_date . ' '. $ticket_meta_recurrences['end_time'] . "'";
@@ -2648,7 +2648,6 @@ class EM_Event extends EM_Object{
 	function set_status_events($status){
 		//give sub events same status
 		global $wpdb;
-		$this->ms_global_switch();
 		//get post and event ids of recurrences
 		$post_ids = $event_ids = array();
 		$events_array = EM_Events::get( array('recurrence'=>$this->event_id, 'scope'=>'all', 'status'=>false, 'array'=>true) ); //only get recurrences that aren't trashed or drafted
@@ -2668,10 +2667,11 @@ class EM_Event extends EM_Object{
 				$set_status = $status ? 1:0; //published or pending post
 				$post_status = $set_status ? 'publish':'pending';
 			}
+			if( EM_MS_GLOBAL ) switch_to_blog( $this->blog_id );
 			$result = $wpdb->query( $wpdb->prepare("UPDATE ".$wpdb->posts." SET post_status=%s WHERE ID IN (". implode(',', $post_ids) .')', array($post_status)) );
+			restore_current_blog();
 			$result = $result && $wpdb->query( $wpdb->prepare("UPDATE ".EM_EVENTS_TABLE." SET event_status=%s WHERE event_id IN (". implode(',', $event_ids) .')', array($set_status)) );
 		}
-		$this->ms_global_switch_back();
 		return apply_filters('em_event_set_status_events', $result !== false, $status, $this, $event_ids, $post_ids);
 	}
 	

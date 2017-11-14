@@ -367,15 +367,12 @@ $limit $offset";
 		$args = apply_filters('em_events_output_grouped_args', self::get_default_search($args));
 		//Reset some vars for counting events and displaying set arrays of events
 		$atts = (array) $args;
-		$atts['pagination'] = false;
-		$atts['limit'] = false;
-		$atts['page'] = false;
-		$atts['offset'] = false;
+		$atts['pagination'] = $atts['limit'] = $atts['page'] = $atts['offset'] = false;
 		//decide what form of dates to show
-		$events_count = self::count($atts);
+		$EM_Events = self::get( $args );
+		$events_count = self::$num_rows_found;
 		ob_start();
 		if( $events_count > 0 ){
-			$EM_Events = self::get($args);
 			switch ( $args['mode'] ){
 				case 'yearly':
 					//go through the events and put them into a monthly array
@@ -689,7 +686,7 @@ $limit $offset";
 			//if no location is being searched for, we should ignore any status searches for location
 			$defaults['location_status'] = $array['location_status'] = false;
 		}else{
-			$location_specific_args = array('town', 'state', 'country', 'region', 'near', 'geo', 'search');
+			$location_specific_args = array('town', 'state', 'country', 'region', 'near', 'geo');
 			foreach( $location_specific_args as $location_arg ){
 				if( !empty($array[$location_arg]) ) $defaults['location_status'] = true;
 			}

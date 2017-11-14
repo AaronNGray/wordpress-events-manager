@@ -19,7 +19,7 @@ class EM_Categories extends EM_Taxonomy_Terms {
 	}
 		
 	/**
-	 * Legacy get overload for any use of $EM_Tags->tags
+	 * Legacy get overload for any use of $EM_Categories->tags
 	 * @param string $var_name
 	 * @return array|NULL
 	 */
@@ -28,6 +28,18 @@ class EM_Categories extends EM_Taxonomy_Terms {
 			return $this->terms;
 		}
 		return null;
+	}
+	
+	/**
+	 * Legacy overload for use of empty($this->categories)
+	 * @param string $var_name
+	 * @return boolean
+	 */
+	function __isset( $var_name ){
+		if( $var_name == 'categories' ){
+			return !empty($this->terms);
+		}
+		return !empty($this->$var_name);
 	}
 	
 	//Functions we won't need when PHP 5.3 minimum allows for use of LSB

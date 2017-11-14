@@ -212,6 +212,8 @@ class EM_Ticket extends EM_Object{
 				//timestamp - calculated only for purposes of not screwing up interfaces that use timestamps for outputting cut-off times such as booking settings for event
 				$this->start_timestamp  = strtotime($this->ticket_start, current_time('timestamp'));
 			}else{
+				unset($this->ticket_meta['recurrences']['start_days']);
+				unset($this->ticket_meta['recurrences']['start_time']);
 				$this->ticket_start = $this->start_timestamp = '';
 			}
 			//end of ticket cut-off
@@ -228,6 +230,8 @@ class EM_Ticket extends EM_Object{
 				//timestamp - calculated only for purposes of not screwing up interfaces that use timestamps for outputting cut-off times such as booking settings for event
 				$this->end_timestamp  = strtotime($this->ticket_end, current_time('timestamp')); //we save these timestamps for quicker loading on construct
 			}else{
+				unset($this->ticket_meta['recurrences']['end_days']);
+				unset($this->ticket_meta['recurrences']['end_time']);
 				$this->ticket_end = $this->end_timestamp = '';
 			}
 		}

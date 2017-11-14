@@ -23,6 +23,11 @@ class EM_Categories_Admin extends EM_Taxonomy_Admin{
 		parent::init();
 	}
 	
+	public static function form_add(){
+		self::static_binding();
+		parent::form_add();
+	}
+	
 	public static function form_edit($tag){
 		self::static_binding();
 		parent::form_edit($tag);

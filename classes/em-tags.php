@@ -28,6 +28,18 @@ class EM_Tags extends EM_Taxonomy_Terms {
 		return null;
 	}
 	
+	/**
+	 * Legacy overload for use of empty($this->tags)
+	 * @param string $var_name
+	 * @return boolean
+	 */
+	function __isset( $var_name ){
+		if( $var_name == 'tags' ){
+			return !empty($this->terms);
+		}
+		return !empty($this->$var_name);
+	}
+	
 	//Functions we won't need when PHP 5.3 minimum allows for use of LSB
 	
 	public static function get( $args = array() ){

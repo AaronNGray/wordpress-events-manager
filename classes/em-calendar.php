@@ -7,7 +7,7 @@ class EM_Calendar extends EM_Object {
 	
 	public static function get( $args ){
 	
-	 	global $wpdb; 
+		global $wpdb, $wp_rewrite;
 	 	
 		$calendar_array = array();
 		$calendar_array['cells'] = array();
@@ -312,7 +312,6 @@ class EM_Calendar extends EM_Object {
 				$calendar_array['cells'][$day_key]['link_title'] = implode( $event_title_separator_format, $events_titles);
 							
 				//Get the link to this calendar day
-				global $wp_rewrite;
 				if( $eventful_days_count[$day_key] > 1 || !get_option('dbem_calendar_direct_links')  ){
 					if( $wp_rewrite->using_permalinks() && !defined('EM_DISABLE_PERMALINKS') ){
 						$calendar_array['cells'][$day_key]['link'] = trailingslashit($event_page_link_parts[0]).$day_key."/";
