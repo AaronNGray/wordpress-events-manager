@@ -295,6 +295,10 @@ class EM_Event extends EM_Object{
 					}
 				}else{
 					$event_post = $id;
+					//if we're in MS Global mode, then unless a blog id was specified, we assume the current post object belongs to the current blog
+					if( EM_MS_GLOBAL && !is_numeric($search_by) ){
+						$this->blog_id = get_current_blog_id();
+					}
 				}
 				$this->post_id = !empty($id->ID) ? $id->ID : $id;
 			}
@@ -416,6 +420,7 @@ class EM_Event extends EM_Object{
 			restore_current_blog();
 			$this->blog_id = $blog_id;
 		}elseif( EM_MS_GLOBAL ){
+			// if a blog ID wasn't defined then we'll check the main blog, in case the event was created in the past
 			$this->ms_global_switch();
 			$event_meta = get_post_meta($this->post_id);
 			$this->ms_global_switch_back();
@@ -601,7 +606,7 @@ class EM_Event extends EM_Object{
 								$this->event_attributes[$att_key] = wp_unslash($att_value);
 							}
 						}
-						if( $att_value != '' && $att_vals > 1){
+						if( $att_value == '' && $att_vals > 1){
 							$this->event_attributes[$att_key] = wp_unslash(wp_kses($event_available_attributes['values'][$att_key][0], $allowedtags));
 						}
 					}

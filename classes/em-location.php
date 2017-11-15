@@ -157,7 +157,7 @@ class EM_Location extends EM_Object {
 				if(!$is_post){
 				    if( EM_MS_GLOBAL && get_site_option('dbem_ms_mainblog_locations') ){
 				        //blog_id will always be the main blog id if global locations are restricted only to the main blog
-				        $search_by = get_current_site()->blog_id;
+				    	$search_by = $this->blog_id = get_current_site()->blog_id;
 				    }
 				    if( is_numeric($search_by) && is_multisite() ){
 						//we've been given a blog_id, so we're searching for a post id
@@ -168,6 +168,9 @@ class EM_Location extends EM_Object {
 					}
 				}else{
 					$location_post = $id;
+					if( EM_MS_GLOBAL ){
+						$search_by = $this->blog_id = get_current_blog_id();
+					}
 				}
 				$this->post_id = !empty($id->ID) ? $id->ID : $id;
 			}
@@ -188,11 +191,11 @@ class EM_Location extends EM_Object {
 				if( is_numeric($search_by) && is_multisite() ){
 					// if in multisite mode, switch blogs quickly to get the right post meta.
 					switch_to_blog($search_by);
-					$location_meta = get_post_custom($location_post->ID);
+					$location_meta = get_post_meta($location_post->ID);
 					restore_current_blog();
 					$this->blog_id = $search_by;
 				}else{
-					$location_meta = get_post_custom($location_post->ID);
+					$location_meta = get_post_meta($location_post->ID);
 				}	
 				//Get custom fields
 				foreach($location_meta as $location_meta_key => $location_meta_val){

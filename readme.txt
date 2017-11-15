@@ -100,8 +100,12 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 
 == Changelog ==
 
-= 5.8.0.2 (dev) =
-* removed use of is_main_query() and in_the_loop() within the_content filter of em_the_content due to conflicts with certain theme builders  
+= 5.8.0.3 (dev) =
+* fixes various issues that arose in 5.8 update:
+ * removed use of is_main_query() and in_the_loop() within the_content filter of em_the_content due to conflicts with certain theme builders
+ * fixed locations without attached events not showing up in autocomplete and dropdowns for creating/editing events
+ * fixed multisite issues loading single event pages in MS Global mode
+ * fixed dropdown custom #_ATT fields not saving properly
 
 = 5.8.0.1 =
 * fixed bug introduced in 5.8 which did not correctly return content in get_the_excerpt filters

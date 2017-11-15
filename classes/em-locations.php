@@ -114,7 +114,6 @@ class EM_Locations extends EM_Object {
 		$join_events_table = apply_filters('em_locations_get_join_events_table', $join_events_table, $args, $count);
 		//depending on whether to join we do certain things like add a join SQL, change specific values like status search
 		$event_optional_join = $join_events_table ? "LEFT JOIN $events_table ON {$locations_table}.location_id={$events_table}.location_id" : '';
-		$args['event_status'] = $args['event_status'] === false ? $join_events_table : $args['event_status']; //if we're joining events table, by default we want status to match that of locations in this search 
 		
 		//Build ORDER BY and WHERE SQL statements here, after we've done all the pre-processing necessary
 		$conditions = self::build_sql_conditions($args);
