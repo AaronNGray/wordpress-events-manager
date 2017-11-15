@@ -25,7 +25,8 @@ function em_content($page_content) {
 		'pagination' => 1
 	);
 	$args['ajax'] = isset($args['ajax']) ? $args['ajax']:(!defined('EM_AJAX') || EM_AJAX );
-	if( in_the_loop() && is_main_query() && !post_password_required() && in_array($post->ID, array($events_page_id, $locations_page_id, $categories_page_id, $edit_bookings_page_id, $edit_events_page_id, $edit_locations_page_id, $my_bookings_page_id, $tags_page_id)) ){
+	if( !post_password_required() && in_array($post->ID, array($events_page_id, $locations_page_id, $categories_page_id, $edit_bookings_page_id, $edit_events_page_id, $edit_locations_page_id, $my_bookings_page_id, $tags_page_id)) ){
+		get_post();
 		$content = apply_filters('em_content_pre', '', $page_content);
 		if( empty($content) ){
 			ob_start();
@@ -125,7 +126,11 @@ function em_content($page_content) {
 	}
 	return $page_content;
 }
-add_filter('the_content', 'em_content');
+//add the_content filter AFTER wp_head functions have run, so we don't interfere with plugins like WP SEO and other meta-related plugins that make use of the_content for our pages
+function em_add_content_filter_after_head(){
+	add_filter('the_content', 'em_content');
+}
+add_action('wp_head', 'em_add_content_filter_after_head', 1000);
 
 /**
  * Filter for titles when on event pages

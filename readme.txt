@@ -99,7 +99,14 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
+
+= 5.8.0.2 (dev) =
+* removed use of is_main_query() and in_the_loop() within the_content filter of em_the_content due to conflicts with certain theme builders  
+
 = 5.8.0.1 =
+* fixed bug introduced in 5.8 which did not correctly return content in get_the_excerpt filters
+
+= 5.8 =
 * fixed category color picker and image uploader problems
 * created base classes for EM taxonomies to make adding custom EM taxonomies even easier in the future,
 * added tag image and color settings/data
