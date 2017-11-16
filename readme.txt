@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 3.5
 Tested up to: 4.9
-Stable tag: 5.8.0.1
+Stable tag: 5.8.1
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
 
@@ -100,7 +100,8 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 
 == Changelog ==
 
-= 5.8.0.3 (dev) =
+= 5.8.1 =
+* fixed recurring events booking cut-off dates not being taken into consideration when creating/editing recurrences
 * fixes various issues that arose in 5.8 update:
  * removed use of is_main_query() and in_the_loop() within the_content filter of em_the_content due to conflicts with certain theme builders
  * fixed locations without attached events not showing up in autocomplete and dropdowns for creating/editing events
