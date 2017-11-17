@@ -79,7 +79,7 @@ class EM_Taxonomy_Frontend {
 			//set the template
 			$template = locate_template(array('page.php','index.php'),false); //category becomes a page
 			//sort out filters
-			remove_filter('the_content', 'em_content'); //one less filter
+			add_filter('wp_head', 'EM_Taxonomy_Frontend::remove_em_the_content', 10000);
 			add_filter('the_content', array(self::$this_class,'the_content')); //come in slightly early and consider other plugins
 			//Yoast WP SEO Tweals
 			if( defined('WPSEO_VERSION') ){
@@ -106,6 +106,13 @@ class EM_Taxonomy_Frontend {
 			return ob_get_clean();
 		}
 		return $content;
+	}
+	
+	/**
+	 * Removes the em_content filter from firing, which should be triggered by wp_head after EM has added this filter
+	 */
+	public static function remove_em_the_content(){
+		remove_filter('the_content', 'em_content');
 	}
 	
 	/**
