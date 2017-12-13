@@ -243,6 +243,37 @@ function em_options_save(){
 		exit();
 	}
 	
+	//reset timezones
+	if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'reset_timezones' && check_admin_referer('reset_timezones') && em_wp_is_super_admin() ){
+		include(EM_DIR.'/em-install.php');
+		if( empty($_REQUEST['timezone_reset_value']) ) return;
+		$timezone = str_replace('UTC ', '', $_REQUEST['timezone_reset_value']);
+		if( is_multisite() ){
+			if( !empty($_REQUEST['timezone_reset_blog']) && is_numeric($_REQUEST['timezone_reset_blog']) ){
+				$blog_id = $_REQUEST['timezone_reset_blog'];
+				switch_to_blog($blog_id);
+				$blog_name = get_bloginfo('name');
+				$result = em_migrate_datetime_timezones(true, true, $timezone);
+				restore_current_blog();
+			}else{
+				$result = __('A valid blog ID must be provided, you can only reset one blog at a time.','events-manager');
+			}
+		}else{
+			$result = em_migrate_datetime_timezones(true, true, $timezone);
+		}
+		if( $result !== true ){
+			$EM_Notices->add_error($result, true);
+		}else{
+			if( is_multisite() ){
+				$EM_Notices->add_confirm(sprintf(__('Event timezones for blog %s have been reset to %s.','events-manager'), '<code>'.$blog_name.'</code>', '<code>'.$timezone.'</code>'), true);
+			}else{
+				$EM_Notices->add_confirm(sprintf(__('Event timezones have been reset to %s.','events-manager'), '<code>'.$timezone.'</code>'), true);
+			}
+		}
+		wp_redirect(em_wp_get_referer());
+		exit();
+	}
+	
 }
 add_action('admin_init', 'em_options_save');
 
@@ -659,6 +690,7 @@ function em_admin_option_box_uninstall(){
 		$export_settings_url = EM_ADMIN_URL.'&amp;page=events-manager-options&amp;action=export_em_settings&amp;_wpnonce='.wp_create_nonce('export_em_settings');
 		$import_nonce = wp_create_nonce('import_em_settings');
 	}
+	$reset_timezone_nonce = wp_create_nonce('reset_timezones');
 	?>
 	<div  class="postbox" id="em-opt-admin-tools" >
 		<div class="handlediv" title="<?php __('Click to toggle', 'events-manager'); ?>"><br /></div><h3><span><?php _e ( 'Admin Tools', 'events-manager'); ?> (<?php _e ( 'Advanced', 'events-manager'); ?>)</span></h3>
@@ -742,6 +774,56 @@ function em_admin_option_box_uninstall(){
 			<script type="text/javascript">
 				if( typeof EM == 'object' ){ EM.admin_db_cleanup_warning = '<?php echo esc_js(__('Are you sure you want to proceed? We recommend you back up your database first, just in case!', 'events-manager')); ?>'; }
 			</script>
+			
+			<table class="form-table">
+    		    <tr class="em-header"><td colspan="2">
+    		        <h4><?php _e ( 'Reset Timezones', 'events-manager'); ?></h4>
+    		    </td></tr>
+    		    <tr>
+    			    <th style="text-align:right;">
+    			    	<a href="#" class="button-secondary" id="em-reset-event-timezones"><?php esc_html_e('Reset Event Timezones','events-manager'); ?></a>
+    			    </th>
+    			    <td>
+    			    	<select name="timezone_reset_value" class="em-reset-event-timezones">
+    			    		<?php echo wp_timezone_choice(''); ?>
+    			    	</select>
+    			    	<?php if( is_multisite() ): ?>
+    			    		<select name="timezone_reset_blog" class="em-reset-event-timezones">
+    			    			<option value="0"><?php esc_html_e('Select a blog...', 'events-manager'); ?></option>
+    			    			<?php
+	    			    		foreach( get_sites() as $WP_Site){ /* @var WP_Site $WP_Site */
+	    			    			echo '<option value="'.esc_attr($WP_Site->blog_id).'">'. esc_html($WP_Site->blogname) .'</option>';
+	    			    		}
+	    			    		?>
+    			    		</select>
+    			    	<?php endif; ?>
+	    		        <p>
+	    		        	<em><?php esc_html_e('Select a Timezone to reset all your blog events to.','events-manager'); ?></em><br />
+	    		        	<em><strong><?php esc_html_e('WARNING! This cannot be undone and will overwrite all event timezones, you may want to back up your database first!','events-manager'); ?></strong></em>
+	    		        </p>
+    			    </td>
+					<script type="text/javascript" charset="utf-8">
+						jQuery(document).ready(function($){
+							$('select[name="timezone_reset_value"]').change( function( e ){
+								if( $(this).val() == '' ){
+									$('a#em-reset-event-timezones').css({opacity:0.5, cursor:'default'});
+								}else{
+									$('a#em-reset-event-timezones').css({opacity:1, cursor:'pointer'});
+								}
+							}).trigger('change');
+							$('a#em-reset-event-timezones').click(function(e,el){
+								if( $('select[name="timezone_reset_value"]').val() == '' ) return false;
+								var thisform = $(this).closest('form');
+								thisform.find('input, textarea, select').prop('disabled', true);
+								thisform.find('select.em-reset-event-timezones').prop('disabled', false);
+								thisform.find('input[name=_wpnonce]').val('<?php echo esc_attr($reset_timezone_nonce); ?>').prop('disabled', false);
+								thisform.append($('<input type="hidden" name="action" value="<?php echo is_multisite() ? 'reset_timezones':'reset_timezones'; ?>" />'));
+								thisform.submit();
+							});
+						});
+					</script>
+    		    </td></tr>
+			</table>
 			
 			<table class="form-table">
     		    <tr class="em-header"><td colspan="2">

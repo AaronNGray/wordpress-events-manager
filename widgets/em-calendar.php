@@ -35,6 +35,7 @@ class EM_Widget_Calendar extends WP_Widget {
 			$instance['year'] = $date[0];
 		}else{
 			$instance['month'] = date("m");
+			$instance['year'] = date('Y');
 		}
 	    
 	    //Our Widget Content  

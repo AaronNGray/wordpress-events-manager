@@ -100,6 +100,9 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 
 == Changelog ==
 
+= 5.8.1.20 (dev) =
+* added timezone support
+
 = 5.8.1.1 =
 * fixed a bug that arose in 5.8.1 where tag/category pages using formatting will still show the tags/categories list page instead
 
@@ -134,7 +137,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * fixed potential incompatibilities with other plugins using wp_query_reset() on category pages, preventing our page formats from showing
 * fixed taxonomy archive pages returning zero results if taxonomy formatting is disabled and events are excluded from searches (WP Bug workaround)
 * fixed inconsistent line ending causing warnings with PHP compatibility checker
-* unified Tag and Category class functions into sets of parent class functionn
+* unified Tag and Category class functions into sets of parent class functions
 * fixed PHP fatal error with BP when disabling notifications
 * fixed calendar day links being incorrect if another plugin adds querystring params to permalinks
 * added groupby, groupby_orderby and groupby_order arguments allowing grouping in search results for events and locations

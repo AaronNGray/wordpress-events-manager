@@ -224,16 +224,17 @@ class EM_Event_Posts_Admin{
 				break;
 			case 'date-time':
 				//get meta value to see if post has location, otherwise
-				$localised_start_date = date_i18n(get_option('date_format'), $EM_Event->start);
-				$localised_end_date = date_i18n(get_option('date_format'), $EM_Event->end);
+				$localised_start_date = $EM_Event->start()->i18n(get_option('date_format'));
+				$localised_end_date = $EM_Event->end()->i18n(get_option('date_format'));
 				echo $localised_start_date;
 				echo ($localised_end_date != $localised_start_date) ? " - $localised_end_date":'';
 				echo "<br />";
 				if(!$EM_Event->event_all_day){
-					echo date_i18n(get_option('time_format'), $EM_Event->start) . " - " . date_i18n(get_option('time_format'), $EM_Event->end);
+					echo $EM_Event->start()->i18n(get_option('time_format')) . " - " . $EM_Event->end()->i18n(get_option('time_format'));
 				}else{
 					echo get_option('dbem_event_all_day_message');
 				}
+				if( $EM_Event->get_timezone()->getName() != EM_DateTimeZone::create()->getName() ) echo '<span class="dashicons dashicons-info" style="font-size:16px; color:#ccc; padding-top:2px;" title="'.esc_attr(str_replace('_', ' ', $EM_Event->event_timezone)).'"></span>';
 				break;
 			case 'extra':
 				if( get_option('dbem_rsvp_enabled') == 1 && !empty($EM_Event->event_rsvp) && $EM_Event->can_manage('manage_bookings','manage_others_bookings')){

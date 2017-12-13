@@ -360,6 +360,7 @@ $limit $offset";
 		$args['page'] = (!empty($args['pagination']) && !empty($_REQUEST['pno']) && is_numeric($_REQUEST['pno']) )? $_REQUEST['pno'] : $args['page'];
 		$args['offset'] = ($args['page']-1) * $args['limit'];
 		$args['orderby'] = 'event_start_date,event_start_time,event_name'; // must override this to display events in right cronology.
+		$long_events = !empty($args['long_events']);
 
 		$args['mode'] = !empty($args['mode']) ? $args['mode'] : get_option('dbem_event_list_groupby');
 		$args['header_format'] = !empty($args['header_format']) ? $args['header_format'] :  get_option('dbem_event_list_groupby_header_format', '<h2>#s</h2>');
@@ -379,12 +380,12 @@ $limit $offset";
 					$format = (!empty($args['date_format'])) ? $args['date_format']:'Y';
 					$events_dates = array();
 					foreach($EM_Events as $EM_Event){ /* @var $EM_Event EM_Event */
-						$year = date('Y',$EM_Event->start);
+						$year = $EM_Event->start()->format('Y');
 						$events_dates[$year][] = $EM_Event;
 						//if long events requested, add event to other dates too
-						if( empty($args['limit']) && !empty($args['long_events']) && $EM_Event->event_end_date != $EM_Event->event_start_date ) {
+						if( empty($args['limit']) && $long_events && $EM_Event->end()->getDate() != $EM_Event->start()->getDate() ) {
 							$next_year = $year + 1;
-							$year_end = date('Y', $EM_Event->end);
+							$year_end = $EM_Event->end()->format('Y');
 							while( $next_year <= $year_end ){
 								$events_dates[$next_year][] = $EM_Event;
 								$next_year = $next_year + 1;
@@ -401,13 +402,13 @@ $limit $offset";
 					$format = (!empty($args['date_format'])) ? $args['date_format']:'M Y';
 					$events_dates = array();
 					foreach($EM_Events as $EM_Event){
-						$events_dates[date('Y-m-'.'01', $EM_Event->start)][] = $EM_Event;
+						$events_dates[$EM_Event->start()->format('Y-m-01')][] = $EM_Event;
 						//if long events requested, add event to other dates too
-						if( empty($args['limit']) && !empty($args['long_events']) && $EM_Event->event_end_date != $EM_Event->event_start_date ) {
-							$next_month = strtotime("+1 Month", $EM_Event->start);
-							while( $next_month <= $EM_Event->end ){
-								$events_dates[date('Y-m-'.'01',$next_month)][] = $EM_Event;
-								$next_month = strtotime("+1 Month", $next_month);
+						if( empty($args['limit']) && $long_events && $EM_Event->end()->getDate() != $EM_Event->start()->getDate() ) {
+							$next_month = $EM_Event->start()->clone()->add('P1M');
+							while( $next_month <= $EM_Event->end() ){
+								$events_dates[$next_month->format('Y-m-01')][] = $EM_Event;
+								$next_month = $next_month->add('P1M');
 							}
 						}
 					}
@@ -421,20 +422,17 @@ $limit $offset";
 					$events_dates = array();
 					foreach($EM_Events as $EM_Event){
 			   			$start_of_week = get_option('start_of_week');
-						$day_of_week = date('w',$EM_Event->start);
-						$day_of_week = date('w',$EM_Event->start);
+						$day_of_week = $EM_Event->start()->format('w');
 						$offset = $day_of_week - $start_of_week;
 						if($offset<0){ $offset += 7; }
-						$offset = $offset * 60*60*24; //days in seconds
-						$start_day = strtotime($EM_Event->start_date);
-						$events_dates[$start_day - $offset][] = $EM_Event;
+						$EM_DateTime = $EM_Event->start()->sub('P'.$offset.'D');
+						$events_dates[$EM_DateTime->getTimestamp()][] = $EM_Event;
 						//if long events requested, add event to other dates too
-						if( empty($args['limit']) && !empty($args['long_events']) && $EM_Event->event_end_date != $EM_Event->event_start_date ) {
-							$next_week = $start_day - $offset + (86400 * 7);
-							while( $next_week <= $EM_Event->end ){
+						if( empty($args['limit']) && $long_events && $EM_Event->end()->getDate() != $EM_Event->start()->getDate() ) {
+							do{
+								$EM_DateTime->add('P1W');
 								$events_dates[$next_week][] = $EM_Event;
-								$next_week = $next_week + (86400 * 7);
-							}
+							}while( $EM_DateTime <= $EM_Event->end() );
 						}
 					}
 					foreach ($events_dates as $event_day_ts => $events){
@@ -447,15 +445,14 @@ $limit $offset";
 					$format = (!empty($args['date_format'])) ? $args['date_format']:get_option('date_format');
 					$events_dates = array();
 					foreach($EM_Events as $EM_Event){
-						$event_start_date = strtotime($EM_Event->start_date);
-						$events_dates[$event_start_date][] = $EM_Event;
+						$EM_DateTime = $EM_Event->start()->clone()->setTime(0,0,0); /* @var EM_DateTime $EM_DateTime */
+						$events_dates[$EM_DateTime->getTimestamp()][] = $EM_Event;
 						//if long events requested, add event to other dates too
-						if( empty($args['limit']) && !empty($args['long_events']) && $EM_Event->event_end_date != $EM_Event->event_start_date ) {
-							$tomorrow = $event_start_date + 86400;
-							while( $tomorrow <= $EM_Event->end ){
-								$events_dates[$tomorrow][] = $EM_Event;
-								$tomorrow = $tomorrow + 86400;
-							}
+						if( empty($args['limit']) && $long_events && $EM_Event->end()->getDate() != $EM_Event->start()->getDate() ) {
+							do{
+								$EM_DateTime->add('P1D');
+								$events_dates[$EM_DateTime->getTimestamp()][] = $EM_Event;
+							}while( $EM_DateTime <= $EM_Event->end() );
 						}
 					}
 					foreach ($events_dates as $event_day_ts => $events){

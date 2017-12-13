@@ -243,7 +243,7 @@ class EM_Event_Post_Admin{
 		if(get_option('dbem_locations_enabled', true)){
 			add_meta_box('em-event-where', __('Where','events-manager'), array('EM_Event_Post_Admin','meta_box_location'),EM_POST_TYPE_EVENT, 'normal','high');
 		}
-		if( defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_DISPLAY') && WP_DEBUG_DISPLAY ){
+		if( defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_DISPLAY') && WP_DEBUG_DISPLAY  && (!defined('EM_DEBUG_DISPLAY') || EM_DEBUG_DISPLAY) ){
 			add_meta_box('em-event-meta', 'Event Meta (debugging only)', array('EM_Event_Post_Admin','meta_box_metadump'),EM_POST_TYPE_EVENT, 'normal','high');
 		}
 		if( get_option('dbem_rsvp_enabled', true) && $EM_Event->can_manage('manage_bookings','manage_others_bookings') ){
@@ -272,7 +272,7 @@ class EM_Event_Post_Admin{
 	
 	public static function meta_box_metadump(){
 		global $post,$EM_Event;
-		echo "<pre>"; print_r($EM_Event); echo "</pre>";
+		echo "<pre>"; print_r($EM_Event); echo "</pre>";		
 	}
 	
 	public static function meta_box_anonymous(){
