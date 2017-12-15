@@ -405,7 +405,7 @@ $limit $offset";
 						$events_dates[$EM_Event->start()->format('Y-m-01')][] = $EM_Event;
 						//if long events requested, add event to other dates too
 						if( empty($args['limit']) && $long_events && $EM_Event->end()->getDate() != $EM_Event->start()->getDate() ) {
-							$next_month = $EM_Event->start()->clone()->add('P1M');
+							$next_month = $EM_Event->start()->copy()->add('P1M');
 							while( $next_month <= $EM_Event->end() ){
 								$events_dates[$next_month->format('Y-m-01')][] = $EM_Event;
 								$next_month = $next_month->add('P1M');
@@ -445,7 +445,7 @@ $limit $offset";
 					$format = (!empty($args['date_format'])) ? $args['date_format']:get_option('date_format');
 					$events_dates = array();
 					foreach($EM_Events as $EM_Event){
-						$EM_DateTime = $EM_Event->start()->clone()->setTime(0,0,0); /* @var EM_DateTime $EM_DateTime */
+						$EM_DateTime = $EM_Event->start()->copy()->setTime(0,0,0); /* @var EM_DateTime $EM_DateTime */
 						$events_dates[$EM_DateTime->getTimestamp()][] = $EM_Event;
 						//if long events requested, add event to other dates too
 						if( empty($args['limit']) && $long_events && $EM_Event->end()->getDate() != $EM_Event->start()->getDate() ) {

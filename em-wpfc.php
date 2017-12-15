@@ -197,7 +197,7 @@ function wpfc_em_ajax() {
 			if( !in_array($EM_Event->event_id, $event_ids) ){
 				//count events for all days this event may span
 				if( $EM_Event->start()->getDate() != $EM_Event->end()->getDate() ){
-					$EM_DateTime = $EM_Event->start()->clone();
+					$EM_DateTime = $EM_Event->start()->copy();
 					while( $EM_DateTime <= $EM_Event->end() ){
 						$EM_DateTime->add('P1D');
 						empty($event_day_counts[$EM_DateTime->getDate()]) ? $event_day_counts[$EM_DateTime->getDate()] = 1 : $event_day_counts[$EM_DateTime->getDate()]++;
@@ -210,7 +210,7 @@ function wpfc_em_ajax() {
 					$allDay = $EM_Event->event_all_day == true;
 					if( $allDay ){
 						$start_date = $EM_Event->start()->format('Y-m-d\T00:00:00');
-						$end_date = $EM_Event->end()->clone()->add('P1D')->format('Y-m-d\T00:00:00'); //on all day events the end date/time is next day of end date at 00:00:00 - see end attribute on http://fullcalendar.io/docs/event_data/Event_Object/
+						$end_date = $EM_Event->end()->copy()->add('P1D')->format('Y-m-d\T00:00:00'); //on all day events the end date/time is next day of end date at 00:00:00 - see end attribute on http://fullcalendar.io/docs/event_data/Event_Object/
 					}else{
 						$start_date = $EM_Event->start()->format('Y-m-d\TH:i:s');
 						$end_date = $EM_Event->end()->format('Y-m-d\TH:i:s');						

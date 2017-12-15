@@ -791,7 +791,7 @@ class EM_Event extends EM_Object{
 				//falback in case nothing gets set for rsvp cut-off
 				$this->event_rsvp_date = $this->event_rsvp_time = $this->rsvp_end = null;
 			}else{
-				$this->event_rsvp_date = $this->start()->clone()->modify($this->recurrence_rsvp_days.' days')->getDate();
+				$this->event_rsvp_date = $this->start()->copy()->modify($this->recurrence_rsvp_days.' days')->getDate();
 			}
 		}else{
 			foreach( $this->recurrence_fields as $recurrence_field ){
@@ -1396,11 +1396,11 @@ class EM_Event extends EM_Object{
 			    $this->rsvp_end = new EM_DateTime($this->event_rsvp_date." ".$this->event_rsvp_time, $this->event_timezone);
 			    if( !$this->rsvp_end->valid ){
 			    	//invalid date will revert to start time
-			    	$this->rsvp_end = $this->start()->clone();
+			    	$this->rsvp_end = $this->start()->copy();
 			    }
 			}else{
 				//no date defined means event start date/time is used
-		    	$this->rsvp_end = $this->start()->clone();
+		    	$this->rsvp_end = $this->start()->copy();
 		    }
 		}
 		//Set to UTC timezone if requested, local by default
@@ -2254,7 +2254,7 @@ class EM_Event extends EM_Object{
 					//get dates in UTC/GMT time
 					if($this->event_all_day && $this->event_start_date == $this->event_end_date){
 						$dateStart	= $this->start()->format('Ymd');
-						$dateEnd	= $this->end()->clone()->add( new DateInterval('P1D') )->format('Ymd');
+						$dateEnd	= $this->end()->copy()->add( new DateInterval('P1D') )->format('Ymd');
 					}else{
 						$dateStart	= $this->start()->format('Ymd\THis');
 						$dateEnd = $this->end()->format('Ymd\THis');
@@ -2521,7 +2521,7 @@ class EM_Event extends EM_Object{
 				unset($event['event_date_modified']);
 				if( count($matching_days) > 0 ){
 					//first save event post data
-					$EM_DateTime = $this->start()->clone();
+					$EM_DateTime = $this->start()->copy();
 					foreach( $matching_days as $day ) {
 						//set start date/time to $EM_DateTime for relative use further on
 						$EM_DateTime->setTimestamp($day)->setTimeString($event['event_start_time']);
@@ -2534,7 +2534,7 @@ class EM_Event extends EM_Object{
 						//add rsvp date/time restrictions
 						if( !empty($this->recurrence_rsvp_days) && is_numeric($this->recurrence_rsvp_days) ){
 							$event_rsvp_days = $this->recurrence_rsvp_days >= 0 ? '+'. $this->recurrence_rsvp_days: $this->recurrence_rsvp_days;
-				 			$event_rsvp_date = $EM_DateTime->clone()->add( new DateInterval('P'.$event_rsvp_days.'D') )->getDate(); //cloned so original object isn't modified
+				 			$event_rsvp_date = $EM_DateTime->copy()->add( new DateInterval('P'.$event_rsvp_days.'D') )->getDate(); //cloned so original object isn't modified
 				 			$event['event_rsvp_date'] = $meta_fields['_event_rsvp_date'] = $event_rsvp_date;
 						}else{
 							$event['event_rsvp_date'] = $meta_fields['_event_rsvp_date'] = $event['event_start_date'];
@@ -2600,7 +2600,7 @@ class EM_Event extends EM_Object{
 				$events = EM_Events::get( array('recurrence'=>$this->event_id, 'scope'=>'all', 'status'=>'everything', 'array' => true ) );
 			 	foreach($events as $event_array){ /* @var $EM_Event EM_Event */
 			 		//set new start/end times to obtain accurate timestamp according to timezone and DST
-			 		$EM_DateTime = $this->start()->clone()->modify($event_array['event_start_date']. ' ' . $event_array['event_start_time']);
+			 		$EM_DateTime = $this->start()->copy()->modify($event_array['event_start_date']. ' ' . $event_array['event_start_time']);
 			 		$start_timestamp = $EM_DateTime->getTimestamp();
 			 		$event['event_start'] = $meta_fields['_event_start'] = $EM_DateTime->getDateTime(true);
 			 		$end_timestamp = $EM_DateTime->modify($event_array['event_end_date']. ' ' . $event_array['event_end_time'])->getTimestamp();
@@ -2692,7 +2692,7 @@ class EM_Event extends EM_Object{
 			 				}
 			 			}
 			 			//prep ticket meta for insertion with relative info for each event date
-			 			$EM_DateTime = $this->start()->clone();
+			 			$EM_DateTime = $this->start()->copy();
 			 			foreach($event_ids as $event_id){
 			 				$ticket['event_id'] = $event_id;
 			 				$ticket['ticket_start'] = $ticket['ticket_end'] = 'NULL';
@@ -2896,7 +2896,7 @@ class EM_Event extends EM_Object{
 				break;
 			case 'yearly':
 				//Yearly is easy, we get the start date as a cloned EM_DateTime and keep adding a year until it surpasses the end EM_DateTime value. 
-				$EM_DateTime = $this->start()->clone();
+				$EM_DateTime = $this->start()->copy();
 				while( $EM_DateTime <= $this->end() ){
 					$matching_days[] = $EM_DateTime->getTimestamp();
 					$EM_DateTime->add('P1Y');

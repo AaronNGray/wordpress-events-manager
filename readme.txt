@@ -100,7 +100,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 
 == Changelog ==
 
-= 5.8.1.20 (dev) =
+= 5.8.1.21 (dev) =
 * added timezone support
 
 = 5.8.1.1 =

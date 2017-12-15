@@ -153,7 +153,7 @@ class EM_DateTime extends DateTime {
 	 * such as adding a month and getting the DATETIME string without changing the original value of this object.
 	 * @return EM_DateTime
 	 */
-	public function clone(){
+	public function copy(){
 		return clone $this;
 	}
 	
