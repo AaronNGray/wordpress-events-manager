@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 3.5
 Tested up to: 4.9
-Stable tag: 5.8.1.2
+Stable tag: 5.8.1.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
 
@@ -103,6 +103,9 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 = 5.8.1.22 (dev) =
 * added timezone support
 * fixes applied to 5.8.1.2 merged into dev version
+
+= 5.8.1.3 =
+* fixed escaping error in bookings admin table introduced in 5.8.1.3
 
 = 5.8.1.2 =
 * security release fixing a potential stored XSS vulnerability (disclosure pending, props to Luigi Gubello for responsible disclosure)
