@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 3.5
 Tested up to: 4.9
-Stable tag: 5.8.1.1
+Stable tag: 5.8.1.2
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
 
@@ -100,8 +100,18 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 
 == Changelog ==
 
-= 5.8.1.21 (dev) =
+= 5.8.1.22 (dev) =
 * added timezone support
+* fixes applied to 5.8.1.2 merged into dev version
+
+= 5.8.1.2 =
+* security release fixing a potential stored XSS vulnerability (disclosure pending, props to Luigi Gubello for responsible disclosure)
+* fixed scrolling issues on Google Maps
+* fixed duplicate value attribute in custom fields/attributes front-end editor
+* fixed shortcodes getting parsed after formats resulting in preparsed formats within shortcode
+* fixed lack of booking validation filter on single booking button
+* fixed minor PHP warning
+* fixed duplication errors for events without bookings enabled
 
 = 5.8.1.1 =
 * fixed a bug that arose in 5.8.1 where tag/category pages using formatting will still show the tags/categories list page instead
