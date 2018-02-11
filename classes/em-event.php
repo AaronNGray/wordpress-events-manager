@@ -420,6 +420,10 @@ class EM_Event extends EM_Object{
 				$this->$val = new EM_DateTime($val, $this->event_timezone);
 			}
 		}
+		//anything else
+		else{
+			$this->$prop = $val;
+		}
 	}
 	
 	public function __isset( $prop ){
@@ -1030,8 +1034,8 @@ class EM_Event extends EM_Object{
 			update_post_meta($this->post_id, '_event_start_local', $this->start()->getDateTime());
 			update_post_meta($this->post_id, '_event_end_local', $this->end()->getDateTime());
 			//Deprecated, only for backwards compatibility, these meta fields will eventually be deleted!
-			$admin_data = get_option('dbem_admin_data');
-			if( $admin_data['datetime_backcompat'] ){
+			$site_data = get_site_option('dbem_data');
+			if( !empty($site_data['updates']['timezone-backcompat']) ){
 				update_post_meta($this->post_id, '_start_ts', str_pad($this->start()->getTimestamp(), 10, 0, STR_PAD_LEFT));
 				update_post_meta($this->post_id, '_end_ts', str_pad($this->end()->getTimestamp(), 10, 0, STR_PAD_LEFT));
 			}
@@ -1707,7 +1711,7 @@ class EM_Event extends EM_Object{
 	 */	
 	function output($format, $target="html") {	
 		global $wpdb;
-		$format = do_shortcode($format); //parse shortcode first, so that formats within shortcodes are parsed properly
+		//$format = do_shortcode($format); //parse shortcode first, so that formats within shortcodes are parsed properly, however uncommenting this will break shortcode containing placeholders for arguments
 	 	$event_string = $format;
 		//Time place holder that doesn't show if empty.
 		//TODO add filter here too
@@ -2255,7 +2259,7 @@ class EM_Event extends EM_Object{
 					//get dates in UTC/GMT time
 					if($this->event_all_day && $this->event_start_date == $this->event_end_date){
 						$dateStart	= $this->start()->format('Ymd');
-						$dateEnd	= $this->end()->copy()->add( new DateInterval('P1D') )->format('Ymd');
+						$dateEnd	= $this->end()->copy()->add('P1D')->format('Ymd');
 					}else{
 						$dateStart	= $this->start()->format('Ymd\THis');
 						$dateEnd = $this->end()->format('Ymd\THis');
@@ -2535,7 +2539,7 @@ class EM_Event extends EM_Object{
 						//add rsvp date/time restrictions
 						if( !empty($this->recurrence_rsvp_days) && is_numeric($this->recurrence_rsvp_days) ){
 							$event_rsvp_days = $this->recurrence_rsvp_days >= 0 ? '+'. $this->recurrence_rsvp_days: $this->recurrence_rsvp_days;
-				 			$event_rsvp_date = $EM_DateTime->copy()->add( new DateInterval('P'.$event_rsvp_days.'D') )->getDate(); //cloned so original object isn't modified
+				 			$event_rsvp_date = $EM_DateTime->copy()->add('P'.$event_rsvp_days.'D')->getDate(); //cloned so original object isn't modified
 				 			$event['event_rsvp_date'] = $meta_fields['_event_rsvp_date'] = $event_rsvp_date;
 						}else{
 							$event['event_rsvp_date'] = $meta_fields['_event_rsvp_date'] = $event['event_start_date'];
@@ -2545,7 +2549,7 @@ class EM_Event extends EM_Object{
 						$EM_DateTime->setTimeString($event['event_end_time']);
 						if($this->recurrence_days > 0){
 							//$EM_DateTime modified here, and used further down for UTC end date
-							$event['event_end_date'] = $meta_fields['_event_end_date'] = $EM_DateTime->add( new DateInterval('P'.$this->recurrence_days.'D') )->getDate();
+							$event['event_end_date'] = $meta_fields['_event_end_date'] = $EM_DateTime->add('P'.$this->recurrence_days.'D')->getDate();
 						}else{
 							$event['event_end_date'] = $meta_fields['_event_end_date'] = $event['event_start_date'];
 						}
@@ -2555,8 +2559,8 @@ class EM_Event extends EM_Object{
 						$meta_fields['_event_start_local'] = $event['event_start_date'].' '.$event['event_start_time'];
 						$meta_fields['_event_end_local'] = $event['event_end_date'].' '.$event['event_end_time'];
 						//Deprecated meta fields
-						$admin_data = get_option('dbem_admin_data');
-						if( $admin_data['datetime_backcompat'] ){
+						$site_data = get_site_option('dbem_data');
+						if( !empty($site_data['updates']['timezone-backcompat']) ){
 							$meta_fields['_start_ts'] = $start_timestamp;
 							$meta_fields['_end_ts'] = $end_timestamp;
 						}
@@ -2626,8 +2630,8 @@ class EM_Event extends EM_Object{
 			 		$meta_fields['_event_start_local'] = $event_array['event_start_date']. ' ' . $event_array['event_start_time'];
 			 		$meta_fields['_event_end_date'] = $event_array['event_end_date'];
 			 		$meta_fields['_event_end_local'] = $event_array['event_end_date']. ' ' . $event_array['event_end_time'];
-					$admin_data = get_option('dbem_admin_data');
-					if( $admin_data['datetime_backcompat'] ){
+					$site_data = get_site_option('dbem_data');
+					if( $site_data['updates']['timezone-backcompat'] ){
 				 		$meta_fields['_start_ts'] = $start_timestamp;
 				 		$meta_fields['_end_ts'] = $end_timestamp;
 					}

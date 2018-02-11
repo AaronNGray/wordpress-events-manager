@@ -363,7 +363,7 @@ class EM_Object {
 					$conditions['scope'] .= " OR (event_start_date <= CAST('".$EM_DateTime->getDate()."' AS DATE) AND event_end_date >= CAST('".$EM_DateTime->getDate()."' AS DATE))";
 				}
 			}elseif ($scope == "month" || $scope == "next-month"){
-				if( $scope == 'next-month' ) $EM_DateTime->add( new DateInterval('P1M') );
+				if( $scope == 'next-month' ) $EM_DateTime->add('P1M');
 				$start_month = $EM_DateTime->modify('first day of this month')->getDate();
 				$end_month = $EM_DateTime->modify('last day of this month')->getDate();
 				$conditions['scope'] = " (event_start_date BETWEEN CAST('$start_month' AS DATE) AND CAST('$end_month' AS DATE))";
@@ -373,7 +373,7 @@ class EM_Object {
 			}elseif( preg_match('/([0-9]+)\-months/',$scope,$matches) ){ // next x months means this month (what's left of it), plus the following x months until the end of that month.
 				$months_to_add = $matches[1];
 				$start_month = $EM_DateTime->getDate();
-				$end_month = $EM_DateTime->add( new DateInterval('P'.$months_to_add.'M') )->format('Y-m-t');
+				$end_month = $EM_DateTime->add('P'.$months_to_add.'M')->format('Y-m-t');
 				$conditions['scope'] = " (event_start_date BETWEEN CAST('$start_month' AS DATE) AND CAST('$end_month' AS DATE))";
 				if( !get_option('dbem_events_current_are_past') ){
 					$conditions['scope'] .= " OR (event_start_date < CAST('$start_month' AS DATE) AND event_end_date >= CAST('$start_month' AS DATE))";
@@ -712,7 +712,7 @@ class EM_Object {
 			}
 		}elseif ($scope == "month" || $scope == "next-month" ){
 			$EM_DateTime = new EM_DateTime(); //create default time in blog timezone
-			if( $scope == 'next-month' ) $EM_DateTime->add( new DateInterval('P1M') );
+			if( $scope == 'next-month' ) $EM_DateTime->add('P1M');
 			$start_month = $EM_DateTime->modify('first day of this month')->getDate();
 			$end_month = $EM_DateTime->modify('last day of this month')->getDate();
 			if( get_option('dbem_events_current_are_past') && $wp_query->query_vars['post_type'] != 'event-recurring' ){
@@ -725,7 +725,7 @@ class EM_Object {
 			$EM_DateTime = new EM_DateTime(); //create default time in blog timezone
 			$months_to_add = $matches[1];
 			$start_month = $EM_DateTime->getDate();
-			$end_month = $EM_DateTime->add( new DateInterval('P'.$months_to_add.'M') )->format('Y-m-t');
+			$end_month = $EM_DateTime->add('P'.$months_to_add.'M')->format('Y-m-t');
 			if( get_option('dbem_events_current_are_past') && $wp_query->query_vars['post_type'] != 'event-recurring' ){
 				$query[] = array( 'key' => '_event_start_date', 'value' => array($start_month,$end_month), 'type' => 'DATE', 'compare' => 'BETWEEN');
 			}else{
@@ -1040,7 +1040,7 @@ class EM_Object {
 	 * @return string
 	 * @uses em_paginate()
 	 */
-	public static function get_pagination_links($args, $count, $search_action, $default_args = array()){
+	public static function get_pagination_links($args, $count, $search_action = 'search_events', $default_args = array()){
 		$limit = ( !empty($args['limit']) && is_numeric($args['limit']) ) ? $args['limit']:false;
 		$page = ( !empty($args['page']) && is_numeric($args['page']) ) ? $args['page']:1;
 		$pno = !empty($args['page_queryvar']) ? $args['page_queryvar'] : 'pno';

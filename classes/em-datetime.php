@@ -12,7 +12,12 @@ class EM_DateTime extends DateTime {
 	 * The name of this timezone. For example, America/New_York or UTC+3.5
 	 * @var string
 	 */
-	public $timezone_name = false;
+	protected $timezone_name = false;
+	/**
+	 * Shortcut representing the offset of time in the timezone, if it's a UTC manual offset, false if not.
+	 * @var int
+	 */
+	protected $timezone_manual_offset = false;
 	/**
 	 * Flag for validation purposes, so we can still have a real EM_DateTime and extract dates but know if the intended datetime failed validation.
 	 * A completely invalid date and time will become 1970-01-01 00:00:00 in local timezone, however a valid time can still exist with the 1970-01-01 date.
@@ -45,20 +50,17 @@ class EM_DateTime extends DateTime {
 		}
 		//save timezone name for use in getTimezone()
 		$this->timezone_name = $timezone->getName();
+		$this->timezone_manual_offset = $timezone->manual_offset;
+		//deal with manual UTC offsets
+		$this->handleOffsets($timezone);
 	}
 	
-	/**
-	 * Extends the DateTime::createFromFormat() function by setting the timezone to the default blog timezone if none is provided.
-	 * @param string $format
-	 * @param string $time
-	 * @param string|EM_DateTimeZone $timezone
-	 * @return boolean|EM_DateTime
-	 */
-	public static function createFromFormat( $format, $time, $timezone = null ){
-		$timezone = EM_DateTimeZone::create($timezone);
-		$DateTime = parent::createFromFormat($format, $time, $timezone);
-		if( $DateTime === false ) return false;
-		return new EM_DateTime($DateTime->format('Y-m-d H:i:s'), $timezone);
+	protected function handleOffsets(){
+		//handle manual UTC offsets
+		if( $this->timezone_manual_offset !== false ){
+			//the actual time here needs to be in UTC time because offsets are applied to UTC on any output functions
+			$this->setTimestamp( $this->getTimestamp() - $this->timezone_manual_offset );
+		}
 	}
 	
 	/**
@@ -68,8 +70,8 @@ class EM_DateTime extends DateTime {
 	public function format( $format = 'Y-m-d H:i:s'){
 		if( !$this->valid && ($format == 'Y-m-d' || $format == em_get_date_format())) return '';
 		//if we deal with offsets, then we offset UTC time by that much
-		if( $this->getTimezone()->offset !== false ){
-			return date($format, $this->getTimestamp() + $this->getTimezone()->offset );
+		if( $this->timezone_manual_offset !== false ){
+			return date($format, $this->getTimestamp() + $this->timezone_manual_offset );
 		}
 		return parent::format($format);
 	}
@@ -120,6 +122,74 @@ class EM_DateTime extends DateTime {
 		return $this;
 	}
 	
+	public function setTimestamp( $timestamp ){
+		if( function_exists('date_timestamp_set') ){
+			return parent::setTimestamp( $timestamp );
+		}else{
+			//PHP < 5.3 fallback :/ setting modify() with a timestamp produces unpredictable results, so we play more tricks...
+			$date = explode(',', date('Y,n,j,G,i,s', $timestamp));
+			parent::setDate( (int) $date[0], (int) $date[1], (int) $date[2]);
+			parent::setTime( (int) $date[3], (int) $date[4], (int) $date[5]);
+			return $this;
+		}
+	}
+	
+	/**
+	 * Extends DateTime functionality by accepting a false or string value for a timezone. 
+	 * @see DateTime::setTimezone()
+	 * @return EM_DateTime Returns object for chaining.
+	 */
+	public function setTimezone( $timezone ){
+		if( $timezone == $this->getTimezone()->getName() ) return $this;
+		$timezone = EM_DateTimeZone::create($timezone);
+		parent::setTimezone($timezone);
+		$this->timezone_name = $timezone->getName();
+		$this->timezone_manual_offset = $timezone->manual_offset;
+		return $this;
+	}
+	
+	public function setTime( $hour, $minute, $second = NULL, $microseconds = NULL ){
+		parent::setTime( $hour, $minute, $second );
+		$this->handleOffsets();
+		return $this;
+	}
+	
+	public function setDate( $year, $month, $day ){
+		if( $this->timezone_manual_offset !== false ){
+			//we run into issues if we're dealing with timezones on the fringe of date changes e.g. 2018-01-01 01:00:00 UTC+2
+			$DateTime = new DateTime( $this->getDateTime(), new DateTimeZone('UTC'));
+			$DateTime->setDate( $year, $month, $day );
+			//create a new timestamp based on UTC DateTime and offset it to current timezone
+			if( function_exists('date_timestamp_get') ){
+				$timestamp = $DateTime->getTimestamp();
+			}else{
+				//PHP < 5.3 fallback :/
+				$timestamp = $DateTime->format('U');
+			}
+			$timestamp -= $this->timezone_manual_offset;
+			$this->setTimestamp( $timestamp );
+		}else{
+			parent::setDate( $year, $month, $day );
+		}
+		return $this;
+	}
+	
+	public function setISODate( $year, $week, $day = NULL ){
+		parent::setISODate( $year, $week, $day );
+		return $this;
+	}
+	
+	public function modify( $modify ){
+		if( function_exists('date_add') ){
+			parent::modify($modify);
+		}else{
+			//PHP < 5.3 fallback :/ wierd stuff happens when using the DateTime modify function
+			$this->setTimestamp( strtotime($modify, $this->getTimestamp()) );
+		}
+		$this->handleOffsets();
+		return $this;
+	}
+	
 	/**
 	 * Extends DateTime function to allow string representation of argument passed to create a new DateInterval object.
 	 * @see DateTime::add()
@@ -127,10 +197,17 @@ class EM_DateTime extends DateTime {
 	 * @return EM_DateTime Returns object for chaining.
 	 */
 	public function add( $DateInterval ){
-		if( is_object($DateInterval) ){
-			return parent::add($DateInterval);
+		if( function_exists('date_add') ){
+			if( is_object($DateInterval) ){
+				return parent::add($DateInterval);
+			}else{
+				return parent::add( new DateInterval($DateInterval) );
+			}
 		}else{
-			return parent::add( new DateInterval($DateInterval) );
+			//PHP < 5.3 fallback :/
+			$strtotime = $this->dateinterval_fallback($DateInterval, 'add');
+			$this->setTimestamp( strtotime($strtotime, $this->getTimestamp()) );
+			return $this;
 		}
 	}
 	
@@ -141,11 +218,47 @@ class EM_DateTime extends DateTime {
 	 * @return EM_DateTime
 	 */
 	public function sub( $DateInterval ){
-		if( is_object($DateInterval) ){
-			return parent::sub($DateInterval);
+		if( function_exists('date_sub') ){
+			if( is_object($DateInterval) ){
+				return parent::sub($DateInterval);
+			}else{
+				return parent::sub( new DateInterval($DateInterval) );
+			}
 		}else{
-			return parent::sub( new DateInterval($DateInterval) );
+			//PHP < 5.3 fallback :/
+			$strtotime = $this->dateinterval_fallback($DateInterval, 'subtract');
+			$this->setTimestamp( strtotime($strtotime, $this->getTimestamp()) );
+			return $this;
 		}
+	}
+	
+	/**
+	 * Fallback function for PHP versions prior to 5.3, as sub() and add() methods aren't available and therefore we need to generate a valid string we can pass onto modify()
+	 * @param unknown $dateinteval_string
+	 * @param unknown $add_or_subtract
+	 * @return string
+	 */
+	private function dateinterval_fallback( $dateinteval_string, $add_or_subtract ){
+		$date_time_split = explode('T', $dateinteval_string);
+		$matches = $modify_string_array = array();
+		//first parse date then time if available
+		preg_match_all('/([0-9]+)([YMDW])/', preg_replace('/^P/', '', $date_time_split[0]), $matches['date']);
+		if( !empty($date_time_split[1]) ){
+			preg_match_all('/([0-9]+)([HMS])/', $date_time_split[1], $matches['time']);
+		}
+		//convert DateInterval into a strtotime() valid string for use in $this->modify();
+		$modify_conversion = array('Y'=>'years', 'M'=>'months', 'D'=>'days', 'W'=>'weeks', 'H'=>'hours', 'S'=>'seconds');
+		foreach( $matches as $match_type => $match ){
+			foreach( $match[1] as $k => $v ){
+				if( $match[2][$k] == 'M' ){
+					$modify_string_array[] = $match_type == 'time' ? $v . ' minutes': $v . ' months';
+				}else{
+					$modify_string_array[] = $v . ' '. $modify_conversion[$match[2][$k]];
+				}
+			}
+		}
+		$modifier = $add_or_subtract == 'subtract' ? '-':'+';
+		return $modifier . implode(' '.$modifier, $modify_string_array);
 	}
 	
 	/**
@@ -155,6 +268,17 @@ class EM_DateTime extends DateTime {
 	 */
 	public function copy(){
 		return clone $this;
+	}
+	
+	public function getTimestamp(){
+		if( function_exists('date_timestamp_get') ){
+			return parent::getTimestamp();
+		}else{
+			//PHP < 5.3 fallback :/
+			$strtotime = parent::format('Y-m-d H:i:s');
+			$timestamp = strtotime($strtotime);
+			return $timestamp;
+		}
 	}
 	
 	/**
@@ -170,8 +294,8 @@ class EM_DateTime extends DateTime {
 	 * @return int
 	 */
 	public function getOffset(){
-		if( $this->getTimezone()->offset !== false ){
-			return $this->getTimezone()->offset;
+		if( $this->timezone_manual_offset !== false ){
+			return $this->timezone_manual_offset;
 		}
 		return parent::getOffset();
 	}
@@ -223,17 +347,30 @@ class EM_DateTime extends DateTime {
 		return $return;
 	}
 	
+	/* PHP 5.3+ functions that are not used and should not be used until 5.3 is a minimum requirement
+	
 	/**
-	 * Extends DateTime functionality by accepting a false or string value for a timezone. 
-	 * @see DateTime::setTimezone()
-	 * @return EM_DateTime Returns object for chaining.
+	 * NOT TO BE USED until PHP 5.3 is a minimum requirement in WordPress
+	 * Extends the DateTime::createFromFormat() function by setting the timezone to the default blog timezone if none is provided.
+	 * @param string $format
+	 * @param string $time
+	 * @param string|EM_DateTimeZone $timezone
+	 * @return boolean|EM_DateTime
 	 */
-	public function setTimezone( $timezone ){
-		if( $timezone == $this->getTimezone()->getName() ) return $this;
+	public static function createFromFormat( $format, $time, $timezone = null ){
 		$timezone = EM_DateTimeZone::create($timezone);
-		parent::setTimezone($timezone);
-		$this->timezone_name = $timezone->getName();
-		return $this;
+		$DateTime = parent::createFromFormat($format, $time, $timezone);
+		if( $DateTime === false ) return false;
+		return new EM_DateTime($DateTime->format('Y-m-d H:i:s'), $timezone);
+	}
+	
+	public function diff( $DateTime, $absolute = null ){
+		if( function_exists('date_diff') ){
+			return parent::diff( $DateTime, $absolute );
+		}else{
+			//PHP < 5.3 fallback :/ there is no fallback, really
+			return new stdClass();
+		}
 	}
 }
 
@@ -243,15 +380,19 @@ class EM_DateTime extends DateTime {
  */
 class EM_DateTimeZone extends DateTimeZone {
 	
-	public $offset = false;
+	public $manual_offset = false;
 	
 	public function __construct( $timezone ){
 		//if we're not suppiled a DateTimeZone object, create one from string or implement manual offset
 		if( $timezone != 'UTC' ){
 			$timezone = preg_replace('/^UTC ?/', '', $timezone);
 			if( is_numeric($timezone) ){
-				$this->offset = $timezone * 3600;
-				$timezone = 'UTC';
+				if( absint($timezone) == 0 ){
+					$timezone = 'UTC';
+				}else{
+					$this->manual_offset = $timezone * 3600;
+					$timezone = 'UTC';
+				}
 			}
 		}
 		parent::__construct($timezone);
@@ -290,10 +431,8 @@ class EM_DateTimeZone extends DateTimeZone {
 	 * @see DateTimeZone::getOffset()
 	 */
 	public function getOffset( $datetime ){
-		if( $this->offset !== false ){
-			return $this->offset;
-		}elseif( get_class($datetime) == 'EM_DateTime' && $datetime->offset !== false ){
-			return $datetime->offset;
+		if( $this->manual_offset !== false ){
+			return $this->manual_offset;
 		}
 		return parent::getOffset( $datetime );
 	}
@@ -303,11 +442,11 @@ class EM_DateTimeZone extends DateTimeZone {
 	 * @see DateTimeZone::getName()
 	 */
 	public function getName(){
-		if( $this->offset !== false ){
-			if( $this->offset > 0 ){
-				$return = 'UTC+'.$this->offset/3600;
+		if( $this->manual_offset !== false ){
+			if( $this->manual_offset > 0 ){
+				$return = 'UTC+'.$this->manual_offset/3600;
 			}else{
-				$return = 'UTC'.$this->offset/3600;
+				$return = 'UTC'.$this->manual_offset/3600;
 			}
 			return $return;
 		}
@@ -320,7 +459,7 @@ class EM_DateTimeZone extends DateTimeZone {
 	 * @see DateTimeZone::getTransitions()
 	 */
 	public function getTransitions( $timestamp_begin = null, $timestamp_end = null ){
-		if( $this->offset !== false ){
+		if( $this->manual_offset !== false ){
 			return array();
 		}
 		return parent::getTransitions($timestamp_begin, $timestamp_end);

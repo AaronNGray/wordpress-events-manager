@@ -284,7 +284,7 @@ class EM_Event_Post {
 				}
 			}elseif ($scope == "month" || $scope == "next-month" ){
 				$EM_DateTime = new EM_DateTime(); //create default time in blog timezone
-				if( $scope == 'next-month' ) $EM_DateTime->add( new DateInterval('P1M') );
+				if( $scope == 'next-month' ) $EM_DateTime->add('P1M');
 				$start_month = $EM_DateTime->modify('first day of this month')->getDate();
 				$end_month = $EM_DateTime->modify('last day of this month')->getDate();
 				if( get_option('dbem_events_current_are_past') && $wp_query->query_vars['post_type'] != 'event-recurring' ){
@@ -297,7 +297,7 @@ class EM_Event_Post {
 				$EM_DateTime = new EM_DateTime(); //create default time in blog timezone
 				$months_to_add = $matches[1];
 				$start_month = $EM_DateTime->getDate();
-				$end_month = $EM_DateTime->add( new DateInterval('P'.$months_to_add.'M') )->format('Y-m-t');
+				$end_month = $EM_DateTime->add('P'.$months_to_add.'M')->format('Y-m-t');
 				if( get_option('dbem_events_current_are_past') && $wp_query->query_vars['post_type'] != 'event-recurring' ){
 					$query[] = array( 'key' => '_event_start_date', 'value' => array($start_month,$end_month), 'type' => 'DATE', 'compare' => 'BETWEEN');
 				}else{

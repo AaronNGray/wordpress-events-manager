@@ -392,7 +392,7 @@ function em_add_options() {
 		'<br/>'.sprintf(__('To view your bookings, please visit %s after logging in.', 'events-manager'), em_get_my_bookings_url());
 	//all the options
 	$dbem_options = array(
-		'dbem_admin_data' => array(), //used to store admin-related data such as notice flags and other row keys that may not always exist in the wp_options table
+		'dbem_data' => array(), //used to store admin-related data such as notice flags and other row keys that may not always exist in the wp_options table
 		//time formats
 		'dbem_time_format' => get_option('time_format'),
 		'dbem_date_format' => 'd/m/Y',
@@ -1003,22 +1003,53 @@ function em_upgrade_current_installation(){
 			delete_option('dbem_bookings_registration_user');
 		}
 	}
-	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5.82 ){
-		$admin_data = get_option('dbem_admin_data');
-		$admin_data['datetime_backcompat'] = true;
-		update_option('dbem_admin_data', $admin_data);
-		$migration_result = em_migrate_datetime_timezones( false );
-		if( $migration_result !== true ){
-			$EM_Notices->add_error($migration_result);
+	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5.83 ){
+		$admin_data = get_option('dbem_data');
+		//upgrade tables only if we didn't do it before during earlier dev versions
+		if( empty($admin_data['datetime_backcompat']) ){
+			$migration_result = em_migrate_datetime_timezones( false );
+			if( $migration_result !== true ){
+				$EM_Notices->add_error($migration_result);
+			}
+			//migrate certain options
+			$opt = get_option('dbem_tags_default_archive_orderby');
+			if( $opt == '_start_ts' ) update_option('dbem_tags_default_archive_orderby', '_event_start');
+			$opt = get_option('dbem_categories_default_archive_orderby');
+			if( $opt == '_start_ts' ) update_option('dbem_categories_default_archive_orderby', '_event_start');
+			$opt = get_option('dbem_events_default_archive_orderby');
+			if( $opt == '_start_ts' ) update_option('dbem_events_default_archive_orderby', '_event_start');
+		}else{
+			//we're doing this at multisite level instead within dev versions, so fix this for dev versions
+			unset( $admin_data['datetime_backcompat'] );
+			update_option('dbem_data', $admin_data);
 		}
-		//migrate certain options
-		$opt = get_option('dbem_tags_default_archive_orderby');
-		if( $opt == '_start_ts' ) update_option('dbem_tags_default_archive_orderby', '_event_start');
-		$opt = get_option('dbem_categories_default_archive_orderby');
-		if( $opt == '_start_ts' ) update_option('dbem_categories_default_archive_orderby', '_event_start');
-		$opt = get_option('dbem_events_default_archive_orderby');
-		if( $opt == '_start_ts' ) update_option('dbem_events_default_archive_orderby', '_event_start');
-	}
+		//add backwards compatability settings and warnings
+		$admin_data = get_site_option('dbem_data');
+		if( empty($admin_data['updates']) ) $admin_data['updates'] = array(); 
+		$admin_data['updates']['timezone-backcompat'] = true;
+		update_site_option('dbem_data', $admin_data);
+		if( !is_multisite() || em_wp_is_super_admin() ){
+			$message = __('Events Manager now supports multiple timezones for your events! Your events will initially match your blog timezone.','events-manager');
+			if( is_multisite() ){
+				$url = network_admin_url('admin.php?page=events-manager-options#general+admin-tools');
+				$admin_tools_link = '<a href="'.$url.'">'.__('Network Admin').' &gt; '.__('Events Manager','events-manager').' &gt; '.__('Admin Tools','events-manager').'</a>';
+				$options_link = '<a href="'.network_admin_url('admin.php?page=events-manager-update').'">'.__('Update Network','events-manager').'</a>';
+				$message .= '</p><p>' . sprintf(__("Please update your network and when you're happy with the changes you can also finalize the migration by deleting unecessary data in the %s page.", 'events-manager'), $options_link);
+				$message .= '</p><p>' . sprintf(__('You can also reset all events of a blog to a new timezone in %s', 'events-manager'), $admin_tools_link);
+			}else{
+				$options_link = get_admin_url(null, 'edit.php?post_type=event&page=events-manager-options#general+admin-tools');
+				$options_link = '<a href="'.$options_link.'">'.__('Settings','events-manager').' &gt; '.__('General','events-manager').' &gt; '.__('Admin Tools','events-manager').'</a>';
+				$message .= '</p><p>' . sprintf(__('You can reset your events to a new timezone and also complete the final migration step by deleting unecessary data in %s', 'events-manager'), $options_link);
+			}
+			$EM_Admin_Notice = new EM_Admin_Notice(array(
+				'name' => 'date_time_migration',
+				'who' => 'admin',
+				'where' => 'all',
+				'message' => $message
+			));
+			EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
+		}
+	}	
 }
 
 function em_set_mass_caps( $roles, $caps ){
@@ -1490,7 +1521,9 @@ function em_migrate_datetime_timezones( $reset_new_fields = true, $migrate_date_
 		}
 	}else{
 		//This gets very easy... just do a single query that copies over all the times to right columns with relevant offset
-		$offset = $timezone == 'UTC' ? 0 : EM_DateTimeZone::create($timezone)->offset / MINUTE_IN_SECONDS;
+		$EM_DateTimeZone = EM_DateTimeZone::create($timezone);
+		$offset = $timezone == 'UTC' ? 0 : $EM_DateTimeZone->manual_offset / MINUTE_IN_SECONDS;
+		$timezone = $EM_DateTimeZone->getName();
 		$migration_result = $wpdb->query($wpdb->prepare('UPDATE '. EM_EVENTS_TABLE. ' SET event_start = DATE_SUB(TIMESTAMP(event_start_date,event_start_time), INTERVAL %d MINUTE), event_end = DATE_SUB(TIMESTAMP(event_end_date, event_end_time), INTERVAL %d MINUTE) WHERE event_end IS NULL '.$blog_id_and, $offset, $offset));
 		if( $migration_result === false ) $migration_errors[] = array('Event start/end UTC offset', $wpdb->last_error);
 	}

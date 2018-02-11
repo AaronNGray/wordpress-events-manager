@@ -274,6 +274,14 @@ function em_options_save(){
 		exit();
 	}
 	
+	//update scripts that may need to run
+	$blog_updates = is_multisite() ? array_merge(EM_Options::get('updates'), EM_Options::site_get('updates')) : EM_Options::get('updates');
+	foreach( $blog_updates as $update => $update_data ){
+		$filename = EM_DIR.'/admin/settings/updates/'.$update.'.php';
+		if( file_exists($filename) ) include_once($filename);
+		do_action('em_admin_update_'.$update, $update_data);
+	}
+	
 }
 add_action('admin_init', 'em_options_save');
 
@@ -362,6 +370,10 @@ function em_admin_options_page() {
 	}	
 	if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'reset' ){
 		em_admin_options_reset_page();
+		return;
+	}
+	if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'update' && !empty($_REQUEST['update_action']) ){
+		do_action('em_admin_update_settings_confirm_'.$_REQUEST['update_action']);
 		return;
 	}
 	//substitute dropdowns with input boxes for some situations to improve speed, e.g. if there 1000s of locations or users
@@ -691,10 +703,19 @@ function em_admin_option_box_uninstall(){
 		$import_nonce = wp_create_nonce('import_em_settings');
 	}
 	$reset_timezone_nonce = wp_create_nonce('reset_timezones');
+	$options_data = get_option('dbem_data');  
 	?>
 	<div  class="postbox" id="em-opt-admin-tools" >
 		<div class="handlediv" title="<?php __('Click to toggle', 'events-manager'); ?>"><br /></div><h3><span><?php _e ( 'Admin Tools', 'events-manager'); ?> (<?php _e ( 'Advanced', 'events-manager'); ?>)</span></h3>
 		<div class="inside">
+			
+			<?php
+			//update scripts that may need to run
+			$blog_updates = is_multisite() ? array_merge(EM_Options::get('updates'), EM_Options::site_get('updates')) : EM_Options::get('updates');
+			foreach( $blog_updates as $update => $update_data ){
+				do_action('em_admin_update_settings_'.$update, $update_data);
+			}
+			?>
 			
 			<table class="form-table">
     		    <tr class="em-header"><td colspan="2">

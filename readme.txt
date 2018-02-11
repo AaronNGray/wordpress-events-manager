@@ -100,9 +100,15 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 
 == Changelog ==
 
-= 5.8.1.22 (dev) =
-* added timezone support
+= 5.8.2.0 (dev) =
 * fixes applied to 5.8.1.2 merged into dev version
+* added timezone support
+* added new admin notice interface objects
+* added new EM_Options option storage class
+* fixed some PHP strict warnings regarding parent/child class method signatures
+* fixed taxonomy pagination issues in AJAX (affecting tags specifically)
+* fixed shortcode not getting parsed properly due to fix in 5.8.1.1 attempting to parse shortcode with supplied formats
+* 
 
 = 5.8.1.3 =
 * fixed escaping error in bookings admin table introduced in 5.8.1.3
