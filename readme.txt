@@ -100,7 +100,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 
 == Changelog ==
 
-= 5.8.2.0 (dev) =
+= 5.8.2.1 (dev) =
 * fixes applied to 5.8.1.2 merged into dev version
 * added timezone support
 * added new admin notice interface objects

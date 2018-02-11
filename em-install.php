@@ -1003,7 +1003,7 @@ function em_upgrade_current_installation(){
 			delete_option('dbem_bookings_registration_user');
 		}
 	}
-	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5.83 ){
+	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5.821 ){
 		$admin_data = get_option('dbem_data');
 		//upgrade tables only if we didn't do it before during earlier dev versions
 		if( empty($admin_data['datetime_backcompat']) ){
