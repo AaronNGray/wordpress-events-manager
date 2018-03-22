@@ -51,14 +51,23 @@ class EM_DateTime extends DateTime {
 		//save timezone name for use in getTimezone()
 		$this->timezone_name = $timezone->getName();
 		$this->timezone_manual_offset = $timezone->manual_offset;
-		//deal with manual UTC offsets
-		$this->handleOffsets($timezone);
+		//deal with manual UTC offsets, but only if we haven't defaulted to the current timestamp since that would already be a correct relative value
+		if( $time !== null && $time != 'now' ) $this->handleOffsets($timezone);
 	}
 	
+	/**
+	 * If a UTC offset timezone is active, upon object creation or modification of the time, we need to store the actual UTC time relative to
+	 * the offset timezone, whereas initially the saved time will be UTC time relative to the time modified/created.
+	 * 
+	 * Example: 
+	 * We create an object with local UTC-5 time 12pm which is actually 5pm UTC. However, by default we'll have a 12PM UTC time stored as our internal timestamp.
+	 * What we'll want to do is make sure we're internally storing 5pm UTC time, which is the same value we'd have if we had a PHP native timezone like New York.
+	 * The only exception we don't want to do this is if we're setting the time to NOW, as in the current time which will always be the same value in UTC no matter what timezone.
+	 */
 	protected function handleOffsets(){
 		//handle manual UTC offsets
 		if( $this->timezone_manual_offset !== false ){
-			//the actual time here needs to be in UTC time because offsets are applied to UTC on any output functions
+			//the actual time here needs to be in actual UTC time because offsets are applied to UTC on any output functions
 			$this->setTimestamp( $this->getTimestamp() - $this->timezone_manual_offset );
 		}
 	}
@@ -462,6 +471,10 @@ class EM_DateTimeZone extends DateTimeZone {
 		if( $this->manual_offset !== false ){
 			return array();
 		}
-		return parent::getTransitions($timestamp_begin, $timestamp_end);
+		if( version_compare(phpversion(), '5.3') < 0 ){
+			return parent::getTransitions();
+		}else{
+			return parent::getTransitions($timestamp_begin, $timestamp_end);
+		}
 	}
 }

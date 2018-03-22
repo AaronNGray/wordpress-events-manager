@@ -2,6 +2,7 @@
 
 function em_install() {
 	global $wp_rewrite;
+	EM_ML::switch_to_lang(EM_ML::$wplang); //switch to blog language (if applicable)
    	$wp_rewrite->flush_rules();
 	$old_version = get_option('dbem_version');
 	//Won't upgrade <4.300 anymore
@@ -59,6 +60,7 @@ function em_install() {
 			return;
 		}
 	}
+	EM_ML::restore_current_lang(); //now that we're done, switch back to current language (if applicable)
 }
 
 /**
@@ -374,7 +376,7 @@ function em_add_options() {
 	$contact_person_email_body_template = '#_EVENTNAME - #_EVENTDATES @ #_EVENTTIMES'.'<br/>'
  		    .__('Now there are #_BOOKEDSPACES spaces reserved, #_AVAILABLESPACES are still available.','events-manager').'<br/>'.
  		    strtoupper(__('Booking Details','events-manager')).'<br/>'.
- 		    __('Name','events-manager').' : #_BOOKINGNAME'."\n".
+ 	 		__('Name','events-manager').' : #_BOOKINGNAME'.'<br/>'.
  		    __('Email','events-manager').' : #_BOOKINGEMAIL'.'<br/>'.
  		    '#_BOOKINGSUMMARY'.'<br/>'.
  		    '<br/>Powered by Events Manager - http://wp-events-plugin.com';

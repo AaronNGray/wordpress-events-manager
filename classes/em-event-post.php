@@ -138,6 +138,12 @@ class EM_Event_Post {
 			}else{
 				if( get_option('dbem_cp_events_formats') && !post_password_required() ){
 					$EM_Event = em_get_event($post);
+					//do a little check for preview mode and re-insert content from $post
+					if( !empty($_REQUEST['preview']) ){
+						//we don't do extra checks here because WP will have already done the work for us here...
+						$EM_Event->post_content = $post->post_content;
+						$EM_Event->post_content_filtered = $post->post_content_filtered;
+					}
 					ob_start();
 					em_locate_template('templates/event-single.php',true);
 					$content = ob_get_clean();
@@ -304,6 +310,8 @@ class EM_Event_Post {
 					$query[] = array( 'key' => '_event_start_date', 'value' => $end_month, 'compare' => '<=', 'type' => 'DATE' );
 					$query[] = array( 'key' => '_event_end_date', 'value' => $start_month, 'compare' => '>=', 'type' => 'DATE' );
 				}
+			}elseif( !empty($scope) ){
+				$query = apply_filters('em_event_post_scope_meta_query', $query, $scope);
 			}
 		  	if( !empty($query) && is_array($query) ){
 				$wp_query->query_vars['meta_query'] = $query;

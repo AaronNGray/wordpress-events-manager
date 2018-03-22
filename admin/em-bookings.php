@@ -385,12 +385,12 @@ function em_bookings_single(){
 											</tr>
 											<?php endforeach; ?>
 										<?php endif; ?>
-										<tr>
+										<tr class="em-hr">
 											<th><?php esc_html_e('Total Price','events-manager'); ?></th>
 											<th>&nbsp;</th>
 											<th><?php echo $price_summary['total']; ?></th>
 										</tr>
-										<?php do_action('em_bookings_admin_ticket_totals_footer'); ?>
+										<?php do_action('em_bookings_admin_ticket_totals_footer', $EM_Booking); ?>
 									</tfoot>
 								</table>
 								<table class="em-form-fields" cellspacing="0" cellpadding="0">

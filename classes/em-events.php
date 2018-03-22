@@ -649,6 +649,7 @@ $limit $offset";
 			'state' => false,
 			'country' => false,
 			'region' => false,
+			'postcode' => false,
 			'blog' => get_current_blog_id(),
 			'private' => current_user_can('read_private_events'),
 			'private_only' => false,

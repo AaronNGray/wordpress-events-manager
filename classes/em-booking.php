@@ -426,8 +426,9 @@ class EM_Booking extends EM_Object{
 	}
 	
 	/**
-	 * Gets price AFTER taxes and post-tax discounts have also been added
+	 * Gets price AFTER taxes and (optionally) post-tax discounts and surcharges have also been added.
 	 * @param boolean $format
+	 * @param boolean $include_adjustments If set to true discounts and surcharges won't be applied to the overall price.
 	 * @return double|string
 	 */
 	function get_price_post_taxes( $format = false, $include_adjustments = true ){
@@ -1040,13 +1041,13 @@ class EM_Booking extends EM_Object{
 					$replace = $this->get_spaces();
 					break;
 				case '#_BOOKINGDATE':
-					$replace = ( $this->date() !== false ) ? $this->date()->i18( em_get_date_format() ):'n/a';
+					$replace = ( $this->date() !== false ) ? $this->date()->i18n( em_get_date_format() ):'n/a';
 					break;
 				case '#_BOOKINGTIME':
-					$replace = ( $this->date() !== false ) ?  $this->date()->i18( em_get_hour_format() ):'n/a';
+					$replace = ( $this->date() !== false ) ?  $this->date()->i18n( em_get_hour_format() ):'n/a';
 					break;
 				case '#_BOOKINGDATETIME':
-					$replace = ( $this->date() !== false ) ? $this->date()->i18( em_get_date_format().' '.em_get_hour_format()):'n/a';
+					$replace = ( $this->date() !== false ) ? $this->date()->i18n( em_get_date_format().' '.em_get_hour_format()):'n/a';
 					break;
 				case '#_BOOKINGLISTURL':
 					$replace = em_get_my_bookings_url();

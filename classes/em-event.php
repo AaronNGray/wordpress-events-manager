@@ -549,7 +549,7 @@ class EM_Event extends EM_Object{
 		//we need to get the post/event name and content.... that's it.
 		$this->post_content = isset($_POST['content']) ? wp_kses( wp_unslash($_POST['content']), $allowedposttags):'';
 		$this->post_excerpt = !empty($this->post_excerpt) ? $this->post_excerpt:''; //fix null error
-		$this->event_name = !empty($_POST['event_name']) ? htmlspecialchars_decode(wp_kses_data(htmlspecialchars_decode(wp_unslash($_POST['event_name'])))):'';
+		$this->event_name = ( !empty($_POST['event_name']) ) ? sanitize_post_field('post_title', $_POST['event_name'], $this->post_id, 'db'):'';
 		$this->post_type = ($this->is_recurring() || !empty($_POST['recurring'])) ? 'event-recurring':EM_POST_TYPE_EVENT;
 		//don't forget categories!
 		if( get_option('dbem_categories_enabled') ) $this->get_categories()->get_post();
@@ -639,8 +639,7 @@ class EM_Event extends EM_Object{
 			}
 			$this->event_rsvp = 1;
 			$this->rsvp_end = null;
-			//RSVP cuttoff TIME is set up above where start/end times are as well 
-			if( !$this->is_recurring() ){
+			//RSVP cuttoff TIME is set up above where start/end times are as well
 				if( get_option('dbem_bookings_tickets_single') && count($this->get_tickets()->tickets) == 1 ){
 					//single ticket mode will use the ticket end date/time as cut-off date/time
 			    	$EM_Ticket = $this->get_tickets()->get_first();
@@ -657,12 +656,11 @@ class EM_Event extends EM_Object{
 			    }else{
 			    	//if no rsvp cut-off date supplied, make it the event start date
 			    	$this->event_rsvp_date = ( !empty($_POST['event_rsvp_date']) ) ? wp_kses_data($_POST['event_rsvp_date']) : $this->event_start_date;
-			    	if ( empty($_POST['event_rsvp_date']) ) $this->event_rsvp_time = $this->event_start_time;
+			    	if ( empty($_POST['event_rsvp_date']) || empty($_POST['event_rsvp_time']) ) $this->event_rsvp_time = $this->event_start_time;
 			    	if( $this->event_all_day && empty($_POST['event_rsvp_date']) ){ $this->event_rsvp_time = '00:00:00'; } //all-day events start at 0 hour
 			    }
 			    //reset EM_DateTime object
 				$this->rsvp_end = null;
-			}
 			$this->event_spaces = ( isset($_POST['event_spaces']) ) ? absint($_POST['event_spaces']):0;
 			$this->event_rsvp_spaces = ( isset($_POST['event_rsvp_spaces']) ) ? absint($_POST['event_rsvp_spaces']):0;
 		}elseif( !$preview_autosave && ($can_manage_bookings || !$this->event_rsvp) ){
@@ -968,6 +966,14 @@ class EM_Event extends EM_Object{
 		}
 		$return = apply_filters('em_event_save', $result, $this);
 		$EM_SAVING_EVENT = false;
+		//reload post data and add this event to the cache, after any other hooks have done their thing
+		//cache refresh when saving via admin area is handled in EM_Event_Post_Admin::save_post/refresh_cache
+		if( $result && $this->is_published() ){ 
+			//we won't depend on hooks, if we saved the event and it's still published in its saved state, refresh the cache regardless
+			$this->load_postdata($this);
+			wp_cache_set($this->event_id, $this, 'em_events');
+			wp_cache_set($this->post_id, $this->event_id, 'em_events_ids');
+		}
 		return $return;
 	}
 	
@@ -1138,13 +1144,7 @@ class EM_Event extends EM_Object{
 				do_action('em_event_added', $this);
 			}
 		}
-		$result = count($this->errors) == 0;
-		//add this event to the cache
-		if( $result ){
-			wp_cache_set($this->event_id, $this, 'em_events');
-			wp_cache_set($this->post_id, $this->event_id, 'em_events_ids');
-		}
-		return apply_filters('em_event_save_meta', $result, $this);
+		return apply_filters('em_event_save_meta', count($this->errors) == 0, $this);
 	}
 	
 	/**
@@ -1189,9 +1189,8 @@ class EM_Event extends EM_Object{
 			 	//Get custom fields and post meta - adapted from $this->load_post_meta()
 			 	foreach($event_meta as $event_meta_key => $event_meta_vals){
 			 		if( $event_meta_key == '_wpas_' ) continue; //allow JetPack Publicize to detect this as a new post when published
-			 		if($event_meta_key[0] == '_' && is_array($event_meta_vals)){
-			 		    $field_name = substr($event_meta_key, 1);
-			 			if($field_name != 'event_attributes' && !array_key_exists($event_meta_key, $new_event_meta) &&  !in_array($field_name, array('edit_last', 'edit_lock', 'event_owner_name','event_owner_anonymous','event_owner_email')) ){
+			 		if( is_array($event_meta_vals) ){
+			 		    if( !array_key_exists($event_meta_key, $new_event_meta) &&  !in_array($event_meta_key, array('_event_attributes', '_edit_last', '_edit_lock', '_event_owner_name','_event_owner_anonymous','_event_owner_email')) ){
 				 			foreach($event_meta_vals as $event_meta_val){
 				 			    $event_meta_inserts[] = "({$EM_Event->post_id}, '{$event_meta_key}', '{$event_meta_val}')";
 				 			}
@@ -1335,7 +1334,8 @@ class EM_Event extends EM_Object{
 			$post_status = $set_status ? 'publish':'pending';
 			if( empty($this->post_name) ){
 				//published or pending posts should have a valid post slug
-				$this->post_name = sanitize_title($this->post_title);
+				$slug = sanitize_title($this->post_title);
+				$this->post_name = wp_unique_post_slug( $slug, $this->post_id, $post_status, EM_POST_TYPE_EVENT, 0);
 				$set_post_name = true;
 			}
 			if($set_post_status){
@@ -2538,8 +2538,13 @@ class EM_Event extends EM_Object{
 						$event['event_start'] = $meta_fields['_event_start'] = $EM_DateTime->getDateTime(true);
 						//add rsvp date/time restrictions
 						if( !empty($this->recurrence_rsvp_days) && is_numeric($this->recurrence_rsvp_days) ){
-							$event_rsvp_days = $this->recurrence_rsvp_days >= 0 ? '+'. $this->recurrence_rsvp_days: $this->recurrence_rsvp_days;
-				 			$event_rsvp_date = $EM_DateTime->copy()->add('P'.$event_rsvp_days.'D')->getDate(); //cloned so original object isn't modified
+							if( $this->recurrence_rsvp_days > 0 ){
+								$event_rsvp_date = $EM_DateTime->copy()->add('P'.absint($this->recurrence_rsvp_days).'D')->getDate(); //cloned so original object isn't modified
+							}elseif($this->recurrence_rsvp_days < 0 ){
+								$event_rsvp_date = $EM_DateTime->copy()->sub('P'.absint($this->recurrence_rsvp_days).'D')->getDate(); //cloned so original object isn't modified
+							}else{
+								$event_rsvp_date = $EM_DateTime->getDate();
+							}
 				 			$event['event_rsvp_date'] = $meta_fields['_event_rsvp_date'] = $event_rsvp_date;
 						}else{
 							$event['event_rsvp_date'] = $meta_fields['_event_rsvp_date'] = $event['event_start_date'];

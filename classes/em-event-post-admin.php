@@ -39,17 +39,17 @@ class EM_Event_Post_Admin{
 				$warning .= "<p>". __( 'Modifications to recurring events will be applied to all recurrences and will overwrite any changes made to those individual event recurrences.', 'events-manager') . '</p>';
 				$warning .= "<p>". __( 'Bookings to individual event recurrences will be preserved if event times and ticket settings are not modified.', 'events-manager') . '</p>';
 				$warning .= '<p><a href="'. esc_url( add_query_arg(array('scope'=>'all', 'recurrence_id'=>$EM_Event->event_id), em_get_events_admin_url()) ).'">'. esc_html__('You can edit individual recurrences and disassociate them with this recurring event.','events-manager') . '</a></p>';
-				?><div class="updated"><?php echo $warning; ?></div><?php
+				?><div class="notice notice-warning is-dismissible"><?php echo $warning; ?></div><?php
 			} elseif ( $EM_Event->is_recurrence() ) {
 				$warning = "<p><strong>".__('WARNING: This is a recurrence in a set of recurring events.', 'events-manager')."</strong></p>";
 				$warning .= "<p>". sprintf(__('If you update this event data and save, it could get overwritten if you edit the recurring event template. To make it an independent, <a href="%s">detach it</a>.', 'events-manager'), $EM_Event->get_detach_url())."</p>";
 				$warning .= "<p>".sprintf(__('To manage the whole set, <a href="%s">edit the recurring event template</a>.', 'events-manager'),admin_url('post.php?action=edit&amp;post='.$EM_Event->get_event_recurrence()->post_id))."</p>";
-				?><div class="updated"><?php echo $warning; ?></div><?php
+				?><div class="notice notice-warning is-dismissible"><?php echo $warning; ?></div><?php
 			}
 			if( !empty($EM_Event->group_id) && function_exists('groups_get_group') ){
 				$group = groups_get_group(array('group_id'=>$EM_Event->group_id));
 				$warning = sprintf(__('WARNING: This is a event belonging to the group "%s". Other group admins can also modify this event.', 'events-manager'), $group->name);
-				?><div class="updated"><p><?php echo $warning; ?></p></div><?php
+				?><div class="notice notice-info is-dismissible"><p><?php echo $warning; ?></p></div><?php
 			}
 		}
 	}
@@ -142,6 +142,9 @@ class EM_Event_Post_Admin{
 						if( $EM_Event->is_published() ){ $EM_Event->set_status(0, true); } //no publishing and editing... security threat
 					}
 					apply_filters('em_event_save', true, $EM_Event);
+					//flag a cache refresh if we get here
+					$EM_Event->refresh_cache = true;
+					add_filter('save_post', 'EM_Event_Post_Admin::refresh_cache', 100000000);
 				}
 			}else{
 				//we're updating only the quick-edit style information, which is only post info saved into the index
@@ -171,6 +174,9 @@ class EM_Event_Post_Admin{
 						$EM_Event->save_events();
 					}
 					apply_filters('em_event_save', true, $EM_Event);
+					//flag a cache refresh if we get here
+					$EM_Event->refresh_cache = true;
+					add_filter('save_post', 'EM_Event_Post_Admin::refresh_cache', 100000000);
 				}else{
 					do_action('em_event_save_pre', $EM_Event); //technically, the event is saved... but the meta isn't. wp doesn't give an pre-intervention action for this (or does it?)
 					//Event doesn't validate, so set status to null
@@ -179,6 +185,21 @@ class EM_Event_Post_Admin{
 				}
 			}
 			self::maybe_publish_location($EM_Event);
+		}
+	}
+	
+	/**
+	 * Refreshes the cache of the current global $EM_Event, provided the refresh_cache flag is set to true within the object and the object has a published state
+	 */
+	public static function refresh_cache(){
+		global $EM_Event;
+		//if this is a published event, and the refresh_cache flag was added to this event during save_post, refresh the meta and update the cache
+		if( !empty($EM_Event->refresh_cache) && !empty($EM_Event->post_id) && $EM_Event->is_published() ){
+			$post = get_post($EM_Event->post_id);
+			$EM_Event->load_postdata($post);
+			unset($EM_Event->refresh_cache);
+			wp_cache_set($EM_Event->event_id, $EM_Event, 'em_events');
+			wp_cache_set($EM_Event->post_id, $EM_Event->event_id, 'em_events_ids');
 		}
 	}
 	

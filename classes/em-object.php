@@ -140,16 +140,16 @@ class EM_Object {
 			$defaults['year'] = preg_match($year_regex, $defaults['year']) ? $defaults['year']:'';
 		}
 		//Deal with scope and date searches
-		if ( !is_array($defaults['scope']) && preg_match ( "/^([0-9]{4}-[0-9]{2}-[0-9]{2})?,([0-9]{4}-[0-9]{2}-[0-9]{2})?$/", $defaults['scope'] ) ) {
+		if ( !is_array($defaults['scope']) && preg_match ( "/^([0-9]{4}-[0-9]{1,2}-[0-9]{1,2})?,([0-9]{4}-[0-9]{1,2}-[0-9]{1,2})?$/", $defaults['scope'] ) ) {
 			//This is to become an array, so let's split it up
 			$defaults['scope'] = explode(',', $defaults['scope']);
 		}
 		if( is_array($defaults['scope']) ){
 			//looking for a date range here, so we'll verify the dates validate, if not get the default.
-			if ( !preg_match("/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/", $defaults['scope'][0]) ){
+			if ( !preg_match("/^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}$/", $defaults['scope'][0]) ){
 				$defaults['scope'][0] = '';
 			}
-			if( !preg_match("/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/", $defaults['scope'][1]) ) {
+			if( !preg_match("/^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}$/", $defaults['scope'][1]) ) {
 				$defaults['scope'][1] = '';
 			}
 			if( empty($defaults['scope'][0]) && empty($defaults['scope'][1]) ){
@@ -336,7 +336,7 @@ class EM_Object {
 				}
 				//$conditions['scope'] = " ( ( event_start_date <= CAST('$date_end' AS DATE) AND event_end_date >= CAST('$date_start' AS DATE) ) OR (event_start_date BETWEEN CAST('$date_start' AS DATE) AND CAST('$date_end' AS DATE)) OR (event_end_date BETWEEN CAST('$date_start' AS DATE) AND CAST('$date_end' AS DATE)) )";
 			}
-		} elseif ( preg_match ( "/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/", $scope ) ) {
+		} elseif ( preg_match ( "/^[0-9]{4}-[0-9]{2}-[0-9]{1,2}$/", $scope ) ) {
 			//Scope can also be a specific date. However, if 'day', 'month', or 'year' are set, that will take precedence
 			if( get_option('dbem_events_current_are_past') ){
 				$conditions['scope'] = "event_start_date = CAST('$scope' AS DATE)";
@@ -461,6 +461,10 @@ class EM_Object {
 			//region lookup
 			if( !empty($args['region']) ){
 				$conditions['region'] = $wpdb->prepare('location_region=%s', $args['region']);
+			}
+			//postcode lookup
+			if( !empty($args['postcode']) ){
+				$conditions['postcode'] = $wpdb->prepare('location_postcode=%s', $args['postcode']);
 			}
 		}
 		

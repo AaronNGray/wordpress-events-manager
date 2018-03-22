@@ -92,6 +92,7 @@ class EM_Bookings_Table{
 			'ticket_name'=>__('Ticket Name','events-manager'),
 			'ticket_description'=>__('Ticket Description','events-manager'),
 			'ticket_price'=>__('Ticket Price','events-manager'),
+			'ticket_total'=>__('Ticket Total','events-manager'),
 			'ticket_id'=>__('Ticket ID','events-manager')
 		), $this);
 		//add tickets to template if we're showing rows by booking-ticket
@@ -558,11 +559,7 @@ class EM_Bookings_Table{
 			}elseif($col == 'event_time'){
 				$val = $EM_Booking->get_event()->output('#_EVENTTIMES');
 			}elseif($col == 'booking_price'){
-				if($this->show_tickets && !empty($EM_Ticket)){ 
-					$val = em_get_currency_formatted(apply_filters('em_bookings_table_row_booking_price_ticket', $EM_Ticket_Booking->get_price(false,false, true), $EM_Booking, true));
-				}else{
-					$val = $EM_Booking->get_price(true);
-				}
+				$val = $EM_Booking->get_price(true);
 			}elseif($col == 'booking_status'){
 				$val = $EM_Booking->get_status(true);
 			}elseif($col == 'booking_date'){
@@ -580,6 +577,9 @@ class EM_Bookings_Table{
 				$val = $EM_Ticket->$col;
 			}elseif( $col == 'ticket_price' && $this->show_tickets && !empty($EM_Ticket) ){
 				$val = $EM_Ticket->get_price(true);
+			}elseif( $col == 'ticket_total' && $this->show_tickets && !empty($EM_Ticket_Booking) ){
+				$val = apply_filters('em_bookings_table_row_booking_price_ticket', $EM_Ticket_Booking->get_price(false), $EM_Booking, true);
+				$val = $EM_Booking->format_price($val * (1 + $EM_Booking->get_tax_rate(true)));
 			}elseif( $col == 'ticket_id' && $this->show_tickets && !empty($EM_Ticket) ){
 				$val = $EM_Ticket->ticket_id;
 			}elseif( $col == 'booking_comment' ){
@@ -591,7 +591,7 @@ class EM_Bookings_Table{
 			}
 			//use this 
 			$val = apply_filters('em_bookings_table_rows_col_'.$col, $val, $EM_Booking, $this, $format, $object);
-			$cols[] = apply_filters('em_bookings_table_rows_col', $val, $col, $EM_Booking, $this, $format, $object); //deprecated, use the above filter instead for better performance
+			$cols[] = apply_filters('em_bookings_table_rows_col', $val, $col, $EM_Booking, $this, $format, $object); //use the above filter instead for better performance
 		}
 		return $cols;
 	}

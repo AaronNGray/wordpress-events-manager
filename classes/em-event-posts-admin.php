@@ -68,7 +68,7 @@ class EM_Event_Posts_Admin{
         if( !empty($_REQUEST['recurrence_id']) && is_numeric($_REQUEST['recurrence_id']) ){
             $EM_Event = em_get_event($_REQUEST['recurrence_id']);
             ?>
-            <div class="updated">
+            <div class="notice notice-info">
                 <p><?php echo sprintf(esc_html__('You are viewing individual recurrences of recurring event %s.', 'events-manager'), '<a href="'.$EM_Event->get_edit_url().'">'.$EM_Event->event_name.'</a>'); ?></p>
                 <p><?php esc_html_e('You can edit individual recurrences and disassociate them with this recurring event.', 'events-manager'); ?></p>
             </div>
@@ -309,7 +309,7 @@ class EM_Event_Recurring_Posts_Admin{
 	
 	public static function admin_notices(){
 		?>
-		<div class="updated">
+		<div class="notice notice-info">
 			<p><?php esc_html_e( 'Modifications to recurring events will be applied to all recurrences and will overwrite any changes made to those individual event recurrences.', 'events-manager'); ?></p>
 			<p><?php esc_html_e( 'Bookings to individual event recurrences will be preserved if event times and ticket settings are not modified.', 'events-manager'); ?></p>
 			<p>

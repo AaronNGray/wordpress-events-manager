@@ -452,7 +452,8 @@ class EM_Bookings extends EM_Object implements Iterator{
 	}
 	
 	/**
-	 * Gets number of bookings (not spaces). If booking approval is enabled, only the number of approved bookings will be shown.
+	 * Gets booking objects (not spaces). If booking approval is enabled, only the number of approved bookings will be shown.
+	 * @param boolean $all_bookings If set to true, then all bookings with any status is returned
 	 * @return EM_Bookings
 	 */
 	function get_bookings( $all_bookings = false ){
@@ -569,7 +570,7 @@ class EM_Bookings extends EM_Object implements Iterator{
 			$sql = "
 				SELECT * FROM $bookings_table b 
 				LEFT JOIN $events_table e ON e.event_id=b.event_id 
-				WHERE booking_id".implode(" OR booking_id=", $args);
+				WHERE booking_id=".implode(" OR booking_id=", $args);
 			$results = $wpdb->get_results(apply_filters('em_bookings_get_sql',$sql),ARRAY_A);
 			$bookings = array();
 			foreach($results as $result){
@@ -620,7 +621,7 @@ class EM_Bookings extends EM_Object implements Iterator{
 		$results = $wpdb->get_results($sql, ARRAY_A);
 
 		//If we want results directly in an array, why not have a shortcut here?
-		if( $args['array'] == true ){
+		if( !empty($args['array']) ){
 			return $results;
 		}
 		
@@ -748,7 +749,7 @@ class EM_Bookings extends EM_Object implements Iterator{
 			'person' => true, //to add later, search by person's bookings...
 			'blog' => get_current_blog_id(),
 			'ticket_id' => false,
-			'array' => false //returns an array of results if true, if an array or text it's assumed an array or single row requested 
+			'array' => false //returns an array of results if true, if an array or text it's assumed an array of specific table fields or single field name requested 
 		);
 		//sort out whether defaults were supplied or just the array of search values
 		if( empty($array) ){

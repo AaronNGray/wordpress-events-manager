@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 3.5
 Tested up to: 4.9
-Stable tag: 5.8.1.3
+Stable tag: 5.9
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
 
@@ -100,7 +100,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 
 == Changelog ==
 
-= 5.8.2.1 (dev) =
+= 5.9 =
 * fixes applied to 5.8.1.2 merged into dev version
 * added timezone support
 * added new admin notice interface objects
@@ -108,7 +108,26 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * fixed some PHP strict warnings regarding parent/child class method signatures
 * fixed taxonomy pagination issues in AJAX (affecting tags specifically)
 * fixed shortcode not getting parsed properly due to fix in 5.8.1.1 attempting to parse shortcode with supplied formats
-* 
+* fixed non-standard YYYY-M-D date formats not being accepted in scope arguments
+* improved multisite blog update interface
+* added modular update logic to admin pages for future features
+* further hardening against XSS strings
+* fixed non-standard YYYY-M-D date formats not being accepted in scope arguments
+* fixed duplicate slug issues when duplicating events
+* removed all references of create_function for php 7.2 compatibility
+* fixed documented 'postcode' search attribute not filtering results by that value
+* fixed event duplication not copying other plugin meta data, such as ACF
+* fixed EM_Bookings::get() producing SQL error if passing an array of booking IDs
+* added em_event_post_scope_meta_query filter for admin-side custom scopes
+* fixed bug where blank start/end times of tickets and booking cut-offs default to 12AM istead of event start time
+* fixed preview mode not reflecting new event description
+* fixed broken ical permalinks for individual subcategories
+* changed recurrence warning strips from green to orange/blue at top of admin pages
+* added 'ticket total' column to bookings export and split 'ticket price' from 'total' booking price when exporting split by ticket type
+* fixed issues with caching not getting updated other plugins data such as ACF and possibly others
+* fixed issue where logged out user didn't see login feedback message on booking form under certain setting combinations
+* added EM_ML::restore_current_lang and EM_ML::switch_to_lang functions
+* fixed language detection of bookings not being done early enough
 
 = 5.8.1.3 =
 * fixed escaping error in bookings admin table introduced in 5.8.1.3

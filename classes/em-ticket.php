@@ -234,8 +234,10 @@ class EM_Ticket extends EM_Object{
 		$this->ticket_price = ( !empty($post['ticket_price']) ) ? wp_kses_data($post['ticket_price']):'';
 		$this->ticket_start = ( !empty($post['ticket_start']) ) ? wp_kses_data($post['ticket_start']):'';
 		$this->ticket_end = ( !empty($post['ticket_end']) ) ? wp_kses_data($post['ticket_end']):'';
-		if( !empty($post['ticket_start_time']) && !empty($this->ticket_start) ) $this->ticket_start .= ' '. $this->sanitize_time($post['ticket_start_time']);
-		if( !empty($post['ticket_end_time']) && !empty($this->ticket_end) ) $this->ticket_end .= ' '. $this->sanitize_time($post['ticket_end_time']);
+		$start_time = !empty($post['ticket_start_time']) ? $post['ticket_start_time'] : $this->get_event()->start()->format('H:i');
+		if( !empty($this->ticket_start) ) $this->ticket_start .= ' '. $this->sanitize_time($start_time);
+		$end_time = !empty($post['ticket_end_time']) ? $post['ticket_end_time'] : $this->get_event()->start()->format('H:i');
+		if( !empty($this->ticket_end) ) $this->ticket_end .= ' '. $this->sanitize_time($end_time);
 		//sort out user availability restrictions
 		$this->ticket_members = ( !empty($post['ticket_type']) && $post['ticket_type'] == 'members' ) ? 1:0;
 		$this->ticket_guests = ( !empty($post['ticket_type']) && $post['ticket_type'] == 'guests' ) ? 1:0;
@@ -261,7 +263,7 @@ class EM_Ticket extends EM_Object{
 				}else{ //by default the start date is the point of reference
 					$this->ticket_meta['recurrences']['start_days'] = absint($post['ticket_start_recurring_days']) * -1;
 				}
-				$this->ticket_meta['recurrences']['start_time'] = ( !empty($post['ticket_start_time']) ) ? $this->sanitize_time($post['ticket_start_time']) : '00:00:00';
+				$this->ticket_meta['recurrences']['start_time'] = ( !empty($post['ticket_start_time']) ) ? $this->sanitize_time($post['ticket_start_time']) : $this->get_event()->start()->format('H:i');
 			}else{
 				unset($this->ticket_meta['recurrences']['start_days']);
 				unset($this->ticket_meta['recurrences']['start_time']);
@@ -273,7 +275,7 @@ class EM_Ticket extends EM_Object{
 				}else{ //by default the end date is the point of reference
 					$this->ticket_meta['recurrences']['end_days'] = absint($post['ticket_end_recurring_days']) * -1;
 				}
-				$this->ticket_meta['recurrences']['end_time'] = ( !empty($post['ticket_end_time']) ) ? $this->sanitize_time($post['ticket_end_time']) : '00:00:00';
+				$this->ticket_meta['recurrences']['end_time'] = ( !empty($post['ticket_end_time']) ) ? $this->sanitize_time($post['ticket_end_time']) : $this->get_event()->start()->format('H:i');
 			}else{
 				unset($this->ticket_meta['recurrences']['end_days']);
 				unset($this->ticket_meta['recurrences']['end_time']);
@@ -317,7 +319,7 @@ class EM_Ticket extends EM_Object{
 		$condition_3 = $EM_Event->rsvp_end()->getTimestamp() > time(); //either defined ending rsvp time, or start datetime is used here
 		$condition_4 = !$this->ticket_members || ($this->ticket_members && is_user_logged_in()) || $ignore_member_restrictions;
 		$condition_5 = true;
-		if( !EM_Bookings::$disable_restrictions && $this->ticket_members && !empty($this->ticket_members_roles) ){
+		if( !$ignore_member_restrictions && !EM_Bookings::$disable_restrictions && $this->ticket_members && !empty($this->ticket_members_roles) ){
 			//check if user has the right role to use this ticket
 			$condition_5 = false;
 			if( is_user_logged_in() ){
