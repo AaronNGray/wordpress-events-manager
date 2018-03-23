@@ -80,7 +80,7 @@ class EM_DateTime extends DateTime {
 		if( !$this->valid && ($format == 'Y-m-d' || $format == em_get_date_format())) return '';
 		//if we deal with offsets, then we offset UTC time by that much
 		if( $this->timezone_manual_offset !== false ){
-			return date($format, $this->getTimestamp() + $this->timezone_manual_offset );
+			return date($format, $this->getTimestampWithOffset(true) );
 		}
 		return parent::format($format);
 	}
@@ -105,9 +105,7 @@ class EM_DateTime extends DateTime {
 	public function i18n( $format = 'Y-m-d H:i:s' ){
 		if( !$this->valid && $format == em_get_date_format()) return '';
 		//if we deal with offsets, then we offset UTC time by that much
-		$ts = $this->getTimestamp();
-		$tswo = $this->getTimestampWithOffset();
-		return date_i18n( $format, $this->getTimestampWithOffset() );
+		return date_i18n( $format, $this->getTimestampWithOffset(true) );
 	}
 	
 	/**
@@ -279,6 +277,10 @@ class EM_DateTime extends DateTime {
 		return clone $this;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * @see DateTime::getTimestamp()
+	 */
 	public function getTimestamp(){
 		if( function_exists('date_timestamp_get') ){
 			return parent::getTimestamp();
@@ -291,10 +293,15 @@ class EM_DateTime extends DateTime {
 	}
 	
 	/**
-	 * Gets a timestamp with an offset, which will represent the local time equivalent in UTC time (so a local time would be produced if supplied to date())
+	 * Gets a timestamp with an offset, which will represent the local time equivalent in UTC time.
+	 * If using this to supply to a date() function, set $server_localized to true which will account for any rogue code
+	 * that sets the server default timezone to something other than UTC (which is WP sets it to at the start)
+	 * @param boolean $server_localized
 	 */
-	public function getTimestampWithOffset(){
-		return $this->getOffset() + $this->getTimestamp();
+	public function getTimestampWithOffset( $server_localized = false ){
+		//aside from the actual offset from the timezone, we also have a local server offset we need to deal with here...
+		$server_offset = $server_localized ? date('Z',$this->getTimestamp()) : 0;
+		return $this->getOffset() + $this->getTimestamp() - $server_offset;
 	}
 	
 	/**

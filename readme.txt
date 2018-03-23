@@ -99,6 +99,9 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
+= 5.9.0.1 =
+* fixed the & operator in category search attribute not working correctly in MultiSite Global Tables mode
+* added fix/workaround for any code that changes the timezone from WP's UTC timezone during runtime
 
 = 5.9 =
 * fixes applied to 5.8.1.2 merged into dev version
@@ -119,7 +122,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * fixed event duplication not copying other plugin meta data, such as ACF
 * fixed EM_Bookings::get() producing SQL error if passing an array of booking IDs
 * added em_event_post_scope_meta_query filter for admin-side custom scopes
-* fixed bug where blank start/end times of tickets and booking cut-offs default to 12AM istead of event start time
+* fixed bug where blank start/end times of tickets and booking cut-offs default to 12AM instead of event start time
 * fixed preview mode not reflecting new event description
 * fixed broken ical permalinks for individual subcategories
 * changed recurrence warning strips from green to orange/blue at top of admin pages
