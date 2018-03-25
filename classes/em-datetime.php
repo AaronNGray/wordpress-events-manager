@@ -117,7 +117,8 @@ class EM_DateTime extends DateTime {
 	}
 	
 	/**
-	 * Modifies the time of this object, if a mysql TIME valid format is provided (e.g. 14:30:00)
+	 * Modifies the time of this object, if a mysql TIME valid format is provided (e.g. 14:30:00).
+	 * Returns EM_DateTime object in all cases, but $this->valid will be set to false if unsuccessful
 	 * @param string $hour
 	 * @return EM_DateTime Returns object for chaining.
 	 */
@@ -125,47 +126,71 @@ class EM_DateTime extends DateTime {
 		if( preg_match('/^\d{2}:\d{2}:\d{2}$/', $hour) ){
 			$time = explode(':', $hour);
 			$this->setTime($time[0], $time[1], $time[2]);
+		}else{
+			$this->valid = false;
 		}
 		return $this;
 	}
 	
+	/**
+	 * Sets timestamp with PHP 5.2.x fallback.
+	 * Returns EM_DateTime object in all cases, but $this->valid will be set to false if unsuccessful
+	 * @see DateTime::setTimestamp()
+	 */
 	public function setTimestamp( $timestamp ){
 		if( function_exists('date_timestamp_set') ){
-			return parent::setTimestamp( $timestamp );
+			$return = parent::setTimestamp( $timestamp );
+			$this->valid = $return !== false;
 		}else{
 			//PHP < 5.3 fallback :/ setting modify() with a timestamp produces unpredictable results, so we play more tricks...
 			$date = explode(',', date('Y,n,j,G,i,s', $timestamp));
 			parent::setDate( (int) $date[0], (int) $date[1], (int) $date[2]);
 			parent::setTime( (int) $date[3], (int) $date[4], (int) $date[5]);
-			return $this;
+			//$this->valid determined in functions above
 		}
+		return $this;
 	}
 	
 	/**
 	 * Extends DateTime functionality by accepting a false or string value for a timezone. 
+	 * Returns EM_DateTime object in all cases, but $this->valid will be set to false if unsuccessful
 	 * @see DateTime::setTimezone()
 	 * @return EM_DateTime Returns object for chaining.
 	 */
 	public function setTimezone( $timezone ){
 		if( $timezone == $this->getTimezone()->getName() ) return $this;
 		$timezone = EM_DateTimeZone::create($timezone);
-		parent::setTimezone($timezone);
+		$return = parent::setTimezone($timezone);
 		$this->timezone_name = $timezone->getName();
 		$this->timezone_manual_offset = $timezone->manual_offset;
+		$this->valid = $return !== false;
 		return $this;
 	}
 	
+	/**
+	 * Sets time along with adjusting internal timestamp for manual UTC offsets.
+	 * Returns EM_DateTime object in all cases, but $this->valid will be set to false if unsuccessful
+	 * {@inheritDoc}
+	 * @see DateTime::setTime()
+	 */
 	public function setTime( $hour, $minute, $second = NULL, $microseconds = NULL ){
-		parent::setTime( $hour, $minute, $second );
+		$return = parent::setTime( $hour, $minute, $second );
 		$this->handleOffsets();
+		$this->valid = $return !== false;
 		return $this;
 	}
 	
+	/**
+	 * Sets date along with adjusting internal timestamp for manual UTC offsets.
+	 * Returns EM_DateTime object in all cases, but $this->valid will be set to false if unsuccessful
+	 * {@inheritDoc}
+	 * @see DateTime::setDate()
+	 */
 	public function setDate( $year, $month, $day ){
 		if( $this->timezone_manual_offset !== false ){
 			//we run into issues if we're dealing with timezones on the fringe of date changes e.g. 2018-01-01 01:00:00 UTC+2
 			$DateTime = new DateTime( $this->getDateTime(), new DateTimeZone('UTC'));
-			$DateTime->setDate( $year, $month, $day );
+			$DateTime->setDate( $year, $month, $day ); //$this->valid is determined here
 			//create a new timestamp based on UTC DateTime and offset it to current timezone
 			if( function_exists('date_timestamp_get') ){
 				$timestamp = $DateTime->getTimestamp();
@@ -175,23 +200,40 @@ class EM_DateTime extends DateTime {
 			}
 			$timestamp -= $this->timezone_manual_offset;
 			$this->setTimestamp( $timestamp );
+			$return = $this->valid;
 		}else{
-			parent::setDate( $year, $month, $day );
+			$return = parent::setDate( $year, $month, $day );
 		}
+		$this->valid = $return !== false;
 		return $this;
 	}
 	
+	/**
+	 * Returns EM_DateTime object in all cases, but $this->valid will be set to false if unsuccessful
+	 * {@inheritDoc}
+	 * @see DateTime::setISODate()
+	 */
 	public function setISODate( $year, $week, $day = NULL ){
-		parent::setISODate( $year, $week, $day );
+		$return = parent::setISODate( $year, $week, $day );
+		$this->valid = $return !== false;
 		return $this;
 	}
 	
+	/**
+	 * Handles UTC manual offsets along with providing a PHP 5.2.x fallback.
+	 * Returns EM_DateTime object in all cases, but $this->valid will be set to false if unsuccessful
+	 * {@inheritDoc}
+	 * @see DateTime::modify()
+	 */
 	public function modify( $modify ){
 		if( function_exists('date_add') ){
-			parent::modify($modify);
+			$result = parent::modify($modify);
+			$this->valid = $result !== false;
 		}else{
 			//PHP < 5.3 fallback :/ wierd stuff happens when using the DateTime modify function
-			$this->setTimestamp( strtotime($modify, $this->getTimestamp()) );
+			$timestamp = strtotime($modify, $this->getTimestamp());
+			$this->valid = $timestamp !== false;
+			if( $this->valid ) $this->setTimestamp( $timestamp );
 		}
 		$this->handleOffsets();
 		return $this;
@@ -199,6 +241,7 @@ class EM_DateTime extends DateTime {
 	
 	/**
 	 * Extends DateTime function to allow string representation of argument passed to create a new DateInterval object.
+	 * Returns EM_DateTime object in all cases, but $this->valid will be set to false if unsuccessful
 	 * @see DateTime::add()
 	 * @param string|DateInterval
 	 * @return EM_DateTime Returns object for chaining.
@@ -206,20 +249,23 @@ class EM_DateTime extends DateTime {
 	public function add( $DateInterval ){
 		if( function_exists('date_add') ){
 			if( is_object($DateInterval) ){
-				return parent::add($DateInterval);
+				$result = parent::add($DateInterval);
 			}else{
-				return parent::add( new DateInterval($DateInterval) );
+				$result = parent::add( new DateInterval($DateInterval) );
 			}
+			$this->valid = $result !== false;
 		}else{
 			//PHP < 5.3 fallback :/
 			$strtotime = $this->dateinterval_fallback($DateInterval, 'add');
 			$this->setTimestamp( strtotime($strtotime, $this->getTimestamp()) );
-			return $this;
+			//$this->valid determined in setTimestamp
 		}
+		return $this;
 	}
 	
 	/**
 	 * Extends DateTime function to allow string representation of argument passed to create a new DateInterval object.
+	 * Returns EM_DateTime object in all cases, but $this->valid will be set to false if unsuccessful
 	 * @see DateTime::sub()
 	 * @param string|DateInterval
 	 * @return EM_DateTime
@@ -227,16 +273,18 @@ class EM_DateTime extends DateTime {
 	public function sub( $DateInterval ){
 		if( function_exists('date_sub') ){
 			if( is_object($DateInterval) ){
-				return parent::sub($DateInterval);
+				$result = parent::sub($DateInterval);
 			}else{
-				return parent::sub( new DateInterval($DateInterval) );
+				$result = parent::sub( new DateInterval($DateInterval) );
 			}
+			$this->valid = $result !== false;
 		}else{
 			//PHP < 5.3 fallback :/
 			$strtotime = $this->dateinterval_fallback($DateInterval, 'subtract');
 			$this->setTimestamp( strtotime($strtotime, $this->getTimestamp()) );
-			return $this;
+			//$this->valid determined in setTimestamp
 		}
+		return $this;
 	}
 	
 	/**

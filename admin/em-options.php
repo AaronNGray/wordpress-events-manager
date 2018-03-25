@@ -288,6 +288,7 @@ function em_options_save(){
 					$result .= '</ul>';
 				}else{
 					delete_site_option('dbem_reset_timezone_multisite_progress');
+					EM_Admin_Notices::remove('date_time_migration_5.9_multisite', true);
 				}
 				restore_current_blog();
 			}else{

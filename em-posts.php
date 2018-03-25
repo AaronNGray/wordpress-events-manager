@@ -256,6 +256,20 @@ function wp_events_plugin_init(){
 			'yarpp_support'=>true
 		);
 	}
+	//gutenberg support - define EM_GUTENBERG in your wp-config.php page to enable
+	if( defined('EM_GUTENBERG') && EM_GUTENBERG ){
+		$event_post_type['show_in_rest'] = true;
+		if ( get_option('dbem_recurrence_enabled') ) $event_recurring_post_type['show_in_rest'] = true;
+		if( get_option('dbem_locations_enabled', true) ) $location_post_type['show_in_rest'] = true;
+		function em_gutenberg_support( $can_edit, $post_type ){
+			$recurrences = $post_type == 'event-recurring' && get_option('dbem_recurrence_enabled');
+			$locations = $post_type == EM_POST_TYPE_LOCATION && get_option('dbem_locations_enabled', true);
+			if( $post_type == EM_POST_TYPE_EVENT || $recurrences || $locations ) $can_edit = true;
+			return $can_edit;
+		}
+		add_filter('gutenberg_can_edit_post_type', 'em_gutenberg_support', 10, 2 ); //Gutenberg
+	}
+	
 	if( strstr(EM_POST_TYPE_EVENT_SLUG, EM_POST_TYPE_LOCATION_SLUG) !== FALSE ){
 		//Now register posts, but check slugs in case of conflicts and reorder registrations
 		register_post_type(EM_POST_TYPE_EVENT, $event_post_type);

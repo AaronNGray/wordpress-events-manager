@@ -174,6 +174,8 @@ class EM_Booking extends EM_Object{
 		if( $prop == 'timestamp' ){
 			if( $this->date() !== false );
 			$this->date()->setTimestamp($val);
+		}else{
+			$this->$prop = $val;
 		}
 	}
 	

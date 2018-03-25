@@ -1052,7 +1052,7 @@ function em_upgrade_current_installation(){
 			EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
 		}
 	}
-	if( get_option('dbem_version') != '' && get_option('dbem_version') == 5.9 && is_multisite() && !EM_MS_GLOBAL ){
+	if( get_option('dbem_version') != '' && get_option('dbem_version') == 5.9 && is_multisite() && !EM_MS_GLOBAL && (is_network_admin() || is_main_site()) ){
 		//warning just for users who upgraded to 5.9 on multisite without global tables enabled
 		$message = 'Due to a bug in 5.9 when updating to new timezones in MultiSite installations, you may notice some of your events are missing from lists.<br><br>To fix this problem, visit %s choose your timezone, select %s and click %s to update all your blogs to the desired timezone.';
 		$url = network_admin_url('admin.php?page=events-manager-options#general+admin-tools');

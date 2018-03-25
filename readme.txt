@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 3.5
 Tested up to: 4.9
-Stable tag: 5.9
+Stable tag: 5.9.1
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
 
@@ -99,7 +99,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
-= (dev) 5.9.0.2 =
+= 5.9.1 =
 * fixed the & operator in category search attribute not working correctly in MultiSite Global Tables mode
 * added fix/workaround for any code that changes the timezone from WP's UTC timezone during runtime
 * fixed multisite upgrade issues with timezones
@@ -107,6 +107,11 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * changed default subscriber capabilities so they can't submit events by default
 * added option to resume failed timezone resets on multisite blogs
 * added upgrade warning for multisite users who upgraded to 5.9 and had timezone update errors
+* fixed (deprecated with backward compatibility) shorthand EM_Booking object properties such as 'status' not having values after 5.9 update
+* fixed recurrence pattern date miscalculations on sites where a plugin/theme changes the default server timezone after WP sets it to UTC
+* added gutenberg support with define('EM_GUTENBERG', true); defined in wp-config.php
+* fixed new tickets not being added to previously created recurring event where bookings were previously disabled
+* added tweaked EM_DateTime functionality so functions that might return false in DateTime set valid property to false before returning object for chaining
 
 = 5.9 =
 * fixes applied to 5.8.1.2 merged into dev version
