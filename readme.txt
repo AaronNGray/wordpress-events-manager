@@ -99,9 +99,14 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
-= 5.9.0.1 =
+= (dev) 5.9.0.2 =
 * fixed the & operator in category search attribute not working correctly in MultiSite Global Tables mode
 * added fix/workaround for any code that changes the timezone from WP's UTC timezone during runtime
+* fixed multisite upgrade issues with timezones
+* added option to reset timezones for all blogs on multisite and also reset each blog to its individual WP timezone
+* changed default subscriber capabilities so they can't submit events by default
+* added option to resume failed timezone resets on multisite blogs
+* added upgrade warning for multisite users who upgraded to 5.9 and had timezone update errors
 
 = 5.9 =
 * fixes applied to 5.8.1.2 merged into dev version

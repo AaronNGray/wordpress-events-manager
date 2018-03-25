@@ -252,8 +252,43 @@ function em_options_save(){
 			if( !empty($_REQUEST['timezone_reset_blog']) && is_numeric($_REQUEST['timezone_reset_blog']) ){
 				$blog_id = $_REQUEST['timezone_reset_blog'];
 				switch_to_blog($blog_id);
+				if( $timezone == 'default' ){
+					$timezone = str_replace(' ', EM_DateTimeZone::create()->getName());
+				}
 				$blog_name = get_bloginfo('name');
 				$result = em_migrate_datetime_timezones(true, true, $timezone);
+				restore_current_blog();
+			}elseif( !empty($_REQUEST['timezone_reset_blog']) && ($_REQUEST['timezone_reset_blog'] == 'all' || $_REQUEST['timezone_reset_blog'] == 'all-resume') ){
+				global $wpdb, $current_site;
+				$blog_ids = $blog_ids_progress = get_site_option('dbem_reset_timezone_multisite_progress', false);
+				if( !is_array($blog_ids) || $_REQUEST['timezone_reset_blog'] == 'all' ){
+					$blog_ids = $blog_ids_progress = $wpdb->get_col('SELECT blog_id FROM '.$wpdb->blogs.' WHERE site_id='.$current_site->id);
+					update_site_option('dbem_reset_timezone_multisite_progress', $blog_ids_progress);
+				}
+				foreach($blog_ids as $k => $blog_id){
+					$result = true;
+					$plugin_basename = plugin_basename(dirname(dirname(__FILE__)).'/events-manager.php');
+					if( in_array( $plugin_basename, (array) get_blog_option($blog_id, 'active_plugins', array() ) ) || is_plugin_active_for_network($plugin_basename) ){
+						switch_to_blog($blog_id);
+						$blog_timezone = $timezone == 'default' ? str_replace(' ', '', EM_DateTimeZone::create()->getName()) : $timezone;
+						$blog_name = get_bloginfo('name');
+						$blog_result = em_migrate_datetime_timezones(true, true, $blog_timezone);
+						if( !$blog_result ){
+							$fails[$blog_id] = $blog_name;
+						}else{
+							unset($blog_ids_progress[$k]);
+							update_site_option('dbem_reset_timezone_multisite_progress', $blog_ids_progress);
+						}
+					}
+				}
+				if( !empty($fails) ){
+					$result = __('The following blog timezones could not be successfully reset:', 'events-manager');
+					$result .= '<ul>';
+					foreach( $fails as $fail ) $result .= '<li>'.$fail.'</li>';
+					$result .= '</ul>';
+				}else{
+					delete_site_option('dbem_reset_timezone_multisite_progress');
+				}
 				restore_current_blog();
 			}else{
 				$result = __('A valid blog ID must be provided, you can only reset one blog at a time.','events-manager');
@@ -265,7 +300,11 @@ function em_options_save(){
 			$EM_Notices->add_error($result, true);
 		}else{
 			if( is_multisite() ){
-				$EM_Notices->add_confirm(sprintf(__('Event timezones for blog %s have been reset to %s.','events-manager'), '<code>'.$blog_name.'</code>', '<code>'.$timezone.'</code>'), true);
+				if( $_REQUEST['timezone_reset_blog'] == 'all' || $_REQUEST['timezone_reset_blog'] == 'all-resume' ){
+					$EM_Notices->add_confirm(sprintf(__('Event timezones on all blogs have been reset to %s.','events-manager'), '<code>'.$timezone.'</code>'), true);
+				}else{
+					$EM_Notices->add_confirm(sprintf(__('Event timezones for blog %s have been reset to %s.','events-manager'), '<code>'.$blog_name.'</code>', '<code>'.$timezone.'</code>'), true);
+				}
 			}else{
 				$EM_Notices->add_confirm(sprintf(__('Event timezones have been reset to %s.','events-manager'), '<code>'.$timezone.'</code>'), true);
 			}
@@ -799,18 +838,37 @@ function em_admin_option_box_uninstall(){
 			<table class="form-table">
     		    <tr class="em-header"><td colspan="2">
     		        <h4><?php _e ( 'Reset Timezones', 'events-manager'); ?></h4>
-    		    </td></tr>
+					<?php if( is_multisite() && get_site_option('dbem_reset_timezone_multisite_progress', false) !== false ): ?>
+					<p style="color:red;">
+						<?php 
+						echo sprintf( esc_html__('Your last attempt to reset all blogs to a certain timezone did not complete successfully. You can attempt to reset only those blogs that weren\'t completed by selecting your desired timezone again and then %s from the dropdowns below', 'events-manager'), '<code>'.esc_html__('Resume Previous Attempt (All Blogs)', 'events-manager').'</code>' ); 
+						?>
+					</p>
+					<?php endif; ?>
+				</td></tr>
     		    <tr>
     			    <th style="text-align:right;">
     			    	<a href="#" class="button-secondary" id="em-reset-event-timezones"><?php esc_html_e('Reset Event Timezones','events-manager'); ?></a>
     			    </th>
     			    <td>
     			    	<select name="timezone_reset_value" class="em-reset-event-timezones">
-    			    		<?php echo wp_timezone_choice(''); ?>
+    			    		<?php 
+    			    			if( is_multisite() ){
+    			    				$timezone_default = 'none';
+    			    				echo '<option value="default">'.__('Blog Default Timezone', 'events-manager').'</option>';
+    			    			}else{
+	    			    			$timezone_default = str_replace(' ', '', EM_DateTimeZone::create()->getName());
+								}
+							?>
+    			    		<?php echo wp_timezone_choice($timezone_default); ?>
     			    	</select>
     			    	<?php if( is_multisite() ): ?>
     			    		<select name="timezone_reset_blog" class="em-reset-event-timezones">
     			    			<option value="0"><?php esc_html_e('Select a blog...', 'events-manager'); ?></option>
+    			    			<option value="all"><?php esc_html_e('All Blogs', 'events-manager'); ?></option>
+    			    			<?php if( is_multisite() && get_site_option('dbem_reset_timezone_multisite_progress', false) !== false ): ?>
+    			    			<option value="all-resume"><?php esc_html_e('Resume Previous Attempt (All Blogs)', 'events-manager'); ?></option>
+    			    			<?php endif; ?>
     			    			<?php
 	    			    		foreach( get_sites() as $WP_Site){ /* @var WP_Site $WP_Site */
 	    			    			echo '<option value="'.esc_attr($WP_Site->blog_id).'">'. esc_html($WP_Site->blogname) .'</option>';
