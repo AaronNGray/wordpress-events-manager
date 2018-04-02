@@ -21,7 +21,7 @@ function em_get_event($id = false, $search_by = 'event_id') {
 	}
 	if( is_object($id) && get_class($id) == 'EM_Event' ){
 		return apply_filters('em_get_event', $id);
-	}else{
+	}elseif( !defined('EM_CACHE') || EM_CACHE ){
 		//check the cache first
 		$event_id = false;
 		if( is_numeric($id) ){
@@ -39,9 +39,9 @@ function em_get_event($id = false, $search_by = 'event_id') {
 				return apply_filters('em_get_event', $event);
 			}
 		}
-		//if we get this far, just create a new event
-		return apply_filters('em_get_event', new EM_Event($id,$search_by));
 	}
+	//if we get this far, just create a new event
+	return apply_filters('em_get_event', new EM_Event($id,$search_by));
 }
 /**
  * Event Object. This holds all the info pertaining to an event, including location and recurrence info.
@@ -2823,7 +2823,7 @@ class EM_Event extends EM_Object{
 		$matching_days = array(); //the days we'll be returning in timestamps
 		
 		//generate matching dates based on frequency type
-		switch ( $this->recurrence_freq ){
+		switch ( $this->recurrence_freq ){ /* @var EM_DateTime $current_date */
 			case 'daily':
 				//If daily, it's simple. Get start date, add interval timestamps to that and create matching day for each interval until end date.
 				$current_date = $start_date;
@@ -2883,7 +2883,7 @@ class EM_Event extends EM_Object{
 					}
 					//if we have a matching day, get the timestamp, make sure it's within our start/end dates for the event, and add to array if it is
 					if( !empty($matching_day) ){
-						$matching_date = $current_date->modify($current_date->format('Y-m').'-'.$matching_day)->getTimestamp();
+						$matching_date = $current_date->setDate( $current_date->format('Y'), $current_date->format('m'), $matching_day )->getTimestamp();
 						if($matching_date >= $start_date && $matching_date <= $end_date){
 							$matching_days[] = $matching_date;
 						}

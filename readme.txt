@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 3.5
 Tested up to: 4.9
-Stable tag: 5.9.1
+Stable tag: 5.9.2
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
 
@@ -44,6 +44,7 @@ Version 5 now makes events and locations WordPress Custom Post Types, allowing f
 * Add to Google Calendar buttons
 * RSS Feeds
 * Compatible with SEO plugins
+* Timezone Support - create events in different timezones 
 * Plenty of template tags and shortcodes for use in your posts and pages
 * Actively maintained and supported
 * Lots of documentation and tutorials
@@ -99,6 +100,18 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
+= 5.9.2 =
+* fixed some instances where PHP 5.2 outputs incorrect times due to other plugins changing server timezones
+* fixed scope issues with PHP 5.2 when calculating start/end of month dates
+* fixed potential issues with manual offsets when other plugins change server timezones whilst saving events, particularly in PHP 5.2
+* added EM_CACHE constant which if defined as false will disable caching
+* fixed issues when changing times of an EM_DateTime object with large manual offset timezones may cause incorrect dates (fixes some weekly recurrence pattern issues)
+* added notice when viewing bookings made in another language
+* added booking admin table column for language used in booking
+* fixed some minor PHP notices preventing event submissions/edits with a new location if display_errors are enabled
+* updated EM_Notices to use new class names for notices output in WP Dasbhoard
+* added filters for all post type and custom taxonomy arrays used in initial post type and custom taxonomy registration functions (see em-posts.php)
+
 = 5.9.1 =
 * fixed the & operator in category search attribute not working correctly in MultiSite Global Tables mode
 * added fix/workaround for any code that changes the timezone from WP's UTC timezone during runtime

@@ -80,7 +80,14 @@ class EM_DateTime extends DateTime {
 		if( !$this->valid && ($format == 'Y-m-d' || $format == em_get_date_format())) return '';
 		//if we deal with offsets, then we offset UTC time by that much
 		if( $this->timezone_manual_offset !== false ){
-			return date($format, $this->getTimestampWithOffset(true) );
+			if( function_exists('date_timestamp_get') ){
+				return date($format, $this->getTimestampWithOffset(true) );
+			}else{
+				//PHP < 5.3 fallback :/ Messed up, but it works...
+				$timestamp = parent::format('U');
+				$server_offset = date('Z', $timestamp);
+				return date( $format, $timestamp - ($server_offset * 2) + $this->getOffset() );
+			}
 		}
 		return parent::format($format);
 	}
@@ -105,7 +112,14 @@ class EM_DateTime extends DateTime {
 	public function i18n( $format = 'Y-m-d H:i:s' ){
 		if( !$this->valid && $format == em_get_date_format()) return '';
 		//if we deal with offsets, then we offset UTC time by that much
-		return date_i18n( $format, $this->getTimestampWithOffset(true) );
+		if( !function_exists('date_timestamp_get') && $this->timezone_manual_offset !== false ){
+			//PHP < 5.3 fallback :/ Messed up, but it works...
+			$timestamp = parent::format('U');
+			$server_offset = date('Z', $timestamp);
+			return date_i18n( $format, $timestamp - ($server_offset * 2) + $this->getOffset() );
+		}else{
+			return date_i18n( $format, $this->getTimestampWithOffset(true) );
+		}
 	}
 	
 	/**
@@ -174,7 +188,23 @@ class EM_DateTime extends DateTime {
 	 * @see DateTime::setTime()
 	 */
 	public function setTime( $hour, $minute, $second = NULL, $microseconds = NULL ){
+		/*
+		 * manual offsets stores internal timestamp and date as UTC and the time is changed in UTC date/time
+		 * this causes problems when UTC time is on a different date to the local time with manual offset.
+		 * example: 2018-01-01 14:00 UTC => 2018-01-02 00:00 UTC+10
+		 * action: set the time to 12:00
+		 * result: 2018-01-01 02:00 UTC => 2018-01-01 12:00 UTC+10 -> after offset handling 
+		 * expected: 2018-01-02 02:00 UTC => 2018-01-02 12:00 UTC+10 -> after offset handling
+		 * solution : change date AFTER setting the time and BEFORE offset handling
+		 */
+		if( $this->timezone_manual_offset !== false ){
+			$date_array = explode('-', $this->format('Y-m-d')); 
+		}
 		$return = parent::setTime( $hour, $minute, $second );
+		//pre-handle offsets for time changes where dates change as stated above 
+		if( $this->timezone_manual_offset !== false ){
+			$this->setDate($date_array[0], $date_array[1], $date_array[2]);
+		}
 		$this->handleOffsets();
 		$this->valid = $return !== false;
 		return $this;
@@ -231,7 +261,12 @@ class EM_DateTime extends DateTime {
 			$this->valid = $result !== false;
 		}else{
 			//PHP < 5.3 fallback :/ wierd stuff happens when using the DateTime modify function
-			$timestamp = strtotime($modify, $this->getTimestamp());
+			if( preg_match('/^(first|last) day of this month$/', $modify, $matches) ){
+				$format = $matches[1] == 'first' ? 'Y-m-01':'Y-m-t';
+				$timestamp = strtotime($this->format( $format ), $this->getTimestamp());
+			}else{
+				$timestamp = strtotime($modify, $this->getTimestamp());
+			}
 			$this->valid = $timestamp !== false;
 			if( $this->valid ) $this->setTimestamp( $timestamp );
 		}
@@ -336,6 +371,9 @@ class EM_DateTime extends DateTime {
 			//PHP < 5.3 fallback :/
 			$strtotime = parent::format('Y-m-d H:i:s');
 			$timestamp = strtotime($strtotime);
+			//offset timestamp in case plugins change default timezone
+			$server_offset = date('Z',$timestamp);
+			$timestamp += $server_offset;
 			return $timestamp;
 		}
 	}
@@ -349,7 +387,12 @@ class EM_DateTime extends DateTime {
 	public function getTimestampWithOffset( $server_localized = false ){
 		//aside from the actual offset from the timezone, we also have a local server offset we need to deal with here...
 		$server_offset = $server_localized ? date('Z',$this->getTimestamp()) : 0;
-		return $this->getOffset() + $this->getTimestamp() - $server_offset;
+		if( function_exists('date_timestamp_get') ){
+			return $this->getOffset() + $this->getTimestamp() - $server_offset;
+		}else{
+			//PHP < 5.3 fallback :/
+			return $this->getTimestamp() - $server_offset;
+		}
 	}
 	
 	/**
