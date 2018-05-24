@@ -496,23 +496,23 @@ function em_add_options() {
 		'dbem_display_calendar_in_events_page' => 0,
 		'dbem_single_event_format' => '<div style="float:right; margin:0px 0px 15px 15px;">#_LOCATIONMAP</div>
 <p>
-	<strong>'.__('Date/Time','events-manager').'</strong><br/>
+	<strong>'.esc_html__('Date/Time','events-manager').'</strong><br/>
 	Date(s) - #_EVENTDATES<br /><i>#_EVENTTIMES</i>
 </p>
 {has_location}
 <p>
-	<strong>'.__('Location','events-manager').'</strong><br/>
+	<strong>'.esc_html__('Location','events-manager').'</strong><br/>
 	#_LOCATIONLINK
 </p>
 {/has_location}
 <p>
-	<strong>'.__('Categories','events-manager').'</strong>
+	<strong>'.esc_html__('Categories','events-manager').'</strong>
 	#_CATEGORIES
 </p>
 <br style="clear:both" />
 #_EVENTNOTES
 {has_bookings}
-<h3>Bookings</h3>
+<h3>'.esc_html__('Bookings','events-manager').'</h3>
 #_BOOKINGFORM
 {/has_bookings}',
 	    'dbem_event_excerpt_format' => '#_EVENTDATES @ #_EVENTTIMES - #_EVENTEXCERPT',
@@ -823,7 +823,19 @@ function em_add_options() {
 	    //feedback reminder
 	    'dbem_feedback_reminder' => time(),
 	    'dbem_events_page_ajax' => 0,
-	    'dbem_conditional_recursions' => 1
+	    'dbem_conditional_recursions' => 1,
+        //data privacy/protection
+        'dbem_data_privacy_consent_text' => esc_html__('I consent to my submitted data being collected and stored as outlined by the site %s.','events-manager'),
+        'dbem_data_privacy_consent_remember' => 1,
+		'dbem_data_privacy_consent_events' => 1,
+		'dbem_data_privacy_consent_locations' => 1,
+		'dbem_data_privacy_consent_bookings' => 1,
+		'dbem_data_privacy_export_events' => 1,
+		'dbem_data_privacy_export_locations' => 1,
+		'dbem_data_privacy_export_bookings' => 1,
+		'dbem_data_privacy_erase_events' => 1,
+		'dbem_data_privacy_erase_locations' => 1,
+		'dbem_data_privacy_erase_bookings' => 1
 	);
 	
 	//do date js according to locale:
@@ -1065,6 +1077,12 @@ function em_upgrade_current_installation(){
 		'where' => 'all',
 		'message' => $message
 		));
+		EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
+	}
+	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5.93 ){
+		$message = __('Events Manager has introduced new privacy tools to help you comply with international laws such as the GDPR, <a href="%s">see our documentation</a> for more information.','events-manager');
+		$message = sprintf( $message, 'https://wp-events-plugin.com/documentation/data-privacy-protection/?utm_source=plugin&utm_campaign=gdpr_update');
+		$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'gdpr_update', 'who' => 'admin', 'where' => 'all', 'message' => $message ));
 		EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
 	}
 }

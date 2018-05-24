@@ -4,8 +4,8 @@ Donate link: http://wp-events-plugin.com
 Tags: bookings, calendar, tickets, events, buddypress, event management, google maps, maps, locations, registration
 Text Domain: events-manager
 Requires at least: 3.5
-Tested up to: 4.9
-Stable tag: 5.9.2
+Tested up to: 4.9.6
+Stable tag: 5.9.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
 
@@ -50,13 +50,23 @@ Version 5 now makes events and locations WordPress Custom Post Types, allowing f
 * Lots of documentation and tutorials
 * And much more!
 
+= Data Privacy and GDPR Compliance =
+We provide the tools to [help you be GDPR compliant](http://wp-events-plugin.com/documentation/data-privacy-gdpr-compliance/), including:
+
+* export/erasure of data via the WordPress Privacy Tools, including booking, event and location data
+* consent checkboxes on our booking, event and location forms on the frontend
+* settings to control what can be exported/erased as well as where/when to place consent requests
+* privacy policy sample describing what Events Manager does with personal data
+
 = Go Pro =
-We have also released an add-on for Events Manager which not only demonstrates the flexibility of Events Manager, but also adds some important features:
+We have a premium "Pro" add-on for Events Manager which not only demonstrates the flexibility of Events Manager, but also adds some important features including but not limited to:
 
 * PayPal, Authorize.net and Offline Payments
 * Custom booking forms
+* Individual Attendee custom forms
 * Coupon Codes
-* Faster support via private forums
+* Custom booking email per event and gateway
+* Faster support via private Pro forums
 
 For more information or to go pro, [visit our plugin website](http://wp-events-plugin.com/features/).
 
@@ -100,6 +110,15 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
+= 5.9.3 =
+* added Data Privacy and GDPR features
+* fixed user deletion not properly deleting events and not deleting locations if content is set to be deleted not reassigned
+* added location attributes array to em_get_attributes filter
+* fixed EM_MB_ICAL_WORDWRAP incorrectly not applying multibyte wordwraps if set to true
+* added 'not_all_day' conditional placeholder
+* made EM_Taxonomy_Terms objects countable
+* fixed tag placeholders not getting parsed in event format such as #_TAGIMAGE
+
 = 5.9.2 =
 * fixed some instances where PHP 5.2 outputs incorrect times due to other plugins changing server timezones
 * fixed scope issues with PHP 5.2 when calculating start/end of month dates
@@ -109,7 +128,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * added notice when viewing bookings made in another language
 * added booking admin table column for language used in booking
 * fixed some minor PHP notices preventing event submissions/edits with a new location if display_errors are enabled
-* updated EM_Notices to use new class names for notices output in WP Dasbhoard
+* updated EM_Notices to use new class names for notices output in WP Dashboard
 * added filters for all post type and custom taxonomy arrays used in initial post type and custom taxonomy registration functions (see em-posts.php)
 
 = 5.9.1 =

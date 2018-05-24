@@ -73,6 +73,9 @@ class EM_Booking extends EM_Object{
 	 * @var EM_DateTime
 	 */
 	protected $date;
+	/**
+	 * @var EM_Person
+	 */
 	var $person;
 	var $required_fields = array('booking_id', 'event_id', 'person_id', 'booking_spaces');
 	var $feedback_message = "";

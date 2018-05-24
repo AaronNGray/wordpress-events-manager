@@ -1795,6 +1795,9 @@ class EM_Event extends EM_Object{
 					}elseif ($condition == 'all_day'){
 						//is it an all day event
 						$show_condition = !empty($this->event_all_day);
+					}elseif ($condition == 'not_all_day'){
+						//is not an all day event
+						$show_condition = !empty($this->event_all_day);
 					}elseif ($condition == 'logged_in'){
 						//user is logged in
 						$show_condition = is_user_logged_in();
@@ -2335,12 +2338,20 @@ class EM_Event extends EM_Object{
 		
 		if( get_option('dbem_categories_enabled') ){
     		//for backwards compat and easy use, take over the individual category placeholders with the frirst cat in th elist.
-    		$EM_Categories = $this->get_categories();
-    		if( count($EM_Categories->categories) > 0 ){
-    			$EM_Category = $EM_Categories->get_first();
+    		if( count($this->get_categories()) > 0 ){
+    			$EM_Category = $this->get_categories()->get_first();
     		}
     		if( empty($EM_Category) ) $EM_Category = new EM_Category();
     		$event_string = $EM_Category->output($event_string, $target);
+		}
+		
+		if( get_option('dbem_tags_enabled') ){
+			$EM_Tags = new EM_Tags($this);
+			if( count($EM_Tags) > 0 ){
+				$EM_Tag = $EM_Tags->get_first();
+			}
+			if( empty($EM_Tag) ) $EM_Tag = new EM_Tag();
+			$event_string = $EM_Tag->output($event_string, $target);
 		}
 		
 		//Finally, do the event notes, so that previous placeholders don't get replaced within the content, which may use shortcodes

@@ -34,11 +34,15 @@ class EM_DateTime extends DateTime {
 	public function __construct( $time = null, $timezone = null ){
 		//get our EM_DateTimeZone
 		$timezone = EM_DateTimeZone::create($timezone);
+		//save timezone name for use in getTimezone()
+		$this->timezone_name = $timezone->getName();
+		$this->timezone_manual_offset = $timezone->manual_offset;
 		//fix DateTime error if a regular timestamp is supplied without prepended @ symbol
 		if( is_numeric($time) ) $time = '@'.$time;
 		//finally, run parent function with our custom timezone
 		try{
 			@parent::__construct($time, $timezone);
+			if( substr($time,0,1) == '@' || $time == 'now' ) $this->setTimezone($timezone);
 			$this->valid = true; //if we get this far, supplied time is valid
 		}catch( Exception $e ){
 			//get current date/time in relevant timezone and set valid flag to false
@@ -48,11 +52,8 @@ class EM_DateTime extends DateTime {
 			$this->setTime(0,0,0);
 			$this->valid = false;
 		}
-		//save timezone name for use in getTimezone()
-		$this->timezone_name = $timezone->getName();
-		$this->timezone_manual_offset = $timezone->manual_offset;
 		//deal with manual UTC offsets, but only if we haven't defaulted to the current timestamp since that would already be a correct relative value
-		if( $time !== null && $time != 'now' ) $this->handleOffsets($timezone);
+		if( $time !== null && $time != 'now' && substr($time,0,1) != '@' ) $this->handleOffsets($timezone);
 	}
 	
 	/**
