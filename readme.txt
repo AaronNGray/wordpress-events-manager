@@ -103,13 +103,19 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 == Screenshots ==
 
 1. Event registration and user submitted events pending approval
-2. Event ticketing and bookings forms, easily styleable.
+2. Event ticketing and bookings forms, can be easily styled.
 3. Multiple tickets with constraints and prices
 4. Locations with google map integration
 5. Event registration page
 6. Manage attendees with various booking reports
 
 == Changelog ==
+= 5.9.4.1 (Dev Version) =
+* fixed booking status emails getting resent when attempting to change status to same status
+* fixed potential consent issues with editing/validating bookings made by other registered users
+* fixed broken #_LATT custom field attributes for locations
+* fixed #_ATT placeholders with dropdown options not selecting default option if not defined
+
 = 5.9.4 =
 * added em_rewrite_rules_array filter for final permalink rule manipulation
 * fixed privacy consent blocking certain actions such as single booking button and admin-side submissions

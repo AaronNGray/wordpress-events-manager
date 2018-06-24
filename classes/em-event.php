@@ -1762,7 +1762,8 @@ class EM_Event extends EM_Object{
 				$attString = $this->event_attributes[$attRef];
 			}elseif( !empty($results[3][$resultKey]) ){
 				//Check to see if we have a second set of braces;
-				$attString = $results[3][$resultKey];
+				$attStringArray = explode('|', $results[3][$resultKey]);
+				$attString = $attStringArray[0];
 			}elseif( !empty($attributes['values'][$attRef][0]) ){
 			    $attString = $attributes['values'][$attRef][0];
 			}
