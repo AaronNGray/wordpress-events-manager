@@ -459,6 +459,7 @@ class EM_Location extends EM_Object {
 					}
 				}
 			}
+			//refresh status
 			$this->get_status();
 			$this->location_status = (count($this->errors) == 0) ? $this->location_status:null; //set status at this point, it's either the current status, or if validation fails, null
 			//Save to em_locations table
@@ -1079,5 +1080,24 @@ class EM_Location extends EM_Object {
 		if( !empty($this->location_postcode) ) $location_array[] = $this->location_postcode;
 		if( !empty($this->location_region) ) $location_array[] = $this->location_region;
 		return implode($glue, $location_array);
+	}
+	
+	function get_google_maps_embed_url(){
+		//generate the map url
+		$latlng = $this->location_latitude.','.$this->location_longitude;
+		$args = apply_filters('em_location_google_maps_embed_args', array(
+			'maptype' => 'roadmap',
+			'zoom' => 15,
+			'key' => get_option('dbem_google_maps_browser_key')
+		), $this);
+		if( get_option('dbem_gmap_embed_type') == 'place' ){
+			$args['q'] = $this->location_name.', '. $this->get_full_address();
+		}elseif( get_option('dbem_gmap_embed_type') == 'address' ){
+			$args['q'] = $this->get_full_address();
+		}else{
+			$args['q'] = $latlng;
+		}
+		$url = add_query_arg( $args, "https://www.google.com/maps/embed/v1/place");
+		return apply_filters('em_location_get_google_maps_embed_url', $url, $this);
 	}
 }
