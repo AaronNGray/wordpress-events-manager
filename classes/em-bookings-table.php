@@ -46,7 +46,8 @@ class EM_Bookings_Table{
 	public $page = 1;
 	public $offset = 0;
 	public $scope = 'future';
-	public $show_tickets = false; 
+	public $show_tickets = false;
+	public $bookings_count = 0;
 	
 	function __construct($show_tickets = false){
 		$this->statuses = array(
@@ -191,46 +192,31 @@ class EM_Bookings_Table{
 	 */
 	function get_bookings($force_refresh = true){	
 		if( empty($this->bookings) || $force_refresh ){
-			$this->events = array();
 			$EM_Ticket = $this->get_ticket();
 			$EM_Event = $this->get_event();
 			$EM_Person = $this->get_person();
+			$default_args = apply_filters('em_bookings_table_get_bookings_args', array('limit'=>$this->limit,'offset'=>$this->offset), $this);
 			if( $EM_Person !== false ){
 				$args = array('person'=>$EM_Person->ID,'scope'=>$this->scope,'status'=>$this->get_status_search(),'order'=>$this->order,'orderby'=>$this->orderby);
 				$this->bookings_count = EM_Bookings::count($args);
-				$this->bookings = EM_Bookings::get(array_merge($args, array('limit'=>$this->limit,'offset'=>$this->offset)));
-				foreach($this->bookings->bookings as $EM_Booking){
-					//create event
-					if( !array_key_exists($EM_Booking->event_id,$this->events) ){
-						$this->events[$EM_Booking->event_id] = new EM_Event($EM_Booking->event_id);
-					}
-				}
+				$this->bookings = EM_Bookings::get(array_merge($args, $default_args));
 			}elseif( $EM_Ticket !== false ){
 				//searching bookings with a specific ticket
 				$args = array('ticket_id'=>$EM_Ticket->ticket_id, 'order'=>$this->order,'orderby'=>$this->orderby);
 				$this->bookings_count = EM_Bookings::count($args);
-				$this->bookings = EM_Bookings::get(array_merge($args, array('limit'=>$this->limit,'offset'=>$this->offset)));
-				$this->events[$EM_Ticket->event_id] = $EM_Ticket->get_event();
+				$this->bookings = EM_Bookings::get(array_merge($args, $default_args));
 			}elseif( $EM_Event !== false ){
 				//bookings for an event
 				$args = array('event'=>$EM_Event->event_id,'scope'=>false,'status'=>$this->get_status_search(),'order'=>$this->order,'orderby'=>$this->orderby);
 				$args['owner'] = !current_user_can('manage_others_bookings') ? get_current_user_id() : false;
 				$this->bookings_count = EM_Bookings::count($args);
-				$this->bookings = EM_Bookings::get(array_merge($args, array('limit'=>$this->limit,'offset'=>$this->offset)));
-				$this->events[$EM_Event->event_id] = $EM_Event;
+				$this->bookings = EM_Bookings::get(array_merge($args, $default_args));
 			}else{
 				//all bookings for a status
 				$args = array('status'=>$this->get_status_search(),'scope'=>$this->scope,'order'=>$this->order,'orderby'=>$this->orderby);
 				$args['owner'] = !current_user_can('manage_others_bookings') ? get_current_user_id() : false;
 				$this->bookings_count = EM_Bookings::count($args);
-				$this->bookings = EM_Bookings::get(array_merge($args, array('limit'=>$this->limit,'offset'=>$this->offset)));
-				//Now let's create events and bookings for this instead of giving each booking an event
-				foreach($this->bookings->bookings as $EM_Booking){
-					//create event
-					if( !array_key_exists($EM_Booking->event_id,$this->events) ){
-						$this->events[$EM_Booking->event_id] = new EM_Event($EM_Booking->event_id);
-					}
-				}
+				$this->bookings = EM_Bookings::get(array_merge($args, $default_args));
 			}
 		}
 		return $this->bookings;

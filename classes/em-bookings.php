@@ -10,7 +10,7 @@ class EM_Bookings extends EM_Object implements Iterator{
 	 * Array of EM_Booking objects for a specific event
 	 * @var array
 	 */
-	protected $bookings;
+	protected $bookings = array();
 	/**
 	 * @var EM_Tickets
 	 */

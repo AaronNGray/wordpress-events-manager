@@ -74,31 +74,6 @@
 	 */
 	function em_mb_ical_wordwrap($string){
 		if( !defined('EM_MB_ICAL_WORDWRAP') || EM_MB_ICAL_WORDWRAP ){
-			/*
-			// Match anything 1 to $width chars long followed by whitespace or EOS, otherwise match anything $width chars long
-			$search = '/(.{1,74})(?:\s|$)|(.{74})/uS';
-			$replace = '$1$2'."\r\n ";
-			$return = preg_replace($search, $replace, $string);
-			return $return;
-			return preg_replace('/\r\n $/', '', $return);
-			*/
-			/*
-			$str_len = mb_strlen($string,'UTF-8');
-			$while = ceil($str_len / 74);
-			$return = '';
-			for($i = 1; $i < $while; $i++){
-				preg_match('#^(?:[\x00-\x7F]|[\xC0-\xFF][\x80-\xBF]+){74}#', $string, $matches);
-				$return .= $matches[0]."\r\n ";
-				$string = substr($string, strlen($matches[0]));
-			}
-			return $return.$string;
-			*/
-			/*$strlen = strlen($string);
-			$return = '';
-			for( $i = 0; $i + 74 <= $strlen; $i = $i + 74 ){
-				$return = mb_strcut
-			}
-			*/
 			$return = '';
 			for ( $i = 0; strlen($string) > 0; $i++ ) {
 				$linewidth = ($i == 0? 75 : 74);

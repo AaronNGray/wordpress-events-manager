@@ -192,7 +192,7 @@ class EM_Ticket extends EM_Object{
 				$result = $wpdb->query($sql);
 				$this->feedback_message = __('Changes saved','events-manager');
 			}else{
-				//TODO better error handling
+				if( isset($data['ticket_id']) && empty($data['ticket_id']) ) unset($data['ticket_id']);
 				$result = $wpdb->insert($table, $data, $this->get_types($data));
 			    $this->ticket_id = $wpdb->insert_id;
 				$this->feedback_message = __('Ticket created','events-manager'); 

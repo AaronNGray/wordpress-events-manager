@@ -11,7 +11,7 @@ function em_options_save(){
 		//Build the array of options here
 		$post = $_POST;
 		foreach ($_POST as $postKey => $postValue){
-			if( substr($postKey, 0, 5) == 'dbem_' ){
+			if( $postKey != 'dbem_data' && substr($postKey, 0, 5) == 'dbem_' ){
 				//TODO some more validation/reporting
 				$numeric_options = array('dbem_locations_default_limit','dbem_events_default_limit');
 				if( in_array($postKey, array('dbem_bookings_notify_admin','dbem_event_submitted_email_admin','dbem_js_limit_events_form','dbem_js_limit_search','dbem_js_limit_general','dbem_css_limit_include','dbem_css_limit_exclude','dbem_search_form_geo_distance_options')) ){ $postValue = str_replace(' ', '', $postValue); } //clean up comma separated emails, no spaces needed
@@ -27,6 +27,16 @@ function em_options_save(){
 					    $postValue = wp_unslash($postValue);
 					}
 					update_option($postKey, $postValue);
+				}
+			}elseif( $postKey == 'dbem_data' && is_array($postValue) ){
+				foreach( $postValue as $postK => $postV ){
+					//TODO slashes being added?
+					if( is_array($postV) ){
+						foreach($postV as $postValue_key=>$postValue_val) $postV[$postValue_key] = wp_unslash($postValue_val);
+					}else{
+						$postV = wp_unslash($postV);
+					}
+					EM_Options::set( $postK, $postV );
 				}
 			}
 		}

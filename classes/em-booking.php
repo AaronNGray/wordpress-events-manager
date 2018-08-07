@@ -183,7 +183,7 @@ class EM_Booking extends EM_Object{
 	}
 	
 	public function __isset( $prop ){
-		if( $prop == 'timestamp' ) $this->date()->getTimestamp() > 0;
+		if( $prop == 'timestamp' ) return $this->date()->getTimestamp() > 0;
 	}
 	
 	function get_notes(){
@@ -370,8 +370,8 @@ class EM_Booking extends EM_Object{
 	
 	/**
 	 * Get the total number of spaces booked in THIS booking. Setting $force_refresh to true will recheck spaces, even if previously done so.
-	 * @param unknown_type $force_refresh
-	 * @return mixed
+	 * @param boolean $force_refresh
+	 * @return int
 	 */
 	function get_spaces( $force_refresh=false ){
 		if($this->booking_spaces == 0 || $force_refresh == true ){

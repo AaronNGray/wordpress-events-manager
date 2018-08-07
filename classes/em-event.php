@@ -2505,8 +2505,8 @@ class EM_Event extends EM_Object{
 	 */
 	function save_events() {
 		global $wpdb;
-		$event_ids = $post_ids = $event_dates = array();
 		if( !$this->can_manage('edit_events','edit_others_events') ) return apply_filters('em_event_save_events', false, $this, $event_ids, $post_ids);
+		$event_ids = $post_ids = $event_dates = array();
 		if( $this->is_published() || 'future' == $this->post_status ){
 			//check if there's any events already created, if not (such as when an event is first submitted for approval and then published), force a reschedule.
 			if( $wpdb->get_var('SELECT COUNT(event_id) FROM '.EM_EVENTS_TABLE.' WHERE recurrence_id='. absint($this->event_id)) == 0 ){
@@ -2517,7 +2517,6 @@ class EM_Event extends EM_Object{
 			$event = $this->to_array(true); //event template - for index
 			if( !empty($event['event_attributes']) ) $event['event_attributes'] = serialize($event['event_attributes']);
 			$post_fields = $wpdb->get_row('SELECT * FROM '.$wpdb->posts.' WHERE ID='.$this->post_id, ARRAY_A); //post to copy
-			$post_name = $post_fields['post_name']; //save post slug since we'll be using this 
 			$post_fields['post_type'] = 'event'; //make sure we'll save events, not recurrence templates
 			$meta_fields_map = $wpdb->get_results('SELECT meta_key,meta_value FROM '.$wpdb->postmeta.' WHERE post_id='.$this->post_id, ARRAY_A);
 			$meta_fields = array();
@@ -2542,9 +2541,10 @@ class EM_Event extends EM_Object{
 			$event['recurrence'] = 0;
 			
 			//Let's start saving!
-			$event_saves = array();
-			//First thing - times. If we're changing event times, we need to delete all events and recreate them with the right times, no other way
+			$event_saves = $meta_inserts = array();
 			$recurring_date_format = apply_filters('em_event_save_events_format', 'Y-m-d');
+			$post_name = $this->sanitize_recurrence_slug( $post_fields['post_name'], $this->start()->format($recurring_date_format)); //template sanitized post slug since we'll be using this
+			//First thing - times. If we're changing event times, we need to delete all events and recreate them with the right times, no other way
 			if( $this->recurring_reschedule ){
 				$this->delete_events(); //Delete old events beforehand, this will change soon
 				$matching_days = $this->get_recurrence_days(); //Get days where events recur
@@ -2558,7 +2558,11 @@ class EM_Event extends EM_Object{
 						$EM_DateTime->setTimestamp($day)->setTimeString($event['event_start_time']);
 						$start_timestamp = $EM_DateTime->getTimestamp(); //for quick access later
 						//rewrite post fields if needed
-						$post_fields['post_name'] = $event['event_slug'] = apply_filters('em_event_save_events_slug', $post_name.'-'.$EM_DateTime->format($recurring_date_format), $post_fields, $day, $matching_days, $this);
+						//set post slug, which may need to be sanitized for length as we pre/postfix a date for uniqueness
+						$event_slug_date = $EM_DateTime->format( $recurring_date_format );
+						$event_slug = $this->sanitize_recurrence_slug($post_name, $event_slug_date);
+						$event_slug = apply_filters('em_event_save_events_recurrence_slug', $event_slug.'-'.$event_slug_date, $event_slug, $event_slug_date, $day, $this); //use this instead
+						$post_fields['post_name'] = $event['event_slug'] = apply_filters('em_event_save_events_slug', $event_slug, $post_fields, $day, $matching_days, $this); //deprecated filter
 						//set start date
 						$event['event_start_date'] = $meta_fields['_event_start_date'] = $EM_DateTime->getDate();
 						$event['event_start'] = $meta_fields['_event_start'] = $EM_DateTime->getDateTime(true);
@@ -2627,7 +2631,6 @@ class EM_Event extends EM_Object{
 			 	}
 			}else{
 				//we go through all event main data and meta data, we delete and recreate all meta data
-				$meta_inserts = array();
 				//now unset some vars we don't need to deal with since we're just updating data in the wp_em_events and posts table
 				unset( $event['event_date_created'], $event['recurrence_id'], $event['recurrence'], $event['event_start_date'], $event['event_end_date'] );
 				$event['event_date_modified'] = current_time('mysql'); //since the recurrences are modified but not recreated
@@ -2646,7 +2649,12 @@ class EM_Event extends EM_Object{
 			 		$event_dates[$event_array['event_id']] = $start_timestamp;
 			 		$post_ids[] = $event_array['post_id'];
 			 		//do we need to change the slugs?
-			 		$post_fields['post_name'] = $event['event_slug'] = apply_filters('em_event_save_events_slug', $post_name.'-'.$EM_DateTime->setTimestamp($start_timestamp)->format($recurring_date_format), $post_fields, $start_timestamp, array(), $this);
+				    //(re)set post slug, which may need to be sanitized for length as we pre/postfix a date for uniqueness
+				    $EM_DateTime->setTimestamp($start_timestamp);
+				    $event_slug_date = $EM_DateTime->format( $recurring_date_format );
+				    $event_slug = $this->sanitize_recurrence_slug($post_name, $event_slug_date);
+				    $event_slug = apply_filters('em_event_save_events_recurrence_slug', $event_slug.'-'.$event_slug_date, $event_slug, $event_slug_date, $start_timestamp, $this); //use this instead
+				    $post_fields['post_name'] = $event['event_slug'] = apply_filters('em_event_save_events_slug', $event_slug, $post_fields, $start_timestamp, array(), $this); //deprecated filter
 			 		//adjust certain meta information relative to dates and times
 			 		if( !empty($this->recurrence_rsvp_days) && is_numeric($this->recurrence_rsvp_days) ){
 			 			$event_rsvp_days = $this->recurrence_rsvp_days >= 0 ? '+'. $this->recurrence_rsvp_days: $this->recurrence_rsvp_days;
@@ -2813,6 +2821,34 @@ class EM_Event extends EM_Object{
 	}
 	
 	/**
+	 * Ensures a post slug is the correct length when the date postfix is added, which takes into account multibyte and url-encoded characters and WP unique suffixes.
+	 * If a url-encoded slug is nearing 200 characters (the data character limit in the db table), adding a date to the end will cause issues when saving to the db.
+	 * This function checks if the final slug is longer than 200 characters and removes one entire character rather than part of a hex-encoded character, until the right size is met.
+	 * @param string $post_name
+	 * @param string $post_slug_postfix
+	 * @return string
+	 */
+	public function sanitize_recurrence_slug( $post_name, $post_slug_postfix ){
+		if( strlen($post_name.'-'.$post_slug_postfix) > 200 ){
+			if( preg_match('/^(.+)(\-[0-9]+)$/', $post_name, $post_name_parts) ){
+				$post_name_decoded = urldecode($post_name_parts[1]);
+				$post_name_suffix =  $post_name_parts[2];
+			}else{
+				$post_name_decoded = urldecode($post_name);
+				$post_name_suffix = '';
+			}
+			$post_name_maxlength = 200 - strlen( $post_name_suffix . '-' . $post_slug_postfix);
+			if ( $post_name_parts[0] === $post_name_decoded.$post_name_suffix ){
+				$post_name = substr( $post_name_decoded, 0, $post_name_maxlength );
+			}else{
+				$post_name = utf8_uri_encode( $post_name_decoded, $post_name_maxlength );
+			}
+			$post_name = rtrim( $post_name, '-' ). $post_name_suffix;
+		}
+		return apply_filters('em_event_sanitize_recurrence_slug', $post_name, $post_slug_postfix, $this);
+	}
+	
+	/**
 	 * Removes all reoccurring events.
 	 * @param $recurrence_id
 	 * @return null
@@ -2884,7 +2920,8 @@ class EM_Event extends EM_Object{
 				break;  
 			case 'monthly':
 				//loop months starting this month by intervals
-				$current_date = $this->start()->copy()->modify('first day of this month')->setTime(0,0,0); //Start date on first day of month
+				$current_date = $this->start()->copy();
+				$current_date->modify($current_date->format('Y-m-01 00:00:00')); //Start date on first day of month, done this way to avoid 'first day of' issues in PHP < 5.6
 				while( $current_date->getTimestamp() <= $this->end()->getTimestamp() ){
 					$last_day_of_month = $current_date->format('t');
 					//Now find which day we're talking about
@@ -2916,7 +2953,8 @@ class EM_Event extends EM_Object{
 						}
 					}
 					//add the monthly interval to the current date
-					$current_date->add('P'.$this->recurrence_interval.'M')->modify('first day of this month'); 
+					$current_date->add('P'.$this->recurrence_interval.'M');
+					$current_date->modify($current_date->format('Y-m-01')); //done this way to avoid 'first day of ' PHP < 5.6 issues
 				}
 				break;
 			case 'yearly':
