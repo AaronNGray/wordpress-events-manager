@@ -10,7 +10,7 @@ class EM_Bookings extends EM_Object implements Iterator{
 	 * Array of EM_Booking objects for a specific event
 	 * @var array
 	 */
-	protected $bookings = array();
+	protected $bookings;
 	/**
 	 * @var EM_Tickets
 	 */
@@ -88,7 +88,7 @@ class EM_Bookings extends EM_Object implements Iterator{
 		//if isset is invoked on $EM_Bookings->bookings then we'll assume it's only set if the bookings property is empty, not if null.
 		$result = false;
 		if( $var == 'bookings' ){
-			$result = !empty($this->bookings);
+			$result = $this->bookings !== null;
 		}
 		return $result;
 	}
@@ -125,7 +125,8 @@ class EM_Bookings extends EM_Object implements Iterator{
 		if($result){
 			//Success
 		    do_action('em_bookings_added', $EM_Booking);
-			if( $this->bookings !== null ) $this->bookings[] = $EM_Booking;
+			if( $this->bookings === null ) $this->bookings = array();
+			$this->bookings[] = $EM_Booking;
 			$email = $EM_Booking->email();
 			if( get_option('dbem_bookings_approval') == 1 && $EM_Booking->booking_status == 0){
 				$this->feedback_message = get_option('dbem_booking_feedback_pending');
@@ -180,7 +181,7 @@ class EM_Bookings extends EM_Object implements Iterator{
 		}else{
 			if( is_numeric($this->event_id) && $this->event_id > 0 ){
 				return em_get_event($this->event_id, 'event_id');
-			}elseif( count($this->bookings) > 0 ){
+			}elseif( is_array($this->bookings) ){
 				foreach($this->bookings as $EM_Booking){
 					/* @var $EM_Booking EM_Booking */
 					return em_get_event($EM_Booking->event_id, 'event_id');

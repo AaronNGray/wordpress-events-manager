@@ -110,9 +110,9 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
-= 5.9.5.1 (dev) =
+= 5.9.5.2 (dev) =
 * fixed monthly recurrence pattern issues with PHP <5.6
-* fixed minor PHP Warnings when saving a booking in PHP 7.2
+* fixed multiple minor PHP Warnings including when saving a booking in PHP 7.2
 * added em_bookings_table_get_bookings_args filter, allowing ordering and more for bookings admin tables
 * added Faroe Islands to countries list
 * added custom dataset variable for EM_Options, added ability to save dbem_data array options in settings page

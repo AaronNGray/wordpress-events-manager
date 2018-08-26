@@ -1269,7 +1269,11 @@ class EM_Object {
 			$return = array();
 			foreach($this->fields as $fieldName => $fieldArray){
 				if($inverted_array){
-					$return[$fieldArray['name']] = $fieldName;
+					if( !empty($fieldArray['name']) ){
+						$return[$fieldArray['name']] = $fieldName;
+					}else{
+						$return[$fieldName] = $fieldName;
+					}
 				}else{
 					$return[$fieldName] = $fieldArray['name'];
 				}
