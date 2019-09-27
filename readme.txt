@@ -71,6 +71,8 @@ We have a premium "Pro" add-on for Events Manager which not only demonstrates th
 
 For more information or to go pro, [visit our plugin website](http://wp-events-plugin.com/features/).
 
+[](http://coderisk.com/wp/plugin/events-manager/RIPS-S1uclFcGpF)
+
 == Installation ==
 
 Events Manager works like any standard Wordpress plugin, and requires little configuration to start managing events. If you get stuck, visit the our documentation and support forums.
@@ -2202,4 +2204,3 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * optimizing EM_Locations and removing redundant code across objects
 
 For changelog of 2.x and lower, see the readme.txt file of version 2.2.2
-[](http://coderisk.com/wp/plugin/events-manager/RIPS-S1uclFcGpF)
