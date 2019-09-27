@@ -12,8 +12,6 @@ Fully featured event registration management including recurring events, locatio
 
 == Description ==
 
-[](http://coderisk.com/wp/plugin/events-manager/RIPS-S1uclFcGpF)
-
 Events Manager is a full-featured event registration plugin for WordPress based on the principles of flexibility, reliability and powerful features!
 
 Version 5 now makes events and locations WordPress Custom Post Types, allowing for more possibilities than ever before!
