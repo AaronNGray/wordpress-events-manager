@@ -74,6 +74,7 @@ class EM_Bookings_Table{
 		$this->status = ( !empty($_REQUEST['status']) && array_key_exists($_REQUEST['status'], $this->statuses) ) ? sanitize_text_field($_REQUEST['status']):'needs-attention';
 		//build template of possible collumns
 		$this->cols_template = apply_filters('em_bookings_table_cols_template', array(
+			'user_login' => __('Username', 'events-manager'),
 			'user_name'=>__('Name','events-manager'),
 			'first_name'=>__('First Name','events-manager'),
 			'last_name'=>__('Last Name','events-manager'),
@@ -104,10 +105,12 @@ class EM_Bookings_Table{
 		}
 		$this->cols_template['actions'] = __('Actions','events-manager');
 		//calculate collumns if post requests		
-		if( !empty($_REQUEST ['cols']) ){
-		    if( is_array($_REQUEST ['cols']) ){
-    		    array_walk($_REQUEST['cols'], 'sanitize_text_field');
-    			$this->cols = $_REQUEST['cols'];
+		if( !empty($_REQUEST['cols']) ){
+		    if( is_array($_REQUEST['cols']) ){
+			    $this->cols = array();
+		    	foreach( $_REQUEST['cols'] as $k => $col ){
+		    		$this->cols[$k] = sanitize_text_field($col);
+			    }
     		}else{
     			$this->cols = explode(',',sanitize_text_field($_REQUEST['cols']));
     		}
@@ -520,6 +523,16 @@ class EM_Bookings_Table{
 			//TODO fix urls so this works in all pages in front as well
 			if( $col == 'user_email' ){
 				$val = $EM_Booking->get_person()->user_email;
+			}elseif($col == 'user_login'){
+				if( $EM_Booking->is_no_user() ){
+					$val = esc_html__('Guest User', 'events-manager');
+				}else{
+					if( $format == 'csv' ){
+						$val = $EM_Booking->get_person()->user_login;
+					}else{
+						$val = '<a href="'.esc_url(add_query_arg(array('person_id'=>$EM_Booking->person_id, 'event_id'=>null), $EM_Booking->get_event()->get_bookings_url())).'">'. esc_html($EM_Booking->person->user_login) .'</a>';
+					}
+				}
 			}elseif($col == 'dbem_phone'){
 				$val = $EM_Booking->get_person()->phone;
 			}elseif($col == 'user_name'){
@@ -573,7 +586,7 @@ class EM_Bookings_Table{
 			}
 			//escape all HTML if destination is HTML or not defined
 			if( $format == 'html' || empty($format) ){
-				if( !in_array($col, array('user_name', 'event_name', 'actions')) ) $val = esc_html($val);
+				if( !in_array($col, array('user_login', 'user_name', 'event_name', 'actions')) ) $val = esc_html($val);
 			}
 			//use this 
 			$val = apply_filters('em_bookings_table_rows_col_'.$col, $val, $EM_Booking, $this, $format, $object);

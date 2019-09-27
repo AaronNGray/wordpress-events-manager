@@ -2,7 +2,7 @@
 
 //Function composing the options subpanel
 function em_options_save(){
-	global $EM_Notices;
+	global $EM_Notices; /* @var EM_Notices $EM_Notices */
 	/*
 	 * Here's the idea, we have an array of all options that need super admin approval if in multi-site mode
 	 * since options are only updated here, its one place fit all
@@ -17,7 +17,7 @@ function em_options_save(){
 				if( in_array($postKey, array('dbem_bookings_notify_admin','dbem_event_submitted_email_admin','dbem_js_limit_events_form','dbem_js_limit_search','dbem_js_limit_general','dbem_css_limit_include','dbem_css_limit_exclude','dbem_search_form_geo_distance_options')) ){ $postValue = str_replace(' ', '', $postValue); } //clean up comma separated emails, no spaces needed
 				if( in_array($postKey,$numeric_options) && !is_numeric($postValue) ){
 					//Do nothing, keep old setting.
-				}elseif( ($postKey == 'dbem_category_default_color' || $postKey == 'dbem_tag_default_color') && !preg_match("/^#([abcdef0-9]{3}){1,2}?$/i",$postValue)){
+				}elseif( ($postKey == 'dbem_category_default_color' || $postKey == 'dbem_tag_default_color') && !sanitize_hex_color($postValue) ){
 					$EM_Notices->add_error( sprintf(esc_html_x('Colors must be in a valid %s format, such as #FF00EE.', 'hex format', 'events-manager'), '<a href="http://en.wikipedia.org/wiki/Web_colors">hex</a>').' '. esc_html__('This setting was not changed.', 'events-manager'), true);					
 				}else{
 					//TODO slashes being added?
@@ -471,6 +471,14 @@ function em_admin_options_page() {
 			<a href="<?php echo $bookings_tab_link; ?>#bookings" id="em-menu-bookings" class="nav-tab"><?php _e('Bookings','events-manager'); ?></a>
 			<?php endif; ?>
 			<a href="<?php echo $emails_tab_link; ?>#emails" id="em-menu-emails" class="nav-tab"><?php _e('Emails','events-manager'); ?></a>
+			<?php
+			$custom_tabs = apply_filters('em_options_page_tabs', array());
+			foreach( $custom_tabs as $tab_key => $tab_name ){
+				$tab_link = !empty($tabs_enabled) ? esc_url(add_query_arg( array('em_tab'=>$tab_key))) : '';
+				$active_class = !empty($tabs_enabled) && !empty($_GET['em_tab']) && $_GET['em_tab'] == $tab_key ? 'nav-tab-active':'';
+				echo "<a href='$tab_link#$tab_key' id='em-menu-$tab_key' class='nav-tab $active_class'>$tab_name</a>";
+			}
+			?>
 		</h2>
 		<form id="em-options-form" method="post" action="">
 			<div class="metabox-holder">         
@@ -489,6 +497,13 @@ function em_admin_options_page() {
         			    include('settings/tabs/bookings.php');
         			}
         			if( $_REQUEST['em_tab'] == 'emails' ) include('settings/tabs/emails.php');
+					if( array_key_exists($_REQUEST['em_tab'], $custom_tabs) ){
+						?>
+						<div class="em-menu-<?php echo esc_attr($_REQUEST['em_tab']) ?> em-menu-group">
+						<?php do_action('em_options_page_tab_'. $_REQUEST['em_tab']); ?>
+						</div>
+						<?php
+					}
 			    }
 			}else{
     			include('settings/tabs/general.php');
@@ -498,6 +513,13 @@ function em_admin_options_page() {
     			    include('settings/tabs/bookings.php');
     			}
     			include('settings/tabs/emails.php');
+				foreach( $custom_tabs as $tab_key => $tab_name ){
+					?>
+					<div class="em-menu-<?php echo esc_attr($tab_key) ?> em-menu-group" style="display:none;">
+						<?php do_action('em_options_page_tab_'. $tab_key); ?>
+					</div>
+					<?php
+				}
 			}
 			?>
 			

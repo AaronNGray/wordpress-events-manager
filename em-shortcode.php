@@ -43,7 +43,7 @@ function em_get_locations_map_shortcode($args){
 	//add JSON style to map
 	$style = '';
 	if( !empty($args['map_style']) ){
-		$style= base64_decode($args['map_style']);
+		$style= wp_kses_data(base64_decode($args['map_style']));
 		$style_json= json_decode($style);
 		if( is_array($style_json) || is_object($style_json) ){
 			$style = preg_replace('/[\r\n\t\s]/', '', $style);
@@ -81,7 +81,7 @@ function em_get_events_map_shortcode($args){
 	//add JSON style to map
 	$style = '';
 	if( !empty($args['map_style']) ){
-		$style= base64_decode($args['map_style']);
+		$style= wp_kses_data(base64_decode($args['map_style']));
 		$style_json= json_decode($style);
 		if( is_array($style_json) || is_object($style_json) ){
 			$style = preg_replace('/[\r\n\t\s]/', '', $style);

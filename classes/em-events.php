@@ -26,7 +26,7 @@ class EM_Events extends EM_Object {
 	 * containing the ids of the events you'd like to obtain 
 	 * 
 	 * @param array $args
-	 * @return EM_Event array()
+	 * @return EM_Event[]
 	 */
 	public static function get( $args = array(), $count=false ) {
 		global $wpdb;	 

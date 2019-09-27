@@ -409,13 +409,9 @@ class EM_Event extends EM_Object{
 			elseif( $prop == 'event_rsvp_date') $this->rsvp_end = null;
 		}
 		//deprecated properties, use start()->setTimestamp() instead
-		elseif( $prop == 'start' || $prop == 'end' ){
+		elseif( $prop == 'start' || $prop == 'end' || $prop == 'rsvp_end' ){
 			if( is_numeric($val) ){
-				if( $prop == 'start' ){
-					$this->start()->setTimestamp($val);
-				}else{
-					$this->end()->setTimestamp($val);
-				}
+				$this->$prop()->setTimestamp( (int) $val);
 			}elseif( is_string($val) ){
 				$this->$val = new EM_DateTime($val, $this->event_timezone);
 			}
@@ -554,7 +550,7 @@ class EM_Event extends EM_Object{
 		//don't forget categories!
 		if( get_option('dbem_categories_enabled') ) $this->get_categories()->get_post();
 		//get the rest and validate (optional)
-		$this->get_post_meta(false);
+		$this->get_post_meta();
 		//anonymous submissions and guest basic info
 		if( !is_user_logged_in() && get_option('dbem_events_anonymous_submissions') && empty($this->event_id) ){
 			$this->event_owner_anonymous = 1;
@@ -1411,7 +1407,8 @@ class EM_Event extends EM_Object{
 	public function rsvp_end( $utc_timezone = false ){
 		if( empty($this->rsvp_end) || !$this->rsvp_end->valid ){
 			if( !empty($this->event_rsvp_date ) ){
-			    $this->rsvp_end = new EM_DateTime($this->event_rsvp_date." ".$this->event_rsvp_time, $this->event_timezone);
+				$rsvp_time = !empty($this->event_rsvp_time) ? $this->event_rsvp_time : $this->event_start_time;
+			    $this->rsvp_end = new EM_DateTime($this->event_rsvp_date." ".$rsvp_time, $this->event_timezone);
 			    if( !$this->rsvp_end->valid ){
 			    	//invalid date will revert to start time
 			    	$this->rsvp_end = $this->start()->copy();
@@ -1728,7 +1725,6 @@ class EM_Event extends EM_Object{
 		//$format = do_shortcode($format); //parse shortcode first, so that formats within shortcodes are parsed properly, however uncommenting this will break shortcode containing placeholders for arguments
 	 	$event_string = $format;
 		//Time place holder that doesn't show if empty.
-		//TODO add filter here too
 		preg_match_all('/#@?_\{[^}]+\}/', $format, $results);
 		foreach($results[0] as $result) {
 			if(substr($result, 0, 3 ) == "#@_"){
@@ -2022,6 +2018,19 @@ class EM_Event extends EM_Object{
 					break;
 				case '#_EVENTTIMEZONERAW':
 					$replace = $this->event_timezone;
+					break;
+				//Recurring Placeholders
+				case '#_RECURRINGDATERANGE': //Outputs the #_EVENTDATES equivalent of the recurring event template pattern.
+					$replace = $this->get_event_recurrence()->output_dates(); //if not a recurrence, we're running output_dates on $this
+					break;
+				case '#_RECURRINGPATTERN':
+					$replace = '';
+					if( $this->is_recurrence() || $this->is_recurring() ){
+						$replace = $this->get_event_recurrence()->get_recurrence_description();
+					}
+					break;
+				case '#_RECURRINGID':
+					$replace = $this->recurrence_id;
 					break;
 				//Links
 				case '#_EVENTPAGEURL': //deprecated	
@@ -2344,11 +2353,13 @@ class EM_Event extends EM_Object{
 		 	}
 		}
 		//Now do dependent objects
-		if( !empty($this->location_id) && $this->get_location()->location_status ){
-			$event_string = $this->get_location()->output($event_string, $target);
-		}else{
-			$EM_Location = new EM_Location();
-			$event_string = $EM_Location->output($event_string, $target);
+		if( get_option('dbem_locations_enabled') ){
+			if( !empty($this->location_id) && $this->get_location()->location_status ){
+				$event_string = $this->get_location()->output($event_string, $target);
+			}else{
+				$EM_Location = new EM_Location();
+				$event_string = $EM_Location->output($event_string, $target);
+			}
 		}
 		
 		if( get_option('dbem_categories_enabled') ){
@@ -2476,10 +2487,10 @@ class EM_Event extends EM_Object{
 			delete_post_meta($this->post_id, '_recurrence_id');
 			$this->feedback_message = __('Event detached.','events-manager') . ' <a href="'.$url.'">'.__('Undo','events-manager').'</a>';
 			$this->recurrence_id = 0;
-			return true;
+			return apply_filters('em_event_detach', true, $this);
 		}
 		$this->add_error(__('Event could not be detached.','events-manager'));
-		return false;
+		return apply_filters('em_event_detach', false, $this);
 	}
 	
 	/**
@@ -2493,10 +2504,10 @@ class EM_Event extends EM_Object{
 			$wpdb->update(EM_EVENTS_TABLE, array('recurrence_id'=>$recurrence_id), array('event_id' => $this->event_id));
 			update_post_meta($this->post_id, '_recurrence_id', $recurrence_id);
 			$this->feedback_message = __('Event re-attached to recurrence.','events-manager');
-			return true;
+			return apply_filters('em_event_attach', true, $recurrence_id, $this);
 		}
 		$this->add_error(__('Event could not be attached.','events-manager'));
-		return false;
+		return apply_filters('em_event_attach', false, $recurrence_id, $this);
 	}
 	
 	/**
@@ -2545,6 +2556,7 @@ class EM_Event extends EM_Object{
 			$recurring_date_format = apply_filters('em_event_save_events_format', 'Y-m-d');
 			$post_name = $this->sanitize_recurrence_slug( $post_fields['post_name'], $this->start()->format($recurring_date_format)); //template sanitized post slug since we'll be using this
 			//First thing - times. If we're changing event times, we need to delete all events and recreate them with the right times, no other way
+			
 			if( $this->recurring_reschedule ){
 				$this->delete_events(); //Delete old events beforehand, this will change soon
 				$matching_days = $this->get_recurrence_days(); //Get days where events recur
@@ -2813,7 +2825,7 @@ class EM_Event extends EM_Object{
 					wp_schedule_single_event( $time, 'publish_future_post', array( $post_id ) );
 				}
 			}
-		 	return apply_filters('em_event_save_events', !in_array(false, $event_saves) && $result !== false, $this, $event_ids, $post_ids);
+			return apply_filters('em_event_save_events', !in_array(false, $event_saves) && $result !== false, $this, $event_ids, $post_ids);
 		}elseif( !$this->is_published() && $this->get_previous_status() != $this->get_status() && defined('EM_FORCE_RECURRENCES_SAVE') && EM_FORCE_RECURRENCES_SAVE ){
 			$this->set_status_events($this->get_status());
 		}
@@ -2952,9 +2964,9 @@ class EM_Event extends EM_Object{
 							$matching_days[] = $matching_date;
 						}
 					}
-					//add the monthly interval to the current date
-					$current_date->add('P'.$this->recurrence_interval.'M');
+					//add the monthly interval to the current date, but set to 1st of current month first so we don't jump months where $current_date is 31st and next month there's no 31st (so a month is skipped)
 					$current_date->modify($current_date->format('Y-m-01')); //done this way to avoid 'first day of ' PHP < 5.6 issues
+					$current_date->add('P'.$this->recurrence_interval.'M');
 				}
 				break;
 			case 'yearly':
@@ -2962,7 +2974,7 @@ class EM_Event extends EM_Object{
 				$EM_DateTime = $this->start()->copy();
 				while( $EM_DateTime <= $this->end() ){
 					$matching_days[] = $EM_DateTime->getTimestamp();
-					$EM_DateTime->add('P1Y');
+					$EM_DateTime->add('P'.absint($this->recurrence_interval).'Y');
 				}			
 				break;
 		}
@@ -3158,7 +3170,7 @@ if ( is_object($GLOBALS['wp_embed']) ){
  */
 function em_event_gallery_override( $attr = array() ){
 	global $post;
-	if( $post->post_type == EM_POST_TYPE_EVENT && empty($attr['id']) && empty($attr['ids']) ){
+	if( !empty($post->post_type) && $post->post_type == EM_POST_TYPE_EVENT && empty($attr['id']) && empty($attr['ids']) ){
 		//no id specified, so check if it's recurring and override id with recurrence template post id
 		$EM_Event = em_get_event($post->ID, 'post_id');
 		if( $EM_Event->is_recurrence() ){

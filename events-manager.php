@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Events Manager
-Version: 5.9.5.2
+Version: 5.9.6
 Plugin URI: http://wp-events-plugin.com
 Description: Event registration and booking management for WordPress. Recurring events, locations, google maps, rss, ical, booking registration and more!
 Author: Marcus Sykes
@@ -10,7 +10,7 @@ Text Domain: events-manager
 */
 
 /*
-Copyright (c) 2018, Marcus Sykes
+Copyright (c) 2019, Marcus Sykes
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 // Setting constants
-define('EM_VERSION', 5.95); //self expanatory
+define('EM_VERSION', 5.96); //self expanatory
 define('EM_PRO_MIN_VERSION', 2.64); //self expanatory
 define('EM_PRO_MIN_VERSION_CRITICAL', 2.377); //self expanatory
 define('EM_DIR', dirname( __FILE__ )); //an absolute path to this directory
@@ -491,6 +491,8 @@ function em_init(){
 	}
 	//add custom functions.php file
 	locate_template('plugins/events-manager/functions.php', true);
+	//fire a loaded hook, most plugins should consider going through here to load anything EM related
+	do_action('events_manager_loaded');
 }
 add_filter('init','em_init',1);
 

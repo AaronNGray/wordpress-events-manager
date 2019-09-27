@@ -202,7 +202,7 @@ class EM_Booking extends EM_Object{
 	
 	/**
 	 * Saves the booking into the database, whether a new or existing booking
-	 * @param $mail whether or not to email the user and contact people
+	 * @param bool $mail whether or not to email the user and contact people
 	 * @return boolean
 	 */
 	function save($mail = true){
@@ -227,7 +227,7 @@ class EM_Booking extends EM_Object{
 			}else{
 				$update = false;
 				$data_types = $this->get_types($data);
-				$data['booking_date'] = gmdate('Y-m-d H:i:s');
+				$data['booking_date'] = $this->booking_date = gmdate('Y-m-d H:i:s');
 				$data_types[] = '%s';
 				$result = $wpdb->insert($table, $data, $data_types);
 			    $this->booking_id = $wpdb->insert_id;  
@@ -481,6 +481,8 @@ class EM_Booking extends EM_Object{
 	 * @return double
 	 */
 	function calculate_price(){
+		//any programatic price adjustments should be added here, otherwise you need to run this function again
+		do_action('em_booking_pre_calculate_price', $this);
 	    //reset price and taxes calculations
 	    $this->booking_price = $this->booking_taxes = null;
 	    //get post-tax price and save it to booking_price
@@ -838,9 +840,9 @@ class EM_Booking extends EM_Object{
 		$email = $this->get_person()->user_email;
 		$phone = ($this->get_person()->phone != __('Not Supplied','events-manager')) ? $this->get_person()->phone:'';
 		if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'booking_modify_person' ){
-		    $name = !empty($_REQUEST['user_name']) ? $_REQUEST['user_name']:$name;
-		    $email = !empty($_REQUEST['user_email']) ? $_REQUEST['user_email']:$email;
-		    $phone = !empty($_REQUEST['dbem_phone']) ? $_REQUEST['dbem_phone']:$phone;
+		    $name = !empty($_REQUEST['user_name']) ? sanitize_text_field($_REQUEST['user_name']):$name;
+		    $email = !empty($_REQUEST['user_email']) ? sanitize_email($_REQUEST['user_email']):$email;
+		    $phone = !empty($_REQUEST['dbem_phone']) ? sanitize_text_field($_REQUEST['dbem_phone']):$phone;
 		}
 		?>
 		<table class="em-form-fields">
@@ -1061,8 +1063,6 @@ class EM_Booking extends EM_Object{
 				case '#_BOOKINGCOMMENT':
 					$replace = $this->booking_comment;
 					break;
-					$replace = $this->get_price(true); //if there's tax, it'll be added here
-					break;
 				case '#_BOOKINGPRICEWITHOUTTAX':
 					$replace = $this->format_price($this->get_price() - $this->get_price_taxes());
 					break;
@@ -1136,12 +1136,11 @@ class EM_Booking extends EM_Object{
 		if( $this->booking_status !== $this->previous_status || $force_resend ){
 			//messages can be overridden just before being sent
 			$msg = $this->email_messages();
-			$output_type = get_option('dbem_smtp_html') ? 'html':'email';
 
 			//Send user (booker) emails
 			if( !empty($msg['user']['subject']) && $email_attendee ){
 				$msg['user']['subject'] = $this->output($msg['user']['subject'], 'raw');
-				$msg['user']['body'] = $this->output($msg['user']['body'], $output_type);
+				$msg['user']['body'] = $this->output($msg['user']['body'], 'email');
 				//Send to the person booking
 				if( !$this->email_send( $msg['user']['subject'], $msg['user']['body'], $this->get_person()->user_email) ){
 					$result = false;
@@ -1164,7 +1163,7 @@ class EM_Booking extends EM_Object{
 				if( !empty($admin_emails) ){
 					//Only gets sent if this is a pending booking, unless approvals are disabled.
 					$msg['admin']['subject'] = $this->output($msg['admin']['subject'],'raw');
-					$msg['admin']['body'] = $this->output($msg['admin']['body'], $output_type);
+					$msg['admin']['body'] = $this->output($msg['admin']['body'], 'email');
 					//email admins
 						if( !$this->email_send( $msg['admin']['subject'], $msg['admin']['body'], $admin_emails) && current_user_can('manage_options') ){
 							$this->errors[] = __('Confirmation email could not be sent to admin. Registrant should have gotten their email (only admin see this warning).','events-manager');

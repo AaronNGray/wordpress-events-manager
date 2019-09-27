@@ -272,6 +272,10 @@ class EM_Taxonomy_Term extends EM_Object {
 					$args['orderby'] = get_option('dbem_'. $this->option_name .'_event_list_orderby');
 					$args['order'] = get_option('dbem_'. $this->option_name .'_event_list_order');
 					$args['page'] = (!empty($_REQUEST['pno']) && is_numeric($_REQUEST['pno']) )? $_REQUEST['pno'] : 1;
+					if( $target == 'email' ){
+						$args['pagination'] = 0;
+						$args['page'] = 1;
+					}
 				    $replace = EM_Events::output($args);
 					break;
 				case '#_'. $ph .'NEXTEVENT':

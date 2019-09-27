@@ -226,12 +226,12 @@ function em_get_currencies(){
 	return apply_filters('em_get_currencies',$currencies);
 }
 
-function em_get_currency_formatted($price, $currency=false, $format=false){
+function em_get_currency_formatted($price, $currency=false, $format=false, $precision = 2){
 	$formatted_price = '';
 	if(!$format) $format = get_option('dbem_bookings_currency_format','@#');
 	if(!$currency) $currency = get_option('dbem_bookings_currency');
 	$formatted_price = str_replace('@', em_get_currency_symbol(true,$currency), $format);
-	$formatted_price = str_replace('#', number_format( $price, 2, get_option('dbem_bookings_currency_decimal_point','.'), get_option('dbem_bookings_currency_thousands_sep',',') ), $formatted_price);
+	$formatted_price = str_replace('#', number_format( $price, $precision, get_option('dbem_bookings_currency_decimal_point','.'), get_option('dbem_bookings_currency_thousands_sep',',') ), $formatted_price);
 	return apply_filters('em_get_currency_formatted', $formatted_price, $price, $currency, $format);
 }
 

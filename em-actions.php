@@ -236,7 +236,9 @@ function em_init_actions() {
 						location_state AS `state`,
 						location_region AS `region`,
 						location_postcode AS `postcode`,
-						location_country AS `country`
+						location_country AS `country`,
+						location_latitude AS `latitude`,
+						location_longitude AS `longitude`
 					FROM ".EM_LOCATIONS_TABLE." 
 					WHERE ( `location_name` LIKE %s ) AND location_status=1 $location_cond LIMIT 10
 				", $term);
@@ -467,7 +469,7 @@ function em_init_actions() {
 			    global $wpdb;
 				if( //save just the booking meta, avoid extra unneccesary hooks and things to go wrong
 					$EM_Booking->is_no_user() && $EM_Booking->get_person_post() && 
-			    	$wpdb->update(EM_BOOKINGS_TABLE, array('booking_meta'=> serialize($EM_Booking->booking_meta)), array('booking_id'=>$EM_Booking->booking_id))
+			    	$wpdb->update(EM_BOOKINGS_TABLE, array('booking_meta'=> serialize($EM_Booking->booking_meta)), array('booking_id'=>$EM_Booking->booking_id)) !== false
 				){
 					$EM_Notices->add_confirm( $EM_Booking->feedback_message, true );
 					$redirect = !empty($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : em_wp_get_referer();

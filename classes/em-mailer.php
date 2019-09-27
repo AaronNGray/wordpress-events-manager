@@ -15,10 +15,10 @@ class EM_Mailer {
 	 * @param $subject
 	 * @param $body
 	 * @param $receiver
+	 * @param $attachments
 	 */
 	public function send($subject="no title",$body="No message specified", $receiver='', $attachments = array() ) {
 		//TODO add an EM_Error global object, for this sort of error reporting. (@marcus like StatusNotice)
-		global $smtpsettings, $phpmailer, $cformsSettings;
 		$subject = html_entity_decode(wp_kses_data($subject)); //decode entities, but run kses first just in case users use placeholders containing html
 		if( is_array($receiver) ){
 			$receiver_emails = array();
@@ -38,7 +38,13 @@ class EM_Mailer {
 			if( get_option('dbem_smtp_html') ){ //create filter to change content type to html in wp_mail
 				add_filter('wp_mail_content_type','EM_Mailer::return_texthtml');
 			}
-			$send = wp_mail($receiver, $subject, $body, $headers);
+			//prep attachments for WP Mail, which only accept a path
+			$wp_mail_attachments = array();
+			foreach( $attachments as $attachment ){
+				$wp_mail_attachments[] = $attachment['path'];
+			}
+			//send and handle errors
+			$send = wp_mail($receiver, $subject, $body, $headers, $wp_mail_attachments);
 			if(!$send){
 				global $phpmailer;
 				$this->errors[] = $phpmailer->ErrorInfo;
@@ -58,7 +64,7 @@ class EM_Mailer {
 		    $mail->SetLanguage('en', dirname(__FILE__).'/');
 			$mail->PluginDir = dirname(__FILE__).'/phpmailer/';
 			$mail->Host = get_option('dbem_smtp_host');
-			$mail->port = get_option('dbem_rsvp_mail_port');
+			$mail->Port = get_option('dbem_rsvp_mail_port');
 			$mail->Username = get_option('dbem_smtp_username');  
 			$mail->Password = get_option('dbem_smtp_password');  
 			$mail->From = get_option('dbem_mail_sender_address');			
@@ -97,6 +103,7 @@ class EM_Mailer {
 			if(get_option('dbem_rsvp_mail_SMTPAuth') == '1'){
 				$mail->SMTPAuth = TRUE;
 		 	}
+			do_action('em_mailer_before_send', $mail, $subject, $body, $receiver, $attachments); //$mail can still be modified
 		 	$send = $mail->Send();
 			if(!$send){
 				$this->errors[] = $mail->ErrorInfo;

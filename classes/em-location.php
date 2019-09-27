@@ -272,8 +272,8 @@ class EM_Location extends EM_Object {
 		$this->location_postcode = ( !empty($_POST['location_postcode']) ) ? wp_kses(wp_unslash($_POST['location_postcode']), array()):'';
 		$this->location_region = ( !empty($_POST['location_region']) ) ? wp_kses(wp_unslash($_POST['location_region']), array()):'';
 		$this->location_country = ( !empty($_POST['location_country']) ) ? wp_kses(wp_unslash($_POST['location_country']), array()):'';
-		$this->location_latitude = ( !empty($_POST['location_latitude']) && is_numeric($_POST['location_latitude']) ) ? $_POST['location_latitude']:'';
-		$this->location_longitude = ( !empty($_POST['location_longitude']) && is_numeric($_POST['location_longitude']) ) ? $_POST['location_longitude']:'';
+		$this->location_latitude = ( !empty($_POST['location_latitude']) && is_numeric($_POST['location_latitude']) ) ? round($_POST['location_latitude'], 6):'';
+		$this->location_longitude = ( !empty($_POST['location_longitude']) && is_numeric($_POST['location_longitude']) ) ? round($_POST['location_longitude'], 6):'';
 		//Sort out event attributes - note that custom post meta now also gets inserted here automatically (and is overwritten by these attributes)
 		if(get_option('dbem_location_attributes_enabled')){
 			global $allowedtags;
@@ -781,7 +781,7 @@ class EM_Location extends EM_Object {
 	
 	function output_single($target = 'html'){
 		$format = get_option ( 'dbem_single_location_format' );
-		return apply_filters('em_location_output_single', $this->output($format, $target), $this, $target);			
+		return apply_filters('em_location_output_single', $this->output($format, $target), $this, $target);
 	}
 	
 	function output($format, $target="html") {
@@ -885,15 +885,17 @@ class EM_Location extends EM_Object {
 					break;
 				case '#_MAP': //Deprecated (but will remain)
 				case '#_LOCATIONMAP':
-					ob_start();
-					$args = array();
-				    if( !empty($placeholders[3][$key]) ){
-				        $dimensions = explode(',', $placeholders[3][$key]);
-				        if(!empty($dimensions[0])) $args['width'] = $dimensions[0];
-				        if(!empty($dimensions[1])) $args['height'] = $dimensions[1];
-				    }
-					$template = em_locate_template('placeholders/locationmap.php', true, array('args'=>$args,'EM_Location'=>$this));
-					$replace = ob_get_clean();	
+					if( get_option('dbem_gmap_is_active') ){
+						ob_start();
+						$args = array();
+					    if( !empty($placeholders[3][$key]) ){
+					        $dimensions = explode(',', $placeholders[3][$key]);
+					        if(!empty($dimensions[0])) $args['width'] = $dimensions[0];
+					        if(!empty($dimensions[1])) $args['height'] = $dimensions[1];
+					    }
+						em_locate_template('placeholders/locationmap.php', true, array('args'=>$args,'EM_Location'=>$this));
+						$replace = ob_get_clean();
+					}
 					break;
 				case '#_LOCATIONLONGITUDE':
 					$replace = $this->location_longitude;
@@ -975,11 +977,13 @@ class EM_Location extends EM_Object {
 					$link = esc_url($this->get_permalink());
 					$replace = ($result == '#_LOCATIONURL' || $result == '#_LOCATIONPAGEURL') ? $link : '<a href="'.$link.'">'.esc_html($this->location_name).'</a>';
 					break;
-				case '#_LOCATIONEDITURL':
-				case '#_LOCATIONEDITLINK':
+				case '#_LOCATIONEDITURL': // Deprecated - always worked but documented as #_EDITLOCATIONURL
+				case '#_LOCATIONEDITLINK': // Deprecated - always worked but documented incorrectly as #_EDITLOCATIONLINK
+				case '#_EDITLOCATIONURL':
+				case '#_EDITLOCATIONLINK':
 				    if( $this->can_manage('edit_locations','edit_others_locations') ){
 						$link = esc_url($this->get_edit_url());
-						$replace = ($result == '#_LOCATIONEDITURL') ? $link : '<a href="'.$link.'" title="'.esc_attr($this->location_name).'">'.esc_html(sprintf(__('Edit Location','events-manager'))).'</a>';
+						$replace = ($result == '#_LOCATIONEDITURL' || $result == '#_EDITLOCATIONURL' ) ? $link : '<a href="'.$link.'" title="'.esc_attr($this->location_name).'">'.esc_html(sprintf(__('Edit Location','events-manager'))).'</a>';
 				    }
 					break;
 				case '#_LOCATIONICALURL':
@@ -1028,6 +1032,10 @@ class EM_Location extends EM_Object {
 					$args['orderby'] = get_option('dbem_location_event_list_orderby');
 					$args['order'] = get_option('dbem_location_event_list_order');
 					$args['page'] = (!empty($_REQUEST['pno']) && is_numeric($_REQUEST['pno']) )? $_REQUEST['pno'] : 1;
+					if( $target == 'email' ){
+						$args['pagination'] = 0;
+						$args['page'] = 1;
+					}
 				    $replace = EM_Events::output($args);
 					break;
 				case '#_LOCATIONNEXTEVENT':
@@ -1091,9 +1099,9 @@ class EM_Location extends EM_Object {
 			'key' => get_option('dbem_google_maps_browser_key')
 		), $this);
 		if( get_option('dbem_gmap_embed_type') == 'place' ){
-			$args['q'] = $this->location_name.', '. $this->get_full_address();
+			$args['q'] = urlencode($this->location_name.', '. $this->get_full_address());
 		}elseif( get_option('dbem_gmap_embed_type') == 'address' ){
-			$args['q'] = $this->get_full_address();
+			$args['q'] = urlencode($this->get_full_address());
 		}else{
 			$args['q'] = $latlng;
 		}

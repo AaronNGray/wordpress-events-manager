@@ -214,15 +214,22 @@ class EM_Bookings extends EM_Object implements Iterator{
 		    	}else{
 		    		//if no end date is set, use event end date (which will have defaulted to the event start date
 		    		if( !$EM_Event->is_recurring() ){
-		    			$EM_Ticket->ticket_end = $EM_Event->rsvp_end()->getDateTime();
+		    			//save if we have a valid rsvp end date
+		    			if( $EM_Event->rsvp_end()->valid ){
+						    $EM_Ticket->ticket_end = $EM_Event->rsvp_end()->getDateTime();
+					    }
 		    		}else{
 			    		if( !isset($EM_Ticket->ticket_meta['recurrences']['end_days']) ){
 			    			//for recurrences, we take the recurrence_rsvp_days and feed it into the ticket meta that'll handle recurrences
-			    			$EM_Ticket->ticket_meta['recurrences']['end_days'] = $EM_Event->recurrence_rsvp_days;
-			    			if( !isset($EM_Ticket->ticket_meta['recurrences']['time']) ){
-			    				$EM_Ticket->ticket_meta['recurrences']['end_time'] = $EM_Event->event_rsvp_time;
+			    			$EM_Ticket->ticket_meta['recurrences']['end_days'] = !empty($EM_Event->recurrence_rsvp_days) ? $EM_Event->recurrence_rsvp_days : 0;
+			    			if( !isset($EM_Ticket->ticket_meta['recurrences']['end_time']) ){
+			    				iF( empty($EM_Event->event_rsvp_time) ){
+								    $EM_Ticket->ticket_meta['recurrences']['end_time'] = $EM_Event->start()->getTime();
+							    }else{
+								    $EM_Ticket->ticket_meta['recurrences']['end_time'] = $EM_Event->event_rsvp_time;
+							    }
 			    			}
-			    			$EM_Ticket->ticket_end = date('Y-m-d ') . $EM_Ticket->ticket_meta['recurrences']['end_time'];
+						    $EM_Ticket->ticket_end = $EM_Event->start()->format('Y-m-d') . $EM_Ticket->ticket_meta['recurrences']['end_time'];
 			    		}
 		    		}
 		    	}
