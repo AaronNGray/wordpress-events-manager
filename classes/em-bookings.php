@@ -64,6 +64,7 @@ class EM_Bookings extends EM_Object implements Iterator{
 		if( $var == 'bookings' ){
 			return $this->load();
 		}
+		return parent::__get( $var );
 	}
 	
 	public function __set( $var, $val ){
@@ -74,6 +75,7 @@ class EM_Bookings extends EM_Object implements Iterator{
 				$this->bookings = null;
 			}
 		}
+		parent::__set( $var, $val );
 	}
 	
 	/**
@@ -90,7 +92,7 @@ class EM_Bookings extends EM_Object implements Iterator{
 		if( $var == 'bookings' ){
 			$result = $this->bookings !== null;
 		}
-		return $result;
+		return parent::__isset( $var );
 	}
 	
 	public function load( $refresh = false ){
@@ -598,7 +600,7 @@ class EM_Bookings extends EM_Object implements Iterator{
 		$where = ( count($conditions) > 0 ) ? " WHERE " . implode ( " AND ", $conditions ):'';
 		
 		//Get ordering instructions
-		$EM_Booking = em_get_booking();
+		$EM_Booking = new EM_Booking();
 		$accepted_fields = $EM_Booking->get_fields(true);
 		$accepted_fields['date'] = 'booking_date';
 		$orderby = self::build_sql_orderby($args, $accepted_fields);

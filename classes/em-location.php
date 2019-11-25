@@ -1,6 +1,6 @@
 <?php
 /**
- * Get an event in a db friendly way, by checking globals, cache and passed variables to avoid extra class instantiations.
+ * Get a location in a db friendly way, by checking globals, cache and passed variables to avoid extra class instantiations.
  * @param mixed $id
  * @param mixed $search_by
  * @return EM_Location
@@ -44,13 +44,22 @@ function em_get_location($id = false, $search_by = 'location_id') {
 }
 /**
  * Object that holds location info and related functions
- * @author marcus
+ *
+ * @property string $language       Language of the location, shorthand for location_language
+ * @property string $translation    Whether or not a location is a translation (i.e. it was translated from an original location), shorthand for location_translation
+ * @property int $parent            Location ID of parent location, shorthand for location_parent
+ * @property int $id                The Location ID, case sensitive, shorthand for location_id
+ * @property string $slug           Location slug, shorthand for location_slug
+ * @property string name            Location name, shorthand for location_name
+ * @property int owner              ID of author/owner, shorthand for location_owner
+ * @property int status             ID of post status, shorthand for location_status
  */
 class EM_Location extends EM_Object {
 	//DB Fields
 	var $location_id = '';
 	var $post_id = '';
-	var $blog_id = '';
+	var $blog_id = 0;
+	var $location_parent;
 	var $location_slug = '';
 	var $location_name = '';
 	var $location_address = '';
@@ -64,6 +73,8 @@ class EM_Location extends EM_Object {
 	var $post_content = '';
 	var $location_owner = '';
 	var $location_status = 0;
+	var $location_language;
+	var $location_translation = 0;
 	/* anonymous submission information */
 	var $owner_anonymous;
 	var $owner_name;
@@ -73,6 +84,7 @@ class EM_Location extends EM_Object {
 		'location_id' => array('name'=>'id','type'=>'%d'),
 		'post_id' => array('name'=>'post_id','type'=>'%d'),
 		'blog_id' => array('name'=>'blog_id','type'=>'%d'),
+		'location_parent' => array('type'=>'%d', 'null'=>true),
 		'location_slug' => array('name'=>'slug','type'=>'%s', 'null'=>true), 
 		'location_name' => array('name'=>'name','type'=>'%s', 'null'=>true), 
 		'location_address' => array('name'=>'address','type'=>'%s','null'=>true),
@@ -85,7 +97,24 @@ class EM_Location extends EM_Object {
 		'location_longitude' => array('name'=>'longitude','type'=>'%f','null'=>true),
 		'post_content' => array('name'=>'description','type'=>'%s', 'null'=>true),
 		'location_owner' => array('name'=>'owner','type'=>'%d', 'null'=>true),
-		'location_status' => array('name'=>'status','type'=>'%d', 'null'=>true)
+		'location_status' => array('name'=>'status','type'=>'%d', 'null'=>true),
+		'location_language' => array( 'type'=>'%s', 'null'=>true ),
+		'location_translation' => array( 'type'=>'%d' ),
+	);
+	/**
+	 * Associative array mapping shorter to full property names in this class, used in EM_Object magic access methods, allowing for interchangeable use when dealing with different object types such as locations and events.
+	 * @var array
+	 */
+	protected $shortnames = array(
+		// common EM CPT object variables
+		'language' => 'location_language',
+		'translation' => 'location_translation',
+		'parent' => 'location_parent',
+		'id' => 'location_id',
+		'slug' => 'locatoin_slug',
+		'name' => 'locatoin_name',
+		'status' => 'location_status',
+		'owner' => 'location_owner',
 	);
 	var $post_fields = array('post_id','location_slug','location_status', 'location_name','post_content','location_owner');
 	var $location_attributes = array();
@@ -132,7 +161,6 @@ class EM_Location extends EM_Object {
 	 * Gets data from POST (default), supplied array, or from the database if an ID is supplied
 	 * @param WP_Post|int|false $id
 	 * @param $search_by - Can be post_id or a number for a blog id if in ms mode with global tables, default is location_id
-	 * @return null
 	 */
 	function __construct($id = false,  $search_by = 'location_id' ) {
 		global $wpdb;
@@ -140,6 +168,11 @@ class EM_Location extends EM_Object {
 		$this->required_fields = array("location_address" => __('The location address', 'events-manager'), "location_town" => __('The location town', 'events-manager'), "location_country" => __('The country', 'events-manager'));
 		//Get the post_id/location_id
 		$is_post = !empty($id->ID) && $id->post_type == EM_POST_TYPE_LOCATION;
+		if( $is_post ){
+			$id->ID = absint($id->ID);
+		}else{
+			$id = absint($id);
+		}
 		if( $is_post || absint($id) > 0 ){ //only load info if $id is a number
 			$location_post = false;
 			if($search_by == 'location_id' && !$is_post){
@@ -292,6 +325,10 @@ class EM_Location extends EM_Object {
 				}
 			}
 		}
+		//location language
+		if( EM_ML::$is_ml && !empty($_POST['location_language']) && array_key_exists($_POST['location_language'], EM_ML::$langs) ){
+			$this->location_language = $_POST['location_language'];
+		}
 		//the line below should be deleted one day and we move validation out of this function, when that happens check otherfunctions like EM_ML_IO::get_post_meta function which force validation again 
 		$result = $validate ? $this->validate_meta():true; //post returns null
 		$this->compat_keys();
@@ -391,7 +428,8 @@ class EM_Location extends EM_Object {
 			$post_save = true;			
 			//refresh this event with wp post
 			$post_data = get_post($post_id);
-			$this->post_id = $post_id;
+			$this->post_id = $this->ID = $post_id;
+			$this->post_type = $post_data->post_type;
 			$this->location_slug = $post_data->post_name;
 			$this->location_owner = $post_data->post_author;
 			$this->post_status = $post_data->post_status;
@@ -431,6 +469,8 @@ class EM_Location extends EM_Object {
 		global $wpdb;
 		if( $this->can_manage('edit_locations','edit_others_locations') || ( get_option('dbem_events_anonymous_submissions') && empty($this->location_id)) ){
 			do_action('em_location_save_meta_pre', $this);
+			//language default
+			if( !$this->location_language ) $this->location_language = EM_ML::$current_language;
 			//Set Blog ID if in multisite mode
 			if( EM_MS_GLOBAL && get_site_option('dbem_ms_mainblog_locations') ){
 			    $this->blog_id = get_current_site()->blog_id; //global locations restricted to main blog must have main site id
@@ -440,6 +480,7 @@ class EM_Location extends EM_Object {
 			//Update Post Meta
 			$current_meta_values = get_post_meta($this->post_id);
 			foreach( array_keys($this->fields) as $key ){
+				if( !EM_ML::$is_ml && ($key == 'location_language' || $key == 'location_translation') ) continue;
 				if( !in_array($key, $this->post_fields) && $key != 'blog_id' && $this->$key != '' ){
 					update_post_meta($this->post_id, '_'.$key, $this->$key);
 				}elseif( array_key_exists('_'.$key, $current_meta_values) ){ //we should delete event_attributes, but maybe something else uses it without us knowing
@@ -603,7 +644,18 @@ class EM_Location extends EM_Object {
 		$result = $wpdb->query($wpdb->prepare("UPDATE ".EM_LOCATIONS_TABLE." SET location_status=$set_status, location_slug=%s WHERE location_id=%d", array($this->post_name, $this->location_id)));
 		$this->get_status(); //reload status
 		return apply_filters('em_location_set_status', $result !== false, $status, $this);
-	}	
+	}
+	
+	/**
+	 * Gets the parent of this location, if none exists, null is returned.
+	 * @return EM_Location|null
+	 */
+	public function get_parent(){
+		if( $this->location_parent ){
+			return em_get_location( $this->location_parent );
+		}
+		return null;
+	}
 	
 	function get_status($db = false){
 		switch( $this->post_status ){
@@ -1080,13 +1132,14 @@ class EM_Location extends EM_Object {
 			
 	}
 	
-	function get_full_address($glue = ', '){
+	function get_full_address($glue = ', ', $include_country = false){
 		$location_array = array();
 		if( !empty($this->location_address) ) $location_array[] = $this->location_address;
 		if( !empty($this->location_town) ) $location_array[] = $this->location_town;
 		if( !empty($this->location_state) ) $location_array[] = $this->location_state;
 		if( !empty($this->location_postcode) ) $location_array[] = $this->location_postcode;
 		if( !empty($this->location_region) ) $location_array[] = $this->location_region;
+		if( $include_country ) $location_array[] = $this->get_country();
 		return implode($glue, $location_array);
 	}
 	

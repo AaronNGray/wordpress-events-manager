@@ -27,6 +27,7 @@ function em_get_booking($id = false) {
 }
 /**
  * Contains all information and relevant functions surrounding a single booking made with Events Manager
+ * @property string $language
  */
 class EM_Booking extends EM_Object{
 	//DB Fields
@@ -97,7 +98,7 @@ class EM_Booking extends EM_Object{
 	var $previous_status = false;
 	/**
 	 * The booking approval status number corresponds to a state in this array.
-	 * @var unknown_type
+	 * @var array
 	 */
 	var $status_array = array();
 	/**
@@ -133,7 +134,7 @@ class EM_Booking extends EM_Object{
 				$booking = $booking_data;
 			}elseif( is_numeric($booking_data) ){
 				//Retrieving from the database
-				$sql = "SELECT * FROM ". EM_BOOKINGS_TABLE ." WHERE booking_id ='$booking_data'";
+				$sql = $wpdb->prepare("SELECT * FROM ". EM_BOOKINGS_TABLE ." WHERE booking_id =%d", $booking_data);
 				$booking = $wpdb->get_row($sql, ARRAY_A);
 			}
 			//booking meta
@@ -169,14 +170,19 @@ class EM_Booking extends EM_Object{
 	    if( $var == 'timestamp' ){
 	    	if( $this->date() === false ) return 0;
 	    	return $this->date()->getTimestampWithOffset();
+	    }elseif( $var == 'language' ){
+	    	if( !empty($this->booking_meta['lang']) ){
+	    		return $this->booking_meta['lang'];
+		    }
 	    }
 	    return null;
 	}
 	
 	public function __set( $prop, $val ){
 		if( $prop == 'timestamp' ){
-			if( $this->date() !== false );
-			$this->date()->setTimestamp($val);
+			if( $this->date() !== false ) $this->date()->setTimestamp($val);
+		}elseif( $prop == 'language' ){
+			$this->booking_meta['lang'] = $val;
 		}else{
 			$this->$prop = $val;
 		}
@@ -184,6 +190,7 @@ class EM_Booking extends EM_Object{
 	
 	public function __isset( $prop ){
 		if( $prop == 'timestamp' ) return $this->date()->getTimestamp() > 0;
+		if( $prop == 'language' ) return !empty($this->booking_meta['lang']);
 	}
 	
 	function get_notes(){
@@ -264,7 +271,7 @@ class EM_Booking extends EM_Object{
 	}
 	
 	/**
-	 * Load an record into this object by passing an associative array of table criteria to search for. 
+	 * Load a record into this object by passing an associative array of table criteria to search for.
 	 * Returns boolean depending on whether a record is found or not. 
 	 * @param $search
 	 * @return boolean
@@ -278,12 +285,12 @@ class EM_Booking extends EM_Object{
 				$conds[] = "`$key`='$value'";
 			} 
 		}
-		$sql = "SELECT * FROM ". $wpdb->EM_BOOKINGS_TABLE ." WHERE " . implode(' AND ', $conds) ;
+		$sql = "SELECT * FROM ". EM_BOOKINGS_TABLE ." WHERE " . implode(' AND ', $conds) ;
 		$result = $wpdb->get_row($sql, ARRAY_A);
 		if($result){
 			$this->to_object($result);
 			$this->person = new EM_Person($this->person_id);
-			return true;	
+			return true;
 		}else{
 			return false;
 		}
@@ -297,12 +304,13 @@ class EM_Booking extends EM_Object{
 		$this->tickets_bookings = new EM_Tickets_Bookings($this->booking_id);
 		do_action('em_booking_get_post_pre',$this);
 		$result = array();
-		$this->event_id = $_REQUEST['event_id'];
+		$this->event_id = absint($_REQUEST['event_id']);
 		if( isset($_REQUEST['em_tickets']) && is_array($_REQUEST['em_tickets']) && ($_REQUEST['em_tickets'] || $override_availability) ){
 			foreach( $_REQUEST['em_tickets'] as $ticket_id => $values){
 				//make sure ticket exists
+				$ticket_id = absint($ticket_id);
 				if( !empty($values['spaces']) || $override_availability ){
-					$args = array('ticket_id'=>$ticket_id, 'ticket_booking_spaces'=>$values['spaces'], 'booking_id'=>$this->booking_id);
+					$args = array('ticket_id'=>$ticket_id, 'ticket_booking_spaces'=> absint($values['spaces']), 'booking_id'=>$this->booking_id);
 					if($this->get_event()->get_bookings()->ticket_exists($ticket_id)){
 							$EM_Ticket_Booking = new EM_Ticket_Booking($args);
 							$EM_Ticket_Booking->booking = $this;
@@ -1021,6 +1029,7 @@ class EM_Booking extends EM_Object{
 	}
 	
 	function output($format, $target="html") {
+		do_action('em_booking_output_pre', $this, $format, $target);
 	 	preg_match_all("/(#@?_?[A-Za-z0-9]+)({([^}]+)})?/", $format, $placeholders);
 		foreach( $this->get_tickets() as $EM_Ticket){ /* @var $EM_Ticket EM_Ticket */ break; } //Get first ticket for single ticket placeholders
 		$output_string = $format;
@@ -1119,21 +1128,22 @@ class EM_Booking extends EM_Object{
 	}
 	
 	/**
-	 * @param EM_Booking $EM_Booking
-	 * @param EM_Event $event
+	 * @param boolean $email_admin
+	 * @param boolean $force_resend
+	 * @param boolean $email_attendee
 	 * @return boolean
 	 */
 	function email( $email_admin = true, $force_resend = false, $email_attendee = true ){
-		global $EM_Mailer;
 		$result = true;
 		$this->mails_sent = 0;
 		
-		//FIXME ticket logic needed
-		$EM_Event = $this->get_event(); //We NEED event details here.
-		$EM_Event->get_bookings(true); //refresh all bookings
 		
 		//Make sure event matches booking, and that booking used to be approved.
 		if( $this->booking_status !== $this->previous_status || $force_resend ){
+			do_action('em_booking_email_before_send', $this);
+			//get event info and refresh all bookings
+			$EM_Event = $this->get_event(); //We NEED event details here.
+			$EM_Event->get_bookings(true); //refresh all bookings
 			//messages can be overridden just before being sent
 			$msg = $this->email_messages();
 
@@ -1173,8 +1183,9 @@ class EM_Booking extends EM_Object{
 						}
 				}
 			}
+			do_action('em_booking_email_after_send', $this);
 		}
-		return $result;
+		return apply_filters('em_booking_email', $result, $this, $email_admin, $force_resend, $email_attendee);
 		//TODO need error checking for booking mail send
 	}	
 	
@@ -1217,7 +1228,9 @@ class EM_Booking extends EM_Object{
 	
 	/**
 	 * Returns an EM_DateTime representation of when booking was made in UTC timezone. If no valid date defined, false will be returned
+	 * @param boolean $utc_timezone
 	 * @return EM_DateTime
+	 * @throws Exception
 	 */
 	public function date( $utc_timezone = false ){
 		if( empty($this->date) || !$this->date->valid ){

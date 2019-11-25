@@ -83,7 +83,7 @@ function em_options_save(){
 			$referrer_array = explode('#', $referrer);
 			$referrer = esc_url_raw($referrer_array[0] . '#' . $_REQUEST['tab_path']);
 		}
-		wp_redirect($referrer);
+		wp_safe_redirect($referrer);
 		exit();
 	}
 	//Migration
@@ -94,7 +94,7 @@ function em_options_save(){
 			$failed = ( $result['fail'] > 0 ) ? $result['fail'] . ' images failed to migrate.' : '';
 			$EM_Notices->add_confirm('<strong>'.$result['success'].' images migrated successfully. '.$failed.'</strong>');
 		}
-		wp_redirect(admin_url().'edit.php?post_type=event&page=events-manager-options&em_migrate_images');
+		wp_safe_redirect(admin_url().'edit.php?post_type=event&page=events-manager-options&em_migrate_images');
 	}elseif( !empty($_GET['em_not_migrate_images']) && check_admin_referer('em_not_migrate_images','_wpnonce') ){
 		delete_option('dbem_migrate_images_nag');
 		delete_option('dbem_migrate_images');
@@ -134,7 +134,7 @@ function em_options_save(){
 			$wpdb->query('DELETE FROM '.$wpdb->options.' WHERE option_name LIKE \'em_%\' OR option_name LIKE \'dbem_%\'');
 			//deactivate and go!
 			deactivate_plugins(array('events-manager/events-manager.php','events-manager-pro/events-manager-pro.php'), true);
-			wp_redirect(admin_url('plugins.php?deactivate=true'));
+			wp_safe_redirect(admin_url('plugins.php?deactivate=true'));
 			exit();
 		}
 	}
@@ -154,7 +154,7 @@ function em_options_save(){
 			}
 			//go back to plugin options page
 			$EM_Notices->add_confirm(__('Settings have been reset back to default. Your events, locations and categories have not been modified.','events-manager'), true);
-			wp_redirect(em_wp_get_referer());
+			wp_safe_redirect(em_wp_get_referer());
 			exit();
 		}
 	}
@@ -180,7 +180,7 @@ function em_options_save(){
 		}
 		//go back to plugin options page
 		$EM_Notices->add_confirm(sprintf(__('Found %d orphaned events, deleted %d successfully','events-manager'), count($results), $deleted_events), true);
-		wp_redirect(em_wp_get_referer());
+		wp_safe_redirect(em_wp_get_referer());
 		exit();
 	}
 	//Force Update Recheck - Workaround for now
@@ -189,7 +189,7 @@ function em_options_save(){
 		delete_transient('update_plugins');
 		delete_site_transient('update_plugins');
 		$EM_Notices->add_confirm(__('If there are any new updates, you should now see them in your Plugins or Updates admin pages.','events-manager'), true);
-		wp_redirect(em_wp_get_referer());
+		wp_safe_redirect(em_wp_get_referer());
 		exit();
 	}
 	//Flag version checking to look at trunk, not tag
@@ -199,7 +199,7 @@ function em_options_save(){
 		delete_site_transient('update_plugins');
 		update_option('em_check_dev_version', true);
 		$EM_Notices->add_confirm(__('Checking for dev versions.','events-manager').' '. __('If there are any new updates, you should now see them in your Plugins or Updates admin pages.','events-manager'), true);
-		wp_redirect(em_wp_get_referer());
+		wp_safe_redirect(em_wp_get_referer());
 		exit();
 	}
 	//import EM settings
@@ -223,12 +223,12 @@ function em_options_save(){
 					}
 				}
 				$EM_Notices->add_confirm(__('Settings imported.','events-manager'), true);
-				wp_redirect(em_wp_get_referer());
+				wp_safe_redirect(em_wp_get_referer());
 				exit();
 			}
 		}
 		$EM_Notices->add_error(__('Please upload a valid txt file containing Events Manager import settings.','events-manager'), true);
-		wp_redirect(em_wp_get_referer());
+		wp_safe_redirect(em_wp_get_referer());
 		exit();
 	}
 	//export EM settings
@@ -320,7 +320,7 @@ function em_options_save(){
 				$EM_Notices->add_confirm(sprintf(__('Event timezones have been reset to %s.','events-manager'), '<code>'.$timezone.'</code>'), true);
 			}
 		}
-		wp_redirect(em_wp_get_referer());
+		wp_safe_redirect(em_wp_get_referer());
 		exit();
 	}
 	
@@ -606,7 +606,9 @@ function em_admin_option_box_email(){
 				<?php
 				em_options_input_text ( 'Mail sending port', 'dbem_rsvp_mail_port', __( "The port through which you e-mail notifications will be sent. Make sure the firewall doesn't block this port", 'events-manager') );
 				em_options_radio_binary ( __( 'Use SMTP authentication?', 'events-manager'), 'dbem_rsvp_mail_SMTPAuth', __( 'SMTP authentication is often needed. If you use Gmail, make sure to set this parameter to Yes', 'events-manager') );
-				em_options_input_text ( 'SMTP host', 'dbem_smtp_host', __( "The SMTP host. Usually it corresponds to 'localhost'. If you use Gmail, set this value to 'ssl://smtp.gmail.com:465'.", 'events-manager') );
+				em_options_select ( __( 'SMTP Encryption', 'events-manager'), 'dbem_smtp_encryption', array ('0' => __( 'None', 'events-manager'), 'ssl' => 'SSL', 'tls' => 'TLS' ), __( 'Encryption is always recommended if your SMTP server supports it. If your server supports TLS, this is also the most recommended method.', 'events-manager') );
+				em_options_radio_binary ( __( 'AutoTLS', 'events-manager'), 'dbem_smtp_autotls', __( 'We recommend leaving this on unless you are experiencing issues configuring your eamil.', 'events-manager') );
+				em_options_input_text ( 'SMTP host', 'dbem_smtp_host', __( "The SMTP host. Usually it corresponds to 'localhost'. If you use Gmail, set this value to 'tls://smtp.gmail.com:587'.", 'events-manager') );
 				em_options_input_text ( __( 'SMTP username', 'events-manager'), 'dbem_smtp_username', __( "Insert the username to be used to access your SMTP server.", 'events-manager') );
 				em_options_input_password ( __( 'SMTP password', 'events-manager'), "dbem_smtp_password", __( "Insert the password to be used to access your SMTP server", 'events-manager') );
 				?>

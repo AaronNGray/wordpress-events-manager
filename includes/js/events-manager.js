@@ -1029,7 +1029,7 @@ function em_maps() {
 		jQuery('#location-select-id, input#location-id').change( function(){get_map_by_id(jQuery(this).val());} );
 		jQuery('#location-name, #location-town, #location-address, #location-state, #location-postcode, #location-country').change( function(){
 			//build address
-			if( $(this).prop('readonly') === true ) return;
+			if( jQuery(this).prop('readonly') === true ) return;
 			var addresses = [ jQuery('#location-address').val(), jQuery('#location-town').val(), jQuery('#location-state').val(), jQuery('#location-postcode').val() ];
 			var address = '';
 			jQuery.each( addresses, function(i, val){

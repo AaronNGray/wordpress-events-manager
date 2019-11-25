@@ -1,6 +1,5 @@
 <?php
 //TODO add a shortcode to link for a specific event, e.g. [event id=x]text[/event]
-
 /**
  * Returns the html of an events calendar with events that match given query attributes. Accepts any event query attribute.
  * @param array $atts
@@ -17,7 +16,7 @@ function em_get_gcal_shortcode($atts){
 	if( $img_url == $atts['img'] && $atts['button'] != 6 ){
 		$img_url = str_replace('gc_button6.gif', 'gc_button'.$atts['button'].'.gif', $img_url);
 	}
-	$url = '<a href="http://www.google.com/calendar/render?cid='.urlencode(trailingslashit(get_home_url()).'events.ics').'" target="_blank"><img src="'.$img_url.'" alt="0" border="0"></a>';
+	$url = '<a href="http://www.google.com/calendar/render?cid='.urlencode(trailingslashit(get_home_url()).'events.ics').'" target="_blank"><img src="'.esc_url($img_url).'" alt="0" border="0"></a>';
 	return $url;
 }
 add_shortcode('events_gcal', 'em_get_gcal_shortcode');
@@ -99,6 +98,7 @@ add_shortcode('events_map', 'em_get_events_map_shortcode');
 /**
  * Shows a list of events according to given specifications. Accepts any event query attribute.
  * @param array $args
+ * @param string $format
  * @return string
  */
 function em_get_events_list_shortcode($args, $format='') {

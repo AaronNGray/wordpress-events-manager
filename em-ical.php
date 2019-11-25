@@ -18,10 +18,9 @@
 	 * Generates an ics file for a single event 
 	 */
 	function em_ical_item(){
-		global $wpdb, $wp_query, $wp_rewrite;
+		global $wpdb, $wp_query;
 		//check if we're outputting an ical feed
 		if( !empty($wp_query) && $wp_query->get('ical') ){
-			$execute_ical = false;
 			$filename = 'events';
 			$args = array();
 			//single event
@@ -59,7 +58,7 @@
 			}else{
 				//no item exists, so redirect to original URL
 				$url_to_redirect = preg_replace("/ical\/$/",'', esc_url_raw(add_query_arg(array('ical'=>null))));				
-				wp_redirect($url_to_redirect, '302');
+				wp_safe_redirect($url_to_redirect, '302');
 				exit();
 			}
 		}

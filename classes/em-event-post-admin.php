@@ -79,7 +79,8 @@ class EM_Event_Post_Admin{
 		$post_type = $data['post_type'];
 		$post_ID = !empty($postarr['ID']) ? $postarr['ID'] : false;
 		$is_post_type = $post_type == EM_POST_TYPE_EVENT || $post_type == 'event-recurring';
-		$saving_status = !in_array($data['post_status'], array('trash','auto-draft')) && !defined('DOING_AUTOSAVE');
+		$doing_add_meta_ajax = defined('DOING_AJAX') && DOING_AJAX && !empty($_REQUEST['action']) && $_REQUEST['action'] == 'add-meta' && check_ajax_referer( 'add-meta', '_ajax_nonce-add-meta', false );  //we don't need to save anything here, we don't use this action
+		$saving_status = !in_array($data['post_status'], array('trash','auto-draft')) && !defined('DOING_AUTOSAVE') && !$doing_add_meta_ajax;
 		$untrashing = $post_ID && defined('UNTRASHING_'.$post_ID);
 		if( !$untrashing && $is_post_type && $saving_status ){
 			if( !empty($_REQUEST['_emnonce']) && wp_verify_nonce($_REQUEST['_emnonce'], 'edit_event') ){ 
@@ -101,7 +102,8 @@ class EM_Event_Post_Admin{
 		if ( isset($_GET['preview_id']) && isset($_GET['preview_nonce']) && wp_verify_nonce( $_GET['preview_nonce'], 'post_preview_' . $post_id ) ) return; //don't proceed with saving when previewing, may cause issues
 		$post_type = get_post_type($post_id);
 		$is_post_type = $post_type == EM_POST_TYPE_EVENT || $post_type == 'event-recurring';
-		$saving_status = !in_array(get_post_status($post_id), array('trash','auto-draft')) && !defined('DOING_AUTOSAVE');
+		$doing_add_meta_ajax = defined('DOING_AJAX') && DOING_AJAX && !empty($_REQUEST['action']) && $_REQUEST['action'] == 'add-meta' && check_ajax_referer( 'add-meta', '_ajax_nonce-add-meta', false ); //we don't need to save anything here, we don't use this action
+		$saving_status = !in_array(get_post_status($post_id), array('trash','auto-draft')) && !defined('DOING_AUTOSAVE') && !$doing_add_meta_ajax;
 		$EM_EVENT_SAVE_POST = true; //first filter for save_post in EM for events
 		if(!defined('UNTRASHING_'.$post_id) && $is_post_type && $saving_status ){
 			//Reset server timezone to UTC in case other plugins are doing something naughty

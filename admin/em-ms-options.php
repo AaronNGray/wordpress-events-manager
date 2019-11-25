@@ -65,6 +65,7 @@ function em_ms_admin_options_page() {
 		return;
 	}	
 	//TODO place all options into an array
+	$tabs_enabled = defined('EM_SETTINGS_TABS') && EM_SETTINGS_TABS;
 	$events_placeholders = '<a href="'.EM_ADMIN_URL .'&amp;events-manager-help#event-placeholders">'. __('Event Related Placeholders','events-manager') .'</a>';
 	$locations_placeholders = '<a href="'.EM_ADMIN_URL .'&amp;events-manager-help#location-placeholders">'. __('Location Related Placeholders','events-manager') .'</a>';
 	$bookings_placeholders = '<a href="'.EM_ADMIN_URL .'&amp;events-manager-help#booking-placeholders">'. __('Booking Related Placeholders','events-manager') .'</a>';
@@ -137,7 +138,6 @@ function em_ms_admin_options_page() {
 		<h1 id="em-options-title"><?php _e ( 'Event Manager Options', 'events-manager'); ?></h1>
 		<h2 class="nav-tab-wrapper">
 			<?php
-			$tabs_enabled = defined('EM_SETTINGS_TABS') && EM_SETTINGS_TABS;
 			if( $tabs_enabled ){
 				$general_tab_link = esc_url(add_query_arg( array('em_tab'=>'general')));
 			}else{

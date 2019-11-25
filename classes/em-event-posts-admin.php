@@ -4,7 +4,7 @@ class EM_Event_Posts_Admin{
 		global $pagenow;
 		if( $pagenow == 'edit.php' && !empty($_REQUEST['post_type']) && $_REQUEST['post_type'] == EM_POST_TYPE_EVENT ){ //only needed for events list
 			if( !empty($_REQUEST['category_id']) && is_numeric($_REQUEST['category_id']) ){
-				$term = get_term_by('id', $_REQUEST['category_id'], EM_TAXONOMY_CATEGORY);
+				$term = get_term_by('id', absint($_REQUEST['category_id']), EM_TAXONOMY_CATEGORY);
 				if( !empty($term->slug) ){
 					$_REQUEST['category_id'] = $term->slug;
 				}
@@ -63,7 +63,7 @@ class EM_Event_Posts_Admin{
 	
     public static function admin_notices(){
         if( !empty($_REQUEST['recurrence_id']) && is_numeric($_REQUEST['recurrence_id']) ){
-            $EM_Event = em_get_event($_REQUEST['recurrence_id']);
+            $EM_Event = em_get_event( absint($_REQUEST['recurrence_id']) );
             ?>
             <div class="notice notice-info">
                 <p><?php echo sprintf(esc_html__('You are viewing individual recurrences of recurring event %s.', 'events-manager'), '<a href="'.$EM_Event->get_edit_url().'">'.$EM_Event->event_name.'</a>'); ?></p>
