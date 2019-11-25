@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 4.8
 Tested up to: 5.3
-Stable tag: 5.9.6
+Stable tag: 5.9.7
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
@@ -111,6 +111,50 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
+= 5.9.7 =
+* fixed google calendar add-to link not including location town/zip/state
+* fixed minor PHP warnings
+* added timestamps for keys to $post_ids array in em_event_save_events filter
+* tweaked deleting of recurrences to reduce possibility of mistken circumvention by other filters
+* added parameter option to include country to EM_Location->get_full_address()
+* added em_ticket_delete and em_tickets_delete filters
+* added language definition for events and locations allowing for faster multilingual searches where supported
+* added parent definition for events, tickets and locations paving the way for various hierarchical applications
+* added language search attribute for events and locations
+* fixed potential search inconsistencies when using 'recurrence' search attribute for finding recurrences by recurring event ID
+* added multilingual support for recurring events (requires update to any compatibility plugins)
+* added ability for event recurrences to assign corresponding parent ticket ids to recurrence tickets via ticket_parent db field
+* fixed potentially conflict-causing permalink rules for the calendar page (fixes WPML-EM conflict on these pages)
+* added support for location address translation in multilingual environments
+* removed filter pointer (previously used to fix ACF conflicts) in EM_ML_IO::event_save_meta() since WP now has fixed pointer issues for nested filter triggers
+* fixed EM_Event::is_recurrence() returning false when event not saved for first time
+* fixed delete_events not returning true to filter when events are actually deleted
+* fixed JS warning preventing address update on map when updating locations
+* added various precautionary data sanitization for security enhancement
+* replaced all uses of wp_redirect() with wp_safe_redirect() as a security precaution
+* added encryption and autotls options to email settings
+* added em_is_event() and em_is_location() object checking functions
+* added native primary handling of finding translations of events and locations before passing it onto filters where translation plugins can intervene
+* added native searching of events and locations based on new language/parent fields
+* added native support for searching eventful and eventless arguments in multilingual context
+* added native support for listing untranslated events and locations in original language when listing a second language in multilingual context
+* changed EM_Event and EM_Location blog_id to default to 0 rather than null
+* added shortname property names for common EM_Event and EM_Location fields language, parent, translation, id (event/location id), slug, status, name and owner
+* added get_parent() function for EM_Event and EM_Location classes
+* added $context peroperty to EM_Events and EM_Locations classes which leverage late static binding in PHP 5.3
+* added 'language' search argument for events and locations which can be used in multilingual contexts
+* moved table joining decision logic in EM_Locations into its own function, enabling overriding via filters
+* added em_booking_email_before_send, em_booking_email_after_send and em_booking_output_pre actions in EM_Booking
+* added em_booking_email filter in EM_Booking
+* added name/description shortname properties and modified ticket_name/description access in EM_Ticket to enable dynamic translation of ticket names
+* added price,id,spaces shortnames for EM_Ticket_Booking
+* added em_ticket_booking_get_ticket filter in EM_Ticket_Booking
+* added locale switching/restoring functions in EM_ML as well as syncing with the WP locale switcher
+* fixed booking emails not getting correctly translated in ML modes
+* fixed data privacy consent validation errors when booking in custom modes under certain setting configurations
+* removed load_plugin_textdomain call in favour of letting WordPress.org automatically handle language translation files
+* changed boolean database fields into tinyint(1) unsigned types
+
 = 5.9.6 =
 * fixed monthly recurrence pattern issues with PHP <5.6
 * fixed multiple minor PHP Warnings including Countable errors when saving a booking in PHP 7.2+
