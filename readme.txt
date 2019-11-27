@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 4.8
 Tested up to: 5.3
-Stable tag: 5.9.7
+Stable tag: 5.9.7.1
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
@@ -111,6 +111,10 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
+= 5.9.7.1 =
+* fixed minor typo in new email setting description
+* fixed CSV booking export files turning out blank due to change in EM_Bookings::__isset() in 5.9.7
+
 = 5.9.7 =
 * fixed google calendar add-to link not including location town/zip/state
 * fixed minor PHP warnings

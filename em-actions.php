@@ -673,12 +673,10 @@ function em_init_actions() {
 		$handle = fopen("php://output", "w");
 		fputcsv($handle, $EM_Bookings_Table->get_headers(true), $delimiter);
 		while( !empty($EM_Bookings->bookings) ){
-			foreach( $EM_Bookings->bookings as $EM_Booking ) {
+			foreach( $EM_Bookings->bookings as $EM_Booking ) { /* @var EM_Booking $EM_Booking */
 				//Display all values
-				/* @var $EM_Booking EM_Booking */
-				/* @var $EM_Ticket_Booking EM_Ticket_Booking */
 				if( $show_tickets ){
-					foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking){
+					foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking){ /* @var EM_Ticket_Booking $EM_Ticket_Booking */
 						$row = $EM_Bookings_Table->get_row_csv($EM_Ticket_Booking);
 						fputcsv($handle, $row, $delimiter);
 					}

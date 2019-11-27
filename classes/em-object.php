@@ -1132,12 +1132,12 @@ class EM_Object {
 		}
 	}
 	
-	public function __isset( $shortname ){
-		if( !empty($this->shortnames[$shortname]) ){
-			$property = $this->shortnames[$shortname];
+	public function __isset( $prop ){
+		if( !empty($this->shortnames[$prop]) ){
+			$property = $this->shortnames[$prop];
 			return !empty($this->{$property});
 		}
-		return false;
+		return !empty($this->{$prop});
 	}
 	
 	/**

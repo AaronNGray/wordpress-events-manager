@@ -191,6 +191,7 @@ class EM_Booking extends EM_Object{
 	public function __isset( $prop ){
 		if( $prop == 'timestamp' ) return $this->date()->getTimestamp() > 0;
 		if( $prop == 'language' ) return !empty($this->booking_meta['lang']);
+		return  parent::__isset( $prop );
 	}
 	
 	function get_notes(){

@@ -124,7 +124,7 @@ class EM_Ticket extends EM_Object{
 	    	if( !$this->end()->valid ) return 0;
 	    	return $this->end()->getTimestampWithOffset();
 	    }
-	    return null;
+	    return parent::__get( $var );
 	}
 	
 	public function __set( $prop, $val ){
@@ -132,10 +132,10 @@ class EM_Ticket extends EM_Object{
 			$prop = 'ticket_'.$prop;
 		}
 		if( $prop == 'ticket_start' ){
-			$this->$prop = $val;
+			$this->{$prop} = $val;
 			$this->start = false;
 		}elseif( $prop == 'ticket_end' ){
-			$this->$prop = $val;
+			$this->{$prop} = $val;
 			$this->end = false;
 		}
 		//These are deprecated and should not be used. Either use the class start() or end() equivalent methods
@@ -148,9 +148,9 @@ class EM_Ticket extends EM_Object{
 			$EM_DateTime = new EM_DateTime( $val, $this->get_event()->get_timezone() );
 			if( !$EM_DateTime->valid ) return false;
 			$when_prop = 'ticket_'.$prop;
-			$this->$when_prop = $EM_DateTime->getDateTime();
+			$this->{$when_prop} = $EM_DateTime->getDateTime();
 		}
-		$this->$prop = $val;
+		parent::__set( $prop, $val );
 	}
 	
 	public function __isset( $prop ){
@@ -164,6 +164,7 @@ class EM_Ticket extends EM_Object{
 			$prop = $prop == 'name' || $prop == 'description' ? 'ticket_'.$prop : $prop;
 			return !empty($this->{$prop});
 		}
+		return parent::__isset( $prop );
 	}
 	
 	function get_notes(){
