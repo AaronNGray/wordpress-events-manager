@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 4.8
 Tested up to: 5.3
-Stable tag: 5.9.7.2
+Stable tag: 5.9.7.3
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
@@ -111,6 +111,9 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
+= 5.9.7.3 =
+* minor JS conflict fix for those overriding the tickets admin template (or those incorrectly overriding ALL EM templates) in their theme with older HTML structure
+
 = 5.9.7.2 =
 * fixed CSV injection vulnerability which can allow malicious text to be exported to CSV files and parsed by Spreadsheet
 * fixed #_BOOKINGCUTOFF text date formats not getting translated correctly
