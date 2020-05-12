@@ -245,7 +245,26 @@ function em_content_wp_title($title, $sep = '', $seplocation = ''){
 	return $title;
 }
 add_filter ( 'wp_title', 'em_content_wp_title',100,3 ); //override other plugin SEO due to way EM works.
-add_filter( 'wpseo_title', 'em_content_wp_title', 100, 3 ); //WP SEO friendly
+
+/**
+ * Yoast SEO friendly short circuit, fixes issues in Yoast 14 update by changing the $sep function into the actual separator.
+ * @param $title
+ * @param string|mixed $sep
+ * @param string $seplocation
+ * @return string
+ */
+function em_content_wpseo_title($title, $sep = '', $seplocation = ''){
+	if( class_exists('WPSEO_Utils') && method_exists('WPSEO_Utils', 'get_title_separator') ){
+		$sep = WPSEO_Utils::get_title_separator();
+	}elseif( !is_string( $sep ) ){
+		$sep = '';
+	}
+	if( !is_string($seplocation) ){
+		$seplocation = '';
+	}
+	return em_content_wp_title( $title, $sep, $seplocation = '' );
+}
+add_filter( 'wpseo_title', 'em_content_wpseo_title', 100, 2 ); //WP SEO friendly
 
 /**
  * Makes sure we're in "THE Loop", which is determinied by a flag set when the_post() (start) is first called, and when have_posts() (end) returns false.

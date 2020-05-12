@@ -111,6 +111,9 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
+= 5.9.7.4 (dev version) =
+* fixed Yoast SEO 14.0 conflict
+
 = 5.9.7.3 =
 * minor JS conflict fix for those overriding the tickets admin template (or those incorrectly overriding ALL EM templates) in their theme with older HTML structure
 
