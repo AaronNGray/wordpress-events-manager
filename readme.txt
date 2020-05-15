@@ -111,7 +111,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
-= 5.9.7.4 (dev version) =
+= 5.9.7.5 (dev version) =
 * fixed Yoast SEO 14.0 conflict
 
 = 5.9.7.3 =

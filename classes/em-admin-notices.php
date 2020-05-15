@@ -200,4 +200,5 @@ class EM_Admin_Notices {
 		<?php
 	}
 }
+include('em-admin-notice.php');
 EM_Admin_Notices::init();
