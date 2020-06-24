@@ -118,9 +118,17 @@
 								</a>
 							</td>
 							<?php if( get_option('dbem_locations_enabled') ): ?>
-							<td>
-								<?php echo "<b>" . esc_html($EM_Event->get_location()->location_name) . "</b><br/>" . esc_html($EM_Event->get_location()->location_address) . " - " . esc_html($EM_Event->get_location()->location_town); ?>
-							</td>
+								<td>
+									<?php
+									if( $EM_Event->has_location() ){
+										echo "<b>" . esc_html($EM_Event->get_location()->location_name) . "</b><br/>" . esc_html($EM_Event->get_location()->location_address) . " - " . esc_html($EM_Event->get_location()->location_town);
+									}elseif( $EM_Event->has_event_location() ) {
+										echo $EM_Event->get_event_location()->get_admin_column();
+									}else{
+										echo __('None','events-manager');
+									}
+									?>
+								</td>
 							<?php endif; ?>
 							<td>
 								<?php echo $EM_Event->output_dates(); ?>

@@ -19,6 +19,10 @@ function em_options_save(){
 					//Do nothing, keep old setting.
 				}elseif( ($postKey == 'dbem_category_default_color' || $postKey == 'dbem_tag_default_color') && !sanitize_hex_color($postValue) ){
 					$EM_Notices->add_error( sprintf(esc_html_x('Colors must be in a valid %s format, such as #FF00EE.', 'hex format', 'events-manager'), '<a href="http://en.wikipedia.org/wiki/Web_colors">hex</a>').' '. esc_html__('This setting was not changed.', 'events-manager'), true);					
+				}elseif( $postKey == 'dbem_oauth' && is_array($postValue) ){
+					foreach($postValue as $postValue_key=>$postValue_val){
+						EM_Options::set($postValue_key, wp_unslash($postValue_val), 'dbem_oauth');
+					}
 				}else{
 					//TODO slashes being added?
 					if( is_array($postValue) ){
@@ -845,7 +849,7 @@ function em_admin_option_box_uninstall(){
     			    <th style="text-align:right;">
     			    	<a href="<?php echo $export_settings_url; ?>" class="button-secondary"><?php esc_html_e('Export Settings','events-manager'); ?></a>
     			    </th>
-    			    <td><?php esc_html_e('Export your Events Manager settings and restore them here or on another website running this plugin.','events-manager'); ?></td>
+    			    <td><p><?php esc_html_e('Export your Events Manager settings and restore them here or on another website running this plugin.','events-manager'); ?></p></td>
 				</tr>
 			</table>
 			

@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 // Setting constants
-define('EM_VERSION', 5.97301); //self expanatory
+define('EM_VERSION', 5.975); //self expanatory
 define('EM_PRO_MIN_VERSION', 2.6712); //self expanatory
 define('EM_PRO_MIN_VERSION_CRITICAL', 2.377); //self expanatory
 define('EM_DIR', dirname( __FILE__ )); //an absolute path to this directory
@@ -66,6 +66,7 @@ function dbem_debug_mode(){
 
 // INCLUDES
 //Base classes
+include('classes/em-exception.php');
 include('classes/em-options.php');
 include('classes/em-object.php');
 include('classes/em-datetime.php');
@@ -99,6 +100,7 @@ include('classes/em-category.php');
 include('classes/em-categories.php');
 include('classes/em-categories-frontend.php');
 include('classes/em-event.php');
+include('classes/event-locations/em-event-locations.php');
 include('classes/em-event-post.php');
 include('classes/em-events.php');
 include('classes/em-location.php');
@@ -186,6 +188,22 @@ if( file_exists($upload_dir['basedir'].'/locations-pics' ) ){
 	define("EM_IMAGE_UPLOAD_DIR", $upload_dir['basedir']."/events-manager/");
 	define("EM_IMAGE_UPLOAD_URI", $upload_dir['baseurl']."/events-manager/");
 	define("EM_IMAGE_DS",'/');
+}
+
+/**
+ * Provides a way to proactively load groups of files, once, when needed.
+ * @since 5.9.7.4
+ */
+class EM_Loader {
+	public static $oauth = false;
+	
+	public static function oauth(){
+		require_once('classes/em-oauth/oauth-api.php');
+		add_action('em_enqueue_admin_styles', function(){
+			wp_enqueue_style('events-manager-oauth-admin', plugins_url('includes/css/events-manager-oauth-admin.css',__FILE__), array(), EM_VERSION);
+		});
+		self::$oauth = true;
+	}
 }
 
 /**

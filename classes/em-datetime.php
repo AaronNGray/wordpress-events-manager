@@ -180,6 +180,8 @@ class EM_DateTime extends DateTime {
 			$timestamp = parent::format('U');
 			$server_offset = date('Z', $timestamp);
 			return date_i18n( $format, $timestamp - ($server_offset * 2) + $this->getOffset() );
+		}elseif( function_exists('wp_date') ){
+			return wp_date( $format, $this->getTimestamp(), $this->getTimezone() );
 		}else{
 			return date_i18n( $format, $this->getTimestampWithOffset(true) );
 		}

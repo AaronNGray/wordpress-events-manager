@@ -3,7 +3,7 @@ Contributors: netweblogic, nutsmuggler
 Donate link: http://wp-events-plugin.com
 Tags: bookings, calendar, tickets, events, buddypress, event management, google maps, maps, locations, registration
 Text Domain: events-manager
-Requires at least: 4.8
+Requires at least: 5.2
 Tested up to: 5.4
 Stable tag: 5.9.7.3
 Requires PHP: 5.3
@@ -113,6 +113,12 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 == Changelog ==
 = 5.9.7.5 (dev version) =
 * fixed Yoast SEO 14.0 conflict
+* added Location Types including URL and (via external free add-on) Zoom support!
+* added $EM_Event object to booking form template actions
+* added native OAuth support for third party integrations (e.g. Zoom)
+* fixed fatal errors in BuddyPress if notifications are disabled
+* changed $EM_Booking->booking_status to protected so that status returns 1 even if approvals are disabled
+* fixed minor PHP warning
 
 = 5.9.7.3 =
 * minor JS conflict fix for those overriding the tickets admin template (or those incorrectly overriding ALL EM templates) in their theme with older HTML structure

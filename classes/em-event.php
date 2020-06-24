@@ -124,6 +124,14 @@ class EM_Event extends EM_Object{
 	var $event_spaces;
 	var $event_private;
 	var $location_id;
+	/**
+	 * Key name of event location type associated to this event.
+	 *
+	 * Events can have an event-specific location type, such as a url, webinar or another custom type instead of a regular geographical location. If this value is set, then a registered event location type is loaded and relevant saved event meta is used.
+	 *
+	 * @var string
+	 */
+	public $event_location_type;
 	var $recurrence_id;
 	var $event_status;
 	var $blog_id = 0;
@@ -173,6 +181,7 @@ class EM_Event extends EM_Object{
 		'event_rsvp_spaces' => array( 'name'=>'rsvp_spaces', 'type'=>'%d', 'null'=>true ),
 		'event_spaces' => array( 'name'=>'spaces', 'type'=>'%d', 'null'=>true),
 		'location_id' => array( 'name'=>'location_id', 'type'=>'%d', 'null'=>true ),
+		'event_location_type' => array( 'type'=>'%s', 'null'=>true ),
 		'recurrence_id' => array( 'name'=>'recurrence_id', 'type'=>'%d', 'null'=>true ),
 		'event_status' => array( 'name'=>'status', 'type'=>'%d', 'null'=>true ),
 		'event_private' => array( 'name'=>'status', 'type'=>'%d', 'null'=>true ),
@@ -227,6 +236,10 @@ class EM_Event extends EM_Object{
 	 * @var EM_Location
 	 */
 	var $location;
+	/**
+	 * @var array
+	 */
+	var $event_location_data = array();
 	/**
 	 * @var EM_Bookings
 	 */
@@ -489,11 +502,12 @@ class EM_Event extends EM_Object{
 			//load meta data and other related information
 			if( $event_post->post_status != 'auto-draft' ){
 			    $event_meta = $this->get_event_meta($search_by);
+			    if( !empty($even_meta['_event_location_type']) ) $this->event_location_type = $even_meta['_event_location_type']; //load this directly so we know further down whether this has an event location type to load
 				//Get custom fields and post meta
 				foreach($event_meta as $event_meta_key => $event_meta_val){
 					$field_name = substr($event_meta_key, 1);
 					if($event_meta_key[0] != '_'){
-						$this->event_attributes[$event_meta_key] = ( is_array($event_meta_val) ) ? $event_meta_val[0]:$event_meta_val;					
+						$this->event_attributes[$event_meta_key] = ( is_array($event_meta_val) ) ? $event_meta_val[0]:$event_meta_val;
 					}elseif( is_string($field_name) && !in_array($field_name, $this->post_fields) ){
 						if( array_key_exists($field_name, $this->fields) ){
 							$this->$field_name = $event_meta_val[0];
@@ -502,6 +516,7 @@ class EM_Event extends EM_Object{
 						}
 					}
 				}
+				if( $this->has_event_location() ) $this->get_event_location()->load_postdata($event_meta);
 				//quick compatability fix in case _event_id isn't loaded or somehow got erased in post meta
 				if( empty($this->event_id) && !$this->is_recurring() ){
 					global $wpdb;
@@ -653,16 +668,40 @@ class EM_Event extends EM_Object{
 		//reset start and end objects so they are recreated with the new dates/times if and when needed
 		$this->start = $this->end = null;
 		
-		//Get Location info
-		if( !get_option('dbem_locations_enabled') || (!empty($_POST['no_location']) && !get_option('dbem_require_location',true)) || (empty($_POST['location_id']) && !get_option('dbem_require_location',true) && get_option('dbem_use_select_for_locations')) ){
-			$this->location_id = 0;
-		}elseif( !empty($_POST['location_id']) && is_numeric($_POST['location_id']) ){
-			$this->location_id = absint($_POST['location_id']);
+		//Get Location Info
+		if( get_option('dbem_locations_enabled') ){
+			// determine location type, with backward compatibility considerations for those overriding the location forms
+			$location_type = isset($_POST['location_type']) ? sanitize_key($_POST['location_type']) : 'location';
+			if( !empty($_POST['no_location']) ) $location_type = 0; //backwards compat
+			if( $location_type == 'location' && empty($_POST['location_id']) && get_option('dbem_use_select_for_locations')) $location_type = 0; //backward compat
+			// assign location data
+			if( $location_type === 0 || $location_type === '0' ){
+				// no location
+				$this->location_id = 0;
+				$this->event_location_type = null;
+			}elseif( $location_type == 'location' && EM_Locations::is_enabled() ){
+				// a physical location, old school
+				$this->event_location_type = null; // if location resides in locations table, location type is null since we have a location_id table value
+				if(  !empty($_POST['location_id']) && is_numeric($_POST['location_id']) ){
+					// we're using a previously created location
+					$this->location_id = absint($_POST['location_id']);
+				}else{
+					$this->location_id = null;
+					//we're adding a new location place, so create an empty location and populate
+					$this->get_location()->get_post(false);
+					$this->get_location()->post_content = ''; //reset post content, as it'll grab the event description otherwise
+				}
+			}else{
+				// we're dealing with an event location such as a url or webinar
+				$this->location_id = null; // no location ID
+				$this->event_location_type = $location_type;
+				if( EM_Event_Locations\Event_Locations::is_enabled($location_type) ){
+					$this->get_event_location()->get_post();
+				}
+			}
 		}else{
-			//we're adding a new location, so create an empty location and populate
-			$this->location_id = null;
-			$this->get_location()->get_post(false);
-			$this->get_location()->post_content = ''; //reset post content, as it'll grab the event description otherwise
+			$this->location_id = 0;
+			$this->event_location_type = null;
 		}
 		
 		//Bookings
@@ -709,7 +748,7 @@ class EM_Event extends EM_Object{
 		if(get_option('dbem_attributes_enabled')){
 			global $allowedtags;
 			if( !is_array($this->event_attributes) ){ $this->event_attributes = array(); }
-			$event_available_attributes = em_get_attributes();
+			$event_available_attributes = !empty($event_available_attributes) ? $event_available_attributes : em_get_attributes(); //we use this in locations, no need to repeat if needed
 			if( !empty($_POST['em_attributes']) && is_array($_POST['em_attributes']) ){
 				foreach($_POST['em_attributes'] as $att_key => $att_value ){
 					if( (in_array($att_key, $event_available_attributes['names']) || array_key_exists($att_key, $this->event_attributes) ) ){
@@ -898,11 +937,22 @@ class EM_Event extends EM_Object{
 				$this->add_error(__('Dates must have correct formatting. Please use the date picker provided.','events-manager'));
 		    }
 		}
-		if( get_option('dbem_locations_enabled') && empty($this->location_id) ){ //location ids don't need validating as we're not saving a location
-			if( get_option('dbem_require_location',true) || $this->location_id !== 0 ){
-				if( !$this->get_location()->validate() ){
+		if( get_option('dbem_locations_enabled') ){
+			if( $this->location_id === 0 && get_option('dbem_require_location',true) ){
+				// no location chosen, yet we require a location
+				$this->add_error(__('No location associated with this event.', 'events-manager'));
+			}elseif( $this->has_location() ){
+				// physical location
+				if( empty($this->location_id) && !$this->get_location()->validate() ){
+					// new location doesn't validate
 					$this->add_error($this->get_location()->get_errors());
+				}elseif( !empty($this->location_id) && !$this->get_location()->location_id ){
+					// non-existent location selected
+					$this->add_error( __('Please select a valid location.', 'events-manager') );
 				}
+			}elseif( $this->has_event_location() ){
+				// event location, validation applies errors directly to $this
+				$this->get_event_location()->validate();
 			}
 		}
 		if ( count($missing_fields) > 0){
@@ -1085,6 +1135,12 @@ class EM_Event extends EM_Object{
 						delete_post_meta($this->post_id, $event_attribute_key);
 					}
 				}
+			}
+			//update event location via post meta
+			if( $this->has_event_location() ){
+				$this->get_event_location()->save();
+			}else{
+				$this->get_event_location()->reset_data();
 			}
 			//update timestamps, dates and times
 			update_post_meta($this->post_id, '_event_start_local', $this->start()->getDateTime());
@@ -1280,9 +1336,10 @@ class EM_Event extends EM_Object{
 	
 	/**
 	 * Delete whole event, including bookings, tickets, etc.
+	 * @param boolean $force_delete
 	 * @return boolean
 	 */
-	function delete($force_delete = false){ //atm wp seems to force cp deletions anyway
+	function delete( $force_delete = false ){
 		if( $this->can_manage('delete_events', 'delete_others_events') ){
 		    if( !is_admin() ){
 				include_once('em-event-post-admin.php');
@@ -1579,7 +1636,7 @@ class EM_Event extends EM_Object{
 	}
 	
 	/**
-	 * Returns the location object this event belongs to.
+	 * Returns the physical location object this event belongs to.
 	 * @return EM_Location
 	 */
 	function get_location() {
@@ -1592,6 +1649,40 @@ class EM_Event extends EM_Object{
 			}
 		}
 		return $this->location;
+	}
+	
+	/**
+	 * Returns whether this event has a phyisical location assigned to it.
+	 * @return bool
+	 */
+	public function has_location(){
+		return !empty($this->location_id) || (!empty($this->location) && !empty($this->location->location_name));
+	}
+	
+	/**
+	 * Gets the event's event location (note, different from a regular event location, which uses get_location())
+	 * Returns implementation of Event_Location or false if no event location assigned.
+	 * @return EM_Event_Locations\URL|EM_Event_Locations\Event_Location|false
+	 */
+	public function get_event_location(){
+		if( $this->has_event_location() ){
+			$EM_Location_Type = EM_Event_Locations\Event_Locations::get( $this->event_location_type, $this );
+		}else{
+			$EM_Location_Type = new EM_Event_Locations\Event_Location( $this );
+		}
+		return apply_filters('em_event_get_event_location', $EM_Location_Type, $this);
+	}
+	
+	/**
+	 * Returns whether the event has an event location associated with it (different from a physical location). If supplied, can check against a specific type.
+	 * @param string $event_location_type
+	 * @return bool
+	 */
+	public function has_event_location( $event_location_type = null ){
+		if( !empty($event_location_type) ){
+			return !empty($this->event_location_type) && $this->event_location_type === $event_location_type;
+		}
+		return !empty($this->event_location_type);
 	}
 	
 	/**
@@ -1841,10 +1932,28 @@ class EM_Event extends EM_Object{
 						$show_condition = (!$this->event_rsvp && get_option('dbem_rsvp_enabled'));
 					}elseif ($condition == 'no_location'){
 						//does this event have a valid location?
-						$show_condition = ( empty($this->location_id) || !$this->get_location()->location_status );
+						$show_condition = !$this->has_event_location() && !$this->has_location();
 					}elseif ($condition == 'has_location'){
 						//does this event have a valid location?
-						$show_condition = ( !empty($this->location_id) && $this->get_location()->location_status );
+						$show_condition = ( $this->has_location() && $this->get_location()->location_status ) || $this->has_event_location();
+					}elseif ($condition == 'has_location_venue'){
+						//does this event have a valid physical location?
+						$show_condition = ( $this->has_location() && $this->get_location()->location_status ) || $this->has_event_location();
+					}elseif ($condition == 'no_location_venue'){
+						//does this event NOT have a valid physical location?
+						$show_condition = !$this->has_location();
+					}elseif ($condition == 'has_event_location'){
+						//does this event have a valid event location?
+						$show_condition = $this->has_event_location();
+					}elseif ( preg_match('/^has_event_location_([a-zA-Z0-9_\-]+)$/', $condition, $type_match)){
+						//event has a specific category
+						$show_condition = $this->has_event_location($type_match[1]);
+					}elseif ($condition == 'no_event_location'){
+						//does this event not have a valid event location?
+						$show_condition = !$this->has_event_location();
+					}elseif ( preg_match('/^no_event_location_([a-zA-Z0-9_\-]+)$/', $condition, $type_match)){
+						//does this event NOT have a specific event location?
+						$show_condition = !$this->has_event_location($type_match[1]);
 					}elseif ($condition == 'has_image'){
 						//does this event have an image?
 						$show_condition = ( $this->get_image_url() != '' );
@@ -1961,6 +2070,12 @@ class EM_Event extends EM_Object{
 					}elseif ( preg_match('/^no_tag_([a-zA-Z0-9_\-,]+)$/', $condition, $tag_match)){
 					   //event doesn't have this tag
 						$show_condition = !has_term(explode(',', $tag_match[1]), EM_TAXONOMY_TAG, $this->post_id);
+					}elseif ( preg_match('/^has_att_([a-zA-Z0-9_\-,]+)$/', $condition, $att_match)){
+						//event has a specific custom field
+						$show_condition = !empty($this->event_attributes[$att_match[1]]) || !empty($this->event_attributes[str_replace('_', ' ', $att_match[1])]);
+					}elseif ( preg_match('/^no_att_([a-zA-Z0-9_\-,]+)$/', $condition, $att_match)){
+						//event has a specific custom field
+						$show_condition = empty($this->event_attributes[$att_match[1]]) && empty($this->event_attributes[str_replace('_', ' ', $att_match[1])]);
 					}
 					//other potential ones - has_attribute_... no_attribute_... has_categories_...
 					$show_condition = apply_filters('em_event_output_show_condition', $show_condition, $condition, $conditionals[0][$key], $this);
@@ -2378,6 +2493,14 @@ class EM_Event extends EM_Object{
 						$img_url = 'www.google.com/calendar/images/ext/gc_button2.gif';
 						$img_url = is_ssl() ? 'https://'.$img_url:'http://'.$img_url;
 						$replace = '<a href="'.esc_url($replace).'" target="_blank"><img src="'.esc_url($img_url).'" alt="0" border="0"></a>';
+					}
+					break;
+				//Event location (not physical location)
+				case '#_EVENTLOCATION':
+					if( !empty($placeholders[3][$key]) ){
+						$replace = $this->get_event_location()->output($placeholders[3][$key]);
+					}else{
+						$replace = $this->get_event_location()->output();
 					}
 					break;
 				default:

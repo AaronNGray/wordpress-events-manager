@@ -32,10 +32,19 @@ table.events-table .category { color:#888; }
 #event-form .recurrence-reschedule-warning, #post .recurrence-reschedule-warning { margin-bottom:25px; color:#c45500; }
 #event-form .recurrence-reschedule-warning p, #post .recurrence-reschedule-warning p { margin-top:0px; font-size:14px; }
 /*Locations*/
+.em-location-type { border-top: 1px solid #dedede; margin-top:20px; padding-top:20px; }
+.em-location-type p:first-child { margin-top:0; }
 div.em-location-data table { float:left; margin:0px 15px 0px 0px; }
+.em-event-location-data h4 { padding-bottom:5px; border-bottom:1px solid #dedede; margin-bottom:15px; }
+.em-input-field { margin-bottom:10px; }
+.em-input-field label { display: block; margin-bottom:5px; }
+.em-input-field.em-input-field-boolean label { display: inline-block; }
+.em-input-field em { display: block; margin-top:2px; }
 /* Location form */
+div.em-location-types-single { display:none; }
 div.em-location-data table.em-location-data td, div.em-location-data table.em-location-data th { vertical-align:top; border:none; }
 div.em-location-data table.em-location-data { width:50%; float:left; border:none; }
+div.em-location-data table.em-location-data .em-location-data-url input { width:100%; }
 div.em-location-data .em-location-map-container, div.em-location-data .em-location-map-404, div.em-location-data .em-location-map-content { width: 400px; height: 300px; float:left; }
 div.em-location-data .em-location-map-404 { vertical-align:middle; text-align: center; }
 /* MS Global Categories */
@@ -151,7 +160,7 @@ table.em-tickets-bookings-table tbody td { text-align:center; }
 #em-options-form th { padding: 15px 20px; margin:0 !important; font-size:0.97em; }
 #em-options-form .em-boxheader { font-style:italic; margin:0; padding:10px 5px; }
 #em-options-form tr.em-header td { font-style:italic; padding:10px 5px; margin:0; }
-#em-options-form tr.em-header h4 { font-weight:bold; font-size:15px; font-style:normal; border-bottom: 1px solid #dedede; margin:0 0 10px; padding:0 0 10px; }
+#em-options-form tr.em-header h4, #em-options-form .postbox h4 { font-weight:bold; font-size:15px; font-style:normal; border-bottom: 1px solid #dedede; margin:0 0 10px; padding:0 0 10px; }
 #em-options-form tr.em-subheader td { font-style:italic; margin:0; padding:5px 20px 2px; }
 #em-options-form tr.em-subheader h5 { font-style:normal; margin:10px 0; padding:0 0 5px; font-weight:bold; font-size:15px; border-bottom: 1px solid #efefef; color:#000; }
 #em-options-form tbody.em-subsection th { padding-left:35px; }

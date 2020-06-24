@@ -27,6 +27,7 @@ function em_get_booking($id = false) {
 }
 /**
  * Contains all information and relevant functions surrounding a single booking made with Events Manager
+ * @property int|false $booking_status
  * @property string $language
  */
 class EM_Booking extends EM_Object{
@@ -37,7 +38,7 @@ class EM_Booking extends EM_Object{
 	var $booking_price = null;
 	var $booking_spaces;
 	var $booking_comment;
-	var $booking_status = false;
+	protected $booking_status = false;
 	var $booking_tax_rate = null;
 	var $booking_taxes = null;
 	var $booking_meta = array();
@@ -174,6 +175,8 @@ class EM_Booking extends EM_Object{
 	    	if( !empty($this->booking_meta['lang']) ){
 	    		return $this->booking_meta['lang'];
 		    }
+	    }elseif( $var == 'booking_status' ){
+			return ($this->booking_status == 0 && !get_option('dbem_bookings_approval') ) ? 1:$this->booking_status;
 	    }
 	    return null;
 	}
@@ -261,14 +264,14 @@ class EM_Booking extends EM_Object{
 				$this->email();
 			}
 			$this->compat_keys();
-			return apply_filters('em_booking_save', ( count($this->errors) == 0 ), $this);
+			return apply_filters('em_booking_save', ( count($this->errors) == 0 ), $this, $update);
 		}else{
 			$this->feedback_message = __('There was a problem saving the booking.', 'events-manager');
 			if( !$this->can_manage() ){
 				$this->add_error(sprintf(__('You cannot manage this %s.', 'events-manager'),__('Booking','events-manager')));
 			}
 		}
-		return apply_filters('em_booking_save', false, $this);
+		return apply_filters('em_booking_save', false, $this, false);
 	}
 	
 	/**
@@ -889,11 +892,12 @@ class EM_Booking extends EM_Object{
 				$this->booking_status = false;
 				$this->feedback_message = sprintf(__('%s deleted', 'events-manager'), __('Booking','events-manager'));
 				$wpdb->delete( EM_META_TABLE, array('meta_key'=>'booking-note', 'object_id' => $this->booking_id), array('%s','%d'));
+				do_action('em_booking_deleted', $this);
 			}else{
 				$this->add_error(sprintf(__('%s could not be deleted', 'events-manager'), __('Booking','events-manager')));
 			}
 		}
-		do_action('em_bookings_deleted', $result, array($this->booking_id));
+		do_action('em_bookings_deleted', $result, array($this->booking_id), $this);
 		return apply_filters('em_booking_delete',( $result !== false ), $this);
 	}
 	

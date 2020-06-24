@@ -156,6 +156,7 @@ function em_create_events_table() {
 		event_spaces int(5) NULL DEFAULT 0,
 		event_private tinyint(1) unsigned NOT NULL DEFAULT 0,
 		location_id bigint(20) unsigned NULL DEFAULT NULL,
+		event_location_type VARCHAR(15) NULL DEFAULT NULL,
 		recurrence_id bigint(20) unsigned NULL DEFAULT NULL,
   		event_date_created datetime NULL DEFAULT NULL,
   		event_date_modified datetime NULL DEFAULT NULL,
@@ -676,6 +677,7 @@ function em_add_options() {
 		'dbem_timezone_default' => EM_DateTimeZone::create()->getName(),
 		'dbem_require_location' => 0,
 		'dbem_locations_enabled' => 1,
+		'dbem_location_types' => array('location' => 1, 'url' => 1),
 		'dbem_use_select_for_locations' => 0,
 		'dbem_attributes_enabled' => 1,
 		'dbem_recurrence_enabled'=> 1,
@@ -1122,6 +1124,13 @@ function em_upgrade_current_installation(){
 		}else{
 			update_option('dbem_smtp_encryption', 0);
 		}
+	}
+	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5.975 ){
+		update_option('dbem_location_types', array('location'=>1));
+		$message = esc_html__('Events Manager has introduced location types, which can include online locations such as a URL or integrations with webinar platforms such as Zoom! Enable different location types in your settings page, for more information see our %s.', 'events-manager');
+		$message = sprintf( $message, '<a href="http://wp-events-plugin.com/documentation/location-types/" target="_blank">'. esc_html__('documentation', 'events-manager')).'</a>';
+		$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'location-types-update', 'who' => 'admin', 'where' => 'all', 'message' => "$message" ));
+		EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
 	}
 }
 

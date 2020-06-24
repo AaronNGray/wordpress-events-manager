@@ -208,7 +208,7 @@ class EM_Event_Posts_Admin{
 			case 'location':
 				//get meta value to see if post has location, otherwise
 				$EM_Location = $EM_Event->get_location();
-				if( !empty($EM_Location->location_id) ){
+				if( $EM_Event->has_location() ){
 					$actions = array();
 					$actions[] = "<a href='". esc_url($EM_Location->get_permalink())."'>". esc_html__('View') ."</a>";
 					if( $EM_Location->can_manage('edit_locations', 'edit_others_locations') ) {
@@ -217,6 +217,8 @@ class EM_Event_Posts_Admin{
 					echo "<strong><a href='". $EM_Location->get_permalink()."'>" . $EM_Location->location_name . "</a></strong>";
 					echo "<span class='row-actions'> - ". implode(' | ', $actions) . "</span>";
 					echo "<br/>" . $EM_Location->location_address . " - " . $EM_Location->location_town;
+				}elseif( $EM_Event->has_event_location() ) {
+					echo $EM_Event->get_event_location()->get_admin_column();
 				}else{
 					echo __('None','events-manager');
 				}

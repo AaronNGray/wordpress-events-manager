@@ -22,6 +22,16 @@ class EM_Locations extends EM_Object {
 	
 	protected static $context = 'location';
 	
+	
+	/**
+	 * Returns whether or not locations are enabled for use with events.
+	 * @return bool
+	 */
+	public static function is_enabled(){
+		$location_types = get_option('dbem_location_types', array());
+		return !empty($location_types['location']);
+	}
+	
 	/**
 	 * Returns an array of EM_Location objects
 	 * @param array $args

@@ -17,11 +17,13 @@ class EM_ML_Admin{
 	}
 	
 	public static function meta_boxes(){
-	    global $EM_Event, $EM_Location;
+	    global $EM_Event, $EM_Location, $wp_meta_boxes;
 	    //decide if it's a master event, if not then hide the meta boxes
 	    if( !empty($EM_Event) && !EM_ML::is_original($EM_Event) ){
 	        //remove meta boxes for events
 		    remove_meta_box('em-event-when', EM_POST_TYPE_EVENT, 'side');
+		    //if( isset($wp_meta_boxes[convert_to_screen(EM_POST_TYPE_EVENT)->id]['side']['high']['em-event-when']) ) unset($wp_meta_boxes[convert_to_screen(EM_POST_TYPE_EVENT)->id]['side']['high']['em-event-when']);
+		    //if( isset($wp_meta_boxes[convert_to_screen(EM_POST_TYPE_EVENT)->id]['side']['core']['em-event-when']) ) unset($wp_meta_boxes[convert_to_screen(EM_POST_TYPE_EVENT)->id]['side']['core']['em-event-when']);
 		    remove_meta_box('em-event-recurring', 'event-recurring', 'normal');
 		    remove_meta_box('em-event-when-recurring', 'event-recurring', 'side');
 	    	remove_meta_box('em-event-where', EM_POST_TYPE_EVENT, 'normal');

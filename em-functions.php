@@ -653,11 +653,16 @@ function em_checkbox_items($name, $array, $saved_values, $horizontal = true) {
 }
 function em_options_input_text($title, $name, $description ='', $default='') {
     $translate = EM_ML::is_option_translatable($name);
+    if( preg_match('/^(.+)\[(.+)?\]$/', $name, $matches) ){
+    	$value = EM_Options::get($matches[2], $default, $matches[1]);
+    }else{
+        $value = get_option($name, $default);
+    }
 	?>
 	<tr valign="top" id='<?php echo esc_attr($name);?>_row'>
 		<th scope="row"><?php echo esc_html($title); ?></th>
 	    <td>
-			<input name="<?php echo esc_attr($name) ?>" type="text" id="<?php echo esc_attr($name) ?>" value="<?php echo esc_attr(get_option($name, $default), ENT_QUOTES); ?>" size="45" />			
+			<input name="<?php echo esc_attr($name) ?>" type="text" id="<?php echo esc_attr($name) ?>" value="<?php echo esc_attr($value, ENT_QUOTES); ?>" size="45" />
 	    	<?php if( $translate ): ?><span class="em-translatable dashicons dashicons-admin-site"></span><?php endif; ?>
 	    	<br />
 			<?php 
@@ -672,7 +677,7 @@ function em_options_input_text($title, $name, $description ='', $default='') {
 							</tr>
 							<?php
 						}else{
-							$default_lang = '<input name="'.esc_attr($name).'_ml['.EM_ML::$wplang.']" type="hidden" id="'. esc_attr($name.'_'. EM_ML::$wplang) .'" value="'. esc_attr(get_option($name, $default), ENT_QUOTES).'" />';
+							$default_lang = '<input name="'.esc_attr($name).'_ml['.EM_ML::$wplang.']" type="hidden" id="'. esc_attr($name.'_'. EM_ML::$wplang) .'" value="'. esc_attr($value, ENT_QUOTES).'" />';
 						}
 					}
 					echo '</table>';

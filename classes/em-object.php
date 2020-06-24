@@ -634,7 +634,7 @@ class EM_Object {
 	            	//non default taxonomy, so create new item for the taxonomies array
 	                $tax_name = str_replace('-','_',$tax_name);
 					$prefix = !array_key_exists($tax_name, $taxonomies_array) ? '':'post_';
-	                if( is_array($tax->object_type) ){
+	                if( is_array($tax->object_type) && !empty($tax->rewrite) ){
 	                    if( $event_tax || $loc_tax ){
 		                    $taxonomies_array[$prefix.$tax_name] = array('name'=>$tax_name, 'context'=>array(), 'slug'=> $tax->rewrite['slug'], 'query_var'=> $tax->query_var );
 	                    }

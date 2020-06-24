@@ -104,16 +104,27 @@ jQuery(document).ready(function($){
 		$(this).nextAll('.em-ml-options').toggle();
 	});
 	//radio triggers
-	$('input.em-trigger').change(function(e){
+	$('input[type="radio"].em-trigger').change(function(e){
 		var el = $(this);
 		el.val() == '1' ? $(el.attr('data-trigger')).show() : $(el.attr('data-trigger')).hide();
 	});
-	$('input.em-trigger:checked').trigger('change');
-	$('input.em-untrigger').change(function(e){
+	$('input[type="radio"].em-trigger:checked').trigger('change');
+	$('input[type="radio"].em-untrigger').change(function(e){
 		var el = $(this);
 		el.val() == '0' ? $(el.attr('data-trigger')).show() : $(el.attr('data-trigger')).hide();
 	});
-	$('input.em-untrigger:checked').trigger('change');
+	$('input[type="radio"].em-untrigger:checked').trigger('change');
+	//checkbox triggers
+	$('input[type="checkbox"].em-trigger').change(function(e){
+		var el = $(this);
+		el.prop('checked') ? $(el.attr('data-trigger')).show() : $(el.attr('data-trigger')).hide();
+	});
+	$('input[type="checkbox"].em-trigger').trigger('change');
+	$('input[type="checkbox"].em-untrigger').change(function(e){
+		var el = $(this);
+		!el.prop('checked') ? $(el.attr('data-trigger')).show() : $(el.attr('data-trigger')).hide();
+	});
+	$('input[type="checkbox"].em-untrigger').trigger('change');
 	//admin tools confirm
 	$('a.admin-tools-db-cleanup').click( function( e ){
 		if( !confirm(EM.admin_db_cleanup_warning) ){
