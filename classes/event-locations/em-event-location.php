@@ -89,8 +89,7 @@ class Event_Location {
 	 * @param array $post
 	 * @return boolean
 	 */
-	public function get_post( $post = array() ){
-		if( empty($post) ) $post = $_POST;
+	public function get_post(){
 		$this->event->event_location_data = array();
 		return true;
 	}

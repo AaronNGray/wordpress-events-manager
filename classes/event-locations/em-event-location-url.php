@@ -13,14 +13,13 @@ class URL extends Event_Location {
 	
 	public $properties = array('url', 'text');
 	
-	public function get_post( $post = array() ){
-		$return = parent::get_post($post);
-		if( empty($post) ) $post = $_POST;
-		if( !empty($post['event_location_url']) ){
-			$this->event->event_location_data['url'] = esc_url_raw($post['event_location_url']);
+	public function get_post(){
+		$return = parent::get_post();
+		if( !empty($_POST['event_location_url']) ){
+			$this->event->event_location_data['url'] = esc_url_raw($_POST['event_location_url']);
 		}
-		if( !empty($post['event_location_url_text']) ){
-			$this->event->event_location_data['text'] = sanitize_text_field($post['event_location_url_text']);
+		if( !empty($_POST['event_location_url_text']) ){
+			$this->event->event_location_data['text'] = sanitize_text_field($_POST['event_location_url_text']);
 		}
 		return $return;
 	}

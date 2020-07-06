@@ -1028,6 +1028,7 @@ class EM_Object {
 		if( empty($request) ) $request = $_REQUEST;
 		if( !empty($request['em_search']) && empty($args['search']) ) $request['search'] = $request['em_search']; //em_search is included to circumvent wp search GET/POST clashes
 		$accepted_searches = !empty($accepted_searches) ? $accepted_searches : self::get_default_search();
+		$accepted_searches = array_diff($accepted_searches, array('format', 'format_header', 'format_footer'));
 		$accepted_searches = apply_filters('em_accepted_searches', $accepted_searches, $args);
 		//merge variables from the $request into $args
 		foreach($request as $post_key => $post_value){

@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Events Manager
-Version: 5.9.7.5
+Version: 5.9.8
 Plugin URI: http://wp-events-plugin.com
 Description: Event registration and booking management for WordPress. Recurring events, locations, google maps, rss, ical, booking registration and more!
 Author: Marcus Sykes
@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 // Setting constants
-define('EM_VERSION', 5.975); //self expanatory
+define('EM_VERSION', 5.98); //self expanatory
 define('EM_PRO_MIN_VERSION', 2.6712); //self expanatory
 define('EM_PRO_MIN_VERSION_CRITICAL', 2.377); //self expanatory
 define('EM_DIR', dirname( __FILE__ )); //an absolute path to this directory
@@ -532,7 +532,8 @@ function em_load_event(){
 			if( preg_match('/\-([0-9]+)$/', $_REQUEST['event_slug'], $matches) ){
 				$event_id = $matches[1];
 			}else{
-				$event_id = $wpdb->get_var('SELECT event_id FROM '.EM_EVENTS_TABLE." WHERE event_slug='{$_REQUEST['event_slug']}' AND blog_id!=".get_current_blog_id());
+				$query = $wpdb->prepare('SELECT event_id FROM '.EM_EVENTS_TABLE.' WHERE event_slug = %s AND blog_id != %d', $_REQUEST['event_slug'], get_current_blog_id());
+				$event_id = $wpdb->get_var($query);
 			}
 			$EM_Event = em_get_event($event_id);
 		}
@@ -547,7 +548,8 @@ function em_load_event(){
 			if( preg_match('/\-([0-9]+)$/', $_REQUEST['location_slug'], $matches) ){
 				$location_id = $matches[1];
 			}else{
-				$location_id = $wpdb->get_var('SELECT location_id FROM '.EM_LOCATIONS_TABLE." WHERE location_slug='{$_REQUEST['location_slug']}' AND blog_id!=".get_current_blog_id());
+				$query = $wpdb->prepare('SELECT location_id FROM '.EM_LOCATIONS_TABLE." WHERE location_slug = %s AND blog_id != %d", $_REQUEST['location_slug'], get_current_blog_id());
+				$location_id = $wpdb->get_var($query);
 			}
 			$EM_Location = em_get_location($location_id);
 		}

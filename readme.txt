@@ -1,11 +1,11 @@
 === Events Manager ===
 Contributors: netweblogic, nutsmuggler
 Donate link: http://wp-events-plugin.com
-Tags: bookings, calendar, tickets, events, buddypress, event management, google maps, maps, locations, registration
+Tags: bookings, calendar, tickets, events, buddypress, event management, google maps, maps, locations, registration, zoom
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 5.4
-Stable tag: 5.9.7.3
+Stable tag: 5.9.8
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
@@ -27,6 +27,10 @@ Version 5 now makes events and locations WordPress Custom Post Types, allowing f
 * Bookings Management (including approval/rejections, export CVS, and more!)
 * Multiple Tickets
 * MultiSite Support
+* Multiple Location Types
+ * Physical Locations
+ * Online Events (URLs)
+ * [Zoom Webinars/Meetings Integration](https://wordpress.org/plugins/events-manager-zoom/)
 * BuddyPress Support
  * Submit Events
  * Group Events
@@ -62,7 +66,7 @@ We provide the tools to [help you be GDPR compliant](http://wp-events-plugin.com
 = Go Pro =
 We have a premium "Pro" add-on for Events Manager which not only demonstrates the flexibility of Events Manager, but also adds some important features including but not limited to:
 
-* PayPal, Authorize.net and Offline Payments
+* PayPal, Stripe, Authorize.net and Offline Payments
 * Custom booking forms
 * Individual Attendee custom forms
 * Coupon Codes
@@ -111,14 +115,16 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
-= 5.9.7.5 (dev version) =
-* fixed Yoast SEO 14.0 conflict
+= 5.9.8 =
 * added Location Types including URL and (via external free add-on) Zoom support!
-* added $EM_Event object to booking form template actions
 * added native OAuth support for third party integrations (e.g. Zoom)
-* fixed fatal errors in BuddyPress if notifications are disabled
+* added $EM_Event object to booking form template actions
 * changed $EM_Booking->booking_status to protected so that status returns 1 even if approvals are disabled
+* fixed XSS vulnerability (kudos to Jakob Wierzba)
+* fixed potential SQL injection vulnerability (kudos to Antony Garand from Godaddy)
+* fixed fatal errors in BuddyPress if notifications are disabled
 * fixed minor PHP warning
+* fixed Yoast SEO 14.0 conflict
 
 = 5.9.7.3 =
 * minor JS conflict fix for those overriding the tickets admin template (or those incorrectly overriding ALL EM templates) in their theme with older HTML structure
