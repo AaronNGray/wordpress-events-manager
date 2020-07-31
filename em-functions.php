@@ -839,7 +839,7 @@ if( !function_exists( 'is_main_query' ) ){
 
 /**
  * deprecated
- * @return unknown
+ * @return string
  */
 function em_get_date_format(){
 	return get_option('dbem_date_format');

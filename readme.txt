@@ -115,6 +115,11 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
+= 8.9.8.2 (dev) =
+* updated EM_DateTime and EM_DateTimeZone to remove PHP <5.3 backports and also make use of UTC offset support since PHP 5.5.10 (since WP now is requiring 5.6 as a minimum)
+* fixed location dropdown not showing option for no location or a placeholder if physical locations are the only location types enabled
+* fixed front-end event editor showing events list rather than submission form when there's a validation error
+
 = 5.9.8.1 =
 * fixed html structure error in location template breaking editor if location dropdowns are enabled
 

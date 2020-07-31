@@ -68,6 +68,15 @@ foreach( EM_Event_Locations\Event_Locations::get_types() as $event_location_type
 				<td>
 					<select name="location_id" id='location-select-id' size="1">
 						<?php
+						if ( count($location_types) == 1 && !get_option('dbem_require_location') ){ // we don't consider optional locations as a type for ddm
+							?>
+							<option value="0"><?php esc_html_e('No Location','events-manager'); ?></option>
+							<?php
+						}elseif( empty(get_option('dbem_default_location')) ){
+							?>
+							<option value="0"><?php esc_html_e('Select Location','events-manager'); ?></option>
+							<?php
+						}
 						$ddm_args = array('private'=>$EM_Event->can_manage('read_private_locations'));
 						$ddm_args['owner'] = (is_user_logged_in() && !current_user_can('read_others_locations')) ? get_current_user_id() : false;
 						$locations = EM_Locations::get($ddm_args);

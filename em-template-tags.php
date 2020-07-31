@@ -223,7 +223,7 @@ function em_get_event_form( $args = array() ){
 function em_events_admin($args = array()){
 	global $EM_Event, $EM_Notices, $bp;
 	if( is_user_logged_in() && current_user_can('edit_events') ){
-		if( !empty($_GET['action']) && $_GET['action']=='edit' ){
+		if( (!empty($_GET['action']) && $_GET['action']=='edit') || (!empty($_POST['action']) && $_POST['action']=='event_save') ){
 			if( empty($_REQUEST['redirect_to']) ){
 				$_REQUEST['redirect_to'] = em_add_get_params($_SERVER['REQUEST_URI'], array('action'=>null, 'event_id'=>null));
 			}
