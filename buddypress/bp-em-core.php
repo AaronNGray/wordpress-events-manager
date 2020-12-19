@@ -158,6 +158,9 @@ class BP_EM_Component extends BP_Component {
 			);
 		}
 		
+		$main_nav = apply_filters('em_bp_menu_main_nav', $main_nav);
+		$sub_nav = apply_filters('em_bp_menu_sub_nav', $sub_nav);
+		
 		parent::setup_nav( $main_nav, $sub_nav );
 		add_action( 'bp_init', array(&$this, 'setup_group_nav') );
 	}

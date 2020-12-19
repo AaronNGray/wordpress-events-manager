@@ -29,30 +29,21 @@ foreach( EM_Event_Locations\Event_Locations::get_types() as $event_location_type
 ?>
 <div class="em-input-field em-input-field-select em-location-types <?php if( count($location_types) == 1 ) echo 'em-location-types-single'; ?>">
 	<label><?php esc_html_e ( 'Location Type', 'events-manager')?></label>
-	<select name="location_type" class="em-location-types-select">
+	<select name="location_type" class="em-location-types-select" data-active="<?php echo esc_attr($EM_Event->event_location_type); ?>">
 		<?php foreach( $location_types as $location_type => $location_type_option ): ?>
 		<option value="<?php echo esc_attr($location_type); ?>" <?php if( !empty($location_type_option['selected']) ) echo 'selected="selected"'; ?> data-display-class="<?php if( !empty($location_type_option['display-class']) ) echo esc_attr($location_type_option['display-class']); ?>">
 			<?php echo esc_html($location_type_option['description']); ?>
 		</option>
 		<?php endforeach; ?>
 	</select>
-	<script type="text/javascript">
-		jQuery(document).ready(function($){
-			$('.em-location-types .em-location-types-select').change(function(){
-				let el = $(this);
-				if( el.val() == 0 ){
-					$('.em-location-type').hide();
-				}else{
-					let location_type = el.find('option:selected').data('display-class');
-					$('.em-location-type').hide();
-					$('.em-location-type.'+location_type).show();
-					if( location_type != 'em-location-type-place' ){
-						jQuery('#em-location-reset a').trigger('click');
-					}
-				}
-			}).trigger('change');
-		});
-	</script>
+	<?php if( $EM_Event->has_event_location() ): ?>
+		<div class="em-location-type-delete-active-alert em-notice-warning">
+			<div class="warning-bold">
+				<p><em><?php esc_html_e('You are switching location type, if you update this event your event previous location data will be deleted.', 'events-manager'); ?></em></p>
+			</div>
+			<?php $EM_Event->get_event_location()->admin_delete_warning(); ?>
+		</div>
+	<?php endif; ?>
 </div>
 <?php if( EM_Locations::is_enabled() ): ?>
 <div id="em-location-data" class="em-location-data em-location-type em-location-type-place <?php if( count($location_types) == 1 ) echo 'em-location-type-single'; ?>">

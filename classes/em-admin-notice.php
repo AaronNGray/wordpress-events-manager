@@ -144,9 +144,11 @@ class EM_Admin_Notice {
 				if( $this->where == 'plugin' ) $return = true;
 				elseif( empty($_REQUEST['page']) && in_array($this->where, array(EM_POST_TYPE_EVENT, EM_POST_TYPE_LOCATION, 'event-recurring')) ) $return = true;
 				elseif( $this->where == 'settings' && !empty($_REQUEST['page']) && $_REQUEST['page'] == 'events-manager-options' ) $return = true;
-				elseif( !empty($_REQUEST['page']) && $this->where == $_REQUEST['page'] ) $return = true;
+				elseif( !empty($_REQUEST['page']) && ($this->where == $_REQUEST['page'] || (is_array($this->where) && in_array($_REQUEST['page'], $this->where))) ) $return = true;
 			}elseif( is_network_admin() && !empty($_REQUEST['page']) && preg_match('/^events\-manager\-/', $_REQUEST['page']) ){
 				$return = $this->where == 'plugin' || $this->where == 'settings' || $this->where == 'network_admin';
+			}elseif( !empty($_REQUEST['page']) && ($this->where == $_REQUEST['page'] || (is_array($this->where) && in_array($_REQUEST['page'], $this->where))) ){
+				$return = true;
 			}
 		}
 		//does this even have a message we can display?

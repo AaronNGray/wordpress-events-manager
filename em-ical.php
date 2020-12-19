@@ -72,7 +72,7 @@
 	 * @return string
 	 */
 	function em_mb_ical_wordwrap($string){
-		if( !defined('EM_MB_ICAL_WORDWRAP') || EM_MB_ICAL_WORDWRAP ){
+		if( function_exists('mb_strcut') && (!defined('EM_MB_ICAL_WORDWRAP') || EM_MB_ICAL_WORDWRAP) ){
 			$return = '';
 			for ( $i = 0; strlen($string) > 0; $i++ ) {
 				$linewidth = ($i == 0? 75 : 74);

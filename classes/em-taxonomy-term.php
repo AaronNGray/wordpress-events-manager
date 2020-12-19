@@ -160,12 +160,14 @@ class EM_Taxonomy_Term extends EM_Object {
 			}
 		}
 		$taxonomy_string = $format;		 
-	 	preg_match_all("/(#@?_?[A-Za-z0-9]+)({([a-zA-Z0-9,]+)})?/", $format, $placeholders);
+	 	preg_match_all("/(#@?_?[A-Za-z0-9_]+)({([^}]+)})?/", $format, $placeholders);
 	 	$replaces = array();
 	 	$ph = strtoupper($this->option_name);
 		foreach($placeholders[1] as $key => $result) {
 			$replace = '';
 			$full_result = $placeholders[0][$key];
+			$placeholder_atts = array($result);
+			if( !empty($placeholders[3][$key]) ) $placeholder_atts[] = $placeholders[3][$key];
 			switch( $result ){
 				case '#_'. $ph .'NAME':
 					$replace = $this->name;
@@ -290,7 +292,7 @@ class EM_Taxonomy_Term extends EM_Object {
 					$replace = $full_result;
 					break;
 			}
-			$replaces[$full_result] = apply_filters('em_'. $this->option_name .'_output_placeholder', $replace, $this, $full_result, $target);
+			$replaces[$full_result] = apply_filters('em_'. $this->option_name .'_output_placeholder', $replace, $this, $full_result, $target, $placeholder_atts);
 		}
 		krsort($replaces);
 		foreach($replaces as $full_result => $replacement){

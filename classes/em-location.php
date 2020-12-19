@@ -692,9 +692,14 @@ class EM_Location extends EM_Object {
 		return $this->previous_status;
 	}
 	
+	/**
+	 * @param $criteria
+	 * @return mixed|void
+	 * @deprecated Since 5.9.8.2 - Was never used, assume this may be removed eventually and copy code into your own custom implementation if necessary.
+	 */
 	function load_similar($criteria){
 		global $wpdb;
-		if( !empty($criteria['location_name']) && !empty($criteria['location_name']) && !empty($criteria['location_name']) ){
+		if( !empty($criteria['location_name']) && !empty($criteria['location_address']) && !empty($criteria['location_town']) && !empty($criteria['location_state']) && !empty($criteria['location_postcode']) && !empty($criteria['location_country']) ){
 			$locations_table = EM_LOCATIONS_TABLE; 
 			$prepared_sql = $wpdb->prepare("SELECT * FROM $locations_table WHERE location_name = %s AND location_address = %s AND location_town = %s AND location_state = %s AND location_postcode = %s AND location_country = %s", stripcslashes($criteria['location_name']), stripcslashes($criteria['location_address']), stripcslashes($criteria['location_town']), stripcslashes($criteria['location_state']), stripcslashes($criteria['location_postcode']), stripcslashes($criteria['location_country']) );
 			//$wpdb->show_errors(true);
@@ -881,23 +886,27 @@ class EM_Location extends EM_Object {
 			//Strip string of placeholder and just leave the reference
 			$attRef = substr( substr($result, 0, strpos($result, '}')), 7 );
 			$attString = '';
+			$placeholder_atts = array('#_ATT', $results[1][$resultKey]);
 			if( is_array($this->location_attributes) && array_key_exists($attRef, $this->location_attributes) ){
 				$attString = $this->location_attributes[$attRef];
 			}elseif( !empty($results[3][$resultKey]) ){
 				//Check to see if we have a second set of braces;
+				$placeholder_atts[] = $results[3][$resultKey];
 				$attStringArray = explode('|', $results[3][$resultKey]);
 				$attString = $attStringArray[0];
 			}elseif( !empty($attributes['values'][$attRef][0]) ){
 				$attString = $attributes['values'][$attRef][0];
 			}
-			$attString = apply_filters('em_location_output_placeholder', $attString, $this, $result, $target);
+			$attString = apply_filters('em_location_output_placeholder', $attString, $this, $result, $target, $placeholder_atts);
 			$location_string = str_replace($result, $attString ,$location_string );
 		}
-	 	preg_match_all("/(#@?_?[A-Za-z0-9]+)({([^}]+)})?/", $location_string, $placeholders);
+	 	preg_match_all("/(#@?_?[A-Za-z0-9_]+)({([^}]+)})?/", $location_string, $placeholders);
 	 	$replaces = array();
 		foreach($placeholders[1] as $key => $result) {
 			$replace = '';
 			$full_result = $placeholders[0][$key];
+			$placeholder_atts = array($result);
+			if( !empty($placeholders[3][$key]) ) $placeholder_atts[] = $placeholders[3][$key];
 			switch( $result ){
 				case '#_LOCATIONID':
 					$replace = $this->location_id;
@@ -1101,7 +1110,7 @@ class EM_Location extends EM_Object {
 					$replace = $full_result;
 					break;
 			}
-			$replaces[$full_result] = apply_filters('em_location_output_placeholder', $replace, $this, $full_result, $target);
+			$replaces[$full_result] = apply_filters('em_location_output_placeholder', $replace, $this, $full_result, $target, $placeholder_atts);
 		}
 		//sort out replacements so that during replacements shorter placeholders don't overwrite longer varieties.
 		krsort($replaces);

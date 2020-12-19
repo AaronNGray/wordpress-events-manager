@@ -157,7 +157,7 @@ class OAuth_API {
 		if( !empty($_REQUEST['code']) ){
 			try{
 				$client = static::get_client(false);
-				if( !$client->oauth_state || (!empty($_REQUEST['state']) && !wp_verify_nonce( $_REQUEST['state'], static::$option_name.'_authorize')) ){
+				if( $client->oauth_state && (empty($_REQUEST['state']) || !wp_verify_nonce( $_REQUEST['state'], static::$option_name.'_authorize')) ){
 					$EM_Notices->add_error( sprintf( esc_html__( 'There was an error connecting to %s: %s', 'events-manager' ), static::$service_name, '<code>No State Provided</code>'), true );
 				}else{
 					try {

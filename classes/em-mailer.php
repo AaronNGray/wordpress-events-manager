@@ -64,7 +64,7 @@ class EM_Mailer {
 			return $send;
 		}elseif( $emails_ok ){
 			$this->load_phpmailer();
-			$mail = new PHPMailer();
+			$mail = new PHPMailer\PHPMailer\PHPMailer();
 			try{
 				//$mail->SMTPDebug = true;
 				if( get_option('dbem_smtp_html') ){
@@ -144,8 +144,9 @@ class EM_Mailer {
 	 * load phpmailer classes
 	 */
 	public function load_phpmailer(){
-		require_once ABSPATH . WPINC . '/class-phpmailer.php';
-		require_once ABSPATH . WPINC . '/class-smtp.php';
+		require_once ABSPATH . WPINC . '/PHPMailer/PHPMailer.php';
+		require_once ABSPATH . WPINC . '/PHPMailer/Exception.php';
+		require_once ABSPATH . WPINC . '/PHPMailer/SMTP.php';
 	}
 	
 	/**

@@ -4,7 +4,7 @@ Donate link: http://wp-events-plugin.com
 Tags: bookings, calendar, tickets, events, buddypress, event management, google maps, maps, locations, registration, zoom
 Text Domain: events-manager
 Requires at least: 5.2
-Tested up to: 5.5
+Tested up to: 5.6
 Stable tag: 5.9.8.1
 Requires PHP: 5.3
 
@@ -115,10 +115,35 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
-= 8.9.8.2 (dev) =
+= 5.9.8.3 (dev) =
 * updated EM_DateTime and EM_DateTimeZone to remove PHP <5.3 backports and also make use of UTC offset support since PHP 5.5.10 (since WP now is requiring 5.6 as a minimum)
 * fixed location dropdown not showing option for no location or a placeholder if physical locations are the only location types enabled
 * fixed front-end event editor showing events list rather than submission form when there's a validation error
+* fixed bug where re-saving multilingual recurring events sets parent ids out of sync and causing booking linking issues with translated events
+* fixed event times output on bookings table not showing time according to formatting settings
+* added 5th argument with array of segmented placeholder meta to _output_placeholder filters of events, locations, bookings and taxonomies
+* tweaked placeholder regex to allow underscores in placeholder names e.g. #_PREVIOUSLY_INVALID_PLACEHOLDER
+* added _SITE time-related placeholder variations which display event time relative to website timezone,
+* added _LOCAL time-related placeholder variations which display event time relative to user's browser timezone (based on JS),
+* fixed EM_Event::output_times() not using custom $all_day_message
+* fixed booking table custom fields with accented names not being displayed or exported properly
+* updated jQuery UI CSS theme
+* updated PHPMailer loading location due to breaks in 5.5
+* added #_EVENTDATES_LOCAL
+* updated placeholder docs
+* fixed save and status change filters firing before emails are sent which can cause irregular behaviour in add-ons (e.g. Zoom join links)
+* optimized EM_Bookings::has_booking() function to prevent unecessary loading of bookings to event
+* fixed fatal errors on ical generation if mb_string extension disabled in PHP
+* added em_bp_menu_sub_nav and em_bp_menu_main_nav filters to allow easy BuddyPress/BuddyBoss menu overriding
+* added data deletion and warning of deletion when switching location types,
+* moved JS out of location selection template into main JS file
+* changed Event_Location data handling so that event location data is kept within the object EM_Event->event_location rather than in EM_Event->event_location_data
+* fixed Event_Locations::is_enabled() creating fatal errors if add-on event location plugins get deactivated whilst event location is still 'enabled' in settings
+* fixed deletion of previous event location data occurring on get_post() rather than save() and added a temporary event_location_deleted property to EM_Event to contain deletable event location
+* changed recurring table field to require a non-null value and default to 0 to prevent erratic behaviour if recurrences get saved with NULL in random edge cases
+* removed some old migration update code for v4 > v5 update (more to be removed at a later date)
+* added em_event_save_events_exclude_update_meta_keys allowing add-ons to prevent overwriting meta keys when updating recurrences
+* added docs for event location types and a filter for adding custom placeholder docs to the help page
 
 = 5.9.8.1 =
 * fixed html structure error in location template breaking editor if location dropdowns are enabled

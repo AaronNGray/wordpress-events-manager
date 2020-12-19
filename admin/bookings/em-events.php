@@ -120,7 +120,7 @@ function em_bookings_events_table() {
 							</td>
 					
 							<td>
-								<?php echo $EM_Event->output_dates(false, " - "). ' @ ' . $EM_Event->output_times('H:i', ' - '); ?>
+								<?php echo $EM_Event->output_dates(false, " - "). ' @ ' . $EM_Event->output_times(false, ' - '); ?>
 							</td>
 						</tr>
 						<?php

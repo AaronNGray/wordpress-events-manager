@@ -1,4 +1,14 @@
 <?php
+
+/**
+ * Class EM_Ticket
+ * @param string name
+ * @param string description
+ * @param string ticket_name
+ * @param string ticket_description
+ * @param string ticket_start
+ * @param string ticket_end
+ */
 class EM_Ticket extends EM_Object{
 	//DB Fields
 	var $ticket_id;
@@ -48,7 +58,7 @@ class EM_Ticket extends EM_Object{
 	protected $end;
 	/**
 	 * is this ticket limited by spaces allotted to this ticket? false if no limit (i.e. the events general limit of seats)
-	 * @var unknown_type
+	 * @var bool
 	 */
 	var $spaces_limit = true;
 	
@@ -108,8 +118,7 @@ class EM_Ticket extends EM_Object{
 	function __get( $var ){
 		if( $var == 'name' || $var == 'ticket_name' || $var == 'description' || $var == 'ticket_description' ){
 			$prop = $var == 'name' || $var == 'description' ? 'ticket_'.$var : $var;
-			$locale = get_locale();
-			if( EM_ML::$is_ml && !empty($this->ticket_meta['langs'][$locale][$prop]) ){
+			if( EM_ML::$is_ml && !$this->ticket_parent && !empty($this->ticket_meta['langs'][EM_ML::$current_language][$prop]) ){
 				return $this->ticket_meta['langs'][EM_ML::$current_language][$prop];
 			}else{
 				return $this->{$prop};

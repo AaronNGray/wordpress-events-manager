@@ -546,18 +546,21 @@ class EM_Bookings extends EM_Object implements Iterator{
 	
 	/**
 	 * Checks to see if user has a booking for this event
-	 * @param unknown_type $user_id
+	 * @param int $user_id
 	 */
 	function has_booking( $user_id = false ){
 		if( $user_id === false ){
 			$user_id = get_current_user_id();
 		}
 		if( is_numeric($user_id) && $user_id > 0 ){
-			foreach ($this->load() as $EM_Booking){
-				if( $EM_Booking->person->ID == $user_id && !in_array($EM_Booking->booking_status, array(2,3)) ){
-					return apply_filters('em_bookings_has_booking', $EM_Booking, $this);
-				}
-			}	
+			global $wpdb;
+			// get the first booking ID available and return that
+			$sql = $wpdb->prepare('SELECT booking_id FROM '.EM_BOOKINGS_TABLE.' WHERE event_id = %d AND person_id = %d AND booking_status NOT IN (2,3)', $this->event_id, $user_id);
+			$booking_id = $wpdb->get_var($sql);
+			if( (int) $booking_id > 0 ){
+				$EM_Booking = em_get_booking($booking_id);
+				return apply_filters('em_bookings_has_booking', $EM_Booking, $this);
+			}
 		}
 		return apply_filters('em_bookings_has_booking', false, $this);
 	}

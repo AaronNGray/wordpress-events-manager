@@ -209,7 +209,7 @@ class EM_ML_Options {
 		    $option_name = str_replace('pre_option_','',$filter_name);
 		    //don't use EM_ML::get_option as it creates an endless loop for options without a translation
 			$option_langs = get_option($option_name.'_ml', array());
-			if( !empty($option_langs[EM_ML::$current_language]) ){
+			if( is_array($option_langs) && !empty($option_langs[EM_ML::$current_language]) ){
 				return $option_langs[EM_ML::$current_language];
 			}
 		}

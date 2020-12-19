@@ -112,7 +112,11 @@ class EM_Bookings_Table{
 		    		$this->cols[$k] = sanitize_text_field($col);
 			    }
     		}else{
-    			$this->cols = explode(',',sanitize_text_field($_REQUEST['cols']));
+    			foreach( explode(',',$_REQUEST['cols']) as $k => $col ){
+    				if( array_key_exists($col, $this->cols_template) ){
+					    $this->cols[$k] = $col;
+				    }
+			    }
     		}
 		}
 		//load collumn view settings

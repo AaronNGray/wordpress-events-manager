@@ -153,13 +153,13 @@ class EM_DateTime extends DateTime {
 	}
 	
 	/**
-	 * Extends DateTime functionality by accepting a false or string value for a timezone.
+	 * Extends DateTime functionality by accepting a false or string value for a timezone. If set to false, default WP timezone will be used.
 	 * Returns EM_DateTime object in all cases, but $this->valid will be set to false if unsuccessful
-	 * @param string $timezone
+	 * @param string|false $timezone
 	 * @see DateTime::setTimezone()
 	 * @return EM_DateTime Returns object for chaining.
 	 */
-	public function setTimezone( $timezone ){
+	public function setTimezone( $timezone = false ){
 		if( $timezone == $this->getTimezone()->getName() ) return $this;
 		$timezone = EM_DateTimeZone::create($timezone);
 		$return = parent::setTimezone($timezone);

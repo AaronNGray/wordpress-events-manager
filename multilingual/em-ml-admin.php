@@ -22,8 +22,6 @@ class EM_ML_Admin{
 	    if( !empty($EM_Event) && !EM_ML::is_original($EM_Event) ){
 	        //remove meta boxes for events
 		    remove_meta_box('em-event-when', EM_POST_TYPE_EVENT, 'side');
-		    //if( isset($wp_meta_boxes[convert_to_screen(EM_POST_TYPE_EVENT)->id]['side']['high']['em-event-when']) ) unset($wp_meta_boxes[convert_to_screen(EM_POST_TYPE_EVENT)->id]['side']['high']['em-event-when']);
-		    //if( isset($wp_meta_boxes[convert_to_screen(EM_POST_TYPE_EVENT)->id]['side']['core']['em-event-when']) ) unset($wp_meta_boxes[convert_to_screen(EM_POST_TYPE_EVENT)->id]['side']['core']['em-event-when']);
 		    remove_meta_box('em-event-recurring', 'event-recurring', 'normal');
 		    remove_meta_box('em-event-when-recurring', 'event-recurring', 'side');
 	    	remove_meta_box('em-event-where', EM_POST_TYPE_EVENT, 'normal');
@@ -34,6 +32,15 @@ class EM_ML_Admin{
 		    remove_meta_box('em-event-bookings-stats', 'event-recurring', 'side');
 		    remove_meta_box('em-event-group', EM_POST_TYPE_EVENT, 'side');
 		    remove_meta_box('em-event-group', 'event-recurring', 'side');
+		    foreach( array('em-event-when', 'em-event-recurring', 'em-event-when-recurring', 'em-event-where', 'em-event-bookings', 'em-event-bookings-stats', 'em-event-group') as $box_name ){
+		    	foreach( array(EM_POST_TYPE_EVENT, 'event-recurring') as $type ){
+		    		$screen_name = convert_to_screen($type)->id;
+			        foreach( array('core', 'default', 'high', 'low') as $priority ){
+				        if( isset($wp_meta_boxes[$screen_name]['side'][$priority][$box_name]) ) unset($wp_meta_boxes[$screen_name]['side'][$priority][$box_name]);
+				        if( isset($wp_meta_boxes[$screen_name]['normal'][$priority][$box_name]) ) unset($wp_meta_boxes[$screen_name]['normal'][$priority][$box_name]);
+			        }
+			    }
+		    }
 		    if( get_option('dbem_attributes_enabled', true) ){
 	    	    remove_meta_box('em-event-attributes', EM_POST_TYPE_EVENT, 'normal');
 			    remove_meta_box('em-event-attributes', 'event-recurring', 'normal');

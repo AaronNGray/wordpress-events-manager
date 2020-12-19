@@ -6,10 +6,6 @@ function em_docs_init($force_init = false){
 		add_action('wp_head', 'emd_head');
 		//Generate the docs
 		global $EM_Documentation;
-		$EM_Event = new EM_Event();
-		$event_fields = $EM_Event->get_fields(true);
-		$EM_Location = new EM_Location();
-		$location_fields = $EM_Location->get_fields(true);
 		$EM_Documentation = array(
 			'arguments' => array(
 				'events' => array(
@@ -103,6 +99,7 @@ function em_docs_init($force_init = false){
 							'#_EVENTCATEGORIES' => array( 'desc' => 'Shows a list of category links this event belongs to.' ),
 							'#_EVENTCATEGORIESIMAGES'  => array( 'desc' => 'Shows a list of category images this event belongs to. Categories without an image will be ignored.' ),
 							'#_EVENTTAGS' => array( 'desc' => 'Shows a list of tag links this event belongs to.' ),
+							'#_EVENTLOCATION' => array( 'desc' => 'Displays information about the event location, which is different from a physical location. <a href="https://wp-events-plugin.com/documentation/location-types/">See our documentation for more information</a>, as each location type may display different information and will have different additional placeholders.' ),
 							'#_RECURRINGDATERANGE' => array( 'desc' => 'Range of dates between the start/end of the recurring event pattern for an event recurrence, blank for non-recurrences.' ),
 							'#_RECURRINGPATTERN' => array( 'desc' => 'Describes the pattern of a recurring event when used on an event recurrence, blank for non-recurrences.' ),
 							'#_RECURRINGID' => array( 'desc' => 'The event ID of the recurring event template when displayed on a recurrence, blank for non-recurrences.' ),
@@ -124,6 +121,31 @@ function em_docs_init($force_init = false){
 						'placeholders' => array(
 							'# or #@' => array( 'desc' => 'Prepend <code>#</code> or <code>#@</code> before a valid PHP date syntax format character to show start and end date/time information respectively (e.g. <code>#F</code> will show the starting month name like "January", #@h shows the end hour).' ),
 							'#_{x} or #@_{x}' => array( 'desc' => 'You can also create a date format without prepending # to each character by wrapping a valid php date() format in <code>#_{}</code> or <code>#@_{}</code> (e.g. <code>#_{d/m/Y}</code>). If there is no end date (or is same as start date), the value is not shown. This is useful if you want to show event end dates only on events that are longer than one day, e.g. <code>#j #M #Y #@_{ \u\n\t\i\l j M Y}</code>.' ),
+						)
+					),
+					'WordPress-relative Timezone Date/Time Placeholders' => array(
+						'desc' => 'These placeholders are extensions of the default Date/Time placholders, but instead will display the time of the event relative to your WordPress timezone rather than the local time of the event itself. Your WordPress site timezone is found in your <em><strong>Dashboard > Settings > General</strong></em> settings page.',
+						'placeholders' => array(
+							'#_24HSTARTTIME_SITE' => array( 'desc' => 'Sames as <code>#_24HSTARTTIME</code> but displays time relative to your site timezone.' ),
+							'#_24HENDTIME_SITE' => array( 'desc' => 'Sames as <code>#_24HENDTIME</code> but displays time relative to your site timezone.' ),
+							'#_12HSTARTTIME_SITE' => array( 'desc' => 'Sames as <code>#_12HSTARTTIME</code> but displays time relative to your site timezone.' ),
+							'#_12HENDTIME_SITE' => array( 'desc' => 'Sames as <code>#_12HENDTIME</code> but displays time relative to your site timezone.' ),
+							'#_EVENTTIMES_SITE' => array( 'desc' => 'Sames as <code>#_EVENTTIMES</code> but displays times relative to your site timezone.' ),
+							'#_EVENTDATES_SITE' => array( 'desc' => 'Sames as <code>#_EVENTDATES</code> but displays dates relative to your site timezone (dates can be different for events near midnight in a different timezone).' ),
+							'#__{x} or #@__{x}' => array( 'desc' => 'Same as <code>#_{x}</code> or <code>#@_{x}</code> but displays the time of the event relative to your WordPress timezone rather than the local time of the event itself.' ),
+						)
+					),
+					'Viewer Timezone Date/Time Placeholders' => array(
+						'desc' => 'These placeholders are extensions of the default Date/Time placholders, but instead will display the time of the event relative to the visitor timezone rather than the local event start time. This time is based on the user browser settings and JavaScript, so this may not always be accurate if a visitor is travelling and does not update their browser timezone, or if they have disabled JS on their browser.',
+						'placeholders' => array(
+							'#_24HSTARTTIME_LOCAL' => array( 'desc' => 'Sames as <code>#_24HSTARTTIME</code> but displays time relative to your visitor browser timezone.' ),
+							'#_24HENDTIME_LOCAL' => array( 'desc' => 'Sames as <code>#_24HENDTIME</code> but displays time relative to your visitor browser timezone.' ),
+							'#_12HSTARTTIME_LOCAL' => array( 'desc' => 'Sames as <code>#_12HSTARTTIME</code> but displays time relative to your visitor browser timezone.' ),
+							'#_12HENDTIME_LOCAL' => array( 'desc' => 'Sames as <code>#_12HENDTIME</code> but displays time relative to your visitor browser timezone.' ),
+							'#_EVENTTIMES_LOCAL' => array( 'desc' => 'Sames as <code>#_EVENTTIMES</code>  but displays time relative to your visitor browser timezone.' ),
+							'#_EVENTTIMES_LOCAL{...}' => array( 'desc' => 'Sames as <code>#_EVENTTIMES_LOCAL</code> but displays custom format by replacing <code>...</code> with <a href="https://momentjs.com/docs/#/displaying/"> documented Moment JS formatting syntax</a>.'),
+							'#_EVENTDATES_LOCAL' => array( 'desc' => 'Sames as <code>#_EVENTDATES</code> but displays dates relative to your site timezone (dates can be different for events near midnight in a different timezone).' ),
+							'#_EVENTDATES_LOCAL{...}' => array( 'desc' => 'Sames as <code>#_EVENTDATES_LOCAL</code> but displays custom format by replacing <code>...</code> with <a href="https://momentjs.com/docs/#/displaying/"> documented Moment JS formatting syntax</a>.'),
 						)
 					),
 					'Links/URLs' => array(
@@ -188,6 +210,18 @@ function em_docs_init($force_init = false){
 							'#_EVENTWEBCALLINK' => array( 'desc' => 'Same as #_EVENTICALLINK, but using the <a href="https://en.wikipedia.org/wiki/Webcal">webcal:// protocol</a>, which will open up various calendar apps automatically including iCalendar, Outlook and Google Calendar.', 'since'=>'5.8' ),
 							'#_EVENTGCALURL' => array( 'desc' => 'Displays URL which would take the user to Google Calendar and pre-fill their add new event form.' ),
 							'#_EVENTGCALLINK' => array( 'desc' => 'Displays a button which would take the user to Google Calendar and pre-fill their add new event form.' )
+						)
+					),
+				),
+				'event-locations' => array(
+					'Event Location URLs' => array(
+						'placeholders' => array(
+							'#_EVENTLOCATION' => array( 'desc' => 'An HTML link, opens in a new tab.' ),
+							'#_EVENTLOCATION{url}' => array( 'desc' => 'Just the URL.' ),
+							'#_EVENTLOCATION{text}' => array( 'desc' => 'Just the Link Text' ),
+							'#_EVENTLOCATION{_self}' => array( 'desc' => 'Regular HTML link' ),
+							'#_EVENTLOCATION{_parent}' => array( 'desc' => 'HTML link with target=”_parent”' ),
+							'#_EVENTLOCATION{_top}' => array( 'desc' => 'HTML link with target=”_top”' )
 						)
 					),
 				),
@@ -394,6 +428,7 @@ function em_docs_init($force_init = false){
 			//TODO add capabilites explanations
 			'capabilities' => array()
 		);
+		$EM_Documentation = apply_filters('em_documentation', $EM_Documentation);
 	}
 }
 add_action('init', 'em_docs_init');

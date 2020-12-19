@@ -171,7 +171,7 @@ class OAuth_API_Admin_Settings {
 					<p><em><?php esc_html_e('If you are experiencing errors when trying to use any of these accounts, try disconnecting and connecting again.', 'events-manager'); ?></em></p>
 				<?php else: ?>
 					<p><em><?php echo sprintf(esc_html__('Connect to import events and locations from %s.','events-manager'), $service_name); ?></em></p>
-					<a class="<?php echo $button_class; ?>  em-oauth-connect-button" href="<?php echo esc_url($button_url); ?>"><?php echo esc_html($button_text); ?></a>
+					<p><a class="<?php echo $button_class; ?>  em-oauth-connect-button" href="<?php echo esc_url($button_url); ?>"><?php echo esc_html($button_text); ?></a></p>
 				<?php endif; ?>
 			</div>
 			<?php

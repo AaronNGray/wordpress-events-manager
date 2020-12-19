@@ -9,7 +9,7 @@
  * @return string
  */
 function em_content($page_content) {
-	global $post, $wpdb, $wp_query, $EM_Event, $EM_Location, $EM_Category;
+	global $post, $EM_Event, $EM_Location, $EM_Notices;
 	if( empty($post) || empty($post->ID) ) return $page_content; //fix for any other plugins calling the_content outside the loop
 	$events_page_id = get_option ( 'dbem_events_page' );
 	$locations_page_id = get_option( 'dbem_locations_page' );

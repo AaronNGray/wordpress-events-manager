@@ -2,7 +2,7 @@
 <!-- GENERAL OPTIONS -->
 <div class="em-menu-general em-menu-group">
 	<div  class="postbox " id="em-opt-general"  >
-	<div class="handlediv" title="<?php __('Click to toggle', 'events-manager'); ?>"><br /></div><h3><span><?php _e ( 'General Options', 'events-manager'); ?> </span></h3>
+	<div class="handlediv" title="<?php __('Click to toggle', 'events-manager'); ?>"><br /></div> <h3><span><?php _e ( 'General Options', 'events-manager'); ?> </span></h3>
 	<div class="inside">
         <table class="form-table">
             <?php em_options_radio_binary ( __( 'Disable thumbnails?', 'events-manager'), 'dbem_thumbnails_enabled', __( 'Select yes to disable Events Manager from enabling thumbnails (some themes may already have this enabled, which we cannot be turned off here).','events-manager') );  ?>					
@@ -247,7 +247,6 @@
             <table class="form-table">
             <tr class="em-header"><td colspan="2">
             	<h4><?php _e('JavaScript Files','events-manager'); ?></h4>
-            	<p><?php echo sprintf(__('If you are not using it already, we recommend you try the <a href="%s" target="_blank">Use Google Libraries</a> plugin, because without further optimization options below it already significantly reduces the number of files needed to display your Event pages and will most likely speed up your overall website loading time.' ,'events-manager'),'http://wordpress.org/extend/plugins/use-google-libraries/'); ?>
 			</td></tr>
 			<?php
 				em_options_radio_binary ( __( 'Limit JS file loading?', 'events-manager'), 'dbem_js_limit', __( 'Prevent unnecessary loading of JavaScript files on pages where they are not needed.', 'events-manager') );

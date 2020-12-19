@@ -677,6 +677,27 @@ jQuery(document).ready( function($){
 	if( $('.em-location-map').length > 0 || $('.em-locations-map').length > 0 || $('#em-map').length > 0 || $('.em-search-geo').length > 0 ){
 		em_maps_load();
 	}
+
+	/* Location Type Selection */
+	$('.em-location-types .em-location-types-select').change(function(){
+		let el = $(this);
+		if( el.val() == 0 ){
+			$('.em-location-type').hide();
+		}else{
+			let location_type = el.find('option:selected').data('display-class');
+			$('.em-location-type').hide();
+			$('.em-location-type.'+location_type).show();
+			if( location_type != 'em-location-type-place' ){
+				jQuery('#em-location-reset a').trigger('click');
+			}
+		}
+		if( el.data('active') !== '' && el.val() !== el.data('active') ){
+			$('.em-location-type-delete-active-alert').hide();
+			$('.em-location-type-delete-active-alert').show();
+		}else{
+			$('.em-location-type-delete-active-alert').hide();
+		}
+	}).trigger('change');
 	
 	//Finally, add autocomplete here
 	//Autocomplete
@@ -737,6 +758,61 @@ jQuery(document).ready( function($){
 			jQuery('#em-location-search-tip').hide();
 		}
 	}
+	/* Local JS Timezone related placeholders */
+	/* Moment JS Timzeone PH */
+	if( window.moment ){
+		var replace_specials = function( day, string ){
+			// replace things not supported by moment
+			string = string.replace(/##T/g, Intl.DateTimeFormat().resolvedOptions().timeZone);
+			string = string.replace(/#T/g, "GMT"+day.format('Z'));
+			string = string.replace(/###t/g, day.utcOffset()*-60);
+			string = string.replace(/##t/g, day.isDST());
+			string = string.replace(/#t/g, day.daysInMonth());
+			return string;
+		};
+		$('.em-date-momentjs').each( function(){
+			// Start Date
+			var el = $(this);
+			var day_start = moment.unix(el.data('date-start'));
+			var date_start_string = replace_specials(day_start, day_start.format(el.data('date-format')));
+			if( el.data('date-start') !== el.data('date-end') ){
+				// End Date
+				var day_end = moment.unix(el.data('date-end'));
+				var day_end_string = replace_specials(day_start, day_end.format(el.data('date-format')));
+				// Output
+				var date_string = date_start_string + el.data('date-separator') + day_end_string;
+			}else{
+				var date_string = date_start_string;
+			}
+			el.text(date_string);
+		});
+		var get_date_string = function(ts, format){
+			let date = new Date(ts * 1000);
+			let minutes = date.getMinutes();
+			if( format == 24 ){
+				let hours = date.getHours();
+				hours = hours < 10 ? '0' + hours : hours;
+				minutes = minutes < 10 ? '0' + minutes : minutes;
+				return hours + ':' + minutes;
+			}else{
+				let hours = date.getHours() % 12;
+				let ampm = hours >= 12 ? 'PM' : 'AM';
+				if( hours === 0 ) hours = 12; // the hour '0' should be '12'
+				minutes = minutes < 10 ? '0'+minutes : minutes;
+				return hours + ':' + minutes + ' ' + ampm;
+			}
+		}
+		$('.em-time-localjs').each( function(){
+			var el = $(this);
+			var strTime = get_date_string( el.data('time'), el.data('time-format') );
+			if( el.data('time-end') ){
+				var separator = el.data('time-separator') ? el.data('time-separator') : ' - ';
+				strTime = strTime + separator + get_date_string( el.data('time-end'), el.data('time-format') );
+			}
+			el.text(strTime);
+		});
+	}
+	/* Done! */
 	jQuery(document).triggerHandler('em_javascript_loaded');
 });
 
@@ -793,9 +869,10 @@ function em_setup_datepicker(wrap){
 					var endDate = startDate.parents('.em-date-range').find('.em-date-end').first();
 					var startValue = startDate.nextAll('input.em-date-input').first().val();
 					var endValue = endDate.nextAll('input.em-date-input').first().val();
+					startDate.trigger('em_datepicker_change');
 					if( startValue > endValue && endValue != '' ){
 						endDate.datepicker( "setDate" , selectedDate );
-						endDate.trigger('change');
+						endDate.trigger('change').trigger('em_datepicker_change');
 					}
 					endDate.datepicker( "option", 'minDate', selectedDate );
 				});

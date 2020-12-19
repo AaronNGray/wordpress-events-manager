@@ -17,6 +17,12 @@ p.warning {	border: 2px solid #FD0000; background: #FF7146; color: #fff; font-we
 div#icon-events{ background:url('../images/calendar-32.png') no-repeat center; }
 div#icon-bookings{ background:url('../images/bookings-32.png') no-repeat center; }
 
+/* General Notices */
+#event-form .em-notice-warning, #post .em-notice-warning { margin:10px 0px; padding:15px 20px; border-left: 4px solid #ffa500; }
+#event-form .em-notice-warning h4, #post .em-notice-warning h4 { margin-top:0px; }
+#event-form .em-notice-warning div.warning-bold, #post .em-notice-warning div.warning-bold{ color:#c45500; font-weight: bold; }
+#event-form .em-notice-warning div.warning-bold p, #post .em-notice-warning div.warning-bold p { margin-top:0px; font-size:14px; }
+
 /* Events List */
 table.events-table tr.pending { background:#FCFFA8 }
 table.events-table tr.past { background:#E4E4E4 }
@@ -42,6 +48,7 @@ div.em-location-data table { float:left; margin:0 15px 0 0; }
 .em-input-field.em-input-field-boolean label { display: inline-block; }
 .em-input-field em { display: block; margin-top:2px; }
 /* Location form */
+div.em-location-type, div.em-location-type-delete-active-alert { display:none; }
 div.em-location-types-single { display:none; visibility: hidden; }
 div.em-location-data table.em-location-data td, div.em-location-data table.em-location-data th { vertical-align:top; border:none; }
 div.em-location-data table.em-location-data { width:50%; float:left; border:none; }
@@ -155,6 +162,7 @@ table.em-tickets-bookings-table tbody td { text-align:center; }
 #location-balloon-content h3 { background:none; text-shadow:none; }
 
 /* Options Page */
+#em-options-form .handlediv { display:none; visibility: hidden; }
 #em-options-form .inside { border-top: 1px solid #dedede; margin-top:0px; padding-top:10px; }
 #em-options-form h3 { font-size:16px; }
 #em-options-form td, #em-options-form th { vertical-align:top; }
@@ -173,6 +181,7 @@ table.em-caps-table th, table.em-caps-table td { width:auto !important; }
 .em-ml-options table td { padding:0px 0px 5px; margin:0px; }
 .em-ml-options .lang { width:100px; }
 .em-menu-group .postbox.always-open .inside { display:block !important; }
+.em-menu-group .postbox.closed { border-bottom:1px solid #ccd0d4; }
 
 /* Widget Tables CSS */
 .em_obj .table-wrap{

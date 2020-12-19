@@ -8,7 +8,7 @@ function em_admin_help_page(){
 	<div class="wrap">
 		<h1><?php _e('Getting Help for Events Manager','events-manager'); ?></h1>
 		<div class="em-docs">
-			<h2>Where To Get Help</h3>
+			<h2>Where To Get Help</h2>
 			<p>
 				This page is only a small portion of the event documentation which is here for quick reference. If you're just starting out, we recommend you visit the following places for further support:
 			</p>
@@ -26,6 +26,8 @@ function em_admin_help_page(){
 			<a name="event-placeholders"></a>
 			<h3 style="margin-top:20px;"><?php _e('Event Related Placeholders','events-manager'); ?></h3>
 			<?php echo em_docs_placeholders( array('type'=>'events') ); ?>
+			<h3 style="margin-top:20px;"><?php _e('Event Location Placeholders','events-manager'); ?></h3>
+			<?php echo em_docs_placeholders( array('type'=>'event-locations') ); ?>
 			<a name="category-placeholders"></a>
 			<h3><?php _e('Category Related Placeholders','events-manager'); ?></h3>
 			<?php echo em_docs_placeholders( array('type'=>'categories') ); ?>
