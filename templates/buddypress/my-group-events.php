@@ -49,57 +49,57 @@
 			<?php 
 			$rowno = 0;
 			$event_count = 0;
-			foreach ( $EM_Events as $event ) {
-				/* @var $event EM_Event */
+			foreach ($EM_Events as $EM_Event ) {
+				/* @var $EM_Event EM_Event */
 				if( ($rowno < $limit || empty($limit)) && ($event_count >= $offset || $offset === 0) ) {
 					$rowno++;
 					$class = ($rowno % 2) ? 'alternate' : '';
-					$location_summary = "<b>" . $event->get_location()->name . "</b><br/>" . $event->get_location()->address . " - " . $event->get_location()->town;
+					$location_summary = "<b>" . $EM_Event->get_location()->name . "</b><br/>" . $EM_Event->get_location()->address . " - " . $EM_Event->get_location()->town;
 					
 					if( $EM_Event->start()->getTimestamp() < time() && $EM_Event->end()->getTimestamp() < time() ){
 						$class .= " past";
 					}
 					//Check pending approval events
-					if ( !$event->status ){
+					if ( !$EM_Event->status ){
 						$class .= " pending";
 					}					
 					?>
-					<tr class="event <?php echo trim($class); ?>" id="event_<?php echo $event->event_id ?>">
+					<tr class="event <?php echo trim($class); ?>" id="event_<?php echo $EM_Event->event_id ?>">
 						<?php /*
 						<td>
-							<input type='checkbox' class='row-selector' value='<?php echo $event->event_id; ?>' name='events[]' />
+							<input type='checkbox' class='row-selector' value='<?php echo $EM_Event->event_id; ?>' name='events[]' />
 						</td>
 						*/ ?>
 						<td>
 							<strong>
-								<a class="row-title" href="<?php echo $event->get_edit_url(); ?>"><?php echo ($event->event_name); ?></a>
+								<a class="row-title" href="<?php echo $EM_Event->get_edit_url(); ?>"><?php echo ($EM_Event->event_name); ?></a>
 							</strong>
 							<?php 
-							if( $event->can_manage('manage_bookings','manage_others_bookings') && get_option('dbem_rsvp_enabled') == 1 && $event->event_rsvp == 1 ){
+							if( $EM_Event->can_manage('manage_bookings','manage_others_bookings') && get_option('dbem_rsvp_enabled') == 1 && $EM_Event->event_rsvp == 1 ){
 								?>
 								<br/>
-								<a href="<?php echo esc_url($event->get_bookings_url()); ?>"><?php echo __("Bookings",'events-manager'); ?></a> &ndash;
-								<?php _e("Booked",'events-manager'); ?>: <?php echo $event->get_bookings()->get_booked_spaces()."/".$event->get_spaces(); ?>
+								<a href="<?php echo esc_url($EM_Event->get_bookings_url()); ?>"><?php echo __("Bookings",'events-manager'); ?></a> &ndash;
+								<?php _e("Booked",'events-manager'); ?>: <?php echo $EM_Event->get_bookings()->get_booked_spaces()."/".$EM_Event->get_spaces(); ?>
 								<?php if( get_option('dbem_bookings_approval') == 1 ): ?>
-									| <?php _e("Pending",'events-manager') ?>: <?php echo $event->get_bookings()->get_pending_spaces(); ?>
+									| <?php _e("Pending",'events-manager') ?>: <?php echo $EM_Event->get_bookings()->get_pending_spaces(); ?>
 								<?php endif;
 							}
 							?>
 							<div class="row-actions">
 								<?php if( current_user_can('delete_events')) : ?>
-								<span class="trash"><a href="<?php echo $url ?>?action=event_delete&amp;event_id=<?php echo $event->event_id ?>" class="em-event-delete"><?php _e('Delete','events-manager'); ?></a></span>
+								<span class="trash"><a href="<?php echo $url ?>?action=event_delete&amp;event_id=<?php echo $EM_Event->event_id ?>" class="em-event-delete"><?php _e('Delete','events-manager'); ?></a></span>
 								<?php endif; ?>
 							</div>
 						</td>
 						<td>
-							<a href="<?php echo $url ?>edit/?action=event_duplicate&amp;event_id=<?php echo $event->event_id ?>" title="<?php _e ( 'Duplicate this event', 'events-manager'); ?>">
+							<a href="<?php echo $url ?>edit/?action=event_duplicate&amp;event_id=<?php echo $EM_Event->event_id ?>" title="<?php _e ( 'Duplicate this event', 'events-manager'); ?>">
 								<strong>+</strong>
 							</a>
 						</td>
 						<td>
 							<?php echo $location_summary; ?>
-							<?php if( is_object($category) && !empty($category->name) ) : ?>
-							<br/><span class="category"><strong><?php _e( 'Category', 'events-manager'); ?>: </strong><?php echo $category->name ?></span>
+							<?php if( $EM_Event->get_categories()->count() > 0 ) : ?>
+							<br/><span class="category"><strong><?php _e( 'Category', 'events-manager'); ?>: </strong><?php echo $EM_Event->get_categories()->get_first()->name ?></span>
 							<?php endif; ?>
 						</td>
 				
@@ -110,14 +110,14 @@
 						</td>
 						<td>
 							<?php 
-							if ( $event->is_recurrence() && $event->can_manage('edit_events','edit_others_events') ) {
+							if ( $EM_Event->is_recurrence() && $EM_Event->can_manage('edit_events','edit_others_events') ) {
 								$recurrence_delete_confirm = __('WARNING! You will delete ALL recurrences of this event, including booking history associated with any event in this recurrence. To keep booking information, go to the relevant single event and save it to detach it from this recurrence series.','events-manager');
 								?>
 								<strong>
-								<?php echo $event->get_recurrence_description(); ?> <br />
-								<a href="<?php echo $url ?>edit/?event_id=<?php echo $event->recurrence_id ?>"><?php _e ( 'Edit Recurring Events', 'events-manager'); ?></a>
+								<?php echo $EM_Event->get_recurrence_description(); ?> <br />
+								<a href="<?php echo $url ?>edit/?event_id=<?php echo $EM_Event->recurrence_id ?>"><?php _e ( 'Edit Recurring Events', 'events-manager'); ?></a>
 								<?php if( current_user_can('delete_events')) : ?>
-								<span class="trash"><a href="<?php echo $url ?>?action=event_delete&amp;event_id=<?php echo $event->event_id ?>" class="em-event-rec-delete" onclick ="if( !confirm('<?php echo $recurrence_delete_confirm; ?>') ){ return false; }"><?php _e('Delete','events-manager'); ?></a></span>
+								<span class="trash"><a href="<?php echo $url ?>?action=event_delete&amp;event_id=<?php echo $EM_Event->event_id ?>" class="em-event-rec-delete" onclick ="if( !confirm('<?php echo $recurrence_delete_confirm; ?>') ){ return false; }"><?php _e('Delete','events-manager'); ?></a></span>
 								<?php endif; ?>										
 								</strong>
 								<?php

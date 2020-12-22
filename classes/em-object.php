@@ -1040,7 +1040,7 @@ class EM_Object {
 				}
 				if($post_value != ',' ){
 					$args[$post_key] = $post_value;
-				}elseif( $post_value == ',' && $post_key == 'scope' && empty($args['scope']) ){
+				}elseif( $post_value == ',' && $post_key == 'scope' && (empty($args['scope']) || $args['scope'] == array('','')) ){
 					//unset the scope if no value is provided - ',' is an empty value
 					unset($args['scope']);
 				}

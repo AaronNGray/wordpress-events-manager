@@ -115,11 +115,12 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
-= 5.9.8.3 (dev) =
+= 5.9.8.5 (dev) =
 * updated EM_DateTime and EM_DateTimeZone to remove PHP <5.3 backports and also make use of UTC offset support since PHP 5.5.10 (since WP now is requiring 5.6 as a minimum)
 * fixed location dropdown not showing option for no location or a placeholder if physical locations are the only location types enabled
 * fixed front-end event editor showing events list rather than submission form when there's a validation error
 * fixed bug where re-saving multilingual recurring events sets parent ids out of sync and causing booking linking issues with translated events
+* fixed potential minor CSRF vulnerability in oAuth base class where state could be ommitted when verifying/authorizing account, props to [@Lenon](https://lenonleite.com.br/en/2020/09/19/explorando-vulnerabilidade-em-operadores-logicos-isset-algumacoisa/)
 * fixed event times output on bookings table not showing time according to formatting settings
 * added 5th argument with array of segmented placeholder meta to _output_placeholder filters of events, locations, bookings and taxonomies
 * tweaked placeholder regex to allow underscores in placeholder names e.g. #_PREVIOUSLY_INVALID_PLACEHOLDER
@@ -144,6 +145,25 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * removed some old migration update code for v4 > v5 update (more to be removed at a later date)
 * added em_event_save_events_exclude_update_meta_keys allowing add-ons to prevent overwriting meta keys when updating recurrences
 * added docs for event location types and a filter for adding custom placeholder docs to the help page
+* fixed dates and possibly other placeholders not showing in site locale if admin triggers emails with a different user locale
+* fixed scope search issues on search form when default scope is not 'future' and search dates left blank
+* fixed template location typo preventing em_get_events_list_grouped() from working
+* fixed admin columns not showing as per screen reader preferences when all cols are chosen to be displayed
+* fixed bp showing booking tab/info when bookings are disabled (props @raruto)
+* fixed display issues on static home page (other than EM events page) containing shortcode showing paginated events/locations/taxonomies
+* fixed broken link for datepicker formatting docs on settings page
+* fixed PHP errors on BuddyPress "my group events" template
+* added #_BOOKINGADMINURL and #_BOOKINGADMINLINK placeholders to booking email templates
+* added alt attribute to event thumbnails in MS Globals mode
+* fixed Polish zloty missing symbols
+* fixed 'no location' option not showing if dropdown option for physical locations enabled
+* fixed booking cutoff times defaulting to 12am rather than event start time
+* fixed booking cutoff times not getting set upon initial recurring event creation
+* fixed trashed events showing up on front-end event editor as pending
+* fixed JS issues causing ticket editor not reflecting changes during edit process before saving
+* fixed Yoast SEO deprecated log warning for usage of WPSEO_Utils::get_title_separator() in > v15.2
+* changed default time to WP format upon installation
+* added my/all events links to front-end events admin for those with admin capabilities
 
 = 5.9.8.1 =
 * fixed html structure error in location template breaking editor if location dropdowns are enabled

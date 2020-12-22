@@ -50,9 +50,9 @@ function em_get_location($id = false, $search_by = 'location_id') {
  * @property int $parent            Location ID of parent location, shorthand for location_parent
  * @property int $id                The Location ID, case sensitive, shorthand for location_id
  * @property string $slug           Location slug, shorthand for location_slug
- * @property string name            Location name, shorthand for location_name
- * @property int owner              ID of author/owner, shorthand for location_owner
- * @property int status             ID of post status, shorthand for location_status
+ * @property string $name            Location name, shorthand for location_name
+ * @property int $owner              ID of author/owner, shorthand for location_owner
+ * @property int $status             ID of post status, shorthand for location_status
  */
 class EM_Location extends EM_Object {
 	//DB Fields
@@ -111,8 +111,8 @@ class EM_Location extends EM_Object {
 		'translation' => 'location_translation',
 		'parent' => 'location_parent',
 		'id' => 'location_id',
-		'slug' => 'locatoin_slug',
-		'name' => 'locatoin_name',
+		'slug' => 'location_slug',
+		'name' => 'location_name',
 		'status' => 'location_status',
 		'owner' => 'location_owner',
 	);
@@ -1019,7 +1019,7 @@ class EM_Location extends EM_Object {
         								        switch_to_blog($this->blog_id);
         								        $switch_back = true;
         								    }
-    								        $replace = get_the_post_thumbnail($this->ID, $image_size);
+    								        $replace = get_the_post_thumbnail($this->ID, $image_size, array('alt' => esc_attr($this->location_name)) );
     								        if( !empty($switch_back) ){ restore_current_blog(); }
     								    }
 								    }else{
@@ -1171,3 +1171,5 @@ class EM_Location extends EM_Object {
 		return apply_filters('em_location_get_google_maps_embed_url', $url, $this);
 	}
 }
+
+$loc = new EM_Location();

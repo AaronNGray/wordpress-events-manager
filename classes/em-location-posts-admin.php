@@ -6,13 +6,13 @@ class EM_Location_Posts_Admin{
 			//hide some cols by default:
 			$screen = 'edit-'.EM_POST_TYPE_LOCATION;
 			$hidden = get_user_option( 'manage' . $screen . 'columnshidden' );
-			if( !$hidden ){
+			if( $hidden === false ){
 				$hidden = array('location-id');
 				update_user_option(get_current_user_id(), "manage{$screen}columnshidden", $hidden, true);
 			}
 			add_action('admin_head', array('EM_Location_Posts_Admin','admin_head'));
 		}
-		add_filter('manage_edit-'.EM_POST_TYPE_LOCATION.'_columns' , array('EM_Location_Posts_Admin','columns_add'));
+		add_filter('manage_'.EM_POST_TYPE_LOCATION.'_posts_columns' , array('EM_Location_Posts_Admin','columns_add'));
 		add_filter('manage_'.EM_POST_TYPE_LOCATION.'_posts_custom_column' , array('EM_Location_Posts_Admin','columns_output'),10,2 );
 	}
 	

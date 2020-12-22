@@ -27,20 +27,22 @@ if( user_can($bp->displayed_user->id,'edit_events') ){
 		<?php
 	}
 }
-?>
-<h4><?php _e("Events I'm Attending", 'events-manager'); ?></h4>
-<?php
-$EM_Person = new EM_Person( $bp->displayed_user->id );
-$EM_Bookings = $EM_Person->get_bookings( false, apply_filters('em_bp_attending_status',1) );
-if(count($EM_Bookings->bookings) > 0){
-	//Get events here in one query to speed things up
-	$event_ids = array();
-	foreach($EM_Bookings as $EM_Booking){
-		$event_ids[] = $EM_Booking->event_id;
-	}
-	echo EM_Events::output(array('event'=>$event_ids));
-}else{
+if( get_option('dbem_rsvp_enabled') ){
 	?>
-	<p><?php _e('Not attending any events yet.','events-manager'); ?></p>
+	<h4><?php _e("Events I'm Attending", 'events-manager'); ?></h4>
 	<?php
+	$EM_Person = new EM_Person( $bp->displayed_user->id );
+	$EM_Bookings = $EM_Person->get_bookings( false, apply_filters('em_bp_attending_status',1) );
+	if(count($EM_Bookings->bookings) > 0){
+		//Get events here in one query to speed things up
+		$event_ids = array();
+		foreach($EM_Bookings as $EM_Booking){
+			$event_ids[] = $EM_Booking->event_id;
+		}
+		echo EM_Events::output(array('event'=>$event_ids));
+	}else{
+		?>
+		<p><?php _e('Not attending any events yet.','events-manager'); ?></p>
+		<?php
+	}
 }

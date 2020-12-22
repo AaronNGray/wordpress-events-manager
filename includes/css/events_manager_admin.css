@@ -39,6 +39,7 @@ table.events-table .category { color:#888; }
 #event-form .recurrence-reschedule-warning p, #post .recurrence-reschedule-warning p { margin-top:0px; font-size:14px; }
 /*Locations*/
 .em-location-type { border-top: 1px solid #dedede; margin-top:20px; padding-top:20px; }
+.em-location-type-single .em-location-type { border-top:0; margin-top:0; padding-top:0; }
 .em-location-type.em-location-type-single { border:none; margin-top:10px; padding-top:10px; }
 .em-location-type p:first-child { margin-top:0; }
 div.em-location-data table { float:left; margin:0 15px 0 0; }

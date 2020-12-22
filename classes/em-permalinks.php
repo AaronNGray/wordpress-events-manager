@@ -10,7 +10,7 @@ if( !class_exists('EM_Permalinks') ){
 			'booking_id',
 			'category_id', 'category_slug',
 			'ticket_id',
-			'calendar_day', 'pno',
+			'calendar_day',
 			'rss', 'ical','event_categories','event_locations'
 		);
 		
@@ -256,14 +256,18 @@ if( !class_exists('EM_Permalinks') ){
 		
 		/**
 		 * Not the "WP way" but for now this'll do!
+		 * This function tricks WP into thinking an EM static home page is just a page so that query_vars don't prevent the home page from showing properly.
+		 * This is an old problem described here : https://core.trac.wordpress.org/ticket/25143
+		 * Since we use these query vars in other areas and need to allow home page static settings to work, this connects the two sides so they can co-exist in different environments
 		 */
 		public static function init_objects(){
 			global $wp_rewrite, $wp_query;
 			//check some homepage conditions
 			$events_page_id = get_option ( 'dbem_events_page' );
 			if( is_object($wp_query) && $wp_query->is_home && !$wp_query->is_posts_page && 'page' == get_option('show_on_front') && get_option('page_on_front') == $events_page_id ){
+				// comment long after this is written - pretty sure this prevents seach query and pagination issues on the home page when an event page is set as the home static page removing this causes issues with searches and pagination
 				$wp_query->is_page = true;
-				$wp_query->is_home = false;
+				$wp_query->is_home = false; // WP will not technically expect this to be the home page, but the front page only
 				$wp_query->query_vars['page_id'] = $events_page_id;
 			}
 			if ( is_object($wp_query) && is_object($wp_rewrite) && $wp_rewrite->using_permalinks() ) {

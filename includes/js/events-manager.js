@@ -288,16 +288,16 @@ jQuery(document).ready( function($){
 			tbody.find('*[name]').each(function(index,el){
 				el = $(el);
 				if( el.attr('name') == 'ticket_start_pub'){
-					tbody.find('span.ticket_start').text(el.attr('value'));
+					tbody.find('span.ticket_start').text(el.val());
 				}else if( el.attr('name') == 'ticket_end_pub' ){
-					tbody.find('span.ticket_end').text(el.attr('value'));
+					tbody.find('span.ticket_end').text(el.val());
 				}else if( el.attr('name') == 'em_tickets['+rowNo+'][ticket_type]' ){
 					if( el.find(':selected').val() == 'members' ){
 						tbody.find('span.ticket_name').prepend('* ');
 					}
 				}else if( el.attr('name') == 'em_tickets['+rowNo+'][ticket_start_recurring_days]' ){
-					var text = tbody.find('select.ticket-dates-from-recurring-when').val() == 'before' ? '-'+el.attr('value'):el.attr('value');
-					if( el.attr('value') != '' ){
+					var text = tbody.find('select.ticket-dates-from-recurring-when').val() == 'before' ? '-'+el.val():el.val();
+					if( el.val() != '' ){
 						tbody.find('span.ticket_start_recurring_days').text(text);
 						tbody.find('span.ticket_start_recurring_days_text, span.ticket_start_time').removeClass('hidden').show();
 					}else{
@@ -305,8 +305,8 @@ jQuery(document).ready( function($){
 						tbody.find('span.ticket_start_recurring_days_text, span.ticket_start_time').removeClass('hidden').hide();
 					}
 				}else if( el.attr('name') == 'em_tickets['+rowNo+'][ticket_end_recurring_days]' ){
-					var text = tbody.find('select.ticket-dates-to-recurring-when').val() == 'before' ? '-'+el.attr('value'):el.attr('value');
-					if( el.attr('value') != '' ){
+					var text = tbody.find('select.ticket-dates-to-recurring-when').val() == 'before' ? '-'+el.val():el.val();
+					if( el.val() != '' ){
 						tbody.find('span.ticket_end_recurring_days').text(text);
 						tbody.find('span.ticket_end_recurring_days_text, span.ticket_end_time').removeClass('hidden').show();
 					}else{
@@ -314,7 +314,8 @@ jQuery(document).ready( function($){
 						tbody.find('span.ticket_end_recurring_days_text, span.ticket_end_time').removeClass('hidden').hide();
 					}
 				}else{
-					tbody.find('.'+el.attr('name').replace('em_tickets['+rowNo+'][','').replace(']','').replace('[]','')).text(el.attr('value'));
+					var classname = el.attr('name').replace('em_tickets['+rowNo+'][','').replace(']','').replace('[]','');
+					tbody.find('.em-tickets-row .'+classname).text(el.val());
 				}
 			});
 			//allow for others to hook into this

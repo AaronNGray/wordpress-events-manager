@@ -379,6 +379,8 @@ function em_docs_init($force_init = false){
 							'#_BOOKINGFORMCUSTOMREG{field_id}' => array( 'desc' => sprintf('(<a href="%s">pro only</a>) Shows booking form custom fields that are used for guest user registration. The field_id value must match that of your custom booking form field.','http://wp-events-plugin.com/features/') ),
 							'#_BOOKINGFORMCUSTOMFIELDS' => array( 'desc' => sprintf('(<a href="%s">pro only</a>) Generates a list of booking form custom fields that are used in the booking.','http://wp-events-plugin.com/features/') ),
 							'#_BOOKINGATTENDEES' => array('desc' => sprintf('(<a href="%s">pro only</a>) Generates a list of attendee information displaying the filled in form data for each attendee (requires individual attendee forms enabled for the event). This list is split by ticket type, then by individual attendee.','http://wp-events-plugin.com/features/')), //coupons too!
+							'#_BOOKINGADMINURL' => array( 'desc' => 'URL for admins to view and manage the booking. This should only be used on admin-specific email templates.' ),
+							'#_BOOKINGADMINLINK' => array( 'desc' => 'HTML link for admins to view and manage the booking. This should only be used on admin-specific email templates.' ),
 						)
 					),
 					'Pricing Information' => array(

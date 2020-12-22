@@ -14,7 +14,7 @@ class EM_Event_Posts_Admin{
 			//hide some cols by default:
 			$screen = 'edit-'.EM_POST_TYPE_EVENT;
 			$hidden = get_user_option( 'manage' . $screen . 'columnshidden' );
-			if( !$hidden ){
+			if( $hidden === false ){
 				$hidden = array('event-id');
 				update_user_option(get_current_user_id(), "manage{$screen}columnshidden", $hidden, true);
 			}
@@ -24,8 +24,8 @@ class EM_Event_Posts_Admin{
 			add_action('admin_head', array('EM_Event_Posts_Admin','admin_head'));
 		}
 		//collumns
-		add_filter('manage_edit-'.EM_POST_TYPE_EVENT.'_columns' , array('EM_Event_Posts_Admin','columns_add'));
-		add_filter('manage_'.EM_POST_TYPE_EVENT.'_posts_custom_column' , array('EM_Event_Posts_Admin','columns_output'),10,2 );
+		add_filter('manage_'.EM_POST_TYPE_EVENT.'_posts_columns' , array('EM_Event_Posts_Admin','columns_add'));
+		add_action('manage_'.EM_POST_TYPE_EVENT.'_posts_custom_column' , array('EM_Event_Posts_Admin','columns_output'),10,2 );
 		add_filter('manage_edit-'.EM_POST_TYPE_EVENT.'_sortable_columns', array('EM_Event_Posts_Admin','sortable_columns') );
 		//clean up the views in the admin selection area - WIP
 		//add_filter('views_edit-'.EM_POST_TYPE_EVENT, array('EM_Event_Posts_Admin','restrict_views'),10,2);
@@ -297,9 +297,9 @@ class EM_Event_Recurring_Posts_Admin{
 		global $pagenow;
 		if( $pagenow == 'edit.php' && !empty($_REQUEST['post_type']) && $_REQUEST['post_type'] == 'event-recurring' ){
 			//hide some cols by default:
-			$screen = 'edit-'.EM_POST_TYPE_EVENT;
+			$screen = 'edit-event-recurring';
 			$hidden = get_user_option( 'manage' . $screen . 'columnshidden' );
-			if( !$hidden ){
+			if( $hidden === false ){
 				$hidden = array('event-id');
 				update_user_option(get_current_user_id(), "manage{$screen}columnshidden", $hidden, true);
 			}
@@ -311,8 +311,8 @@ class EM_Event_Recurring_Posts_Admin{
 			add_filter($row_action_type, array('EM_Event_Recurring_Posts_Admin','row_actions'),10,2);
 		}
 		//collumns
-		add_filter('manage_edit-event-recurring_columns' , array('EM_Event_Recurring_Posts_Admin','columns_add'));
-		add_filter('manage_posts_custom_column' , array('EM_Event_Recurring_Posts_Admin','columns_output'),10,1 );
+		add_filter('manage_event-recurring_posts_columns' , array('EM_Event_Recurring_Posts_Admin','columns_add'));
+		add_filter('manage_event-recurring_posts_custom_column' , array('EM_Event_Recurring_Posts_Admin','columns_output'),10,1 );
 		add_action('restrict_manage_posts', array('EM_Event_Posts_Admin','restrict_manage_posts'));
 		add_filter( 'manage_edit-event-recurring_sortable_columns', array('EM_Event_Posts_Admin','sortable_columns') );
 	}

@@ -254,7 +254,7 @@ add_filter ( 'wp_title', 'em_content_wp_title',100,3 ); //override other plugin 
  * @return string
  */
 function em_content_wpseo_title($title, $sep = '', $seplocation = ''){
-	if( class_exists('WPSEO_Utils') && method_exists('WPSEO_Utils', 'get_title_separator') ){
+	if( class_exists('WPSEO_Utils') && method_exists('WPSEO_Utils', 'get_title_separator') && version_compare(WPSEO_VERSION, '15.2', '<') ){
 		$sep = WPSEO_Utils::get_title_separator();
 	}elseif( !is_string( $sep ) ){
 		$sep = '';

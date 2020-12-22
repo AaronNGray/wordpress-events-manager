@@ -1,19 +1,31 @@
 <?php
 	global $wpdb, $EM_Notices;
-	//add new button will only appear if called from em_location_admin template tag, or if the $show_add_new var is set	
-	if(!empty($show_add_new) && current_user_can('edit_locations')) echo '<a class="em-button button add-new-h2" href="'.em_add_get_params($_SERVER['REQUEST_URI'],array('action'=>'edit','scope'=>null,'status'=>null,'location_id'=>null)).'">'.__('Add New','events-manager').'</a>';
+	/* @var array $args */
+	/* @var array $locations */
+	/* @var int $locations_count */
+	/* @var int $locations_mine_count */
+	/* @var int $locations_all_count */
+	/* @var bool $show_add_new */
+	/* @var int $limit */
+	/* @var int $page */
+	/* @var int $offset */
+	$url = esc_url(add_query_arg(array('scope'=>null,'status'=>null,'location_id'=>null)));
 ?>
 <div class="em-locations-admin-list">
 <?php if(!is_admin()) echo $EM_Notices; ?>			  
 <form id='locations-filter' method='post' action=''>
+	<?php
+	//add new button will only appear if called from em_location_admin template tag, or if the $show_add_new var is set
+	if(!empty($show_add_new) && current_user_can('edit_locations')) echo '<a class="em-button button add-new-h2" href="'.add_query_arg('action', 'edit', $url).'">'.__('Add New','events-manager').'</a>';
+	?>
 	<input type='hidden' name='pno' value='<?php echo esc_attr($page) ?>' />
 	<div class="subsubsub">
-		<a href='<?php echo em_add_get_params($_SERVER['REQUEST_URI'], array('view'=>null, 'pno'=>null)); ?>' <?php echo ( empty($_REQUEST['view']) ) ? 'class="current"':''; ?>><?php echo sprintf( __( 'My %s', 'events-manager'), __('Locations','events-manager')); ?> <span class="count">(<?php echo $locations_mine_count; ?>)</span></a>
+		<a href='<?php echo add_query_arg(array('view'=>null, 'pno'=>null), $url); ?>' <?php echo ( empty($_REQUEST['view']) ) ? 'class="current"':''; ?>><?php echo sprintf( __( 'My %s', 'events-manager'), __('Locations','events-manager')); ?> <span class="count">(<?php echo $locations_mine_count; ?>)</span></a>
 		<?php if( current_user_can('read_others_locations') ): ?>
 		&nbsp;|&nbsp;
-		<a href='<?php echo em_add_get_params($_SERVER['REQUEST_URI'], array('view'=>'others', 'pno'=>null)); ?>' <?php echo ( !empty($_REQUEST['view']) && $_REQUEST['view'] == 'others' ) ? 'class="current"':''; ?>><?php echo sprintf( __( 'All %s', 'events-manager'), __('Locations','events-manager')); ?><span class="count">(<?php echo $locations_all_count; ?>)</span></a>
+		<a href='<?php echo add_query_arg(array('view'=>'others', 'pno'=>null), $url); ?>' <?php echo ( !empty($_REQUEST['view']) && $_REQUEST['view'] == 'others' ) ? 'class="current"':''; ?>><?php echo sprintf( __( 'All %s', 'events-manager'), __('Locations','events-manager')); ?><span class="count">(<?php echo $locations_all_count; ?>)</span></a>
 		<?php endif; ?>
-	</div>						
+	</div>
 	<?php if ( $locations_count > 0 ) : ?>
 	<div class='tablenav'>					
 		<?php if( (empty($_REQUEST['view']) && current_user_can('delete_events')) || (!empty($_REQUEST['view']) && $_REQUEST['view'] == 'others' && current_user_can('delete_others_events')) ): ?>

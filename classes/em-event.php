@@ -50,14 +50,23 @@ function em_get_event($id = false, $search_by = 'event_id') {
  * The single event might be part of a set of recurring events, but if loaded by specific event id then any operations and saves are 
  * specifically done on this event. However, if you edit the recurring group, any changes made to single events are overwritten.
  *
- * @property string $language       Language of the event, shorthand for event_language
- * @property string $translation    Whether or not a event is a translation (i.e. it was translated from an original event), shorthand for event_translation
- * @property int $parent            Event ID of parent event, shorthand for event_parent
- * @property int $id                The Event ID, case sensitive, shorthand for event_id
- * @property string $slug           Event slug, shorthand for event_slug
- * @property string name            Event name, shorthand for event_name
- * @property int owner              ID of author/owner, shorthand for event_owner
- * @property int status             ID of post status, shorthand for event_status
+ * @property string $language           Language of the event, shorthand for event_language
+ * @property string $translation        Whether or not a event is a translation (i.e. it was translated from an original event), shorthand for event_translation
+ * @property int $parent                Event ID of parent event, shorthand for event_parent
+ * @property int $id                    The Event ID, case sensitive, shorthand for event_id
+ * @property string $slug               Event slug, shorthand for event_slug
+ * @property string name                Event name, shorthand for event_name
+ * @property int owner                  ID of author/owner, shorthand for event_owner
+ * @property int status                 ID of post status, shorthand for event_status
+ * @property string $event_start_time   Start time of event
+ * @property string $event_end_time     End time of event
+ * @property string $event_start_date   Start date of event
+ * @property string $event_end_date     End date of event
+ * @property string $event_start        The event start date in local time. represented by a mysql DATE format
+ * @property string $event_end          The event end date in local time. represented by a mysql DATE format
+ * @property string $event_timezone     Timezone representation in PHP string or WP-style UTC offset
+ * @property string $event_rsvp_date    Start rsvo date of event
+ * @property string $event_rsvp_time    End rsvp time of event
  *
  */
 //TODO Can add more recurring functionality such as "also update all future recurring events" or "edit all events" like google calendar does.
@@ -120,7 +129,7 @@ class EM_Event extends EM_Object{
 	var $post_content;
 	var $event_rsvp = 0;
 	protected $event_rsvp_date;
-	protected $event_rsvp_time = "00:00:00";
+	protected $event_rsvp_time;
 	var $event_rsvp_spaces;
 	var $event_spaces;
 	var $event_private;
@@ -145,7 +154,7 @@ class EM_Event extends EM_Object{
 	 */
 	var $event_attributes = array();
 	/* Recurring Specific Values */
-	var $recurrence;
+	var $recurrence = 0;
 	var $recurrence_interval;
 	var $recurrence_freq;
 	var $recurrence_byday;
@@ -190,7 +199,7 @@ class EM_Event extends EM_Object{
 		'group_id' => array( 'name'=>'group_id', 'type'=>'%d', 'null'=>true ),
 		'event_language' => array( 'type'=>'%s', 'null'=>true ),
 		'event_translation' => array( 'type'=>'%d'),
-		'recurrence' => array( 'name'=>'recurrence', 'type'=>'%d', 'null'=>true ), //is this a recurring event template
+		'recurrence' => array( 'name'=>'recurrence', 'type'=>'%d', 'null'=>false ), //is this a recurring event template
 		'recurrence_interval' => array( 'name'=>'interval', 'type'=>'%d', 'null'=>true ), //every x day(s)/week(s)/month(s)
 		'recurrence_freq' => array( 'name'=>'freq', 'type'=>'%s', 'null'=>true ), //daily,weekly,monthly?
 		'recurrence_days' => array( 'name'=>'days', 'type'=>'%d', 'null'=>true ), //each event spans x days
@@ -742,8 +751,8 @@ class EM_Event extends EM_Object{
 			    }else{
 			    	//if no rsvp cut-off date supplied, make it the event start date
 			    	$this->event_rsvp_date = ( !empty($_POST['event_rsvp_date']) ) ? wp_kses_data($_POST['event_rsvp_date']) : $this->event_start_date;
-			    	if ( empty($_POST['event_rsvp_date']) || empty($_POST['event_rsvp_time']) ) $this->event_rsvp_time = $this->event_start_time;
-			    	if( $this->event_all_day && empty($_POST['event_rsvp_date']) ){ $this->event_rsvp_time = '00:00:00'; } //all-day events start at 0 hour
+					//if no specificed time, default to event start time
+			    	if ( empty($_POST['event_rsvp_time']) ) $this->event_rsvp_time = $this->event_start_time;
 			    }
 			    //reset EM_DateTime object
 				$this->rsvp_end = null;
@@ -885,6 +894,7 @@ class EM_Event extends EM_Object{
 			foreach( $this->recurrence_fields as $recurrence_field ){
 				$this->$recurrence_field = null;
 			}
+			$this->recurrence = 0; // to avoid any doubt
 		}
 		//event language
 		if( EM_ML::$is_ml && !empty($_POST['event_language']) && array_key_exists($_POST['event_language'], EM_ML::$langs) ){
@@ -1395,7 +1405,9 @@ class EM_Event extends EM_Object{
 			if( $result !== false ){
 				$this->get_bookings()->delete();
 				$this->get_tickets()->delete();
-				$this->get_event_location()->delete();
+				if( $this->has_event_location() ) {
+					$this->get_event_location()->delete();
+				}
 				//Delete the recurrences then this recurrence event
 				if( $this->is_recurring() ){
 					$result = $this->delete_events(); //was true at this point, so false if fails
@@ -2197,7 +2209,7 @@ class EM_Event extends EM_Object{
     								        switch_to_blog($this->blog_id);
     								        $switch_back = true;
     								    }
-								        $replace = get_the_post_thumbnail($this->ID, $image_size);
+								        $replace = get_the_post_thumbnail($this->ID, $image_size, array('alt' => esc_attr($this->event_name)) );
 								        if( !empty($switch_back) ){ restore_current_blog(); }
 								    }
 								}else{

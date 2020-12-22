@@ -1,33 +1,42 @@
 <?php
 	//TODO Simplify panel for events, use form flags to detect certain actions (e.g. submitted, etc)
 	global $wpdb, $bp, $EM_Notices;
-	/* @var $args array */
-	/* @var $EM_Events array */
-	/* @var $events_count int */
-	/* @var $future_count int */
-	/* @var $past_count int */
-	/* @var $pending_count int */
-	/* @var $url string */
-	/* @var $show_add_new bool */
-	/* @var $limit int */
-	//add new button will only appear if called from em_event_admin template tag, or if the $show_add_new var is set
+	/* @var array $args */
+	/* @var array $EM_Events */
+	/* @var int $events_count */
+	/* @var int $future_count */
+	/* @var int $past_count */
+	/* @var int $draft_count */
+	/* @var int $pending_count */
+	/* @var bool $show_add_new */
+	/* @var int $limit */
+	/* @var int $page */
+	$url = esc_url(add_query_arg(array('scope' => null, 'status' => null, 'em_search' => null, 'pno' => null, 'admin_mode' => null))); //template for cleaning the link for each view below
 	?>
 	<div class="em-events-admin-list">
 		<?php
 			echo $EM_Notices;
+			//add new button will only appear if called from em_event_admin template tag, or if the $show_add_new var is set
 			if(!empty($show_add_new) && current_user_can('edit_events')) echo '<a class="em-button button add-new-h2" href="'.em_add_get_params($_SERVER['REQUEST_URI'],array('action'=>'edit','scope'=>null,'status'=>null,'event_id'=>null, 'success'=>null)).'">'.__('Add New','events-manager').'</a>';
 		?>
 		<form id="posts-filter" action="" method="get">
 			<div class="subsubsub">
-				<?php $default_params = array('scope'=>null,'status'=>null,'em_search'=>null,'pno'=>null); //template for cleaning the link for each view below ?>
-				<a href='<?php echo em_add_get_params($_SERVER['REQUEST_URI'], $default_params + array('view'=>'future')); ?>' <?php echo ( !isset($_GET['view']) ) ? 'class="current"':''; ?>><?php _e ( 'Upcoming', 'events-manager'); ?> <span class="count">(<?php echo $future_count; ?>)</span></a> &nbsp;|&nbsp; 
+				<?php $url = esc_url(add_query_arg(array('scope'=>null,'status'=>null,'em_search'=>null,'pno'=>null, 'admin_mode'=>null))); //template for cleaning the link for each view below ?>
+				<a href='<?php echo add_query_arg('view', 'future', $url); ?>' <?php echo ( !isset($_GET['view']) ) ? 'class="current"':''; ?>><?php _e ( 'Upcoming', 'events-manager'); ?> <span class="count">(<?php echo $future_count; ?>)</span></a> &nbsp;|&nbsp;
 				<?php if( $pending_count > 0 ): ?>
-				<a href='<?php echo em_add_get_params($_SERVER['REQUEST_URI'], $default_params + array('view'=>'pending')); ?>' <?php echo ( isset($_GET['view']) && $_GET['view'] == 'pending' ) ? 'class="current"':''; ?>><?php _e ( 'Pending', 'events-manager'); ?> <span class="count">(<?php echo $pending_count; ?>)</span></a> &nbsp;|&nbsp; 
+				<a href='<?php echo add_query_arg('view', 'pending', $url); ?>' <?php echo ( isset($_GET['view']) && $_GET['view'] == 'pending' ) ? 'class="current"':''; ?>><?php _e ( 'Pending', 'events-manager'); ?> <span class="count">(<?php echo $pending_count; ?>)</span></a> &nbsp;|&nbsp;
 				<?php endif; ?>
 				<?php if( $draft_count > 0 ): ?>
-				<a href='<?php echo em_add_get_params($_SERVER['REQUEST_URI'], $default_params + array('view'=>'draft')); ?>' <?php echo ( isset($_GET['view']) && $_GET['view'] == 'draft' ) ? 'class="current"':''; ?>><?php _e ( 'Draft', 'events-manager'); ?> <span class="count">(<?php echo $draft_count; ?>)</span></a> &nbsp;|&nbsp;
+				<a href='<?php echo add_query_arg('view', 'draft', $url); ?>' <?php echo ( isset($_GET['view']) && $_GET['view'] == 'draft' ) ? 'class="current"':''; ?>><?php _e ( 'Draft', 'events-manager'); ?> <span class="count">(<?php echo $draft_count; ?>)</span></a> &nbsp;|
 				<?php endif; ?>
-				<a href='<?php echo em_add_get_params($_SERVER['REQUEST_URI'], $default_params + array('view'=>'past')); ?>' <?php echo ( isset($_GET['view']) && $_GET['view'] == 'past' ) ? 'class="current"':''; ?>><?php _e ( 'Past Events', 'events-manager'); ?> <span class="count">(<?php echo $past_count; ?>)</span></a>
+				<a href='<?php echo add_query_arg('view', 'past', $url); ?>' <?php echo ( isset($_GET['view']) && $_GET['view'] == 'past' ) ? 'class="current"':''; ?>><?php _e ( 'Past Events', 'events-manager'); ?> <span class="count">(<?php echo $past_count; ?>)</span></a>
+				
+				<?php if( current_user_can('edit_others_events') ): ?>
+					<div class="admin-events-filter">
+						<a href='<?php echo add_query_arg('admin_mode', 1, $url); ?>' <?php echo ( !empty($_GET['admin_mode']) ) ? 'class="current"':''; ?>><?php esc_html_e ( 'All Events', 'events-manager'); ?></a> &nbsp;|&nbsp;
+						<a href='<?php echo add_query_arg('admin_mode', null, $url); ?>' <?php echo ( empty($_GET['admin_mode']) ) ? 'class="current"':''; ?>><?php esc_html_e ( 'My Events', 'events-manager'); ?></a>
+					</div>
+				<?php endif; ?>
 			</div>
 			<p class="search-box">
 				<label class="screen-reader-text" for="post-search-input"><?php _e('Search Events','events-manager'); ?>:</label>
@@ -73,7 +82,7 @@
 					<?php
 					$rowno = 0;
 					foreach ( $EM_Events as $EM_Event ) {
-						/* @var $EM_Event EM_Event */
+						/* @var EM_Event $EM_Event */
 						$rowno++;
 						$class = ($rowno % 2) ? 'alternate' : '';
 						

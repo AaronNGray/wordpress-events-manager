@@ -113,7 +113,7 @@ function em_get_events_list_grouped( $args = array() ){
 	if( empty($args['format']) && empty($args['format_header']) && empty($args['format_footer']) ){
 		ob_start();
 		if( !empty($args['ajax']) ){ echo '<div class="em-search-ajax">'; } //open AJAX wrapper
-		em_locate_template('templates/events-grouped.php', true, array('args'=>$args));
+		em_locate_template('templates/events-list-grouped.php', true, array('args'=>$args));
 		if( !empty($args['ajax']) ) echo "</div>"; //close AJAX wrapper
 		$return = ob_get_clean();
 	}else{
@@ -239,6 +239,9 @@ function em_events_admin($args = array()){
 			//deal with view or scope/status combinations
 			$show_add_new = isset($args['show_add_new']) ? $args['show_add_new']:true;
 			$args = array('order' => $order, 'search' => $search, 'owner' => get_current_user_id());
+			if( current_user_can('edit_others_events') && !empty($_GET['admin_mode']) ){
+				$args['owner'] = false;
+			}
 			if( !empty($_REQUEST['recurrence_id']) ){
 				$Event = em_get_event( absint($_REQUEST['recurrence_id']) );
 				$EM_Notices->add_alert(sprintf(esc_html__('You are viewing individual recurrences of recurring event %s.', 'events-manager'), '<a href="'.$Event->get_edit_url().'">'.$Event->event_name.'</a>'));

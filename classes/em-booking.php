@@ -1120,6 +1120,15 @@ class EM_Booking extends EM_Object{
 					em_locate_template('emails/bookingsummary.php', true, array('EM_Booking'=>$this));
 					$replace = ob_get_clean();
 					break;
+				case '#_BOOKINGADMINURL':
+				case '#_BOOKINGADMINLINK':
+					$bookings_link = esc_url( add_query_arg('booking_id', $this->booking_id, $this->event->get_bookings_url()) );
+					if($result == '#_BOOKINGADMINLINK'){
+						$replace = '<a href="'.$bookings_link.'">'.esc_html__('Edit Booking', 'events-manager'). '</a>';
+					}else{
+						$replace = $bookings_link;
+					}
+					break;
 				default:
 					$replace = $full_result;
 					break;
@@ -1150,6 +1159,8 @@ class EM_Booking extends EM_Object{
 		
 		//Make sure event matches booking, and that booking used to be approved.
 		if( $this->booking_status !== $this->previous_status || $force_resend ){
+			// before we format dates or any other language-specific placeholders, make sure we're translating the site language, not the user profile language in the admin area (e.g. if an admin is sending a booking confirmation email), assuming this isn't a ML-enabled site.
+			if( !EM_ML::$is_ml && is_admin() && EM_ML::$wplang != get_user_locale() ) EM_ML::switch_locale(EM_ML::$wplang);
 			do_action('em_booking_email_before_send', $this);
 			//get event info and refresh all bookings
 			$EM_Event = $this->get_event(); //We NEED event details here.
@@ -1202,6 +1213,7 @@ class EM_Booking extends EM_Object{
 				}
 			}
 			do_action('em_booking_email_after_send', $this);
+			if( !EM_ML::$is_ml && is_admin() ) EM_ML::restore_locale(); // restore the locale back for the rest of the site, which will happen if we switched it earlier
 		}
 		return apply_filters('em_booking_email', $result, $this, $email_admin, $force_resend, $email_attendee);
 		//TODO need error checking for booking mail send

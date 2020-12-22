@@ -30,7 +30,8 @@ class EM_ML_IO {
 	    add_filter('em_ticket_delete', 'EM_ML_IO::ticket_delete', 10, 2);
         //Loading
         add_filter('em_event_get_location','EM_ML_IO::event_get_location',10,2);
-        //Duplication link
+        //Duplication
+	    //add_action('em_event_duplicate_pre', 'EM_ML_IO::em_event_duplicate_pre', 10, 1);
         add_filter('em_event_duplicate_url','EM_ML_IO::event_duplicate_url',10, 2);
     }
     
@@ -185,6 +186,13 @@ class EM_ML_IO {
     	    //this gets escaped later
 	    }
 	    return $url;
+	}
+	
+	/*
+	 * Ensures events lose parent when duplicated if they're a translation.
+	 */
+	public static function em_event_duplicate_pre( $EM_Event ){
+		$EM_Event->event_parent = null;
 	}
 	
 	/**

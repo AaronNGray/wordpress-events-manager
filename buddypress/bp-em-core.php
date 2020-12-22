@@ -99,15 +99,17 @@ class BP_EM_Component extends BP_Component {
 			'position' => 10
 		);
 		
-		$sub_nav[] = array(
-			'name' => __( 'Events I\'m Attending', 'events-manager'),
-			'slug' => 'attending',
-			'parent_slug' => em_bp_get_slug(),
-			'parent_url' => $em_link,
-			'screen_function' => 'bp_em_attending',
-			'position' => 20,
-			'user_has_access' => bp_is_my_profile() // Only the logged in user can access this on his/her profile
-		);
+		if( get_option('dbem_rsvp_enabled') ) { // Only if bookings enabled
+			$sub_nav[] = array(
+				'name' => __( 'Events I\'m Attending', 'events-manager'),
+				'slug' => 'attending',
+				'parent_slug' => em_bp_get_slug(),
+				'parent_url' => $em_link,
+				'screen_function' => 'bp_em_attending',
+				'position' => 20,
+				'user_has_access' => bp_is_my_profile() // Only the logged in user can access this on his/her profile
+			);
+		}
 	
 		if( $can_manage_events ){
 			$sub_nav[] = array(

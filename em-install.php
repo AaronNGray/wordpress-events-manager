@@ -138,7 +138,7 @@ function em_create_events_table() {
 		event_parent bigint(20) unsigned NULL DEFAULT NULL,
 		event_slug VARCHAR( 200 ) NULL DEFAULT NULL,
 		event_owner bigint(20) unsigned DEFAULT NULL,
-		event_status tinyint(1) unsigned NULL DEFAULT NULL,
+		event_status tinyint(1) NULL DEFAULT NULL,
 		event_name text NULL DEFAULT NULL,
 		event_start_date date NULL DEFAULT NULL,
 		event_end_date date NULL DEFAULT NULL,
@@ -181,6 +181,7 @@ function em_create_events_table() {
 			// change the recurrence flag to a required field defaulting to 0, to avoid missing recurrences in EM_Events::get() due to wayward null values
 			$wpdb->query("UPDATE $table_name SET recurrence = 0 WHERE recurrence IS NULL");
 			$wpdb->query("ALTER TABLE $table_name CHANGE `recurrence` `recurrence` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0'");
+			$wpdb->query("ALTER TABLE $table_name CHANGE `event_status` `event_status` TINYINT(1) NULL DEFAULT NULL;");
 		}
 		dbDelta($sql);
 	}
@@ -392,7 +393,7 @@ function em_add_options() {
 		'dbem_data' => array(), //used to store admin-related data such as notice flags and other row keys that may not always exist in the wp_options table
 		//time formats
 		'dbem_time_format' => get_option('time_format'),
-		'dbem_date_format' => 'd/m/Y',
+		'dbem_date_format' => get_option('date_format'),
 		'dbem_date_format_js' => 'dd/mm/yy',
 		'dbem_dates_separator' => ' - ',
 		'dbem_times_separator' => ' - ',

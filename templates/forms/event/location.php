@@ -4,7 +4,7 @@ $required = apply_filters('em_required_html','<i>*</i>');
 
 //determine location types (if neexed)
 $location_types = array();
-if( !get_option('dbem_require_location') && !get_option('dbem_use_select_for_locations') ){
+if( !get_option('dbem_require_location') ){
 	$location_types[0] = array(
 		'selected' =>  $EM_Event->location_id === '0' || $EM_Event->location_id === 0,
 		'description' => esc_html__('No Location','events-manager'),
@@ -173,7 +173,7 @@ foreach( EM_Event_Locations\Event_Locations::get_types() as $event_location_type
 <div class="em-event-location-data">
 	<?php foreach( EM_Event_Locations\Event_Locations::get_types() as $event_location_type => $EM_Event_Location_Class ): /* @var EM_Event_Locations\Event_Location $EM_Event_Location_Class */ ?>
 		<?php if( $EM_Event_Location_Class::is_enabled() ): ?>
-			<div class="em-location-type em-event-location-type-<?php echo esc_attr($event_location_type); ?>">
+			<div class="em-location-type em-event-location-type-<?php echo esc_attr($event_location_type); ?>  <?php if( count($location_types) == 1 ) echo 'em-location-type-single'; ?>">
 			<?php $EM_Event_Location_Class::load_admin_template(); ?>
 			</div>
 		<?php endif; ?>
