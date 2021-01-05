@@ -499,6 +499,10 @@ class EM_Event extends EM_Object{
 	public function __clone(){
 		$this->bookings = null;
 		$this->location = null;
+		if( is_object($this->event_location) ){
+			$this->event_location = clone $this->event_location;
+			$this->event_location->event = $this;
+		}
 	}
 	
 	function load_postdata($event_post, $search_by = false){
@@ -1293,7 +1297,7 @@ class EM_Event extends EM_Object{
 	 * @return EM_Event
 	 */
 	function duplicate(){
-		global $wpdb, $EZSQL_ERROR;
+		global $wpdb;
 		//First, duplicate.
 		if( $this->can_manage('edit_events','edit_others_events') ){
 			$EM_Event = clone $this;

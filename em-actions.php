@@ -341,7 +341,8 @@ function em_init_actions() {
 					}else{
 						$result = false;
 						$EM_Notices->add_error( $EM_Event->get_bookings()->get_errors() );			
-						$feedback = $EM_Event->get_bookings()->feedback_message;	
+						$feedback = $EM_Event->get_bookings()->feedback_message;
+						if( empty($feedback) ) $feedback = implode("\r\n", $EM_Event->get_bookings()->get_errors());
 					}
 				}else{
 					$result = false;
@@ -663,7 +664,8 @@ function em_init_actions() {
 				if( $EM_Event->location_id > 0 ) echo __('Where','events-manager') . ' - ' . $EM_Event->get_location()->location_name .  "\n";
 				echo __('When','events-manager') . ' : ' . $EM_Event->output('#_EVENTDATES - #_EVENTTIMES') .  "\n";
 			}
-			echo sprintf(__('Exported booking on %s','events-manager'), date_i18n('D d M Y h:i', current_time('timestamp'))) .  "\n";
+			$EM_DateTime = new EM_DateTime(current_time('timestamp'));
+			echo sprintf(__('Exported booking on %s','events-manager'), $EM_DateTime->format('D d M Y h:i')) .  "\n";
 		}
 		$delimiter = !defined('EM_CSV_DELIMITER') ? ',' : EM_CSV_DELIMITER;
 		$delimiter = apply_filters('em_csv_delimiter', $delimiter);

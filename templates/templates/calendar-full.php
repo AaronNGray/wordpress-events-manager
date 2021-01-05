@@ -1,23 +1,24 @@
 <?php 
 /*
  * This file contains the HTML generated for full calendars. You can copy this file to yourthemefolder/plugins/events-manager/templates and modify it in an upgrade-safe manner.
- * 
- * There are two variables made available to you: 
- * 
- * 	$calendar - contains an array of information regarding the calendar and is used to generate the content
- *  $args - the arguments passed to EM_Calendar::output()
- * 
+ *
  * Note that leaving the class names for the previous/next links will keep the AJAX navigation working.
+ *
+ * There are two variables made available to you: 
  */
+/* @var array $calendar - contains an array of information regarding the calendar and is used to generate the content */
+/* @var array $args - the arguments passed to EM_Calendar::output() */
+
 $cal_count = count($calendar['cells']); //to prevent an extra tr
 $col_count = $tot_count = 1; //this counts collumns in the $calendar_array['cells'] array
 $col_max = count($calendar['row_headers']); //each time this collumn number is reached, we create a new collumn, the number of cells should divide evenly by the number of row_headers
+$EM_DateTime = new EM_DateTime($calendar['month_start']);
 ?>
 <table class="em-calendar fullcalendar">
 	<thead>
 		<tr>
 			<td><a class="em-calnav full-link em-calnav-prev" href="<?php echo esc_url($calendar['links']['previous_url']); ?>">&lt;&lt;</a></td>
-			<td class="month_name" colspan="5"><?php echo esc_html(date_i18n(get_option('dbem_full_calendar_month_format'), $calendar['month_start'])); ?></td>
+			<td class="month_name" colspan="5"><?php echo esc_html($EM_DateTime->format(get_option('dbem_full_calendar_month_format'))); ?></td>
 			<td><a class="em-calnav full-link em-calnav-next" href="<?php echo esc_url($calendar['links']['next_url']); ?>">&gt;&gt;</a></td>
 		</tr>
 	</thead>

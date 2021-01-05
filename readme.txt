@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 5.6
-Stable tag: 5.9.8.1
+Stable tag: 5.9.9
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
@@ -115,7 +115,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
-= 5.9.8.5 (dev) =
+= 5.9.9 =
 * updated EM_DateTime and EM_DateTimeZone to remove PHP <5.3 backports and also make use of UTC offset support since PHP 5.5.10 (since WP now is requiring 5.6 as a minimum)
 * fixed location dropdown not showing option for no location or a placeholder if physical locations are the only location types enabled
 * fixed front-end event editor showing events list rather than submission form when there's a validation error
@@ -164,6 +164,12 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * fixed Yoast SEO deprecated log warning for usage of WPSEO_Utils::get_title_separator() in > v15.2
 * changed default time to WP format upon installation
 * added my/all events links to front-end events admin for those with admin capabilities
+* updated dev update checker to allow EM add-ons
+* fixed duplication issues for custom event locations due to lack of cloning the event location within the cloned event
+* added organizer property to ical feed and em_locate_template_args_... filter to enable it with (see https://pastebin.com/d2y5qXPy)
+* added better booking button error feedback and a em_booking_button_response JS event
+* changed EM Pro update warning to be dismissible site-wide and persist only on admin/network settings page
+* removed use of date_i18n() in place of EM_DateTime->format() i.e. wp_date()
 
 = 5.9.8.1 =
 * fixed html structure error in location template breaking editor if location dropdowns are enabled

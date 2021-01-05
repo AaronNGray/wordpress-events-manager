@@ -576,9 +576,10 @@ jQuery(document).ready( function($){
 					if(response.result){
 						button.text(EM.bb_booked);
 					}else{
-						button.text(EM.bb_error);					
+						button.text(EM.bb_error);
 					}
 					if(response.message != '') alert(response.message);
+					$(document).triggerHandler('em_booking_button_response', [response, button]);
 				},
 				error : function(){ button.text(EM.bb_error); }
 			});

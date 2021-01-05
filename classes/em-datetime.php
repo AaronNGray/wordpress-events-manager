@@ -29,7 +29,6 @@ class EM_DateTime extends DateTime {
 	 * @see DateTime::__construct()
 	 * @param string $time
 	 * @param string|EM_DateTimeZone $timezone Unlike DateTime this also accepts string representation of a valid timezone, as well as UTC offsets in form of 'UTC -3' or just '-3'
-	 * @throws Exception
 	 */
 	public function __construct( $time = 'now', $timezone = null ){
 		//get our EM_DateTimeZone
@@ -50,11 +49,16 @@ class EM_DateTime extends DateTime {
 			$this->valid = true; //if we get this far, supplied time is valid
 		}catch( Exception $e ){
 			//get current date/time in relevant timezone and set valid flag to false
-			parent::__construct('@0');
-			$this->setTimezone($timezone);
-			$this->setDate(1970,1,1);
-			$this->setTime(0,0,0);
-			$this->valid = false;
+			try {
+				parent::__construct('@0');
+			}catch( Exception $e ){
+				// do nothing
+			}finally{
+				$this->setTimezone($timezone);
+				$this->setDate(1970,1,1);
+				$this->setTime(0,0,0);
+				$this->valid = false;
+			}
 		}
 	}
 	

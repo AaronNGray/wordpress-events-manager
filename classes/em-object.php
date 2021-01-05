@@ -164,10 +164,10 @@ class EM_Object {
 		}
 		if( is_array($defaults['scope']) ){
 			//looking for a date range here, so we'll verify the dates validate, if not get the default.
-			if ( !preg_match("/^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}$/", $defaults['scope'][0]) ){
+			if ( empty($defaults['scope'][0]) || !preg_match("/^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}$/", $defaults['scope'][0]) ){
 				$defaults['scope'][0] = '';
 			}
-			if( !preg_match("/^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}$/", $defaults['scope'][1]) ) {
+			if( empty($defaults['scope'][1]) || !preg_match("/^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}$/", $defaults['scope'][1]) ) {
 				$defaults['scope'][1] = '';
 			}
 			if( empty($defaults['scope'][0]) && empty($defaults['scope'][1]) ){

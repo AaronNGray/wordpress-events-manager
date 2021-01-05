@@ -164,14 +164,6 @@ function em_admin_warnings() {
 				<?php
 			}
 		}
-		
-		if( defined('EMP_VERSION') && EMP_VERSION < EM_PRO_MIN_VERSION && !defined('EMP_DISABLE_WARNINGS')){ 
-			?>
-			<div id="em_page_error" class="updated">
-				<p><?php _e('There is a newer version of Events Manager Pro which is recommended for this current version of Events Manager as new features have been added. Please go to the plugin website and download the latest update.','events-manager'); ?></p>
-			</div>
-			<?php
-		}
 	
 		if( is_multisite() && !empty($_REQUEST['page']) && $_REQUEST['page']=='events-manager-options' && em_wp_is_super_admin() && get_option('dbem_ms_update_nag') ){
 			if( !empty($_GET['disable_dbem_ms_update_nag']) ){
@@ -265,7 +257,7 @@ function em_updates_check( $transient ) {
     //only bother if we're checking for dev versions
     if( get_option('em_check_dev_version') || get_option('dbem_pro_dev_updates') ){     
 	    //check WP repo for trunk version
-	    $request = wp_remote_get('http://plugins.svn.wordpress.org/events-manager/trunk/events-manager.php');
+	    $request = wp_remote_get('https://plugins.svn.wordpress.org/events-manager/trunk/events-manager.php');
 	    
 	    if( !is_wp_error($request) ){
 		    preg_match('/Version: ([0-9a-z\.]+)/', $request['body'], $matches);
@@ -288,7 +280,7 @@ function em_updates_check( $transient ) {
     
     return $transient;
 }
-add_filter('pre_set_site_transient_update_plugins', 'em_updates_check'); // Hook into the plugin update check and mod for dev version
+add_filter('pre_set_site_transient_update_plugins', 'em_updates_check', 100); // Hook into the plugin update check and mod for dev version
 
 function em_user_action_links( $actions, $user ){
 	if ( !is_network_admin() && current_user_can( 'manage_others_bookings' ) ){
@@ -303,4 +295,20 @@ function em_user_action_links( $actions, $user ){
 	return $actions;
 }
 add_filter('user_row_actions','em_user_action_links',10,2);
+
+function em_pro_update_notice(){
+	// Check EM Pro update min
+	if( defined('EMP_VERSION') && EMP_VERSION < EM_PRO_MIN_VERSION && !defined('EMP_DISABLE_WARNINGS') ) {
+		$data = get_site_option('dbem_data');
+		$possible_notices = is_array($data) && !empty($data['admin_notices']) ? $data['admin_notices'] : array();
+		//we may have something to show, so we make sure that there's something to show right now
+		if( !isset($possible_notices['em-pro-updates']) ) {
+			?>
+			<div id="em_page_error" class="notice notice-warning">
+				<p><?php _e('There is a newer version of Events Manager Pro which is recommended for this current version of Events Manager as new features have been added. Please go to the plugin website and download the latest update.','events-manager'); ?></p>
+			</div>
+			<?php
+		}
+	}
+}
 ?>

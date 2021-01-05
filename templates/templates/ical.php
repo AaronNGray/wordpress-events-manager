@@ -145,6 +145,15 @@ if( $location ){
 		$output .= "\r\n" . $apple_structured_location;
 	}
 }
+// add organizer if specifically requested via $args in locate_template
+if( !empty($include_organizer) ){
+	/*
+	 * Currently unused via settings, can be activated by adding this line of code somewhere e.g. your theme functions.php file
+	 * add_filter('em_locate_template_args_templates/ical.php', function($args){ $args['include_organizer'] = true; return $args; });
+	 */
+	$EM_Person = new EM_Person($EM_Event->get_owner());
+	$output .= "\r\n" . 'ORGANIZER;CN="'. $EM_Person->get_name() .'":MAILTO:'. $EM_Person->user_email;
+}
 //end the event
 $output .= "
 END:VEVENT";
