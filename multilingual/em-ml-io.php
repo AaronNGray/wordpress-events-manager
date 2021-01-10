@@ -30,6 +30,7 @@ class EM_ML_IO {
 	    add_filter('em_ticket_delete', 'EM_ML_IO::ticket_delete', 10, 2);
         //Loading
         add_filter('em_event_get_location','EM_ML_IO::event_get_location',10,2);
+	    add_filter('em_event_get_event_location','EM_ML_IO::event_get_event_location',10,2);
         //Duplication
 	    //add_action('em_event_duplicate_pre', 'EM_ML_IO::em_event_duplicate_pre', 10, 1);
         add_filter('em_event_duplicate_url','EM_ML_IO::event_duplicate_url',10, 2);
@@ -54,6 +55,23 @@ class EM_ML_IO {
     }
 	
 	/**
+	 * Loads original event location and merges in data to the translated event location
+	 * @param \EM_Event_Locations\Event_Location $Event_Location
+	 * @param EM_Event $EM_Event
+	 * @return mixed
+	 */
+    public static function event_get_event_location( $Event_Location, $EM_Event ){
+	    if( !EM_ML::is_original($EM_Event) ) {
+		    // get original event object
+		    $event = EM_ML::get_original_event($EM_Event);
+		    // merge any data from original event, overwritten by translated event data
+		    $event_location_data = array_merge($event->get_event_location()->data, $Event_Location->data);
+		    $Event_Location->data = $event_location_data;
+	    }
+        return $Event_Location;
+    }
+	
+	/**
 	 * @param EM_Event $EM_Event The event to merge original meta into
 	 * @param EM_Event $event The original event
 	 */
@@ -66,6 +84,8 @@ class EM_ML_IO {
 		$EM_Event->recurrence  = $event->recurrence ;
 		$EM_Event->post_type  = $event->post_type ;
 		$EM_Event->location_id  = $event->location_id ;
+		$EM_Event->event_location_type = $event->event_location_type;
+	    $EM_Event->event_location = $event->event_location;
 		$EM_Event->location = false;
 		$EM_Event->event_all_day  = $event->event_all_day ;
 		$EM_Event->event_start_time  = $event->event_start_time ;

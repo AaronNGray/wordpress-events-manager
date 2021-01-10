@@ -3,8 +3,9 @@ namespace EM_Event_Locations;
 /**
  * Class EM_Event_Location
  * This class is to be extended by any event location type. The only time this class is not used when not extended is if
- * @property-read string type
- * @property string event
+ * @property-read string $type
+ * @property array $data
+ * @property string $event
  */
 class Event_Location {
 	/**
@@ -51,13 +52,15 @@ class Event_Location {
 	
 	/**
 	 * @param $name
-	 * @return string|null
+	 * @return string|null|array
 	 */
 	public function __get( $name ) {
 		if( $name == 'type' ){
 			return static::$type;
 		}elseif( $name == 'event' ){
 			return $this->event;
+		}elseif( $name == 'data' ){
+			return $this->data;
 		}elseif( in_array($name, $this->properties) && array_key_exists($name, $this->data) ){
 			return $this->data[$name];
 		}
@@ -67,6 +70,8 @@ class Event_Location {
 	public function __set($name, $value) {
 		if( $name === 'event' && is_object($value) && property_exists($value, 'event_id') ){ // we check for the event_id property in case we're dealing with an extended class
 			$this->event = $value;
+		}elseif( $name == 'data' && is_array($value) ){
+			$this->data = $value;
 		}elseif( in_array($name, $this->properties) ){
 			$this->data[$name] = $value;
 		}

@@ -128,7 +128,7 @@ class EM_Event_Post {
 	
 	public static function the_content( $content ){
 		global $post, $EM_Event;
-		if( $post->post_type == EM_POST_TYPE_EVENT ){
+		if( !empty($post) && $post->post_type == EM_POST_TYPE_EVENT ){
 			if( is_archive() || is_search() ){
 				if(get_option('dbem_cp_events_archive_formats')){
 					$EM_Event = em_get_event($post);

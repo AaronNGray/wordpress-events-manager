@@ -93,7 +93,7 @@ class EM_Location_Post {
 	
 	public static function the_content( $content ){
 		global $post, $EM_Location;
-		if( $post->post_type == EM_POST_TYPE_LOCATION ){
+		if( !empty($post) && $post->post_type == EM_POST_TYPE_LOCATION ){
 			if( is_archive() || is_search() ){
 				if( get_option('dbem_cp_locations_archive_formats') ){
 					$EM_Location = em_get_location($post);
