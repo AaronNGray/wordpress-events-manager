@@ -115,6 +115,10 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
+= 5.9.9.1 (dev) =
+* fixed event locations not getting synced with translations (WPML) and requires re-saving events to take effect
+* fixed incorrect dates in calendars for some specific server setups
+
 = 5.9.9 =
 * updated EM_DateTime and EM_DateTimeZone to remove PHP <5.3 backports and also make use of UTC offset support since PHP 5.5.10 (since WP now is requiring 5.6 as a minimum)
 * fixed location dropdown not showing option for no location or a placeholder if physical locations are the only location types enabled
