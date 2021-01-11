@@ -12,7 +12,7 @@
 $cal_count = count($calendar['cells']); //to prevent an extra tr
 $col_count = $tot_count = 1; //this counts collumns in the $calendar_array['cells'] array
 $col_max = count($calendar['row_headers']); //each time this collumn number is reached, we create a new collumn, the number of cells should divide evenly by the number of row_headers
-$EM_DateTime = new EM_DateTime($calendar['month_start']);
+$EM_DateTime = new EM_DateTime($calendar['month_start'], 'UTC');
 ?>
 <table class="em-calendar fullcalendar">
 	<thead>

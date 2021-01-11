@@ -7,7 +7,7 @@
 /* @var array $calendar - contains an array of information regarding the calendar and is used to generate the content */
 /* @var array $args - the arguments passed to EM_Calendar::output() */
 
-$EM_DateTime = new EM_DateTime($calendar['month_start']);
+$EM_DateTime = new EM_DateTime($calendar['month_start'], 'UTC');
 ?>
 <table class="em-calendar">
 	<thead>
