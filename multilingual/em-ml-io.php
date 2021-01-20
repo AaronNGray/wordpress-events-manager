@@ -32,7 +32,7 @@ class EM_ML_IO {
         add_filter('em_event_get_location','EM_ML_IO::event_get_location',10,2);
 	    add_filter('em_event_get_event_location','EM_ML_IO::event_get_event_location',10,2);
         //Duplication
-	    //add_action('em_event_duplicate_pre', 'EM_ML_IO::em_event_duplicate_pre', 10, 1);
+	    add_action('em_event_duplicate', 'EM_ML_IO::event_duplicate', 100, 2);
         add_filter('em_event_duplicate_url','EM_ML_IO::event_duplicate_url',10, 2);
     }
     
@@ -56,7 +56,7 @@ class EM_ML_IO {
 	
 	/**
 	 * Loads original event location and merges in data to the translated event location
-	 * @param \EM_Event_Locations\Event_Location $Event_Location
+	 * @param EM_Event_Locations\Event_Location $Event_Location
 	 * @param EM_Event $EM_Event
 	 * @return mixed
 	 */
@@ -208,11 +208,38 @@ class EM_ML_IO {
 	    return $url;
 	}
 	
-	/*
-	 * Ensures events lose parent when duplicated if they're a translation.
+	/**
+	 * When an event is duplicated, we need to get the original event's translations and copy them as duplicates of the current event.
+	 * An assumption is made here, which is that the event that was duplicated already is the original, since in ML mode we should be only duplicating the original language.
+	 *
+	 * @param EM_Event|false $result
+	 * @param EM_Event $EM_Event
+	 * @return EM_Event|boolean
 	 */
-	public static function em_event_duplicate_pre( $EM_Event ){
-		$EM_Event->event_parent = null;
+	public static function event_duplicate($result, $EM_Event){
+		global $EM_ML_DUPLICATING;
+		// chehck we're on a newer WPML version, if we're using WPML, this will be depracated eventually
+		if( defined('EM_WPML_VERSION') && version_compare(EM_WPML_VERSION, '2.0.2.1', '<=') ) return $result;
+		if( $result !== false && empty($EM_ML_DUPLICATING) ){
+			if( !EM_ML::is_original($EM_Event) ) return $result; // we only duplicate the original event
+			//get the translation info of the duplicated event, for use later on
+			$event = $result; /* @var $event EM_Event */
+			$event_id = $event->event_id; // for use later
+			// get translations and loop through them to duplicate
+			$translations = EM_ML::get_event_translations($EM_Event);
+			foreach( $translations as $lang_code => $translation ){
+				//check that we're not in the original language, as that has been duplicated already
+				if( $translation->event_id != $EM_Event->event_id ){
+					//get the translation of original event that was duplicated if exists and duplicate it
+					$event = em_get_event($translation->event_id);
+					$EM_ML_DUPLICATING = true;
+					$event->event_parent = $event_id; // change parent to new event
+					$event->duplicate();
+					$EM_ML_DUPLICATING = false;
+				}
+			}
+		}
+		return $result;
 	}
 	
 	/**

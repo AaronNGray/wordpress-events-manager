@@ -257,23 +257,33 @@ function em_updates_check( $transient ) {
     //only bother if we're checking for dev versions
     if( get_option('em_check_dev_version') || get_option('dbem_pro_dev_updates') ){     
 	    //check WP repo for trunk version
-	    $request = wp_remote_get('https://plugins.svn.wordpress.org/events-manager/trunk/events-manager.php');
-	    
-	    if( !is_wp_error($request) ){
-		    preg_match('/Version: ([0-9a-z\.]+)/', $request['body'], $matches);
-		    
-		    if( !empty($matches[1]) ){
-		    	//we have a version number!
-			    if( version_compare($transient->checked[EM_SLUG], $matches[1]) < 0) {
-			    	$response = new stdClass();
-			    	$response->slug = EM_SLUG;
-					$response->new_version = $matches[1] ;
-			        $response->url = 'http://wordpress.org/extend/plugins/events-manager/';
-				    $response->package = 'http://downloads.wordpress.org/plugin/events-manager.zip';
-			       	$transient->response[EM_SLUG] = $response;
+	    $plugin_slugs = apply_filters('em_org_dev_version_slugs', array('events-manager'=> EM_SLUG));
+	    foreach( $plugin_slugs as $org_slug => $wp_slug ) {
+		    $request = wp_remote_get('https://plugins.svn.wordpress.org/'.$org_slug.'/trunk/'.$org_slug.'.php');
+		
+		    if (!is_wp_error($request)) {
+			    preg_match('/Version: ([0-9a-z\.]+)/', $request['body'], $matches);
+			
+			    if (!empty($matches[1])) {
+				    //we have a version number!
+				    if (version_compare($transient->checked[$wp_slug], $matches[1]) < 0) {
+					    $response = new stdClass();
+					    $response->slug = $wp_slug;
+					    $response->new_version = $matches[1];
+					    $response->url = 'http://wordpress.org/extend/plugins/'.$org_slug.'/';
+					    $response->package = 'http://downloads.wordpress.org/plugin/'.$org_slug.'.zip';
+					    $icon_test = wp_remote_get('https://ps.w.org/'.$org_slug.'/assets/icon-128x128.png');
+					    if( !is_wp_error($icon_test) && $icon_test['response']['code'] == 200 ){
+						    $response->icons = array(
+						        '1x' => 'https://ps.w.org/'.$org_slug.'/assets/icon-128x128.png',
+						        '2x' => 'https://ps.w.org/'.$org_slug.'/assets/icon-256x256.png'
+						    );
+						}
+					    $transient->response[$wp_slug] = $response;
+				    }
 			    }
 		    }
-		}
+	    }
 		
 		delete_option('em_check_dev_version');
     }
