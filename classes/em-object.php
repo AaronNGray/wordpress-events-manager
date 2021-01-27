@@ -655,7 +655,7 @@ class EM_Object {
 	 * @param array $args
 	 * @return array
 	 */
-	public static function build_wpquery_conditions( $args = array(), $wp_query ){
+	public static function build_wpquery_conditions( $args, $wp_query ){
 		global $wpdb;
 		
 		$args = apply_filters('em_object_build_sql_conditions_args',$args);
