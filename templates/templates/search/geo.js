@@ -85,13 +85,13 @@ function em_geo_search_init(){
 			}else{
 				geo_field_status(false);
 			}
-		}).keyup( function(e) {
+		}).on('keyup', function(e) {
 			if( this.value == '' ){ geo_field_status(false); }
 			else if( wrapper.data('last-search') != this.value ){ geo_field_status('off'); }
 			input.data('last-key', e.which);
 		}).blur( function(e){ //create HTML 5 placeholder effect if not HTML 5
 			if( this.value == '' && !('placeholder' in document.createElement('input')) ) this.value = EM.geo_placeholder;
-		}).focus( function(e){
+		}).on('focus', function(e){
 			if( this.value == EM.geo_placeholder ) this.value='';
 			input.data('last-key', 13);
 		}).attr('placeholder', EM.geo_placeholder);

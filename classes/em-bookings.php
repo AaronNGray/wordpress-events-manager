@@ -367,9 +367,11 @@ class EM_Bookings extends EM_Object implements Iterator{
 	/**
 	 * @param int $status
 	 * @param array|int $booking_ids
+	 * @param bool $send_email
+	 * @param bool $ignore_spaces
 	 * @return bool
 	 */
-	function set_status($status, $booking_ids){
+	function set_status( $status, $booking_ids, $send_email = true, $ignore_spaces = false ){
 		//FIXME status should work with instantiated object
 		if( self::array_is_numeric($booking_ids) ){
 			//Get all the bookings
@@ -381,7 +383,7 @@ class EM_Bookings extends EM_Object implements Iterator{
 					$this->feedback_message = __('Bookings %s. Mails Sent.', 'events-manager');
 					return false;
 				}
-				$results[] = $EM_Booking->set_status($status);
+				$results[] = $EM_Booking->set_status($status, $send_email, $ignore_spaces);
 			}
 			if( !in_array('false',$results) ){
 				$this->feedback_message = __('Bookings %s. Mails Sent.', 'events-manager');

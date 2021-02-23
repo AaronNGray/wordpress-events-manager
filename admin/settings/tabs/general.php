@@ -292,7 +292,7 @@
 		</table>
 		<script type="text/javascript">
 			jQuery(document).ready(function($){
-				$('input:radio[name="dbem_js_limit"]').change(function(){
+				$('input:radio[name="dbem_js_limit"]').on('change', function(){
 					if( $('input:radio[name="dbem_js_limit"]:checked').val() == 1 ){
 						$('tbody#dbem-js-limit-options').show();
 					}else{
@@ -300,7 +300,7 @@
 					}
 				}).trigger('change');
 				
-				$('input:radio[name="dbem_css_limit"]').change(function(){
+				$('input:radio[name="dbem_css_limit"]').on('change', function(){
 					if( $('input:radio[name="dbem_css_limit"]:checked').val() == 1 ){
 						$('tbody#dbem-css-limit-options').show();
 					}else{

@@ -173,7 +173,7 @@ class EM_Widget extends WP_Widget {
 			<input type="text" id="<?php echo $this->get_field_id('all_events_text'); ?>" name="<?php echo $this->get_field_name('all_events_text'); ?>" value="<?php echo esc_attr( $instance['all_events_text'] ); ?>" >
 		</p>
 		<script type="text/javascript">
-		jQuery('#<?php echo $this->get_field_id('all_events'); ?>').change( function(){
+		jQuery('#<?php echo $this->get_field_id('all_events'); ?>').on('change', function(){
 			if( this.checked ){
 			    jQuery(this).parent().next().show();
 			}else{

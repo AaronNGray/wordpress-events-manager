@@ -629,7 +629,7 @@ function em_admin_option_box_email(){
 		</table>
 		<script type="text/javascript" charset="utf-8">
 			jQuery(document).ready(function($){
-				$('#dbem_rsvp_mail_send_method_row select').change(function(){
+				$('#dbem_rsvp_mail_send_method_row select').on('change', function(){
 					el = $(this);
 					if( el.find(':selected').val() == 'smtp' ){
 						$('.em-email-settings-smtp').show();
@@ -637,7 +637,7 @@ function em_admin_option_box_email(){
 						$('.em-email-settings-smtp').hide();
 					}
 				}).trigger('change');
-				$('input#em-admin-check-email').click(function(e,el){
+				$('input#em-admin-check-email').on('click', function(e,el){
 					var email_data = $('.em-email-form input, .em-email-form select').serialize();
 					$.ajax({
 						url: EM.ajaxurl,
@@ -837,7 +837,7 @@ function em_admin_option_box_uninstall(){
     			    </td>
 					<script type="text/javascript" charset="utf-8">
 						jQuery(document).ready(function($){
-							$('a#em-admin-import-settings').click(function(e,el){
+							$('a#em-admin-import-settings').on('click', function(e,el){
 								var thisform = $(this).closest('form');
 								thisform.find('input[type=text], textarea, select, input[type=radio], input[type=hidden]').prop('disabled', true);
 								thisform.find('input[name=_wpnonce]').val('<?php echo esc_attr($import_nonce); ?>').prop('disabled', false);
@@ -931,14 +931,14 @@ function em_admin_option_box_uninstall(){
     			    </td>
 					<script type="text/javascript" charset="utf-8">
 						jQuery(document).ready(function($){
-							$('select[name="timezone_reset_value"]').change( function( e ){
+							$('select[name="timezone_reset_value"]').on('change', function( e ){
 								if( $(this).val() == '' ){
 									$('a#em-reset-event-timezones').css({opacity:0.5, cursor:'default'});
 								}else{
 									$('a#em-reset-event-timezones').css({opacity:1, cursor:'pointer'});
 								}
 							}).trigger('change');
-							$('a#em-reset-event-timezones').click(function(e,el){
+							$('a#em-reset-event-timezones').on('click', function(e,el){
 								if( $('select[name="timezone_reset_value"]').val() == '' ) return false;
 								var thisform = $(this).closest('form');
 								thisform.find('input, textarea, select').prop('disabled', true);

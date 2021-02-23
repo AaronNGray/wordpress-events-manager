@@ -192,7 +192,7 @@ class Event_Location {
 		return static::$type;
 	}
 	
-	public function output( $what = null ){
+	public function output( $what = null, $target = null ){
 		if( $what !== null && $what !== 'type' ){
 			return esc_html($this->$what);
 		}else{

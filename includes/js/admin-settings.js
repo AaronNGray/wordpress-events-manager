@@ -2,7 +2,7 @@ jQuery(document).ready(function($){
 	//Meta Box Options
 	var open_close = $('<a href="#" style="display:block; float:right; clear:right; margin:10px;">'+EM.open_text+'</a>');
 	$('#em-options-title').before(open_close);
-	open_close.click( function(e){
+	open_close.on('click', function(e){
 		e.preventDefault();
 		if($(this).text() == EM.close_text){
 			$(".postbox").addClass('closed');
@@ -12,10 +12,10 @@ jQuery(document).ready(function($){
 			$(this).text(EM.close_text);
 		} 
 	});
-	$(".postbox > h3").click(function(){ $(this).parent().toggleClass('closed'); });
+	$(".postbox > h3").on('click', function(){ $(this).parent().toggleClass('closed'); });
 	$(".postbox").addClass('closed');
 	//Navigation Tabs
-	$('.tabs-active .nav-tab-wrapper .nav-tab').click(function(){
+	$('.tabs-active .nav-tab-wrapper .nav-tab').on('click', function(){
 		el = $(this);
 		elid = el.attr('id');
 		$('.em-menu-group').hide(); 
@@ -23,7 +23,7 @@ jQuery(document).ready(function($){
 		$(".postbox").addClass('closed');
 		open_close.text(EM.open_text);
 	});
-	$('.nav-tab-wrapper .nav-tab').click(function(){
+	$('.nav-tab-wrapper .nav-tab').on('click', function(){
 		$('.nav-tab-wrapper .nav-tab').removeClass('nav-tab-active').blur();
 		$(this).addClass('nav-tab-active');
 	});
@@ -43,8 +43,8 @@ jQuery(document).ready(function($){
 		//set to general tab by default, so we can also add clicked subsections
 		document.location = navUrl+"#general";
 	}
-	$('.nav-tab-link').click(function(){ $($(this).attr('rel')).trigger('click'); }); //links to mimick tabs
-	$('input[type="submit"]').click(function(){
+	$('.nav-tab-link').on('click', function(){ $($(this).attr('rel')).trigger('click'); }); //links to mimick tabs
+	$('input[type="submit"]').on('click', function(){
 		var el = $(this).parents('.postbox').first();
 		var docloc = document.location.toString().split('#');
 		var newloc = docloc[0];
@@ -60,21 +60,21 @@ jQuery(document).ready(function($){
 		$(this).closest('form').append('<input type="hidden" name="tab_path" value="'+ tab_path +'" />');
 	});
 	//Page Options
-	$('input[name="dbem_cp_events_has_archive"]').change(function(){ //event archives
+	$('input[name="dbem_cp_events_has_archive"]').on('change', function(){ //event archives
 		if( $('input:radio[name="dbem_cp_events_has_archive"]:checked').val() == 1 ){
 			$('tbody.em-event-archive-sub-options').show();
 		}else{
 			$('tbody.em-event-archive-sub-options').hide();
 		}
 	}).trigger('change');
-	$('select[name="dbem_events_page"]').change(function(){
+	$('select[name="dbem_events_page"]').on('change', function(){
 		if( $('select[name="dbem_events_page"]').val() == 0 ){
 			$('tbody.em-event-page-options').hide();
 		}else{
 			$('tbody.em-event-page-options').show();
 		}
 	}).trigger('change');
-	$('input[name="dbem_cp_locations_has_archive"]').change(function(){ //location archives
+	$('input[name="dbem_cp_locations_has_archive"]').on('change', function(){ //location archives
 		if( $('input:radio[name="dbem_cp_locations_has_archive"]:checked').val() == 1 ){
 			$('tbody.em-location-archive-sub-options').show();
 		}else{
@@ -92,7 +92,7 @@ jQuery(document).ready(function($){
 	});
 	$('input:radio[name=dbem_disable_title_rewrites]').trigger('change');
 	//for event grouping
-	$('select[name="dbem_event_list_groupby"]').change(function(){
+	$('select[name="dbem_event_list_groupby"]').on('change', function(){
 		if( $('select[name="dbem_event_list_groupby"]').val() == 0 ){
 			$('tr#dbem_event_list_groupby_header_format_row, tr#dbem_event_list_groupby_format_row').hide();
 		}else{
@@ -100,33 +100,33 @@ jQuery(document).ready(function($){
 		}
 	}).trigger('change');
 	//ML Stuff
-	$('.em-translatable').click(function(){
+	$('.em-translatable').on('click', function(){
 		$(this).nextAll('.em-ml-options').toggle();
 	});
 	//radio triggers
-	$('input[type="radio"].em-trigger').change(function(e){
+	$('input[type="radio"].em-trigger').on('change', function(e){
 		var el = $(this);
 		el.val() == '1' ? $(el.attr('data-trigger')).show() : $(el.attr('data-trigger')).hide();
 	});
 	$('input[type="radio"].em-trigger:checked').trigger('change');
-	$('input[type="radio"].em-untrigger').change(function(e){
+	$('input[type="radio"].em-untrigger').on('change', function(e){
 		var el = $(this);
 		el.val() == '0' ? $(el.attr('data-trigger')).show() : $(el.attr('data-trigger')).hide();
 	});
 	$('input[type="radio"].em-untrigger:checked').trigger('change');
 	//checkbox triggers
-	$('input[type="checkbox"].em-trigger').change(function(e){
+	$('input[type="checkbox"].em-trigger').on('change', function(e){
 		var el = $(this);
 		el.prop('checked') ? $(el.attr('data-trigger')).show() : $(el.attr('data-trigger')).hide();
 	});
 	$('input[type="checkbox"].em-trigger').trigger('change');
-	$('input[type="checkbox"].em-untrigger').change(function(e){
+	$('input[type="checkbox"].em-untrigger').on('change', function(e){
 		var el = $(this);
 		!el.prop('checked') ? $(el.attr('data-trigger')).show() : $(el.attr('data-trigger')).hide();
 	});
 	$('input[type="checkbox"].em-untrigger').trigger('change');
 	//admin tools confirm
-	$('a.admin-tools-db-cleanup').click( function( e ){
+	$('a.admin-tools-db-cleanup').on('click', function( e ){
 		if( !confirm(EM.admin_db_cleanup_warning) ){
 			e.preventDefault();
 			return false;

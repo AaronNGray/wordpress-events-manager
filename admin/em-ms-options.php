@@ -84,7 +84,7 @@ function em_ms_admin_options_page() {
 	<script type="text/javascript" charset="utf-8">
 		jQuery(document).ready(function($){
 			//events
-			$('input[name="dbem_ms_global_events"]').change(function(){
+			$('input[name="dbem_ms_global_events"]').on('change', function(){
 				if( $('input:radio[name="dbem_ms_global_events"]:checked').val() == 1 ){
 					$("tr#dbem_ms_global_events_links_row").show();
 					$('input:radio[name="dbem_ms_global_events_links"]:checked').trigger('change');
@@ -92,7 +92,7 @@ function em_ms_admin_options_page() {
 					$("tr#dbem_ms_global_events_links_row, tr#dbem_ms_events_slug_row").hide();					
 				}
 			}).first().trigger('change');
-			$('input[name="dbem_ms_global_events_links"]').change(function(){
+			$('input[name="dbem_ms_global_events_links"]').on('change', function(){
 				if( $('input:radio[name="dbem_ms_global_events_links"]:checked').val() == 1 ){
 					$("tr#dbem_ms_events_slug_row").hide();	
 				}else{				
@@ -100,14 +100,14 @@ function em_ms_admin_options_page() {
 				}
 			}).first().trigger('change');
 			//locations
-			$('input[name="dbem_ms_mainblog_locations"]').change(function(){
+			$('input[name="dbem_ms_mainblog_locations"]').on('change', function(){
 				if( $('input:radio[name="dbem_ms_mainblog_locations"]:checked').val() == 1 ){
 					$("tbody.em-global-locations").hide();
 				}else{
 					$("tbody.em-global-locations").show();					
 				}
 			}).first().trigger('change');
-			$('input[name="dbem_ms_global_locations"]').change(function(){
+			$('input[name="dbem_ms_global_locations"]').on('change', function(){
 				if( $('input:radio[name="dbem_ms_global_locations"]:checked').val() == 1 ){
 					$("tr#dbem_ms_global_locations_links_row").show();
 					$('input:radio[name="dbem_ms_global_locations_links"]:checked').trigger('change');
@@ -115,7 +115,7 @@ function em_ms_admin_options_page() {
 					$("tr#dbem_ms_global_locations_links_row, tr#dbem_ms_locations_slug_row").hide();					
 				}
 			}).first().trigger('change');
-			$('input[name="dbem_ms_global_locations_links"]').change(function(){
+			$('input[name="dbem_ms_global_locations_links"]').on('change', function(){
 				if( $('input:radio[name="dbem_ms_global_locations_links"]:checked').val() == 1 ){
 					$("tr#dbem_ms_locations_slug_row").hide();	
 				}else{
@@ -123,7 +123,7 @@ function em_ms_admin_options_page() {
 				}
 			});		
 			//MS Mode selection hiders 
-			$('input[name="dbem_ms_global_table"]').change(function(){ //global
+			$('input[name="dbem_ms_global_table"]').on('change', function(){ //global
 				if( $('input:radio[name="dbem_ms_global_table"]:checked').val() == 1 ){
 					$("tbody.em-global-options").show();
 					$('input:radio[name="dbem_ms_mainblog_locations"]:checked').trigger('change');

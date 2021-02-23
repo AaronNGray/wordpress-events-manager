@@ -2635,10 +2635,12 @@ class EM_Event extends EM_Object{
 					break;
 				//Event location (not physical location)
 				case '#_EVENTLOCATION':
-					if( !empty($placeholders[3][$key]) ){
-						$replace = $this->get_event_location()->output($placeholders[3][$key]);
-					}else{
-						$replace = $this->get_event_location()->output();
+					if( $this->has_event_location() ) {
+						if (!empty($placeholders[3][$key])) {
+							$replace = $this->get_event_location()->output( $placeholders[3][$key], $target );
+						} else {
+							$replace = $this->get_event_location()->output( null, $target );
+						}
 					}
 					break;
 				default:

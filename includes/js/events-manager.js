@@ -41,14 +41,14 @@ jQuery(document).ready( function($){
 		if( 'placeholder' in document.createElement('input') ){
 			$('input.em-events-search-text, input.em-search-text').attr('placeholder', EM.search_term_placeholder);
 		}else{
-			$('input.em-events-search-text, input.em-search-text').blur(function(){
+			$('input.em-events-search-text, input.em-search-text').on('blur', function(){
 				if( this.value=='' ) this.value = EM.search_term_placeholder;
-			}).focus(function(){
+			}).on('focus', function(){
 				if( this.value == EM.search_term_placeholder ) this.value='';
 			}).trigger('blur');
 		}
 	}
-	$('.em-search-form select[name=country]').change( function(){
+	$('.em-search-form select[name=country]').on('change', function(){
 		var el = $(this);
 		$('.em-search select[name=state]').html('<option value="">'+EM.txt_loading+'</option>');
 		$('.em-search select[name=region]').html('<option value="">'+EM.txt_loading+'</option>');
@@ -70,7 +70,7 @@ jQuery(document).ready( function($){
 		}
 	});
 
-	$('.em-search-form select[name=region]').change( function(){
+	$('.em-search-form select[name=region]').on('change', function(){
 		$('.em-search select[name=state]').html('<option value="">'+EM.txt_loading+'</option>');
 		$('.em-search select[name=town]').html('<option value="">'+EM.txt_loading+'</option>');
 		var data = {
@@ -84,7 +84,7 @@ jQuery(document).ready( function($){
 		$('.em-search select[name=town]').load( EM.ajaxurl, data );
 	});
 
-	$('.em-search-form select[name=state]').change( function(){
+	$('.em-search-form select[name=state]').on('change', function(){
 		$('.em-search select[name=town]').html('<option value="">'+EM.txt_loading+'</option>');
 		var data = {
 			action : 'search_towns',
@@ -176,7 +176,7 @@ jQuery(document).ready( function($){
 	});
 	//Event Editor 
 		//Recurrence Warnings
-		$('#event-form.em-event-admin-recurring').submit( function(event){
+		$('#event-form.em-event-admin-recurring').on('submit', function(event){
 			var form = $(this);
 			if( form.find('input[name="event_reschedule"]').first().val() == 1 ){
 				var warning_text = EM.event_reschedule_warning;
@@ -191,14 +191,14 @@ jQuery(document).ready( function($){
 			}
 		});
 		//Buttons for recurrence warnings within event editor forms
-		$('.em-reschedule-trigger').click(function(e){
+		$('.em-reschedule-trigger').on('click', function(e){
 			e.preventDefault();
 			var trigger = $(this);
 			trigger.closest('.em-recurrence-reschedule').find(trigger.data('target')).removeClass('reschedule-hidden');
 			trigger.siblings('.em-reschedule-value').val(1);
 			trigger.addClass('reschedule-hidden').siblings('a').removeClass('reschedule-hidden');
 		});
-		$('.em-reschedule-cancel').click(function(e){
+		$('.em-reschedule-cancel').on('click', function(e){
 			e.preventDefault();
 			var trigger = $(this);
 			trigger.closest('.em-recurrence-reschedule').find(trigger.data('target')).addClass('reschedule-hidden');
@@ -208,7 +208,7 @@ jQuery(document).ready( function($){
 	//Tickets & Bookings
 	if( $("#em-tickets-form").length > 0 ){
 		//Enable/Disable Bookings
-		$('#event-rsvp').click( function(event){
+		$('#event-rsvp').on('click', function(event){
 			if( !this.checked ){
 				confirmation = confirm(EM.disable_bookings_warning);
 				if( confirmation == false ){
@@ -232,7 +232,7 @@ jQuery(document).ready( function($){
 		};
 		//recurrences and cut-off logic for ticket availability
 		if( $('#em-recurrence-checkbox').length > 0 ){
-			$('#em-recurrence-checkbox').change(function(){
+			$('#em-recurrence-checkbox').on('change', function(){
 				if( $('#em-recurrence-checkbox').is(':checked') ){
 					$('#em-tickets-form .ticket-dates-from-recurring, #em-tickets-form .ticket-dates-to-recurring, #event-rsvp-options .em-booking-date-recurring').show();
 					$('#em-tickets-form .ticket-dates-from-normal, #em-tickets-form .ticket-dates-to-normal, #event-rsvp-options .em-booking-date-normal, #em-tickets-form .hidden').hide();
@@ -248,7 +248,7 @@ jQuery(document).ready( function($){
 			$('#em-tickets-form .ticket-dates-from-recurring, #em-tickets-form .ticket-dates-to-recurring, #event-rsvp-options .em-booking-date-recurring, #em-tickets-form .hidden').hide();
 		}
 		//Add a new ticket
-		$("#em-tickets-add").click(function(e){ 
+		$("#em-tickets-add").on('click', function(e){
 			e.preventDefault();
 			reset_ticket_forms();
 			//create copy of template slot, insert so ready for population
@@ -264,7 +264,11 @@ jQuery(document).ready( function($){
 			slot.show().find('.ticket-actions-edit').trigger('click');
 			//refresh datepicker and values
 			slot.find('.em-date-input-loc').datepicker('destroy').removeAttr('id'); //clear all datepickers
-			slot.find('.em-time-input').unbind().each(function(index, el){ this.timePicker = false; }); //clear all timepickers - consequently, also other click/blur/change events, recreate the further down
+			slot.find('.em-time-input').off().each(function(index, el){
+				if( typeof this.timepickerObj == 'object' ){
+					this.timepicker('remove');
+				}
+			}); //clear all timepickers - consequently, also other click/blur/change events, recreate the further down
 			em_setup_datepicker(slot);
 			em_setup_timepicker(slot);
 		    $('html, body').animate({ scrollTop: slot.offset().top - 30 }); //sends user to form
@@ -459,7 +463,7 @@ jQuery(document).ready( function($){
 			buttons: [{
 				text: EM.bookings_export_save,
 				click: function(e){
-					$(this).children('form').submit();
+					$(this).children('form').trigger('submit');
 					$(this).dialog('close');
 				}
 			}]
@@ -481,7 +485,7 @@ jQuery(document).ready( function($){
 			};
 			//Sync export overlay with table search field changes
 			$('#em-bookings-table form select').each(function(i, el){
-				$(el).change(function(e){
+				$(el).on('change', function(e){
 					var select_el = $(this);
 					var input_par = $('#em-bookings-table-export-form input[name='+select_el.attr('name')+']');
 					var input_par_selected = select_el.find('option:selected');
@@ -490,7 +494,7 @@ jQuery(document).ready( function($){
 			});
 			
 			export_overlay_show_tickets();
-			$('#em-bookings-table-export-form input[name=show_tickets]').click(export_overlay_show_tickets);
+			$('#em-bookings-table-export-form input[name=show_tickets]').on('click', export_overlay_show_tickets);
 			//Sortables
 			$( ".em-bookings-cols-sortable" ).sortable({
 				connectWith: ".em-bookings-cols-sortable",
@@ -655,7 +659,7 @@ jQuery(document).ready( function($){
 	$("#localised-date").show();
 	$("#localised-end-date").show();
 	
-	$('#em-wrapper input.select-all').change(function(){
+	$('#em-wrapper input.select-all').on('change', function(){
 	 	if($(this).is(':checked')){
 			$('input.row-selector').prop('checked', true);
 			$('input.select-all').prop('checked', true);
@@ -668,12 +672,12 @@ jQuery(document).ready( function($){
 	updateIntervalDescriptor(); 
 	updateIntervalSelectors();
 	updateShowHideRecurrence();
-	$('input#event-recurrence').change(updateShowHideRecurrence);
+	$('input#event-recurrence').on('change', updateShowHideRecurrence);
 	   
 	// recurrency elements   
-	$('input#recurrence-interval').keyup(updateIntervalDescriptor);
-	$('select#recurrence-frequency').change(updateIntervalDescriptor);
-	$('select#recurrence-frequency').change(updateIntervalSelectors);
+	$('input#recurrence-interval').on('keyup', updateIntervalDescriptor);
+	$('select#recurrence-frequency').on('change', updateIntervalDescriptor);
+	$('select#recurrence-frequency').on('change', updateIntervalSelectors);
 
 	/* Load any maps */	
 	if( $('.em-location-map').length > 0 || $('.em-locations-map').length > 0 || $('#em-map').length > 0 || $('.em-search-geo').length > 0 ){
@@ -681,7 +685,7 @@ jQuery(document).ready( function($){
 	}
 
 	/* Location Type Selection */
-	$('.em-location-types .em-location-types-select').change(function(){
+	$('.em-location-types .em-location-types-select').on('change', function(){
 		let el = $(this);
 		if( el.val() == 0 ){
 			$('.em-location-type').hide();
@@ -737,7 +741,7 @@ jQuery(document).ready( function($){
 			html_val = "<a>" + em_esc_attr(item.label) + '<br><span style="font-size:11px"><em>'+ em_esc_attr(item.address) + ', ' + em_esc_attr(item.town)+"</em></span></a>";
 			return jQuery( "<li></li>" ).data( "item.autocomplete", item ).append(html_val).appendTo( ul );
 		};
-		jQuery('#em-location-reset a').click( function(){
+		jQuery('#em-location-reset a').on('click', function(){
 			jQuery('div.em-location-data input').css('background-color','#fff').val('').prop('readonly', false);
 			jQuery('div.em-location-data select').css('background-color','#fff').css('color', 'auto').prop('disabled', false);
 			jQuery('div.em-location-data option:selected').removeAttr('selected');
@@ -854,7 +858,7 @@ function em_setup_datepicker(wrap){
 				dateValue.val(dateValue_value);
 			}
 			//add logic for texts
-			dateInput.change(function(){
+			dateInput.on('change', function(){
 				if( jQuery(this).val() == '' ){
 					jQuery(this).nextAll('.em-date-input').first().val('');
 				}
@@ -887,45 +891,51 @@ function em_setup_datepicker(wrap){
 		});
 	}
 }
-
 function em_setup_timepicker(wrap){
 	wrap = jQuery(wrap);
 	var timepicker_options = {
-		show24Hours: EM.show24hours == 1,
 		step:15
 	}
+	timepicker_options.timeFormat = EM.show24hours == 1 ? 'G:i':'g:i A';
 	jQuery(document).triggerHandler('em_timepicker_options', timepicker_options);
-	wrap.find(".em-time-input").timePicker(timepicker_options);
-	
+	wrap.find(".em-time-input").timepicker(timepicker_options);
+
 	// Keep the duration between the two inputs.
 	wrap.find(".em-time-range input.em-time-start").each( function(i, el){
-		jQuery(el).data('oldTime', jQuery.timePicker(el).getTime());
-	}).change( function() {
+		var time = jQuery(el);
+		time.data('oldTime', time.timepicker('getSecondsFromMidnight'));
+	}).on('change', function() {
 		var start = jQuery(this);
 		var end = start.nextAll('.em-time-end');
 		if (end.val()) { // Only update when second input has a value.
-		    // Calculate duration.
+			// Calculate duration.
 			var oldTime = start.data('oldTime');
-		    var duration = (jQuery.timePicker(end).getTime() - oldTime);
-		    var time = jQuery.timePicker(start).getTime();
-		    if( jQuery.timePicker(end).getTime() >= oldTime ){
-			    // Calculate and update the time in the second input.
-			    jQuery.timePicker(end).setTime(new Date(new Date(time.getTime() + duration)));
+			var duration = (end.timepicker('getSecondsFromMidnight') - oldTime) * 1000;
+			var time = start.timepicker('getSecondsFromMidnight');
+			if( end.timepicker('getSecondsFromMidnight') >= oldTime ){
+				// Calculate and update the time in the second input.
+				end.timepicker('setTime', new Date(start.timepicker('getTime').getTime() + duration));
 			}
-		    start.data('oldTime', time); 
+			start.data('oldTime', time);
 		}
 	});
 	// Validate.
-	wrap.find(".em-time-range input.em-time-end").change(function() {
+	wrap.find(".event-form-when .em-time-range input.em-time-end").on('change', function() {
 		var end = jQuery(this);
 		var start = end.prevAll('.em-time-start');
+		var wrapper = end.closest('.event-form-when');
+		var start_date = wrapper.find('.em-date-end').val();
+		var end_date = wrapper.find('.em-date-start').val();
 		if( start.val() ){
-			if( jQuery.timePicker(start).getTime() > jQuery.timePicker(this).getTime() && ( jQuery('.em-date-end').val().length == 0 || jQuery('.em-date-start').val() == jQuery('.em-date-end').val() ) ) { end.addClass("error"); }
+			if( start.timepicker('getTime') > end.timepicker('getTime') && ( end_date.length == 0 || start_date == end_date ) ) { end.addClass("error"); }
 			else { end.removeClass("error"); }
 		}
 	});
+	wrap.find(".event-form-when .em-date-end").on('change', function(){
+		jQuery(this).closest('.event-form-when').find('.em-time-end').trigger('change');
+	});
 	//Sort out all day checkbox
-	wrap.find('.em-time-range input.em-time-all-day').change(function(){
+	wrap.find('.em-time-range input.em-time-all-day').on('change', function(){
 		var allday = jQuery(this);
 		if( allday.is(':checked') ){
 			allday.siblings('.em-time-input').css('background-color','#ccc');
@@ -1055,7 +1065,7 @@ function em_maps_load_location(el){
 	maps[map_id].panBy(40,-70);
 	
 	//JS Hook for handling map after instantiation
-	//Example hook, which you can add elsewhere in your theme's JS - jQuery(document).bind('em_maps_location_hook', function(){ alert('hi');} );
+	//Example hook, which you can add elsewhere in your theme's JS - jQuery(document).on('em_maps_location_hook', function(){ alert('hi');} );
 	jQuery(document).triggerHandler('em_maps_location_hook', [maps[map_id], infoWindow, maps_markers[map_id], map_id]);
 	//map resize listener
 	jQuery(window).on('resize', function(e) {
@@ -1064,7 +1074,7 @@ function em_maps_load_location(el){
 		maps[map_id].panBy(40,-70);
 	});
 }
-jQuery(document).bind('em_search_ajax', function(e, vars, wrapper){
+jQuery(document).on('em_search_ajax', function(e, vars, wrapper){
 	if( em_maps_loaded ){
 		wrapper.find('.em-location-map').each( function(index, el){ em_maps_load_location(el); } );
 		wrapper.find('.em-locations-map').each( function(index, el){ em_maps_load_locations(el); });
@@ -1132,8 +1142,8 @@ function em_maps() {
 				});
 			}
 		};
-		jQuery('#location-select-id, input#location-id').change( function(){get_map_by_id(jQuery(this).val());} );
-		jQuery('#location-name, #location-town, #location-address, #location-state, #location-postcode, #location-country').change( function(){
+		jQuery('#location-select-id, input#location-id').on('change', function(){get_map_by_id(jQuery(this).val());} );
+		jQuery('#location-name, #location-town, #location-address, #location-state, #location-postcode, #location-country').on('change', function(){
 			//build address
 			if( jQuery(this).prop('readonly') === true ) return;
 			var addresses = [ jQuery('#location-address').val(), jQuery('#location-town').val(), jQuery('#location-state').val(), jQuery('#location-postcode').val() ];
@@ -1227,5 +1237,7 @@ function em_esc_attr( str ){
 	return str.replace(/</gi,'&lt;').replace(/>/gi,'&gt;');
 }
 
-/* jQuery timePicker - http://labs.perifer.se/timedatepicker/ @ http://github.com/perifer/timePicker commit 100644 */
-(function(e){function t(t,n,r,i){t.value=e(n).text();e(t).change();if(!navigator.userAgent.match(/msie/i)){t.focus()}r.hide()}function n(e,t){var n=e.getHours();var i=t.show24Hours?n:(n+11)%12+1;var s=e.getMinutes();return r(i)+t.separator+r(s)+(t.show24Hours?"":n<12?" AM":" PM")}function r(e){return(e<10?"0":"")+e}function i(e,t){return typeof e=="object"?o(e):s(e,t)}function s(e,t){if(e){var n=e.split(t.separator);var r=parseFloat(n[0]);var i=parseFloat(n[1]);if(!t.show24Hours){if(r===12&&e.indexOf("AM")!==-1){r=0}else if(r!==12&&e.indexOf("PM")!==-1){r+=12}}var s=new Date(0,0,0,r,i,0);return o(s)}return null}function o(e){e.setFullYear(2001);e.setMonth(0);e.setDate(0);return e}e.fn.timePicker=function(t){var n=e.extend({},e.fn.timePicker.defaults,t);return this.each(function(){e.timePicker(this,n)})};e.timePicker=function(t,n){var r=e(t)[0];return r.timePicker||(r.timePicker=new jQuery._timePicker(r,n))};e.timePicker.version="0.3";e._timePicker=function(r,u){var a=false;var f=false;var l=i(u.startTime,u);var c=i(u.endTime,u);var h="selected";var p="li."+h;e(r).attr("autocomplete","OFF");var d=[];var v=new Date(l);while(v<=c){d[d.length]=n(v,u);v=new Date(v.setMinutes(v.getMinutes()+u.step))}var m=e('<div class="time-picker'+(u.show24Hours?"":" time-picker-12hours")+'"></div>');var g=e("<ul></ul>");for(var y=0;y<d.length;y++){g.append("<li>"+d[y]+"</li>")}m.append(g);m.appendTo("body").hide();m.mouseover(function(){a=true}).mouseout(function(){a=false});e("li",g).mouseover(function(){if(!f){e(p,m).removeClass(h);e(this).addClass(h)}}).mousedown(function(){a=true}).click(function(){t(r,this,m,u);a=false});var b=function(){if(m.is(":visible")){return false}e("li",m).removeClass(h);var t=e(r).offset();m.css({top:t.top+r.offsetHeight,left:t.left});m.show();var i=r.value?s(r.value,u):l;var a=l.getHours()*60+l.getMinutes();var f=i.getHours()*60+i.getMinutes()-a;var p=Math.round(f/u.step);var d=o(new Date(0,0,0,0,p*u.step+a,0));d=l<d&&d<=c?d:l;var v=e("li:contains("+n(d,u)+")",m);if(v.length){v.addClass(h);m[0].scrollTop=v[0].offsetTop}return true};e(r).focus(b).click(b);e(r).blur(function(){if(!a){m.hide()}});e(r)["keydown"](function(n){var i;f=true;var s=m[0].scrollTop;switch(n.keyCode){case 38:if(b()){return false}i=e(p,g);var o=i.prev().addClass(h)[0];if(o){i.removeClass(h);if(o.offsetTop<s){m[0].scrollTop=s-o.offsetHeight}}else{i.removeClass(h);o=e("li:last",g).addClass(h)[0];m[0].scrollTop=o.offsetTop-o.offsetHeight}return false;break;case 40:if(b()){return false}i=e(p,g);var a=i.next().addClass(h)[0];if(a){i.removeClass(h);if(a.offsetTop+a.offsetHeight>s+m[0].offsetHeight){m[0].scrollTop=s+a.offsetHeight}}else{i.removeClass(h);a=e("li:first",g).addClass(h)[0];m[0].scrollTop=0}return false;break;case 13:if(m.is(":visible")){var l=e(p,g)[0];t(r,l,m,u)}return false;break;case 27:m.hide();return false;break}return true});e(r).keyup(function(e){f=false});this.getTime=function(){return s(r.value,u)};this.setTime=function(t){r.value=n(i(t,u),u);e(r).change()}};e.fn.timePicker.defaults={step:30,startTime:new Date(0,0,0,0,0,0),endTime:new Date(0,0,0,23,30,0),separator:":",show24Hours:true}})(jQuery)
+/*!
+ * jquery-timepicker v1.13.16 - Copyright (c) 2020 Jon Thornton - https://www.jonthornton.com/jquery-timepicker/
+ */
+(function(){"use strict";function _typeof(obj){"@babel/helpers - typeof";if(typeof Symbol==="function"&&typeof Symbol.iterator==="symbol"){_typeof=function(obj){return typeof obj}}else{_typeof=function(obj){return obj&&typeof Symbol==="function"&&obj.constructor===Symbol&&obj!==Symbol.prototype?"symbol":typeof obj}}return _typeof(obj)}function _classCallCheck(instance,Constructor){if(!(instance instanceof Constructor)){throw new TypeError("Cannot call a class as a function")}}function _defineProperties(target,props){for(var i=0;i<props.length;i++){var descriptor=props[i];descriptor.enumerable=descriptor.enumerable||false;descriptor.configurable=true;if("value"in descriptor)descriptor.writable=true;Object.defineProperty(target,descriptor.key,descriptor)}}function _createClass(Constructor,protoProps,staticProps){if(protoProps)_defineProperties(Constructor.prototype,protoProps);if(staticProps)_defineProperties(Constructor,staticProps);return Constructor}function _defineProperty(obj,key,value){if(key in obj){Object.defineProperty(obj,key,{value:value,enumerable:true,configurable:true,writable:true})}else{obj[key]=value}return obj}function ownKeys(object,enumerableOnly){var keys=Object.keys(object);if(Object.getOwnPropertySymbols){var symbols=Object.getOwnPropertySymbols(object);if(enumerableOnly)symbols=symbols.filter(function(sym){return Object.getOwnPropertyDescriptor(object,sym).enumerable});keys.push.apply(keys,symbols)}return keys}function _objectSpread2(target){for(var i=1;i<arguments.length;i++){var source=arguments[i]!=null?arguments[i]:{};if(i%2){ownKeys(Object(source),true).forEach(function(key){_defineProperty(target,key,source[key])})}else if(Object.getOwnPropertyDescriptors){Object.defineProperties(target,Object.getOwnPropertyDescriptors(source))}else{ownKeys(Object(source)).forEach(function(key){Object.defineProperty(target,key,Object.getOwnPropertyDescriptor(source,key))})}}return target}function _unsupportedIterableToArray(o,minLen){if(!o)return;if(typeof o==="string")return _arrayLikeToArray(o,minLen);var n=Object.prototype.toString.call(o).slice(8,-1);if(n==="Object"&&o.constructor)n=o.constructor.name;if(n==="Map"||n==="Set")return Array.from(n);if(n==="Arguments"||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n))return _arrayLikeToArray(o,minLen)}function _arrayLikeToArray(arr,len){if(len==null||len>arr.length)len=arr.length;for(var i=0,arr2=new Array(len);i<len;i++)arr2[i]=arr[i];return arr2}function _createForOfIteratorHelper(o){if(typeof Symbol==="undefined"||o[Symbol.iterator]==null){if(Array.isArray(o)||(o=_unsupportedIterableToArray(o))){var i=0;var F=function(){};return{s:F,n:function(){if(i>=o.length)return{done:true};return{done:false,value:o[i++]}},e:function(e){throw e},f:F}}throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}var it,normalCompletion=true,didErr=false,err;return{s:function(){it=o[Symbol.iterator]()},n:function(){var step=it.next();normalCompletion=step.done;return step},e:function(e){didErr=true;err=e},f:function(){try{if(!normalCompletion&&it.return!=null)it.return()}finally{if(didErr)throw err}}}}var ONE_DAY=86400;var roundingFunction=function roundingFunction(seconds,settings){if(seconds===null){return null}else if(typeof settings.step!=="number"){return seconds}else{var offset=seconds%(settings.step*60);var start=settings.minTime||0;offset-=start%(settings.step*60);if(offset>=settings.step*30){seconds+=settings.step*60-offset}else{seconds-=offset}return _moduloSeconds(seconds,settings)}};function _moduloSeconds(seconds,settings){if(seconds==ONE_DAY&&settings.show2400){return seconds}return seconds%ONE_DAY}var DEFAULT_SETTINGS={appendTo:"body",className:null,closeOnWindowScroll:false,disableTextInput:false,disableTimeRanges:[],disableTouchKeyboard:false,durationTime:null,forceRoundTime:false,lang:{},listWidth:null,maxTime:null,minTime:null,noneOption:false,orientation:"l",roundingFunction:roundingFunction,scrollDefault:null,selectOnBlur:false,show2400:false,showDuration:false,showOn:["click","focus"],showOnFocus:true,step:30,stopScrollPropagation:false,timeFormat:"g:ia",typeaheadHighlight:true,useSelect:false,wrapHours:true};var DEFAULT_LANG={am:"am",pm:"pm",AM:"AM",PM:"PM",decimal:".",mins:"mins",hr:"hr",hrs:"hrs"};var Timepicker=function(){function Timepicker(targetEl){var options=arguments.length>1&&arguments[1]!==undefined?arguments[1]:{};_classCallCheck(this,Timepicker);this._handleFormatValue=this._handleFormatValue.bind(this);this._handleKeyUp=this._handleKeyUp.bind(this);this.targetEl=targetEl;var attrOptions=Timepicker.extractAttrOptions(targetEl,Object.keys(DEFAULT_SETTINGS));this.settings=this.parseSettings(_objectSpread2(_objectSpread2(_objectSpread2({},DEFAULT_SETTINGS),options),attrOptions))}_createClass(Timepicker,[{key:"hideMe",value:function hideMe(){if(this.settings.useSelect){this.targetEl.blur();return}if(!this.list||!Timepicker.isVisible(this.list)){return}if(this.settings.selectOnBlur){this._selectValue()}this.list.hide();var hideTimepickerEvent=new CustomEvent("hideTimepicker");this.targetEl.dispatchEvent(hideTimepickerEvent)}},{key:"_findRow",value:function _findRow(value){if(!value&&value!==0){return false}var out=false;var value=this.settings.roundingFunction(value,this.settings);if(!this.list){return false}this.list.find("li").each(function(i,obj){var parsed=Number.parseInt(obj.dataset.time);if(Number.isNaN(parsed)){return}if(parsed==value){out=obj;return false}});return out}},{key:"_hideKeyboard",value:function _hideKeyboard(){return(window.navigator.msMaxTouchPoints||"ontouchstart"in document)&&this.settings.disableTouchKeyboard}},{key:"_setTimeValue",value:function _setTimeValue(value,source){if(this.targetEl.nodeName==="INPUT"){if(value!==null||this.targetEl.value!=""){this.targetEl.value=value}var tp=this;var settings=tp.settings;if(settings.useSelect&&source!="select"&&tp.list){tp.list.val(tp._roundAndFormatTime(tp.time2int(value)))}}var selectTimeEvent=new Event("selectTime");if(this.selectedValue!=value){this.selectedValue=value;var changeTimeEvent=new Event("changeTime");var changeEvent=new CustomEvent("change",{detail:"timepicker"});if(source=="select"){this.targetEl.dispatchEvent(selectTimeEvent);this.targetEl.dispatchEvent(changeTimeEvent);this.targetEl.dispatchEvent(changeEvent)}else if(["error","initial"].indexOf(source)==-1){this.targetEl.dispatchEvent(changeTimeEvent)}return true}else{if(["error","initial"].indexOf(source)==-1){this.targetEl.dispatchEvent(selectTimeEvent)}return false}}},{key:"_getTimeValue",value:function _getTimeValue(){if(this.targetEl.nodeName==="INPUT"){return this.targetEl.value}else{return this.selectedValue}}},{key:"_selectValue",value:function _selectValue(){var tp=this;var settings=tp.settings;var list=tp.list;var cursor=list.find(".ui-timepicker-selected");if(cursor.hasClass("ui-timepicker-disabled")){return false}if(!cursor.length){return true}var timeValue=cursor.get(0).dataset.time;if(timeValue){var parsedTimeValue=Number.parseInt(timeValue);if(!Number.isNaN(parsedTimeValue)){timeValue=parsedTimeValue}}if(timeValue!==null){if(typeof timeValue!="string"){timeValue=tp._int2time(timeValue)}tp._setTimeValue(timeValue,"select")}return true}},{key:"time2int",value:function time2int(timeString){if(timeString===""||timeString===null||timeString===undefined)return null;if(timeString instanceof Date){return timeString.getHours()*3600+timeString.getMinutes()*60+timeString.getSeconds()}if(typeof timeString!="string"){return timeString}timeString=timeString.toLowerCase().replace(/[\s\.]/g,"");if(timeString.slice(-1)=="a"||timeString.slice(-1)=="p"){timeString+="m"}var pattern=/^(([^0-9]*))?([0-9]?[0-9])(([0-5][0-9]))?(([0-5][0-9]))?(([^0-9]*))$/;var hasDelimetersMatch=timeString.match(/\W/);if(hasDelimetersMatch){pattern=/^(([^0-9]*))?([0-9]?[0-9])(\W+([0-5][0-9]?))?(\W+([0-5][0-9]))?(([^0-9]*))$/}var time=timeString.match(pattern);if(!time){return null}var hour=parseInt(time[3]*1,10);var ampm=time[2]||time[9];var hours=hour;var minutes=time[5]*1||0;var seconds=time[7]*1||0;if(!ampm&&time[3].length==2&&time[3][0]=="0"){ampm="am"}if(hour<=12&&ampm){ampm=ampm.trim();var isPm=ampm==this.settings.lang.pm||ampm==this.settings.lang.PM;if(hour==12){hours=isPm?12:0}else{hours=hour+(isPm?12:0)}}else{var t=hour*3600+minutes*60+seconds;if(t>=ONE_DAY+(this.settings.show2400?1:0)){if(this.settings.wrapHours===false){return null}hours=hour%24}}var timeInt=hours*3600+minutes*60+seconds;if(hour<12&&!ampm&&this.settings._twelveHourTime&&this.settings.scrollDefault){var delta=timeInt-this.settings.scrollDefault();if(delta<0&&delta>=ONE_DAY/-2){timeInt=(timeInt+ONE_DAY/2)%ONE_DAY}}return timeInt}},{key:"parseSettings",value:function parseSettings(settings){var _this=this;settings.lang=_objectSpread2(_objectSpread2({},DEFAULT_LANG),settings.lang);this.settings=settings;if(settings.minTime){settings.minTime=this.time2int(settings.minTime)}if(settings.maxTime){settings.maxTime=this.time2int(settings.maxTime)}if(settings.listWidth){settings.listWidth=this.time2int(settings.listWidth)}if(settings.durationTime&&typeof settings.durationTime!=="function"){settings.durationTime=this.time2int(settings.durationTime)}if(settings.scrollDefault=="now"){settings.scrollDefault=function(){return settings.roundingFunction(_this.time2int(new Date),settings)}}else if(settings.scrollDefault&&typeof settings.scrollDefault!="function"){var val=settings.scrollDefault;settings.scrollDefault=function(){return settings.roundingFunction(_this.time2int(val),settings)}}else if(settings.minTime){settings.scrollDefault=function(){return settings.roundingFunction(settings.minTime,settings)}}if(typeof settings.timeFormat==="string"&&settings.timeFormat.match(/[gh]/)){settings._twelveHourTime=true}if(settings.showOnFocus===false&&settings.showOn.indexOf("focus")!=-1){settings.showOn.splice(settings.showOn.indexOf("focus"),1)}if(!settings.disableTimeRanges){settings.disableTimeRanges=[]}if(settings.disableTimeRanges.length>0){for(var i in settings.disableTimeRanges){settings.disableTimeRanges[i]=[this.time2int(settings.disableTimeRanges[i][0]),this.time2int(settings.disableTimeRanges[i][1])]}settings.disableTimeRanges=settings.disableTimeRanges.sort(function(a,b){return a[0]-b[0]});for(var i=settings.disableTimeRanges.length-1;i>0;i--){if(settings.disableTimeRanges[i][0]<=settings.disableTimeRanges[i-1][1]){settings.disableTimeRanges[i-1]=[Math.min(settings.disableTimeRanges[i][0],settings.disableTimeRanges[i-1][0]),Math.max(settings.disableTimeRanges[i][1],settings.disableTimeRanges[i-1][1])];settings.disableTimeRanges.splice(i,1)}}}return settings}},{key:"_disableTextInputHandler",value:function _disableTextInputHandler(e){switch(e.keyCode){case 13:case 9:return;default:e.preventDefault()}}},{key:"_int2duration",value:function _int2duration(seconds,step){seconds=Math.abs(seconds);var minutes=Math.round(seconds/60),duration=[],hours,mins;if(minutes<60){duration=[minutes,this.settings.lang.mins]}else{hours=Math.floor(minutes/60);mins=minutes%60;if(step==30&&mins==30){hours+=this.settings.lang.decimal+5}duration.push(hours);duration.push(hours==1?this.settings.lang.hr:this.settings.lang.hrs);if(step!=30&&mins){duration.push(mins);duration.push(this.settings.lang.mins)}}return duration.join(" ")}},{key:"_roundAndFormatTime",value:function _roundAndFormatTime(seconds){seconds=this.settings.roundingFunction(seconds,this.settings);if(seconds!==null){return this._int2time(seconds)}}},{key:"_int2time",value:function _int2time(timeInt){if(typeof timeInt!="number"){return null}var seconds=parseInt(timeInt%60),minutes=parseInt(timeInt/60%60),hours=parseInt(timeInt/(60*60)%24);var time=new Date(1970,0,2,hours,minutes,seconds,0);if(isNaN(time.getTime())){return null}if(typeof this.settings.timeFormat==="function"){return this.settings.timeFormat(time)}var output="";var hour,code;for(var i=0;i<this.settings.timeFormat.length;i++){code=this.settings.timeFormat.charAt(i);switch(code){case"a":output+=time.getHours()>11?this.settings.lang.pm:this.settings.lang.am;break;case"A":output+=time.getHours()>11?this.settings.lang.PM:this.settings.lang.AM;break;case"g":hour=time.getHours()%12;output+=hour===0?"12":hour;break;case"G":hour=time.getHours();if(timeInt===ONE_DAY)hour=this.settings.show2400?24:0;output+=hour;break;case"h":hour=time.getHours()%12;if(hour!==0&&hour<10){hour="0"+hour}output+=hour===0?"12":hour;break;case"H":hour=time.getHours();if(timeInt===ONE_DAY)hour=this.settings.show2400?24:0;output+=hour>9?hour:"0"+hour;break;case"i":var minutes=time.getMinutes();output+=minutes>9?minutes:"0"+minutes;break;case"s":seconds=time.getSeconds();output+=seconds>9?seconds:"0"+seconds;break;case"\\":i++;output+=this.settings.timeFormat.charAt(i);break;default:output+=code}}return output}},{key:"_setSelected",value:function _setSelected(){var list=this.list;list.find("li").removeClass("ui-timepicker-selected");var timeValue=this.time2int(this._getTimeValue());if(timeValue===null){return}var selected=this._findRow(timeValue);if(selected){var selectedRect=selected.getBoundingClientRect();var listRect=list.get(0).getBoundingClientRect();var topDelta=selectedRect.top-listRect.top;if(topDelta+selectedRect.height>listRect.height||topDelta<0){var newScroll=list.scrollTop()+(selectedRect.top-listRect.top)-selectedRect.height;list.scrollTop(newScroll)}var parsed=Number.parseInt(selected.dataset.time);if(this.settings.forceRoundTime||parsed===timeValue){selected.classList.add("ui-timepicker-selected")}}}},{key:"_isFocused",value:function _isFocused(el){return el===document.activeElement}},{key:"_handleFormatValue",value:function _handleFormatValue(e){if(e&&e.detail=="timepicker"){return}this._formatValue(e)}},{key:"_formatValue",value:function _formatValue(e,origin){if(this.targetEl.value===""){this._setTimeValue(null,origin);return}if(this._isFocused(this.targetEl)&&(!e||e.type!="change")){return}var settings=this.settings;var seconds=this.time2int(this.targetEl.value);if(seconds===null){var timeFormatErrorEvent=new CustomEvent("timeFormatError");this.targetEl.dispatchEvent(timeFormatErrorEvent);return}var rangeError=false;if(settings.minTime!==null&&settings.maxTime!==null&&(seconds<settings.minTime||seconds>settings.maxTime)){rangeError=true}var _iterator=_createForOfIteratorHelper(settings.disableTimeRanges),_step;try{for(_iterator.s();!(_step=_iterator.n()).done;){var range=_step.value;if(seconds>=range[0]&&seconds<range[1]){rangeError=true;break}}}catch(err){_iterator.e(err)}finally{_iterator.f()}if(settings.forceRoundTime){var roundSeconds=settings.roundingFunction(seconds,settings);if(roundSeconds!=seconds){seconds=roundSeconds;origin=null}}var prettyTime=this._int2time(seconds);if(rangeError){this._setTimeValue(prettyTime);var timeRangeErrorEvent=new CustomEvent("timeRangeError");this.targetEl.dispatchEvent(timeRangeErrorEvent)}else{this._setTimeValue(prettyTime,origin)}}},{key:"_generateNoneElement",value:function _generateNoneElement(optionValue,useSelect){var label,className,value;if(_typeof(optionValue)=="object"){label=optionValue.label;className=optionValue.className;value=optionValue.value}else if(typeof optionValue=="string"){label=optionValue;value=""}else{$.error("Invalid noneOption value")}var el;if(useSelect){el=document.createElement("option");el.value=value}else{el=document.createElement("li");el.dataset.time=String(value)}el.innerText=label;el.classList.add(className);return el}},{key:"_handleKeyUp",value:function _handleKeyUp(e){if(!this.list||!Timepicker.isVisible(this.list)||this.settings.disableTextInput){return true}if(e.type==="paste"||e.type==="cut"){setTimeout(function(){if(this.settings.typeaheadHighlight){this._setSelected()}else{this.list.hide()}},0);return}switch(e.keyCode){case 96:case 97:case 98:case 99:case 100:case 101:case 102:case 103:case 104:case 105:case 48:case 49:case 50:case 51:case 52:case 53:case 54:case 55:case 56:case 57:case 65:case 77:case 80:case 186:case 8:case 46:if(this.settings.typeaheadHighlight){this._setSelected()}else{this.list.hide()}break}}}],[{key:"extractAttrOptions",value:function extractAttrOptions(element,keys){var output={};var _iterator2=_createForOfIteratorHelper(keys),_step2;try{for(_iterator2.s();!(_step2=_iterator2.n()).done;){var key=_step2.value;if(key in element.dataset){output[key]=element.dataset[key]}}}catch(err){_iterator2.e(err)}finally{_iterator2.f()}return output}},{key:"isVisible",value:function isVisible(elem){var el=elem[0];return el.offsetWidth>0&&el.offsetHeight>0}},{key:"hideAll",value:function hideAll(){var _iterator3=_createForOfIteratorHelper(document.getElementsByClassName("ui-timepicker-input")),_step3;try{for(_iterator3.s();!(_step3=_iterator3.n()).done;){var el=_step3.value;var tp=el.timepickerObj;if(tp){tp.hideMe()}}}catch(err){_iterator3.e(err)}finally{_iterator3.f()}}}]);return Timepicker}();(function(factory){if((typeof exports==="undefined"?"undefined":_typeof(exports))==="object"&&exports&&(typeof module==="undefined"?"undefined":_typeof(module))==="object"&&module&&module.exports===exports){factory(require("jquery"))}else if(typeof define==="function"&&define.amd){define(["jquery"],factory)}else{factory(jQuery)}})(function($){var _lang={};var methods={init:function init(options){return this.each(function(){var self=$(this);var tp=new Timepicker(this,options);var settings=tp.settings;_lang=settings.lang;this.timepickerObj=tp;self.addClass("ui-timepicker-input");if(settings.useSelect){_render(self)}else{self.prop("autocomplete","off");if(settings.showOn){for(var i in settings.showOn){self.on(settings.showOn[i]+".timepicker",methods.show)}}self.on("change.timepicker",tp._handleFormatValue);self.on("keydown.timepicker",_keydownhandler);self.on("keyup.timepicker",tp._handleKeyUp);if(settings.disableTextInput){self.on("keydown.timepicker",tp._disableTextInputHandler)}self.on("cut.timepicker",tp._handleKeyUp);self.on("paste.timepicker",tp._handleKeyUp);tp._formatValue(null,"initial")}})},show:function show(e){var self=$(this);var tp=self[0].timepickerObj;var settings=tp.settings;if(e){e.preventDefault()}if(settings.useSelect){tp.list.trigger("focus");return}if(tp._hideKeyboard()){self.trigger("blur")}var list=tp.list;if(self.prop("readonly")){return}if(!list||list.length===0||typeof settings.durationTime==="function"){_render(self);list=tp.list}if(Timepicker.isVisible(list)){return}if(self.is("input")){tp.selectedValue=self.val()}tp._setSelected();Timepicker.hideAll();if(typeof settings.listWidth=="number"){list.width(self.outerWidth()*settings.listWidth)}list.show();var listOffset={};if(settings.orientation.match(/r/)){listOffset.left=self.offset().left+self.outerWidth()-list.outerWidth()+parseInt(list.css("marginLeft").replace("px",""),10)}else if(settings.orientation.match(/l/)){listOffset.left=self.offset().left+parseInt(list.css("marginLeft").replace("px",""),10)}else if(settings.orientation.match(/c/)){listOffset.left=self.offset().left+(self.outerWidth()-list.outerWidth())/2+parseInt(list.css("marginLeft").replace("px",""),10)}var verticalOrientation;if(settings.orientation.match(/t/)){verticalOrientation="t"}else if(settings.orientation.match(/b/)){verticalOrientation="b"}else if(self.offset().top+self.outerHeight(true)+list.outerHeight()>$(window).height()+$(window).scrollTop()){verticalOrientation="t"}else{verticalOrientation="b"}if(verticalOrientation=="t"){list.addClass("ui-timepicker-positioned-top");listOffset.top=self.offset().top-list.outerHeight()+parseInt(list.css("marginTop").replace("px",""),10)}else{list.removeClass("ui-timepicker-positioned-top");listOffset.top=self.offset().top+self.outerHeight()+parseInt(list.css("marginTop").replace("px",""),10)}list.offset(listOffset);var selected=list.find(".ui-timepicker-selected");if(!selected.length){var timeInt=tp.time2int(tp._getTimeValue());if(timeInt!==null){selected=$(tp._findRow(timeInt))}else if(settings.scrollDefault){selected=$(tp._findRow(settings.scrollDefault()))}}if(!selected.length||selected.hasClass("ui-timepicker-disabled")){selected=list.find("li:not(.ui-timepicker-disabled):first")}if(selected&&selected.length){var topOffset=list.scrollTop()+selected.position().top-selected.outerHeight();list.scrollTop(topOffset)}else{list.scrollTop(0)}if(settings.stopScrollPropagation){$(document).on("wheel.ui-timepicker",".ui-timepicker-wrapper",function(e){e.preventDefault();var currentScroll=$(this).scrollTop();$(this).scrollTop(currentScroll+e.originalEvent.deltaY)})}$(document).on("mousedown.ui-timepicker",_closeHandler);$(window).on("resize.ui-timepicker",_closeHandler);if(settings.closeOnWindowScroll){$(document).on("scroll.ui-timepicker",_closeHandler)}self.trigger("showTimepicker");return this},hide:function hide(e){var tp=this[0].timepickerObj;if(tp){tp.hideMe()}Timepicker.hideAll();return this},option:function option(key,value){if(typeof key=="string"&&typeof value=="undefined"){var tp=this[0].timepickerObj;return tp.settings[key]}return this.each(function(){var self=$(this);var tp=self[0].timepickerObj;var settings=tp.settings;var list=tp.list;if(_typeof(key)=="object"){settings=$.extend(settings,key)}else if(typeof key=="string"){settings[key]=value}settings=tp.parseSettings(settings);tp.settings=settings;tp._formatValue({type:"change"},"initial");if(list){list.remove();tp.list=null}if(settings.useSelect){_render(self)}})},getSecondsFromMidnight:function getSecondsFromMidnight(){var tp=this[0].timepickerObj;return tp.time2int(tp._getTimeValue())},getTime:function getTime(relative_date){var tp=this[0].timepickerObj;var time_string=tp._getTimeValue();if(!time_string){return null}var offset=tp.time2int(time_string);if(offset===null){return null}if(!relative_date){relative_date=new Date}var time=new Date(relative_date);time.setHours(offset/3600);time.setMinutes(offset%3600/60);time.setSeconds(offset%60);time.setMilliseconds(0);return time},isVisible:function isVisible(){var tp=this[0].timepickerObj;return!!(tp&&tp.list&&Timepicker.isVisible(tp.list))},setTime:function setTime(value){var tp=this[0].timepickerObj;var settings=tp.settings;if(settings.forceRoundTime){var prettyTime=tp._roundAndFormatTime(tp.time2int(value))}else{var prettyTime=tp._int2time(tp.time2int(value))}if(value&&prettyTime===null&&settings.noneOption){prettyTime=value}tp._setTimeValue(prettyTime,"initial");tp._formatValue({type:"change"},"initial");if(tp&&tp.list){tp._setSelected()}return this},remove:function remove(){var self=this;if(!self.hasClass("ui-timepicker-input")){return}var tp=self[0].timepickerObj;var settings=tp.settings;self.removeAttr("autocomplete","off");self.removeClass("ui-timepicker-input");self.removeData("timepicker-obj");self.off(".timepicker");if(tp.list){tp.list.remove()}if(settings.useSelect){self.show()}tp.list=null;return this}};function _render(self){var tp=self[0].timepickerObj;var list=tp.list;var settings=tp.settings;if(list&&list.length){list.remove();tp.list=null}if(settings.useSelect){list=$("<select></select>",{class:"ui-timepicker-select"});if(self.attr("name")){list.attr("name","ui-timepicker-"+self.attr("name"))}var wrapped_list=list}else{list=$("<ul></ul>",{class:"ui-timepicker-list"});var wrapped_list=$("<div></div>",{class:"ui-timepicker-wrapper",tabindex:-1});wrapped_list.css({display:"none",position:"absolute"}).append(list)}if(settings.noneOption){if(settings.noneOption===true){settings.noneOption=settings.useSelect?"Time...":"None"}if($.isArray(settings.noneOption)){for(var i in settings.noneOption){if(parseInt(i,10)==i){var noneElement=tp._generateNoneElement(settings.noneOption[i],settings.useSelect);list.append(noneElement)}}}else{var noneElement=tp._generateNoneElement(settings.noneOption,settings.useSelect);list.append(noneElement)}}if(settings.className){wrapped_list.addClass(settings.className)}if((settings.minTime!==null||settings.durationTime!==null)&&settings.showDuration){var stepval=typeof settings.step=="function"?"function":settings.step;wrapped_list.addClass("ui-timepicker-with-duration");wrapped_list.addClass("ui-timepicker-step-"+settings.step)}var durStart=settings.minTime;if(typeof settings.durationTime==="function"){durStart=tp.time2int(settings.durationTime())}else if(settings.durationTime!==null){durStart=settings.durationTime}var start=settings.minTime!==null?settings.minTime:0;var end=settings.maxTime!==null?settings.maxTime:start+ONE_DAY-1;if(end<start){end+=ONE_DAY}if(end===ONE_DAY-1&&$.type(settings.timeFormat)==="string"&&settings.show2400){end=ONE_DAY}var dr=settings.disableTimeRanges;var drCur=0;var drLen=dr.length;var stepFunc=settings.step;if(typeof stepFunc!="function"){stepFunc=function stepFunc(){return settings.step}}for(var i=start,j=0;i<=end;j++,i+=stepFunc(j)*60){var timeInt=i;var timeString=tp._int2time(timeInt);if(settings.useSelect){var row=$("<option></option>",{value:timeString});row.text(timeString)}else{var row=$("<li></li>");row.addClass(timeInt%ONE_DAY<ONE_DAY/2?"ui-timepicker-am":"ui-timepicker-pm");row.attr("data-time",roundingFunction(timeInt,settings));row.text(timeString)}if((settings.minTime!==null||settings.durationTime!==null)&&settings.showDuration){var durationString=tp._int2duration(i-durStart,settings.step);if(settings.useSelect){row.text(row.text()+" ("+durationString+")")}else{var duration=$("<span></span>",{class:"ui-timepicker-duration"});duration.text(" ("+durationString+")");row.append(duration)}}if(drCur<drLen){if(timeInt>=dr[drCur][1]){drCur+=1}if(dr[drCur]&&timeInt>=dr[drCur][0]&&timeInt<dr[drCur][1]){if(settings.useSelect){row.prop("disabled",true)}else{row.addClass("ui-timepicker-disabled")}}}list.append(row)}wrapped_list.data("timepicker-input",self);tp.list=wrapped_list;if(settings.useSelect){if(self.val()){list.val(tp._roundAndFormatTime(tp.time2int(self.val())))}list.on("focus",function(){$(this).data("timepicker-input").trigger("showTimepicker")});list.on("blur",function(){$(this).data("timepicker-input").trigger("hideTimepicker")});list.on("change",function(){tp._setTimeValue($(this).val(),"select")});tp._setTimeValue(list.val(),"initial");self.hide().after(list)}else{var appendTo=settings.appendTo;if(typeof appendTo==="string"){appendTo=$(appendTo)}else if(typeof appendTo==="function"){appendTo=appendTo(self)}appendTo.append(wrapped_list);tp._setSelected();list.on("mousedown click","li",function(e){self.off("focus.timepicker");self.on("focus.timepicker-ie-hack",function(){self.off("focus.timepicker-ie-hack");self.on("focus.timepicker",methods.show)});if(!tp._hideKeyboard()){self[0].focus()}list.find("li").removeClass("ui-timepicker-selected");$(this).addClass("ui-timepicker-selected");if(tp._selectValue()){self.trigger("hideTimepicker");list.on("mouseup.timepicker click.timepicker","li",function(e){list.off("mouseup.timepicker click.timepicker");wrapped_list.hide()})}})}}function _closeHandler(e){if(e.target==window){return}var target=$(e.target);if(target.closest(".ui-timepicker-input").length||target.closest(".ui-timepicker-wrapper").length){return}Timepicker.hideAll();$(document).off(".ui-timepicker");$(window).off(".ui-timepicker")}function _keydownhandler(e){var self=$(this);var tp=self[0].timepickerObj;var list=tp.list;if(!list||!Timepicker.isVisible(list)){if(e.keyCode==40){methods.show.call(self.get(0));list=tp.list;if(!tp._hideKeyboard()){self.trigger("focus")}}else{return true}}switch(e.keyCode){case 13:if(tp._selectValue()){tp._formatValue({type:"change"});tp.hideMe()}e.preventDefault();return false;case 38:var selected=list.find(".ui-timepicker-selected");if(!selected.length){list.find("li").each(function(i,obj){if($(obj).position().top>0){selected=$(obj);return false}});selected.addClass("ui-timepicker-selected")}else if(!selected.is(":first-child")){selected.removeClass("ui-timepicker-selected");selected.prev().addClass("ui-timepicker-selected");if(selected.prev().position().top<selected.outerHeight()){list.scrollTop(list.scrollTop()-selected.outerHeight())}}return false;case 40:selected=list.find(".ui-timepicker-selected");if(selected.length===0){list.find("li").each(function(i,obj){if($(obj).position().top>0){selected=$(obj);return false}});selected.addClass("ui-timepicker-selected")}else if(!selected.is(":last-child")){selected.removeClass("ui-timepicker-selected");selected.next().addClass("ui-timepicker-selected");if(selected.next().position().top+2*selected.outerHeight()>list.outerHeight()){list.scrollTop(list.scrollTop()+selected.outerHeight())}}return false;case 27:list.find("li").removeClass("ui-timepicker-selected");tp.hideMe();break;case 9:tp.hideMe();break;default:return true}}$.fn.timepicker=function(method){if(!this.length)return this;if(methods[method]){if(!this.hasClass("ui-timepicker-input")){return this}return methods[method].apply(this,Array.prototype.slice.call(arguments,1))}else if(_typeof(method)==="object"||!method){return methods.init.apply(this,arguments)}else{$.error("Method "+method+" does not exist on jQuery.timepicker")}};$.fn.timepicker.defaults=DEFAULT_SETTINGS})})();

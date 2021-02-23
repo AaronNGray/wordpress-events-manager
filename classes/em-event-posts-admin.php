@@ -40,13 +40,13 @@ class EM_Event_Posts_Admin{
 		<script type="text/javascript">
 			jQuery(document).ready( function($){
 				$('.inline-edit-date').prev().css('display','none').next().css('display','none').next().css('display','none');
-				$('.em-detach-link').click(function( event ){
+				$('.em-detach-link').on('click', function( event ){
 					if( !confirm(EM.event_detach_warning) ){
 						event.preventDefault();
 						return false;
 					}
 				});
-				$('.em-delete-recurrence-link').click(function( event ){
+				$('.em-delete-recurrence-link').on('click', function( event ){
 					if( !confirm(EM.delete_recurrence_warning) ){
 						event.preventDefault();
 						return false;

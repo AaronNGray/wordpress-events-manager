@@ -57,7 +57,7 @@ class URL extends Event_Location {
 		return parent::get_label($label_type);
 	}
 	
-	public function output( $what = null ){
+	public function output( $what = null, $target = null ){
 		if( $what === null ){
 			return '<a href="'. esc_url($this->url) .'" target="_blank">'. esc_html($this->text) .'</a>';
 		}elseif( $what === '_self' ){

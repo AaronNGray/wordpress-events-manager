@@ -21,9 +21,9 @@ $admin_recurring = is_admin() && $EM_Event->is_recurring();
 	<p>
 		<span class="em-recurring-text"><?php _e('Events start from','events-manager'); ?></span>
 		<span class="em-event-text"><?php _e('Event starts at','events-manager'); ?></span>
-		<input id="start-time" class="em-time-input em-time-start" type="text" size="8" maxlength="8" name="event_start_time" value="<?php echo $EM_Event->start()->i18n($hours_format); ?>" />
+		<input class="em-time-input em-time-start" type="text" size="8" maxlength="8" name="event_start_time" value="<?php echo $EM_Event->start()->i18n($hours_format); ?>" />
 		<?php _e('to','events-manager'); ?>
-		<input id="end-time" class="em-time-input em-time-end" type="text" size="8" maxlength="8" name="event_end_time" value="<?php echo $EM_Event->end()->i18n($hours_format); ?>" />
+		<input class="em-time-input em-time-end" type="text" size="8" maxlength="8" name="event_end_time" value="<?php echo $EM_Event->end()->i18n($hours_format); ?>" />
 		<?php _e('All day','events-manager'); ?> <input type="checkbox" class="em-time-allday" name="event_all_day" id="em-time-all-day" value="1" <?php if(!empty($EM_Event->event_all_day)) echo 'checked="checked"'; ?> />
 	</p>
 	<?php if( get_option('dbem_timezone_enabled') ): ?>
@@ -80,7 +80,7 @@ $admin_recurring = is_admin() && $EM_Event->is_recurring();
 	<script type="text/javascript">
 	//<![CDATA[
 	jQuery(document).ready( function($) {
-		$('#em-recurrence-checkbox').change(function(){
+		$('#em-recurrence-checkbox').on('change', function(){
 			if( $('#em-recurrence-checkbox').is(':checked') ){
 				$('.em-recurring-text').show();
 				$('.em-event-text').hide();
