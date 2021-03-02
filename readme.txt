@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 5.6
-Stable tag: 5.9.10
+Stable tag: 5.9.11
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
@@ -63,9 +63,13 @@ We provide the tools to [help you be GDPR compliant](http://wp-events-plugin.com
 * settings to control what can be exported/erased as well as where/when to place consent requests
 * sample text for your site privacy policy describing what Events Manager does with personal data
 
-= Go Pro =
+= Premium Features =
+
+* NEW * Check out our WooCommerce add-on! Sell bookings directly with WooCommerce.
+
 We have a premium "Pro" add-on for Events Manager which not only demonstrates the flexibility of Events Manager, but also adds some important features including but not limited to:
 
+* WooCommerce integration included FREE (limited-time offer)
 * PayPal, Stripe, Authorize.net and Offline Payments
 * Custom booking forms
 * Individual Attendee custom forms
