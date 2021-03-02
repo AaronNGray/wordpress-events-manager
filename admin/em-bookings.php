@@ -186,6 +186,7 @@ function em_bookings_single(){
 		<?php
 		return false;
 	}
+	do_action('em_booking_admin', $EM_Booking);
 	?>
 	<div class='wrap' id="em-bookings-admin-booking">
 		<?php if( is_admin() ): ?><h1><?php else: ?><h2><?php endif; ?>		

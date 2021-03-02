@@ -111,6 +111,7 @@ class EM_Ticket extends EM_Object{
 			}
 		}
 		$this->compat_keys();
+		if( empty($this->ticket_price) ) $this->ticket_price = 0;
 		do_action('em_ticket',$this, $ticket_data, $ticket);
 	}
 
@@ -429,7 +430,7 @@ class EM_Ticket extends EM_Object{
 	 */
 	function get_price_without_tax( $format = false ){
 	    if( $format ) return $this->format_price($this->ticket_price);
-	    return $this->ticket_price; 
+	    return $this->ticket_price;
 	}
 	
 	/**

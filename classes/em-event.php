@@ -2410,7 +2410,7 @@ class EM_Event extends EM_Object{
 							}
 						}
 					}
-					if( $min === false ) $min = 0;
+					if( empty($min) ) $min = 0;
 					if( $min != $max ){
 						$replace = em_get_currency_formatted($min).' - '.em_get_currency_formatted($max);
 					}else{

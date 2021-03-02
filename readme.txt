@@ -115,12 +115,16 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
-= 5.9.10.1 (dev)  =
+= 5.9.11  =
 * updated JS to remove any deprecated functionality in jQuery v3.5,
 * changed timepicker library to (timepicker)[https://github.com/jonthornton/jquery-timepicker/]
 * added $target to Event_Location->output() function parameters
 * fixed EM_Event->output() errors causing booking emails to fail if containing #_EVENTLOCATION placeholders for non-virtual events
 * added $send_email and $ignore_spaces params to EM_Bookings::set_status()
+* added em_booking_admin action to top of single booking admin area
+* added update_meta() function to EM_Booking,
+* fixed some minor PHP warnings,
+* added ticket availability re-check during EM_Booking::validate() for bookings stored in session before saving
 
 = 5.9.10 =
 * fixed event locations not getting synced with translations (WPML) and requires re-saving events to take effect

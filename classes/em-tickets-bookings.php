@@ -292,20 +292,30 @@ class EM_Tickets_Bookings extends EM_Object implements Iterator, Countable {
 	//Iterator Implementation
     public function rewind(){
         reset($this->tickets_bookings);
-    }  
+    }
+	
+	/**
+	 * @return EM_Ticket_Booking
+	 */
     public function current(){
         $var = current($this->tickets_bookings);
         return $var;
-    }  
+    }
+	/**
+	 * @return int Ticket ID
+	 */
     public function key(){
         $var = key($this->tickets_bookings);
         return $var;
-    }  
-    public function next(){
+    }
+	/**
+	 * @return EM_Ticket_Booking
+	 */
+	public function next(){
         $var = next($this->tickets_bookings);
         return $var;
     }
-    public function valid(){
+	public function valid(){
         $key = key($this->tickets_bookings);
         $var = ($key !== NULL && $key !== FALSE);
         return $var;
