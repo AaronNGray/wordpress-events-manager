@@ -4,7 +4,7 @@ Donate link: http://wp-events-plugin.com
 Tags: bookings, calendar, tickets, events, buddypress, event management, google maps, maps, locations, registration, zoom
 Text Domain: events-manager
 Requires at least: 5.2
-Tested up to: 5.6
+Tested up to: 5.7
 Stable tag: 5.9.11
 Requires PHP: 5.3
 
@@ -119,6 +119,10 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
+= 5.9.11.1 (dev) =
+* fixed issues with WooCommerce add-on circumventing currency formatting
+* changed various AJAX/Admin actions to fire on wp_loaded rather than init action to allow better plugin compatibility
+
 = 5.9.11  =
 * updated JS to remove any deprecated functionality in jQuery v3.5,
 * changed timepicker library to (timepicker)[https://github.com/jonthornton/jquery-timepicker/]

@@ -694,8 +694,8 @@ function em_init_actions() {
 		fclose($handle);
 		exit();
 	}
-}  
-add_action('init','em_init_actions',11);
+}
+add_action('wp_loaded','em_init_actions',11);
 
 /**
  * Handles AJAX Bookings admin table filtering, view changes and pagination
