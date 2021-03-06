@@ -202,14 +202,16 @@ class EM_Booking extends EM_Object{
 	 * @return string[]
 	 */
 	public function __sleep(){
-		return array('booking_id','event_id','person_id','booking_price','booking_spaces','booking_comment','booking_status','booking_tax_rate','booking_taxes','booking_meta','notes','booking_date','person','feedback_message','errors','email_sent','custom','previous_status','status_array','manage_override','tickets_bookings');
+		$array = array('booking_id','event_id','person_id','booking_price','booking_spaces','booking_comment','booking_status','booking_tax_rate','booking_taxes','booking_meta','notes','booking_date','person','feedback_message','errors','mails_sent','custom','previous_status','status_array','manage_override','tickets_bookings');
+		if( !empty($this->bookings) ) $array[] = 'bookings'; // EM Pro backwards compatibility
+		return apply_filters('em_booking_sleep', $array, $this);
 	}
 	
 	/**
 	 * Repopulate the ticket bookings with this object and its event reference.
 	 */
 	public function __wakeup(){
-		foreach($this->tickets_bookings->tickets_bookings as $EM_Ticket_Booking){
+		foreach($this->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking){
 			$EM_Ticket_Booking->booking = $this;
 		}
 	}
