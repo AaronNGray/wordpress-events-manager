@@ -56,7 +56,7 @@ class EM_Admin_Notice {
 	 */
 	public $network = false;
 	
-	public function __construct( $key, $type = false, $message = false ){
+	public function __construct( $key, $type = false, $message = false, $where = false ){
 		//process the supplied data
 		if( empty($message) ){
 			if( empty($type) && is_array($key) ){
@@ -79,6 +79,8 @@ class EM_Admin_Notice {
 		foreach( $notice as $key => $value ){
 			$this->$key = $value;
 		}
+		//add where if defined
+		if( !empty($where) ) $this->where = $where;
 		//call a hook
 		do_action('em_admin_notice_'.$this->name, $this);
 		if( !is_multisite() && $this->where == 'network_admin' ) $this->where = 'settings';

@@ -34,7 +34,6 @@ class EM_Ticket_Booking extends EM_Object{
 	/**
 	 * Creates ticket object and retreives ticket data (default is a blank ticket object). Accepts either array of ticket data (from db) or a ticket id.
 	 * @param mixed $ticket_data
-	 * @return null
 	 */
 	function __construct( $ticket_data = false ){
 		if( $ticket_data !== false ){
@@ -52,6 +51,14 @@ class EM_Ticket_Booking extends EM_Object{
 			$this->to_object($ticket);
 			$this->compat_keys();
 		}
+	}
+	
+	/**
+	 * Cleans up serialization of this object and returns only relevant fields. For EM_Bookings that get serialized but aren't saved yet with an ID, they should populate the booking object upon wakeup.
+	 * @return string[]
+	 */
+	function __sleep(){
+		return array( 'ticket_booking_id','booking_id','ticket_id','ticket_booking_price','ticket_booking_spaces' );
 	}
 	
 	/**

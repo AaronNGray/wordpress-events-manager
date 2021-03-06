@@ -119,9 +119,12 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
-= 5.9.11.1 (dev) =
+= 5.9.11.2 (dev) =
 * fixed issues with WooCommerce add-on circumventing currency formatting
 * changed various AJAX/Admin actions to fire on wp_loaded rather than init action to allow better plugin compatibility
+* added $where param to EM_Admin_Notice constructor
+* added __sleep and __wakeup functions to EM_Booking and EM_Ticket_Booking for more optimal serialization
+* fixed timepicker conflict issues with other plugins due to shared common function names
 
 = 5.9.11  =
 * updated JS to remove any deprecated functionality in jQuery v3.5,

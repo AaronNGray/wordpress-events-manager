@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Events Manager
-Version: 5.9.11.1
+Version: 5.9.11.2
 Plugin URI: http://wp-events-plugin.com
 Description: Event registration and booking management for WordPress. Recurring events, locations, webinars, google maps, rss, ical, booking registration and more!
 Author: Marcus Sykes
@@ -28,8 +28,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 // Setting constants
-define('EM_VERSION', 5.9941); //self expanatory, although version currently may not correspond directly with published version number
-define('EM_PRO_MIN_VERSION', 2.6712); //self expanatory
+define('EM_VERSION', 5.9942); //self expanatory, although version currently may not correspond directly with published version number
+define('EM_PRO_MIN_VERSION', 2.691); //self expanatory
 define('EM_PRO_MIN_VERSION_CRITICAL', 2.377); //self expanatory
 define('EM_DIR', dirname( __FILE__ )); //an absolute path to this directory
 define('EM_DIR_URI', trailingslashit(plugins_url('',__FILE__))); //an absolute path to this directory
