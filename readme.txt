@@ -65,9 +65,9 @@ We provide the tools to [help you be GDPR compliant](http://wp-events-plugin.com
 
 = Premium Features =
 
-* NEW * Check out our WooCommerce add-on! Sell bookings directly with WooCommerce.
+*NEW* Check out our [WooCommerce add-on](https://wp-events-plugin.com/woocommerce/)! Sell bookings directly with WooCommerce.
 
-We have a premium "Pro" add-on for Events Manager which not only demonstrates the flexibility of Events Manager, but also adds some important features including but not limited to:
+We have a premium [Pro add-on for Events Manager](http://eventsmanagerpro.com/gopro/) which not only demonstrates the flexibility of Events Manager, but also adds some important features including but not limited to:
 
 * WooCommerce integration included FREE (limited-time offer)
 * PayPal, Stripe, Authorize.net and Offline Payments
