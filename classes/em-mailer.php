@@ -56,8 +56,10 @@ class EM_Mailer {
 			remove_action('phpmailer_init', 'EM_Mailer::add_attachments_to_mailer', 9999);
 			//send email
 			if(!$send){
-				global $phpmailer;
-				$this->errors[] = $phpmailer->ErrorInfo;
+				global $phpmailer; /* @var PHPMailer $phpmailer */
+				if( !empty($phpmailer->ErrorInfo) ) {
+					$this->errors[] = $phpmailer->ErrorInfo;
+				}
 			}
 			//cleanup
 			self::delete_email_attachments($attachments);

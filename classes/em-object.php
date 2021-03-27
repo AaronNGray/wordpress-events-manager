@@ -1688,7 +1688,7 @@ class EM_Object {
 	}
 
 	function sanitize_time( $time ){
-		if( !empty($time) && preg_match ( '/^([01]\d|2[0-3]):([0-5]\d) ?(AM|PM)?$/', $time, $match ) ){
+		if( !empty($time) && preg_match ( '/^([01]?\d|2[0-3]):([0-5]\d) ?(AM|PM)?$/', $time, $match ) ){
 			if( !empty($match[3]) && $match[3] == 'PM' && $match[1] != 12 ){
 				$match[1] = 12+$match[1];
 			}elseif( !empty($match[3]) && $match[3] == 'AM' && $match[1] == 12 ){

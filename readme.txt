@@ -119,6 +119,10 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
+= 5.9.11.4 (dev) =
+* fixed a minor PHPMailer PHP warning tiggered when mailing errors occur
+* fixed date validation errors restting available from/until times to 12AM for tickets
+
 = 5.9.11.3 =
 * fixed issues with WooCommerce add-on circumventing currency formatting
 * changed various AJAX/Admin actions to fire on wp_loaded rather than init action to allow better plugin compatibility
