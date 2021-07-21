@@ -169,7 +169,7 @@ function em_docs_init($force_init = false){
 						'desc' => 'These placeholders will only show if bookings are enabled for the given event and in the events manager settings page. Spaces placeholders will default to 0',
 						'placeholders' => array(
 							'#_BOOKINGFORM' => array( 'desc' => 'Adds a booking forms for this event.' ),
-							'#_BOOKINGBUTTON' => array( 'desc' => 'A single button that will appear to logged in users, if they click on it, they apply for a booking. This button will only display if there is one ticket.' ),
+							'#_BOOKINGBUTTON' => array( 'desc' => 'A single button that will appear to logged in users, if they click on it a booking will be made. This button will automatically book the first aailable ticket if more than one ticket exists for the event, and will also circumvent any payment requirements. Use in combination with conditional placeholders such as is_free to avoid unpaid bookings.' ),
 							'#_AVAILABLESPACES' => array( 'desc' => 'Shows available spaces for the event.' ),
 							'#_BOOKEDSPACES' => array( 'desc' => 'Shows the amount of currently booked spaces for the event.' ),
 							'#_PENDINGSPACES' => array( 'desc' => 'Shows the amount of pending spaces for the event.' ),

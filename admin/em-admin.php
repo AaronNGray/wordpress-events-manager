@@ -256,35 +256,44 @@ function em_updates_check( $transient ) {
         
     //only bother if we're checking for dev versions
     if( get_option('em_check_dev_version') || get_option('dbem_pro_dev_updates') ){     
-	    //check WP repo for trunk version
-	    $plugin_slugs = apply_filters('em_org_dev_version_slugs', array('events-manager'=> EM_SLUG));
-	    foreach( $plugin_slugs as $org_slug => $wp_slug ) {
+	    //check WP repo for trunk version, other EM-related plugins on .org can hook here to make the best of our admin setting option
+	    $plugins = apply_filters('em_org_dev_versions', array(
+	    	'events-manager'=> array(
+	    		'slug' => EM_SLUG,
+			    'version' => EM_VERSION
+		    )
+		));
+	    foreach( $plugins as $org_slug => $plugin_info ) {
 		    $request = wp_remote_get('https://plugins.svn.wordpress.org/'.$org_slug.'/trunk/'.$org_slug.'.php');
-		
+		    $wp_slug = $plugin_info['slug'];
+		    if( empty($transient->checked[$wp_slug]) ){
+			    $transient->checked[$wp_slug] = !empty($plugin_info['version']) ? $plugin_info['version'] : 0;
+		    }
 		    if (!is_wp_error($request)) {
 			    preg_match('/Version: ([0-9a-z\.]+)/', $request['body'], $matches);
 			
 			    if (!empty($matches[1])) {
 				    //we have a version number!
-				    if (version_compare($transient->checked[$wp_slug], $matches[1]) < 0) {
-					    $response = new stdClass();
-					    $response->slug = $wp_slug;
-					    $response->new_version = $matches[1];
-					    $response->url = 'http://wordpress.org/extend/plugins/'.$org_slug.'/';
-					    $response->package = 'http://downloads.wordpress.org/plugin/'.$org_slug.'.zip';
-					    $icon_test = wp_remote_get('https://ps.w.org/'.$org_slug.'/assets/icon-128x128.png');
-					    if( !is_wp_error($icon_test) && $icon_test['response']['code'] == 200 ){
-						    $response->icons = array(
-						        '1x' => 'https://ps.w.org/'.$org_slug.'/assets/icon-128x128.png',
-						        '2x' => 'https://ps.w.org/'.$org_slug.'/assets/icon-256x256.png'
-						    );
-						}
+				    $response = new stdClass();
+				    $response->slug = $wp_slug;
+				    $response->new_version = $matches[1];
+				    $response->url = 'http://wordpress.org/extend/plugins/'.$org_slug.'/';
+				    $response->package = 'http://downloads.wordpress.org/plugin/'.$org_slug.'.zip';
+				    $icon_test = wp_remote_get('https://ps.w.org/'.$org_slug.'/assets/icon-128x128.png');
+				    if( !is_wp_error($icon_test) && $icon_test['response']['code'] == 200 ){
+					    $response->icons = array(
+					        '1x' => 'https://ps.w.org/'.$org_slug.'/assets/icon-128x128.png',
+					        '2x' => 'https://ps.w.org/'.$org_slug.'/assets/icon-256x256.png'
+					    );
+					}
+				    if ( version_compare($transient->checked[$wp_slug], $matches[1]) < 0) {
 					    $transient->response[$wp_slug] = $response;
+				    }else{
+					    $transient->no_update[$wp_slug] = $response;
 				    }
 			    }
 		    }
 	    }
-		
 		delete_option('em_check_dev_version');
     }
     

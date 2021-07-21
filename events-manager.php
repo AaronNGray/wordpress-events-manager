@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Events Manager
-Version: 5.9.11.4
+Version: 5.10
 Plugin URI: http://wp-events-plugin.com
 Description: Event registration and booking management for WordPress. Recurring events, locations, webinars, google maps, rss, ical, booking registration and more!
 Author: Marcus Sykes
@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 // Setting constants
-define('EM_VERSION', 5.9942); //self expanatory, although version currently may not correspond directly with published version number
+define('EM_VERSION', 5.99910); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
 define('EM_PRO_MIN_VERSION', 2.6712); //self expanatory
 define('EM_PRO_MIN_VERSION_CRITICAL', 2.377); //self expanatory
 define('EM_DIR', dirname( __FILE__ )); //an absolute path to this directory
@@ -678,7 +678,7 @@ function em_locate_template( $template_name, $load=false, $the_args = array() ) 
  * Since the options filter doesn't have a catchall filter, we send all filters to the __call function and figure out the option that way.
  */
 class EM_Formats {
-	function __construct(){ add_action( 'template_redirect', array(&$this, 'add_filters')); }
+	function __construct(){ add_action( 'events_manager_loaded', array(&$this, 'add_filters')); }
 	function add_filters(){
 		//you can hook into this filter and activate the format options you want to override by supplying the wp option names in an array, just like in the database.
 		$formats = apply_filters('em_formats_filter', array());

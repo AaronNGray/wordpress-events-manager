@@ -143,7 +143,6 @@ class EM_Booking extends EM_Object{
 			//Save into the object
 			$this->to_object($booking);
 			$this->previous_status = $this->booking_status;
-			$this->get_person();
 			$this->booking_date = !empty($booking['booking_date']) ? $booking['booking_date']:false;
 		}
 		//Do it here so things appear in the po file.
@@ -741,7 +740,7 @@ class EM_Booking extends EM_Object{
 	 */
 	function get_event(){
 		global $EM_Event;
-		if( is_object($this->event) && get_class($this->event)=='EM_Event' && $this->event->event_id == $this->event_id ){
+		if( is_object($this->event) && get_class($this->event)=='EM_Event' && ($this->event->event_id == $this->event_id || (EM_ML::$is_ml && $this->event->event_parent == $this->event_id)) ){
 			return $this->event;
 		}elseif( is_object($EM_Event) && $EM_Event->event_id == $this->event_id ){
 			$this->event = $EM_Event;

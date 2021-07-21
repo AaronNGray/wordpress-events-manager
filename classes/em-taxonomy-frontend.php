@@ -40,6 +40,8 @@ class EM_Taxonomy_Frontend {
 	public static function template($template = ''){
 		global $wp_query, $wp_the_query, $em_the_query, $post;
 		if( is_tax(self::$taxonomy_name) && !locate_template('taxonomy-'.self::$taxonomy_name.'.php') && get_option('dbem_cp_'. self::$option_name_plural .'_formats', true) ){
+			do_action('em_pre_'. self::$option_name .'_taxonomy_template');
+			do_action('em_pre_taxonomy_template', get_called_class(), static::$tax_class);
 			$em_the_query = $wp_the_query; //use this for situations where other plugins need to access 'original' query data, which you can switch back/forth.
 			$EM_Taxonomy = $GLOBALS[self::$tax_class] = EM_Taxonomy_Term::get($wp_query->queried_object->term_id, self::$tax_class);
 			if( self::get_page_id() ){
@@ -88,6 +90,7 @@ class EM_Taxonomy_Frontend {
 				add_filter('wpseo_head', array(self::$this_class,'flip_the_query'), 1000000);
 			}
 			do_action('em_'. self::$option_name .'_taxonomy_template');
+			do_action('em_taxonomy_template', get_called_class(), static::$tax_class);
 		}
 		return $template;
 	}

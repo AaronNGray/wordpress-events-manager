@@ -111,6 +111,9 @@ class EM_ML{
 	public static function switch_locale( $locale ){
 		self::$current_language_restore = self::$current_language;
 		switch_to_locale($locale);
+		do_action('em_ml_switch_locale', $locale);
+		// short-circuit determininig the locale for EM-specific purposes
+		add_filter('pre_determine_locale', 'EM_ML::pre_determine_locale', 999999, 1);
 	}
 	
 	public static function restore_locale(){
@@ -127,6 +130,23 @@ class EM_ML{
 				}
 			}
 		}
+		do_action('em_ml_restore_locale', self::$current_language);
+		// short-circuit determininig the locale for EM-specific purposes
+		remove_filter('pre_determine_locale', 'EM_ML::pre_determine_locale', 999999);
+	}
+	
+	/**
+	 * Quirky fix for situations where admins are triggering something requiring translations in the backend whilst EM_ML has switched locales temporarily.
+	 * For example, triggering an email booking resend in a translated language; In this case the loaded translation file will always be that of the admin
+	 * preferred locale rather than the get_locale() which is not what we'd want in these situations. Therefore when switching language this hook is active.
+	 * @param $locale
+	 * @return mixed|string
+	 */
+	public static function pre_determine_locale( $locale ){
+		if( is_admin() && EM_ML::$current_language_restore !== null ){
+			return self::$current_language;
+		}
+		return $locale;
 	}
 
     /**
