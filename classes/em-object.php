@@ -378,9 +378,15 @@ class EM_Object {
 				if( !get_option('dbem_events_current_are_past') ){
 					$conditions['scope'] .= " OR (event_start_date <= CAST('".$EM_DateTime->getDate()."' AS DATE) AND event_end_date >= CAST('".$EM_DateTime->getDate()."' AS DATE))";
 				}
-			}elseif ($scope == "month" || $scope == "next-month"){
+			}elseif ($scope == "week" || $scope == 'this-week'){
+				list($start_date, $end_date) = $EM_DateTime->get_week_dates( $scope );
+				$conditions['scope'] = " (event_start_date BETWEEN CAST('$start_date' AS DATE) AND CAST('$end_date' AS DATE))";
+				if( !get_option('dbem_events_current_are_past') ){
+					$conditions['scope'] .= " OR (event_start_date < CAST('$start_date' AS DATE) AND event_end_date >= CAST('$start_date' AS DATE))";
+				}
+			}elseif ($scope == "month" || $scope == "next-month" || $scope == 'this-month'){
 				if( $scope == 'next-month' ) $EM_DateTime->add('P1M');
-				$start_month = $EM_DateTime->modify('first day of this month')->getDate();
+				$start_month = $scope == 'this-month' ? $EM_DateTime->getDate() : $EM_DateTime->modify('first day of this month')->getDate();
 				$end_month = $EM_DateTime->modify('last day of this month')->getDate();
 				$conditions['scope'] = " (event_start_date BETWEEN CAST('$start_month' AS DATE) AND CAST('$end_month' AS DATE))";
 				if( !get_option('dbem_events_current_are_past') ){

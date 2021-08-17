@@ -29,6 +29,7 @@ function em_get_booking($id = false) {
  * Contains all information and relevant functions surrounding a single booking made with Events Manager
  * @property int|false $booking_status
  * @property string $language
+ * @property EM_Person $person
  */
 class EM_Booking extends EM_Object{
 	//DB Fields
@@ -78,7 +79,7 @@ class EM_Booking extends EM_Object{
 	/**
 	 * @var EM_Person
 	 */
-	var $person;
+	protected $person;
 	var $required_fields = array('booking_id', 'event_id', 'person_id', 'booking_spaces');
 	var $feedback_message = "";
 	var $errors = array();
@@ -176,6 +177,8 @@ class EM_Booking extends EM_Object{
 		    }
 	    }elseif( $var == 'booking_status' ){
 			return ($this->booking_status == 0 && !get_option('dbem_bookings_approval') ) ? 1:$this->booking_status;
+	    }elseif( $var == 'person' ){
+	    	return $this->get_person();
 	    }
 	    return null;
 	}

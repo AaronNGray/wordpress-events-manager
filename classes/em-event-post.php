@@ -289,16 +289,25 @@ class EM_Event_Post {
 				}else{
 					$query[] = array( 'key' => '_event_end', 'value' => $EM_DateTime->getDateTime(), 'compare' => $compare, 'type' => 'DATETIME' );
 				}
-			}elseif ($scope == "month" || $scope == "next-month" ){
+			}elseif ($scope == "month" || $scope == "next-month" || $scope == 'this-month'){
 				$EM_DateTime = new EM_DateTime(); //create default time in blog timezone
 				if( $scope == 'next-month' ) $EM_DateTime->add('P1M');
-				$start_month = $EM_DateTime->modify('first day of this month')->getDate();
+				$start_month = $scope == 'this-month' ? $EM_DateTime->getDate() : $EM_DateTime->modify('first day of this month')->getDate();
 				$end_month = $EM_DateTime->modify('last day of this month')->getDate();
 				if( get_option('dbem_events_current_are_past') && $wp_query->query_vars['post_type'] != 'event-recurring' ){
 					$query[] = array( 'key' => '_event_start_date', 'value' => array($start_month,$end_month), 'type' => 'DATE', 'compare' => 'BETWEEN');
 				}else{
 					$query[] = array( 'key' => '_event_start_date', 'value' => $end_month, 'compare' => '<=', 'type' => 'DATE' );
 					$query[] = array( 'key' => '_event_end_date', 'value' => $start_month, 'compare' => '>=', 'type' => 'DATE' );
+				}
+			}elseif ($scope == "week" || $scope == 'this-week'){
+				$EM_DateTime = new EM_DateTime(); //create default time in blog timezone
+				list($start_date, $end_date) = $EM_DateTime->get_week_dates( $scope );
+				if( get_option('dbem_events_current_are_past') && $wp_query->query_vars['post_type'] != 'event-recurring' ){
+					$query[] = array( 'key' => '_event_start_date', 'value' => array($start_date,$end_date), 'type' => 'DATE', 'compare' => 'BETWEEN');
+				}else{
+					$query[] = array( 'key' => '_event_start_date', 'value' => $end_date, 'compare' => '<=', 'type' => 'DATE' );
+					$query[] = array( 'key' => '_event_end_date', 'value' => $start_date, 'compare' => '>=', 'type' => 'DATE' );
 				}
 			}elseif( preg_match('/(\d\d?)\-months/',$scope,$matches) ){ // next x months means this month (what's left of it), plus the following x months until the end of that month.
 				$EM_DateTime = new EM_DateTime(); //create default time in blog timezone

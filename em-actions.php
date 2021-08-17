@@ -614,25 +614,10 @@ function em_init_actions() {
 	if( is_user_logged_in() ){
 		//Admin operations
 		//Specific Oject Ajax
-		if( !empty($_REQUEST['em_obj']) ){
-			switch( $_REQUEST['em_obj'] ){
-				case 'em_bookings_events_table':
-					include_once('admin/bookings/em-events.php');
-					em_bookings_events_table();
-					exit();
-					break;
-				case 'em_bookings_pending_table':
-					include_once('admin/bookings/em-pending.php');
-					em_bookings_pending_table();
-					exit();
-					break;
-				case 'em_bookings_confirmed_table':
-					//add some admin files just in case
-					include_once('admin/bookings/em-confirmed.php');
-					em_bookings_confirmed_table();
-					exit();
-					break;
-			}
+		if( !empty($_REQUEST['em_obj']) && $_REQUEST['em_obj'] == 'em_bookings_events_table' ){
+			include_once('admin/bookings/em-events.php');
+			em_bookings_events_table();
+			exit();
 		}
 	}
 	//Export CSV - WIP
