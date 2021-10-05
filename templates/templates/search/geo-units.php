@@ -5,7 +5,7 @@
 		<span><?php echo esc_html($args['geo_units_label']); ?></span>
 		<select name="near_distance" class="em-search-geo-distance">
 		    <?php foreach( $args['geo_distance_values'] as $unit ) : ?>
-			<option value="<?php echo $unit; ?>" <?php if($args['near_distance'] == $unit) echo 'selected="selected"' ?>><?php echo $unit; ?></option>
+			<option value="<?php echo esc_attr($unit); ?>" <?php if($args['near_distance'] == $unit) echo 'selected="selected"' ?>><?php echo esc_html($unit); ?></option>
 			<?php endforeach; ?>
 		</select>
 	</label>

@@ -103,6 +103,7 @@ class Event_Location {
 				$this->data[$key] = maybe_unserialize($this->data[$key]);
 			}
 		}
+		do_action('em_event_location_load_postdata', $this);
 	}
 	
 	/**
@@ -111,14 +112,14 @@ class Event_Location {
 	 */
 	public function get_post(){
 		$this->data = array();
-		return true;
+		return apply_filters('em_event_location_get_post', true, $this);
 	}
 	
 	/**
 	 * @return boolean
 	 */
 	public function validate(){
-		return false;
+		return apply_filters('em_event_location_validate', false, $this);
 	}
 	
 	public function save(){
@@ -133,13 +134,14 @@ class Event_Location {
 				}
 			}
 		}
-		return true;
+		return apply_filters('em_event_location_save', true, $this);
 	}
 	
 	public function delete(){
 		$this->reset_data();
 		$this->data = array();
-		return true;
+		do_action('em_event_location_deleted', $this);
+		return apply_filters('em_event_location_delete', true, $this);
 	}
 	
 	/**

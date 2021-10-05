@@ -615,20 +615,20 @@ function em_get_search_form_defaults($args = array()){
 	//merge defaults with supplied arguments 
 	$args = array_merge($search_args, $args);
 	//overwrite with $_REQUEST defaults in event of a submitted search
-	if( isset($_REQUEST['geo']) ) $args['geo'] = $_REQUEST['geo']; //if geo search string requested, use that for search form
-	if( isset($_REQUEST['near']) ) $args['near'] = wp_unslash($_REQUEST['near']); //if geo search string requested, use that for search form
-	if( isset($_REQUEST['em_search']) ) $args['search'] = wp_unslash($_REQUEST['em_search']); //if geo search string requested, use that for search form
-	if( isset($_REQUEST['category']) ) $args['category'] = $_REQUEST['category']; //if state requested, use that for searching
-	if( isset($_REQUEST['country']) ) $args['country'] = wp_unslash($_REQUEST['country']); //if country requested, use that for searching
-	if( isset($_REQUEST['region']) ) $args['region'] = wp_unslash($_REQUEST['region']); //if region requested, use that for searching
-	if( isset($_REQUEST['state']) ) $args['state'] = wp_unslash($_REQUEST['state']); //if state requested, use that for searching
-	if( isset($_REQUEST['town']) ) $args['town'] = wp_unslash($_REQUEST['town']); //if state requested, use that for searching
-	if( isset($_REQUEST['near_unit']) ) $args['near_unit'] = $_REQUEST['near_unit']; //if state requested, use that for searching
-	if( isset($_REQUEST['near_distance']) ) $args['near_distance'] = $_REQUEST['near_distance']; //if state requested, use that for searching
+	if( isset($_REQUEST['geo']) ) $args['geo'] = sanitize_text_field($_REQUEST['geo']); //if geo search string requested, use that for search form
+	if( isset($_REQUEST['near']) ) $args['near'] = sanitize_text_field(wp_unslash($_REQUEST['near'])); //if geo search string requested, use that for search form
+	if( isset($_REQUEST['em_search']) ) $args['search'] = sanitize_text_field(wp_unslash($_REQUEST['em_search'])); //if geo search string requested, use that for search form
+	if( isset($_REQUEST['category']) ) $args['category'] = sanitize_text_field($_REQUEST['category']); //if category requested, use that for searching
+	if( isset($_REQUEST['country']) ) $args['country'] = sanitize_text_field(wp_unslash($_REQUEST['country'])); //if country requested, use that for searching
+	if( isset($_REQUEST['region']) ) $args['region'] = sanitize_text_field(wp_unslash($_REQUEST['region'])); //if region requested, use that for searching
+	if( isset($_REQUEST['state']) ) $args['state'] = sanitize_text_field(wp_unslash($_REQUEST['state'])); //if state requested, use that for searching
+	if( isset($_REQUEST['town']) ) $args['town'] = sanitize_text_field(wp_unslash($_REQUEST['town'])); //if state requested, use that for searching
+	if( isset($_REQUEST['near_unit']) ) $args['near_unit'] = sanitize_text_field($_REQUEST['near_unit']); //if state requested, use that for searching
+	if( isset($_REQUEST['near_distance']) ) $args['near_distance'] = sanitize_text_field($_REQUEST['near_distance']); //if state requested, use that for searching
 	if( !empty($_REQUEST['scope']) && !is_array($_REQUEST['scope'])){ 
-		$args['scope'] = explode(',',$_REQUEST['scope']); //convert scope to an array in event of pagination 
+		$args['scope'] = explode(',',sanitize_text_field($_REQUEST['scope'])); //convert scope to an array in event of pagination
 	}elseif( !empty($_REQUEST['scope']) ){
-		$args['scope'] = $_REQUEST['scope'];
+		$args['scope'] = sanitize_text_field($_REQUEST['scope']);
 	}
 	return $args;
 }

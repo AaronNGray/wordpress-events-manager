@@ -2237,7 +2237,7 @@ class EM_Event extends EM_Object{
 				case '#_24HENDTIME_LOCAL':
 				case '#_24HTIMES_LOCAL':
 					$ts = ($result == '#_24HENDTIME_LOCAL') ? $this->end()->getTimestamp():$this->start()->getTimestamp();
-					$date_end = ($result == '#_24HTIMES_LOCAL' && $this->end()->getTimestamp() !== $ts) ? 'data-time-end="'. esc_attr($this->end()->getTimestamp()) .'" data-separator="'. esc_attr(get_option('dbem_times_separator')) . '"' : '';
+					$date_end = ($result == '#_24HTIMES_LOCAL' && $this->event_start_time !== $this->event_end_time) ? 'data-time-end="'. esc_attr($this->end()->getTimestamp()) .'" data-separator="'. esc_attr(get_option('dbem_times_separator')) . '"' : '';
 					$replace = '<span class="em-time-localjs" data-time-format="24"  data-time="'. esc_attr($ts) .'" '. $date_end .'>JavaScript Disabled</span>';
 					break;
 				case '#_12HSTARTTIME':
@@ -2292,9 +2292,13 @@ class EM_Event extends EM_Object{
 							}
 							if( $result === '#_EVENTDATES_LOCAL' ){
 								$time_format = ( get_option('dbem_date_format') ) ? get_option('dbem_date_format'):get_option('date_format');
+								$start_time = $this->start()->getTimestamp();
+								$end_time = $this->event_start_date == $this->event_end_date ? $start_time : $this->end()->getTimestamp();
 								if( empty($separator) ) $separator = get_option('dbem_dates_separator');
 							}else{
 								$time_format = ( get_option('dbem_time_format') ) ? get_option('dbem_time_format'):get_option('time_format');
+								$start_time = $this->start()->getTimestamp();
+								$end_time = $this->event_start_time == $this->event_end_time ? $start_time : $this->end()->getTimestamp();
 								if( empty($separator) ) $separator = get_option('dbem_times_separator');
 							}
 							$time_format = strtr($time_format, $replacements);
@@ -2303,7 +2307,7 @@ class EM_Event extends EM_Object{
 						// start output
 						ob_start();
 						?>
-						<span class="em-date-momentjs" data-date-format="<?php echo esc_attr($time_format); ?>" data-date-start="<?php echo $this->start()->getTimestamp() ?>" data-date-end="<?php echo $this->end()->getTimestamp() ?>" data-date-separator="<?php echo esc_attr($separator); ?>">JavaScript Disabled</span>
+						<span class="em-date-momentjs" data-date-format="<?php echo esc_attr($time_format); ?>" data-date-start="<?php echo $start_time ?>" data-date-end="<?php echo $end_time ?>" data-date-separator="<?php echo esc_attr($separator); ?>">JavaScript Disabled</span>
 						<?php
 						$replace = ob_get_clean();
 					}

@@ -21,11 +21,11 @@ class URL extends Event_Location {
 		if( !empty($_POST['event_location_url_text']) ){
 			$this->data['text'] = sanitize_text_field($_POST['event_location_url_text']);
 		}
-		return $return;
+		return apply_filters('em_event_location_url_get_post', $return, $this);
 	}
 	
 	public function validate(){
-		$result = false;
+		$result = parent::validate();
 		if( empty($this->data['url']) ){
 			$this->event->add_error( __('Please enter a valid URL for this event location.', 'events-manager') );
 			$result = false;
@@ -34,7 +34,7 @@ class URL extends Event_Location {
 			$this->event->add_error( __('Please provide some link text for this event location URL.', 'events-manager') );
 			$result = false;
 		}
-		return $result;
+		return apply_filters('em_event_location_url_validate', $result, $this);
 	}
 	
 	public function get_link( $new_target = true ){

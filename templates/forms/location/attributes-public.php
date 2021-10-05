@@ -11,19 +11,19 @@ $has_deprecated = false;
 <?php if( count( $attributes['names'] ) > 0 ) : ?>
 	<?php foreach( $attributes['names'] as $name) : ?>
 	<div class="location-attributes">
-		<label for="em_attributes[<?php echo $name ?>]"><?php echo $name ?></label>
+		<label for="em_attributes[<?php echo esc_attr($name) ?>]"><?php echo esc_html($name); ?></label>
 		<?php if( count($attributes['values'][$name]) > 1 ): ?>
-		<select name="em_attributes[<?php echo $name ?>]">
+		<select name="em_attributes[<?php echo esc_attr($name); ?>]">
 			<?php foreach($attributes['values'][$name] as $attribute_val): ?>
 				<?php if( is_array($EM_Location->location_attributes) && array_key_exists($name, $EM_Location->location_attributes) && $EM_Location->location_attributes[$name]==$attribute_val ): ?>
-					<option selected="selected"><?php echo $attribute_val; ?></option>
+					<option selected="selected"><?php echo esc_html($attribute_val); ?></option>
 				<?php else: ?>
-					<option><?php echo $attribute_val; ?></option>
+					<option><?php echo esc_html($attribute_val); ?></option>
 				<?php endif; ?>
 			<?php endforeach; ?>
 		</select>
 		<?php else: ?>
-		<input type="text" name="em_attributes[<?php echo $name ?>]" value="<?php echo array_key_exists($name, $EM_Location->location_attributes) ? esc_attr($EM_Location->location_attributes[$name], ENT_QUOTES):''; ?>" />
+		<input type="text" name="em_attributes[<?php echo esc_attr($name) ?>]" value="<?php echo array_key_exists($name, $EM_Location->location_attributes) ? esc_attr($EM_Location->location_attributes[$name], ENT_QUOTES):''; ?>" />
 		<?php endif; ?>
 	</div>
 	<?php endforeach; ?>

@@ -83,6 +83,15 @@ class EM_Taxonomy_Frontend {
 			//sort out filters
 			add_filter('wp_head', 'EM_Taxonomy_Frontend::remove_em_the_content', 10000);
 			add_filter('the_content', array(self::$this_class,'the_content')); //come in slightly early and consider other plugins
+			// Meta Tag Manager Tweaks
+			if( defined('MTM_VERSION') ) {
+				add_filter('mtm_is_taxonomy_page', '__return_true');
+				add_filter('mtm_is_cpt_page', '__return_false');
+				add_filter('mtm_get_queried_object', function(){
+					global $em_the_query;
+					return $em_the_query->get_queried_object();
+				});
+			}
 			//Yoast WP SEO Tweals
 			if( defined('WPSEO_VERSION') ){
 				add_filter('wpseo_breadcrumb_links',array(self::$this_class,'wpseo_breadcrumb_links'));

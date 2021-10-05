@@ -341,6 +341,7 @@ class EM_Ticket extends EM_Object{
 	}
 	
 	function is_available( $ignore_member_restrictions = false, $ignore_guest_restrictions = false ){
+		if( EM_Bookings::$disable_restrictions ) return true; // complete short-circuit
 		if( isset($this->is_available) && !$ignore_member_restrictions && !$ignore_guest_restrictions ) return apply_filters('em_ticket_is_available',  $this->is_available, $this); //save extra queries if doing a standard check
 		$is_available = false;
 		$EM_Event = $this->get_event();
@@ -350,7 +351,7 @@ class EM_Ticket extends EM_Object{
 		$condition_3 = $EM_Event->rsvp_end()->getTimestamp() > time(); //either defined ending rsvp time, or start datetime is used here
 		$condition_4 = !$this->ticket_members || ($this->ticket_members && is_user_logged_in()) || $ignore_member_restrictions;
 		$condition_5 = true;
-		if( !$ignore_member_restrictions && !EM_Bookings::$disable_restrictions && $this->ticket_members && !empty($this->ticket_members_roles) ){
+		if( !$ignore_member_restrictions && $this->ticket_members && !empty($this->ticket_members_roles) ){
 			//check if user has the right role to use this ticket
 			$condition_5 = false;
 			if( is_user_logged_in() ){
