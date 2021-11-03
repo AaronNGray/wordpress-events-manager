@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 5.8.1
-Stable tag: 5.12
+Stable tag: 5.12.1
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
@@ -119,6 +119,11 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 6. Manage attendees with various booking reports
 
 == Changelog ==
+= 5.12.1 =
+* fixed issue with scope sanitization preventing search form searching by date range
+* added limitation to prevent JS loading on non-EM post type editors to potentially help prevent 3rd party conflicts
+* added support for event location displaying url or other custom info for the ical LOCATION property
+
 = 5.12 =
 * changed EM_Booking::$disable_restricions so that all ticket restrictions can ignored for admin manual bookings (pro feature) including spaces, roles and dates
 * added taxonomy filters for Meta Tag Manager compatibility on overriden taxonomy pages
