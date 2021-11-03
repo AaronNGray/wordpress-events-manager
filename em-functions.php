@@ -628,7 +628,10 @@ function em_get_search_form_defaults($args = array()){
 	if( !empty($_REQUEST['scope']) && !is_array($_REQUEST['scope'])){ 
 		$args['scope'] = explode(',',sanitize_text_field($_REQUEST['scope'])); //convert scope to an array in event of pagination
 	}elseif( !empty($_REQUEST['scope']) ){
-		$args['scope'] = sanitize_text_field($_REQUEST['scope']);
+		$args['scope'] = array(); // reset and populate sanitized
+		foreach( $_REQUEST['scope'] as $k => $v ){
+			$args['scope'][absint($k)] = sanitize_text_field($v);
+		}
 	}
 	return $args;
 }

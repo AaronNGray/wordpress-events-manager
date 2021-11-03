@@ -323,6 +323,11 @@ class EM_Scripts_and_Styles {
 	
 	public static function admin_enqueue( $hook_suffix = false ){
 		if( $hook_suffix == 'post.php' || (!empty($_GET['page']) && substr($_GET['page'],0,14) == 'events-manager') || (!empty($_GET['post_type']) && in_array($_GET['post_type'], array(EM_POST_TYPE_EVENT,EM_POST_TYPE_LOCATION,'event-recurring'))) ){
+			if( $hook_suffix == 'post.php' && empty($_GET['post_type']) && !empty($_GET['post']) ){
+				// don't load if the post being edited isn't an EM one
+				$post = get_post($_GET['post']);
+				if( !in_array($post->post_type, array(EM_POST_TYPE_EVENT,EM_POST_TYPE_LOCATION,'event-recurring')) ) return;
+			}
 			wp_enqueue_style( 'wp-color-picker' );
 			wp_enqueue_script('events-manager', plugins_url('includes/js/events-manager.js',__FILE__), array('jquery', 'jquery-ui-core','jquery-ui-widget','jquery-ui-position','jquery-ui-sortable','jquery-ui-datepicker','jquery-ui-autocomplete','jquery-ui-dialog','wp-color-picker'), EM_VERSION);
 		    do_action('em_enqueue_admin_scripts');

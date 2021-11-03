@@ -68,5 +68,9 @@ class URL extends Event_Location {
 			return parent::output($what);
 		}
 	}
+	
+	public function get_ical_location(){
+		return $this->url;
+	}
 }
 URL::init();

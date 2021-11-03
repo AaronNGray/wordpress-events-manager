@@ -99,6 +99,11 @@ while ( count($EM_Events) > 0 ){
 				$apple_structured_location = str_replace('"', '\"', $apple_structured_location); //google chucks a wobbly with these on this line
 				$apple_structured_location = em_mb_ical_wordwrap($apple_structured_location);
 			}
+		}elseif( $EM_Event->has_event_location() ){
+			$ical_location = $EM_Event->get_event_location()->get_ical_location();
+			if( $ical_location ){
+				$location = em_mb_ical_wordwrap('LOCATION:'.$ical_location);
+			}
 		}
 		$categories = array();
 		foreach( $EM_Event->get_categories() as $EM_Category ){ /* @var EM_Category $EM_Category */

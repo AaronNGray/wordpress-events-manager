@@ -9,7 +9,6 @@ function em_options_save(){
 	 */
 	if( current_user_can('manage_options') && !empty($_POST['em-submitted']) && check_admin_referer('events-manager-options','_wpnonce') ){
 		//Build the array of options here
-		$post = $_POST;
 		foreach ($_POST as $postKey => $postValue){
 			if( $postKey != 'dbem_data' && substr($postKey, 0, 5) == 'dbem_' ){
 				//TODO some more validation/reporting

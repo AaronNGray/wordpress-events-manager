@@ -201,6 +201,10 @@ class Event_Location {
 			return static::get_label();
 		}
 	}
+	
+	public function get_ical_location(){
+		return false;
+	}
 }
 
 //include default Event Locations
