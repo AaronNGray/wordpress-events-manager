@@ -4,7 +4,7 @@ Donate link: http://wp-events-plugin.com
 Tags: bookings, calendar, tickets, events, buddypress, event management, google maps, maps, locations, registration, zoom
 Text Domain: events-manager
 Requires at least: 5.2
-Tested up to: 5.9
+Tested up to: 6.0
 Stable tag: 5.12.1
 Requires PHP: 5.3
 
