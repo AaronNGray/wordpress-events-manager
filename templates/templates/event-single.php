@@ -13,5 +13,14 @@
  */
 global $EM_Event;
 /* @var $EM_Event EM_Event */
-echo $EM_Event->output_single();
+if( empty($args['id']) ) $args['id'] = rand(); // prevent warnings
+$id = esc_attr($args['id']);
 ?>
+<div class="em em-view-container" id="em-view-<?php echo $id; ?>" data-view="event">
+	<div class="em-item em-item-single em-event em-event-single <?php em_template_classes('single-event'); ?> em-event-<?php echo esc_attr($EM_Event->event_id); ?>" id="em-event-<?php echo $id; ?>" data-view-id="<?php echo $id; ?>">
+		<?php
+		echo $EM_Event->output_single();
+		?>
+	</div>
+</div>
+	

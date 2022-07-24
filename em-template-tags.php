@@ -428,7 +428,7 @@ function em_get_locations_admin( $args = array() ){
  * @param array $args
  */
 function em_location_search_form($args = array()){
-	$args = em_get_search_form_defaults($args);
+	$args = em_get_search_form_defaults($args, 'locations');
 	$args['ajax'] = isset($args['ajax']) ? $args['ajax']:(!defined('EM_AJAX') || EM_AJAX );
 	em_locate_template('templates/locations-search.php',true, array('args'=>$args));
 }

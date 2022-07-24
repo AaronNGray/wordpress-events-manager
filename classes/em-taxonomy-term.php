@@ -146,17 +146,46 @@ class EM_Taxonomy_Term extends EM_Object {
 		return $this->image_id;
 	}
 	
+	function has_events( $status = 1 ){
+		$events_count = EM_Events::count( array($this->option_name=>$this->term_id, 'scope'=>'future', 'status' => $status) );
+		return apply_filters('em_'. $this->option_name .'_has_events', $events_count > 0, $this);
+	}
+	
+	
 	public function output_single($target = 'html'){
 		$format = get_option ( 'dbem_'. $this->option_name .'_page_format' );
 		return apply_filters('em_'. $this->option_name .'_output_single', $this->output($format, $target), $this, $target);	
 	}
 	
 	public function output($format, $target="html") {
-		preg_match_all('/\{([a-zA-Z0-9_]+)\}([^{]+)\{\/[a-zA-Z0-9_]+\}/', $format, $conditionals);
+		preg_match_all('/\{([a-zA-Z0-9_\-,]+)\}(.+?)\{\/\1\}/s', $format, $conditionals);
 		if( count($conditionals[0]) > 0 ){
+			$ph = strtolower($this->option_name);
 			//Check if the language we want exists, if not we take the first language there
 			foreach($conditionals[1] as $key => $condition){
-				$format = str_replace($conditionals[0][$key], apply_filters('em_'. $this->option_name .'_output_condition', '', $condition, $conditionals[0][$key], $this), $format);
+				$show_condition = false;
+				if ($condition == 'has_'.$ph.'_image' || $condition == 'has_image'){
+					//does this event have an image?
+					$show_condition = ( $this->get_image_url() != '' );
+				}elseif ($condition == 'no_'.$ph.'_image' || $condition == 'no_image'){
+					//does this event have an image?
+					$show_condition = ( $this->get_image_url() == '' );
+				}elseif ($condition == 'has_events'){
+					//does this tax have any upcoming events
+					$show_condition = $this->has_events();
+				}elseif ($condition == 'no_events'){
+					//does this tax NOT have any upcoming events?
+					$show_condition = $this->has_events() == false;
+				}
+				$show_condition = apply_filters('em_'.$this->option_name.'_output_show_condition', $show_condition, $condition, $conditionals[0][$key], $this);
+				if($show_condition){
+					//calculate lengths to delete placeholders
+					$placeholder_length = strlen($condition)+2;
+					$replacement = substr($conditionals[0][$key], $placeholder_length, strlen($conditionals[0][$key])-($placeholder_length *2 +1));
+				}else{
+					$replacement = '';
+				}
+				$format = str_replace($conditionals[0][$key], apply_filters('em_'. $this->option_name .'_output_condition', $replacement, $condition, $conditionals[0][$key], $this), $format);
 			}
 		}
 		$taxonomy_string = $format;		 
@@ -178,6 +207,18 @@ class EM_Taxonomy_Term extends EM_Object {
 				case '#_'. $ph .'NOTES':
 				case '#_'. $ph .'DESCRIPTION':
 					$replace = $this->description;
+					break;
+				case '#_'. $ph .'EXCERPT':
+					if( !empty($this->description) && $result != "#_'. $ph .'EXCERPTCUT" ){
+						$excerpt_length = 55;
+						$excerpt_more = apply_filters('em_excerpt_more', ' ' . '[...]');
+						if( !empty($placeholders[3][$key]) ){
+							$ph_args = explode(',', $placeholders[3][$key]);
+							if( is_numeric($ph_args[0]) || empty($ph_args[0]) ) $excerpt_length = $ph_args[0];
+							if( !empty($ph_args[1]) ) $excerpt_more = $ph_args[1];
+						}
+						$replace = $this->output_excerpt($excerpt_length, $excerpt_more, $result == "#_'. $ph .'EXCERPTCUT");
+					}
 					break;
 				case '#_'. $ph .'IMAGEURL':
 					$replace = esc_url($this->get_image_url());
@@ -299,6 +340,17 @@ class EM_Taxonomy_Term extends EM_Object {
 			$taxonomy_string = str_replace($full_result, $replacement , $taxonomy_string );
 		}
 		return apply_filters('em_'. $this->option_name .'_output', $taxonomy_string, $this, $format, $target);	
+	}
+	
+	function output_excerpt($excerpt_length = 55, $excerpt_more = '[...]', $cut_excerpt = true){
+		$replace = $this->description;
+		if( !empty($excerpt_length) ){
+			//shorten content by supplied number - copied from wp_trim_excerpt
+			$replace = strip_shortcodes( $replace );
+			$replace = str_replace(']]>', ']]&gt;', $replace);
+			$replace = wp_trim_words( $replace, $excerpt_length, $excerpt_more );
+		}
+		return $replace;
 	}
 	
 	public function placeholder_image( $replace, $placeholders, $key ){	

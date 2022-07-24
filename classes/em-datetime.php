@@ -221,7 +221,7 @@ class EM_DateTime extends DateTime {
 	 * Extends DateTime function to allow string representation of argument passed to create a new DateInterval object.
 	 * Returns EM_DateTime object in all cases, but $this->valid will be set to false if unsuccessful
 	 * @see DateTime::add()
-	 * @param string|DateInterval
+	 * @param string|DateInterval $DateInterval
 	 * @return EM_DateTime Returns object for chaining.
 	 * @throws Exception
 	 */
@@ -239,7 +239,7 @@ class EM_DateTime extends DateTime {
 	 * Extends DateTime function to allow string representation of argument passed to create a new DateInterval object.
 	 * Returns EM_DateTime object in all cases, but $this->valid will be set to false if unsuccessful
 	 * @see DateTime::sub()
-	 * @param string|DateInterval
+	 * @param string|DateInterval $DateInterval
 	 * @return EM_DateTime
 	 * @throws Exception
 	 */

@@ -11,9 +11,9 @@
 	/* @var int $offset */
 	$url = esc_url(add_query_arg(array('scope'=>null,'status'=>null,'location_id'=>null)));
 ?>
-<div class="em-locations-admin-list">
+<div class="em-locations-admin-list <?php em_template_classes('locations-admin'); ?>">
 <?php if(!is_admin()) echo $EM_Notices; ?>			  
-<form id='locations-filter' method='post' action=''>
+<form id='locations-filter' method='post' action='' class="input">
 	<?php
 	//add new button will only appear if called from em_location_admin template tag, or if the $show_add_new var is set
 	if(!empty($show_add_new) && current_user_can('edit_locations')) echo '<a class="em-button button add-new-h2" href="'.add_query_arg('action', 'edit', $url).'">'.__('Add New','events-manager').'</a>';

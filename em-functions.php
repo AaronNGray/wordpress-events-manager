@@ -12,7 +12,8 @@ if(!function_exists('em_paginate')){ //overridable e.g. in you mu-plugins folder
  */
 function em_paginate($link, $total, $limit, $page=1, $data=array()){
 	if($limit > 0){
-		$pagesToShow = defined('EM_PAGES_TO_SHOW') ? EM_PAGES_TO_SHOW : 10;
+		$pagesToShow = defined('EM_PAGES_TO_SHOW') ? EM_PAGES_TO_SHOW : 11;
+		$centered = defined('EM_PAGINATION_CENTERED') ? EM_PAGINATION_CENTERED : true;
 		$url_parts = explode('?', $link);
 		$base_link = $url_parts[0];
 		$base_querystring = '';
@@ -42,33 +43,60 @@ function em_paginate($link, $total, $limit, $page=1, $data=array()){
 	    	$base_querystring = esc_attr(build_query($query_arr));
 	    	if( !empty($base_querystring) ) $base_querystring = '?'.$base_querystring;
     	}
-    	//calculate
-		$maxPages = ceil($total/$limit); //Total number of pages
-		$startPage = ($page <= $pagesToShow) ? 1 : $pagesToShow * (floor($page/$pagesToShow)) ; //Which page to start the pagination links from (in case we're on say page 12 and $pagesToShow is 10 pages)
+    	//calculate pages to show, totals etc.
+		$maxPages = ceil($total/$limit); //Total number of pages, i.e. also the last page to show
+		if( $centered ){
+			$startPage = $page - floor($pagesToShow / 2);
+			if( $startPage < 1 ) $startPage = 1;
+		}else{
+			$startPage = ($page <= $pagesToShow) ? 1 : $pagesToShow * (floor($page / $pagesToShow)); //Which page to start the pagination links from (in case we're on say page 12 and $pagesToShow is 10 pages)
+		}
 		$placeholder = urlencode('%PAGE%');
 		$link = str_replace('%PAGE%', $placeholder, esc_url($link)); //To avoid url encoded/non encoded placeholders
 	    //Add the back and first buttons
-		    $string = ($page>1 && $startPage != 1) ? '<a class="prev page-numbers" href="'.str_replace($placeholder,1,$link).'" title="1">&lt;&lt;</a> ' : '';
+		    $string = ($page>1 && $startPage != 1) ? '<a class="prev first page-numbers" href="'.str_replace($placeholder,1,$link).'" title="1">&lt;&lt;</a> ' : '';
 		    if($page == 2){
 		    	$string .= ' <a class="prev page-numbers" href="'.esc_url($base_link.$base_querystring).'" title="2">&lt;</a> ';
 		    }elseif($page > 2){
 		    	$string .= ' <a class="prev page-numbers" href="'.str_replace($placeholder,$page-1,$link).'" title="'.($page-1).'">&lt;</a> ';
 		    }
 		//Loop each page and create a link or just a bold number if its the current page
-		    for ($i = $startPage ; $i < $startPage+$pagesToShow && $i <= $maxPages ; $i++){
+			// 10 11 12 13 14 15 16 17 18 19 20
+			$thisLastPage = $startPage + $pagesToShow < $maxPages ? $startPage + $pagesToShow : $maxPages;
+			$responsive = $thisLastPage - $startPage > 5;
+			for ($i = $startPage ; $i <= $thisLastPage ; $i++){
+			    if( $responsive && $i == $startPage + 1 && $i + 2 <= $page) {
+				    // second number onwards should be wrapped with a span and hidden for responsivenes if it's not next to the current number
+				    // in other words, if there's only two page numbers before current, always visible, more - hide 2nd till current
+				    $nc_open = true;
+				    $string .= '<span class="not-current first-half">';
+			    }
 	            if($i == $page || (empty($page) && $startPage == $i)) {
-	                $string .= ' <strong><span class="page-numbers current">'.$i.'</span></strong>';
+					if( !empty($nc_open) ){
+						// not first page in list, so we should close previous active current
+						$string .= '</span>';
+						$nc_open = false;
+					}
+	                $string .= ' <span class="page-numbers current">'.$i.'</span>';
+					if( $responsive && $i + 2 < $thisLastPage ) {
+						$string .= '<span class="not-current second-half">';
+						$nc_open = true;
+					}
 	            }elseif($i=='1'){
 	                $string .= ' <a class="page-numbers" href="'.esc_url($base_link.$base_querystring).'" title="'.$i.'">'.$i.'</a> ';
 	            }else{
 	                $string .= ' <a class="page-numbers" href="'.str_replace($placeholder,$i,$link).'" title="'.$i.'">'.$i.'</a> ';
 	            }
+				// leave last number unwrapped
+			    if( !empty($nc_open) && $i + 2 == $thisLastPage ){
+				    $string .= '</span>';
+			    }
 		    }
 		//Add the forward and last buttons
 		    $string .= ($page < $maxPages) ? ' <a class="next page-numbers" href="'.str_replace($placeholder,$page+1,$link).'" title="'.($page+1).'">&gt;</a> ' :' ' ;
-		    $string .= ($i-1 < $maxPages) ? ' <a class="next page-numbers" href="'.str_replace($placeholder,$maxPages,$link).'" title="'.$maxPages.'">&gt;&gt;</a> ' : ' ';
+		    $string .= ($i-1 < $maxPages) ? ' <a class="next last page-numbers" href="'.str_replace($placeholder,$maxPages,$link).'" title="'.$maxPages.'">&gt;&gt;</a> ' : ' ';
 		//Return the string
-		    return apply_filters('em_paginate', '<span class="em-pagination" '.$data_atts.'>'.$string.'</span>');
+		    return apply_filters('em_paginate', '<div class="em-pagination" '.$data_atts.'>'.$string.'</div>');
 	}
 }
 }
@@ -326,6 +354,7 @@ function em_get_attributes($lattributes = false){
 		get_option ( 'dbem_event_list_item_format' ).
 		get_option ( 'dbem_event_page_title_format' ).
 		get_option ( 'dbem_single_event_format' ).
+		get_option ( 'dbem_calendar_large_pill_format' ).
 		get_option ( 'dbem_single_location_format' );
 	//We now have one long string of formats, get all the attribute placeholders
 	if( $lattributes ){
@@ -551,41 +580,60 @@ function em_wp_is_super_admin( $user_id = false ){
  * Returns an array of flags that are used in search forms.
  * @return array
  */
-function em_get_search_form_defaults($args = array()){
-	if( !is_array($args) ) $args = array();
+function em_get_search_form_defaults($base_args = array(), $context = 'events') {
+	if (!is_array($base_args)) $base_args = array();
 	$search_args = array();
+	$search_args['ajax'] = EM_AJAX_SEARCH;
+	$search_args['id'] = rand();
 	$search_args['css'] = get_option('dbem_css_search');
-	$search_args['search_action'] = get_option('dbem_event_list_groupby') ? 'search_events_grouped':'search_events';
-	$search_args['search_text_show'] = get_option('dbem_search_form_advanced_show');
-	$search_args['search_text_hide'] = get_option('dbem_search_form_advanced_hide');
+	$search_args['search_action'] = 'search_events';
+	$search_args['search_advanced_text'] = get_option('dbem_search_form_advanced_show');
+	$search_args['search_text_show'] = get_option('dbem_search_form_advanced_show'); // deprecated
+	$search_args['search_text_hide'] = get_option('dbem_search_form_advanced_hide'); // deprecated
 	$search_args['search_button'] = get_option('dbem_search_form_submit');
 	//search text
 	$search_args['search'] = ''; //default search term
-	$search_args['search_term'] = get_option('dbem_search_form_text');
+	$search_args['search_term'] = $search_args['search_term_main'] = get_option('dbem_search_form_text');
+	//$search_args['search_term_main'] = get_option('dbem_search_form_text_main'); // show in main form?
 	$search_args['search_term_label'] = get_option('dbem_search_form_text_label'); //field label
 	//geo and units
 	$search_args['geo'] = '';  //default geo search term (requires 'near' as well for it to make sense)
 	$search_args['near'] = ''; //default near search params
-	$search_args['search_geo'] = get_option('dbem_search_form_geo');
+	$search_args['search_geo'] = $search_args['search_geo_main'] = get_option('dbem_search_form_geo'); // show geo search?
+	//$search_args['search_geo_main'] = get_option('dbem_search_form_geo_main'); // show in main form?
 	$search_args['geo_label'] = get_option('dbem_search_form_geo_label'); //field label
 	$search_args['search_geo_units'] = get_option('dbem_search_form_geo_units'); //field label
 	$search_args['geo_units_label'] = get_option('dbem_search_form_geo_units_label'); //field label
 	$search_args['near_unit'] = get_option('dbem_search_form_geo_unit_default'); //default distance unit
 	$search_args['near_distance'] = get_option('dbem_search_form_geo_distance_default'); //default distance amount
-	$search_args['geo_distance_values'] =  explode(',', get_option('dbem_search_form_geo_distance_options')); //possible distance values
+	$search_args['geo_distance_values'] = explode(',', get_option('dbem_search_form_geo_distance_options')); //possible distance values
 	//scope
-	$search_args['scope'] = array('',''); //default scope term
-	$search_args['search_scope'] = get_option('dbem_search_form_dates');
+	$search_args['scope'] = array('', '', 'name' => 'all'); //default scope term
+	$search_args['search_scope'] = $search_args['search_scope_main'] = get_option('dbem_search_form_dates');
+	//$search_args['search_scope_main'] = get_option('dbem_search_form_scope_main'); // show in main form?
 	$search_args['scope_label'] = get_option('dbem_search_form_dates_label'); //field label
 	$search_args['scope_seperator'] = get_option('dbem_search_form_dates_separator'); //field label
+	$search_args['scope_format'] = get_option('dbem_search_form_dates_format'); //field label
+	//eventful locations
+	$search_args['search_eventful_main'] = true;
+	$search_args['search_eventful'] = true;
+	$search_args['search_eventful_locations_label'] = esc_html__('Eventful Locations?', 'events-manager');
+	$search_args['search_eventful_locations_tooltip'] = esc_html__('Display only locations with upcoming events.', 'events-manager');
 	//categories
 	$search_args['category'] = 0; //default search term
 	$search_args['search_categories'] = get_option('dbem_search_form_categories');
 	$search_args['category_label'] = get_option('dbem_search_form_category_label'); //field label
 	$search_args['categories_label'] = get_option('dbem_search_form_categories_label'); //select default
+	$search_args['categories_placeholder'] = get_option('dbem_search_form_categories_placeholder'); // advanced search placeholder
+	// tags
+	$search_args['tag'] = 0; //default search term
+	$search_args['search_tags'] = get_option('dbem_search_form_tags');
+	$search_args['tag_label'] = get_option('dbem_search_form_tag_label'); //field label
+	$search_args['tags_label'] = get_option('dbem_search_form_tags_label'); //select default
+	$search_args['tags_placeholder'] = get_option('dbem_search_form_tags_placeholder'); // advanced search placeholder
 	//countries
 	$search_args['search_countries'] = get_option('dbem_search_form_countries');
-	$search_args['country'] = $search_args['search_countries'] ? get_option('dbem_search_form_default_country'):''; //default country
+	$search_args['country'] = $search_args['search_countries'] ? get_option('dbem_search_form_default_country') : ''; //default country
 	$search_args['country_label'] = get_option('dbem_search_form_country_label'); //field label
 	$search_args['countries_label'] = get_option('dbem_search_form_countries_label'); //select default
 	//regions
@@ -602,38 +650,137 @@ function em_get_search_form_defaults($args = array()){
 	$search_args['town_label'] = get_option('dbem_search_form_town_label'); //field label
 	//sections to show
 	$search_args['show_main'] = !empty($search_args['search_term']) || !empty($search_args['search_geo']); //decides whether or not to show main area and collapseable advanced search options
-	$search_args['show_advanced'] = get_option('dbem_search_form_advanced') && ($search_args['search_scope'] || $search_args['search_categories'] || $search_args['search_countries'] || $search_args['search_regions'] || $search_args['search_states'] || $search_args['search_towns']);
+	$search_args['show_advanced'] = get_option('dbem_search_form_advanced', true) && ( $search_args['search_categories'] || $search_args['search_tags'] || $search_args['search_countries'] || $search_args['search_regions'] || $search_args['search_states'] || $search_args['search_towns']);
+	$search_args['advanced_mode'] = get_option('dbem_search_form_advanced_mode') == 'inline' ? 'inline':'modal';
+	$search_args['advanced_hidden'] = $search_args['show_advanced'] && (get_option('dbem_search_form_advanced_hidden', true) || $search_args['advanced_mode'] == 'modal');
+	
+	// legacy stuff
+	$search_args['show_advanced'] = get_option('dbem_search_form_advanced') && ( $search_args['search_categories'] || $search_args['search_countries'] || $search_args['search_regions'] || $search_args['search_states'] || $search_args['search_towns']);
 	$search_args['advanced_hidden'] = $search_args['show_advanced'] && get_option('dbem_search_form_advanced_hidden');
+	
+	// disable certain things based on context, can be overriden by $base_args, not necessarily recommended
+	if( $context == 'locations' ){
+		$search_args['views'] = 'list, map';
+		$search_args['view'] = 'list';
+		$search_args['search_categories'] = false;
+		$search_args['search_scope_main'] = false;
+		$search_args['search_scope'] = false;
+		$search_args['search_tags'] = false;
+	}else{
+		// default is events
+		$search_args['views'] = 'list, list-grouped, map, calendar';
+		$search_args['view'] = 'list';
+		// disable these non-event searches
+		$search_args['search_eventful_main'] = false;
+		$search_args['search_eventful'] = false;
+	}
+	
+	//merge defaults with supplied arguments
+	$args = array_merge($search_args, $base_args);
+	
+	// sanitize views option
+	$search_views = em_get_search_views();
+	if( !is_array($args['views']) ) $args['views'] = explode(',', str_replace(' ', '', $args['views']));
+	$args['views'] = array_intersect( $args['views'], array_keys($search_views) );
+	if( empty($search_views[$args['view']]) ) $args['view'] = 'list';
+	
 	//add specific classes for wrapper dependent on settings
-	$search_args['main_classes'] = array();
-	if( !empty($search_args['css']) ) $search_args['main_classes'][] = 'css-search';
-	if( !empty($search_args['search_term']) ) $search_args['main_classes'][] = 'has-search-term';
-	if( !empty($search_args['search_geo']) ) $search_args['main_classes'][] = 'has-search-geo';
-	$search_args['main_classes'][] = $search_args['show_main'] ? 'has-search-main':'no-search-main';
-	$search_args['main_classes'][] = $search_args['show_advanced'] ? 'has-advanced':'no-advanced';
-	$search_args['main_classes'][] = $search_args['advanced_hidden'] ? 'advanced-hidden':'advanced-visible';
-	//merge defaults with supplied arguments 
-	$args = array_merge($search_args, $args);
+	if (empty($args['css_classes'])){
+		$args['css_classes'] = array();
+	}elseif( !is_array($args['css_classes']) ){
+		$args['css_classes'] = explode(',', $args['css_classes']);
+	}
+	if (empty($args['main_classes'])){ // deprecated - legacy backcompat
+		$args['main_classes'] = array();
+	}elseif( !is_array($args['main_classes']) ){
+		$args['main_classes'] = explode(',', $args['main_classes']);
+	}
+	if( !empty($args['css']) ){
+		$args['main_classes'][] = 'css-search'; // deprecated
+		$args['css_classes'][] = 'pixelbones';
+	}
+	
+	// legacy backwards compatible classes
+	$args['main_classes'][] = 'em-search-legacy';
+	if( !empty($args['search_term']) ) $args['main_classes'][] = 'has-search-term';
+	if( !empty($args['search_geo']) ) $args['main_classes'][] = 'has-search-geo';
+	$args['main_classes'][] = $args['show_main'] ? 'has-search-main':'no-search-main';
+	$args['main_classes'][] = $args['show_advanced'] ? 'has-advanced':'no-advanced';
+	$args['main_classes'][] = $args['advanced_hidden'] ? 'advanced-hidden':'advanced-visible';
+	
+	// new classes
+	$main_search_count = 0; // number of search fields
+	$args['css_classes'][] = $args['show_main'] ? 'has-search-main':'no-search-main';
+	$args['css_classes'][] = !empty($args['views']) && count($args['views']) > 1 ? 'has-views':'no-views';
+	$args['css_classes'][] = $args['show_advanced'] ? 'has-advanced':'no-advanced';
+	if( $args['show_advanced'] ){
+		$args['css_classes'][] = 'advanced-mode-' . $args['advanced_mode'];
+		$args['css_classes'][] = $args['advanced_hidden'] ? 'advanced-hidden':'advanced-visible';
+	}
+	if( isset($args['show_search']) && !$args['show_search'] ){
+		$args['css_classes'][] = 'is-hidden';
+	}
+	$args['css_classes_advanced'] = array();
+	
 	//overwrite with $_REQUEST defaults in event of a submitted search
-	if( isset($_REQUEST['geo']) ) $args['geo'] = sanitize_text_field($_REQUEST['geo']); //if geo search string requested, use that for search form
-	if( isset($_REQUEST['near']) ) $args['near'] = sanitize_text_field(wp_unslash($_REQUEST['near'])); //if geo search string requested, use that for search form
-	if( isset($_REQUEST['em_search']) ) $args['search'] = sanitize_text_field(wp_unslash($_REQUEST['em_search'])); //if geo search string requested, use that for search form
-	if( isset($_REQUEST['category']) ) $args['category'] = sanitize_text_field($_REQUEST['category']); //if category requested, use that for searching
-	if( isset($_REQUEST['country']) ) $args['country'] = sanitize_text_field(wp_unslash($_REQUEST['country'])); //if country requested, use that for searching
-	if( isset($_REQUEST['region']) ) $args['region'] = sanitize_text_field(wp_unslash($_REQUEST['region'])); //if region requested, use that for searching
-	if( isset($_REQUEST['state']) ) $args['state'] = sanitize_text_field(wp_unslash($_REQUEST['state'])); //if state requested, use that for searching
-	if( isset($_REQUEST['town']) ) $args['town'] = sanitize_text_field(wp_unslash($_REQUEST['town'])); //if state requested, use that for searching
-	if( isset($_REQUEST['near_unit']) ) $args['near_unit'] = sanitize_text_field($_REQUEST['near_unit']); //if state requested, use that for searching
-	if( isset($_REQUEST['near_distance']) ) $args['near_distance'] = sanitize_text_field($_REQUEST['near_distance']); //if state requested, use that for searching
-	if( !empty($_REQUEST['scope']) && !is_array($_REQUEST['scope'])){ 
-		$args['scope'] = explode(',',sanitize_text_field($_REQUEST['scope'])); //convert scope to an array in event of pagination
-	}elseif( !empty($_REQUEST['scope']) ){
-		$args['scope'] = array(); // reset and populate sanitized
-		foreach( $_REQUEST['scope'] as $k => $v ){
-			$args['scope'][absint($k)] = sanitize_text_field($v);
+	if( isset($_REQUEST['view_id']) ) $args['id'] = absint($_REQUEST['view_id']); // id used for element ids
+	if( isset($_REQUEST['id']) ) $args['id'] = absint($_REQUEST['id']); // id used for element ids
+	if( isset($_REQUEST['geo']) ) $args['geo'] = sanitize_text_field($_REQUEST['geo']);
+	if( isset($_REQUEST['near']) ) $args['near'] = sanitize_text_field(wp_unslash($_REQUEST['near']));
+	if( isset($_REQUEST['em_search']) ) $args['search'] = sanitize_text_field(wp_unslash($_REQUEST['em_search']));
+	if( isset($_REQUEST['category']) ) $args['category'] = sanitize_text_field($_REQUEST['category']);
+	if( isset($_REQUEST['country']) ) $args['country'] = sanitize_text_field(wp_unslash($_REQUEST['country']));
+	if( isset($_REQUEST['region']) ) $args['region'] = sanitize_text_field(wp_unslash($_REQUEST['region']));
+	if( isset($_REQUEST['state']) ) $args['state'] = sanitize_text_field(wp_unslash($_REQUEST['state']));
+	if( isset($_REQUEST['town']) ) $args['town'] = sanitize_text_field(wp_unslash($_REQUEST['town']));
+	if( isset($_REQUEST['near_unit']) ) $args['near_unit'] = sanitize_text_field($_REQUEST['near_unit']);
+	if( isset($_REQUEST['near_distance']) ) $args['near_distance'] = sanitize_text_field($_REQUEST['near_distance']);
+	// fix scope so it's search-friendly, scopes must have a 0 and 1 key for start/end dates, and optionally an associated name
+	if( !empty($args['scope']) ){
+		if( !is_array($args['scope']) ){
+			// convert currently supported scope into array, future conversions should be done elsewhere in another function
+			if( $args['scope'] == 'future' ){
+				// future consideration... but currently the commented lines would set a date on search form by default
+				//$EM_DateTime = new EM_DateTime;
+				//$args['scope'] = array( 0 => $EM_DateTime->format('Y-m-d'), 1 => '', 'name' => 'future', );
+				$args['scope'] = array('', '', 'name' => 'future'); //default scope term
+			}else{
+				$args['scope'] = array('', '', 'name' => 'all'); //default scope term
+			}
+		}elseif( empty($args['scope']['name']) ){
+			$scope_array = array($args['scope'][0]);
+			if( !empty($args['scope'][1]) ) $scope_array[1] = $args['scope'][1];
+			$args['scope']['name'] = implode(',', $scope_array);
+		}
+	}else{
+		if( !empty($_REQUEST['scope']) && !is_array($_REQUEST['scope'])){
+			$args['scope'] = explode(',',sanitize_text_field($_REQUEST['scope'])); //convert scope to an array in event of pagination
+		}elseif( !empty($_REQUEST['scope']) ){
+			$args['scope'] = array(); // reset and populate sanitized
+			foreach( $_REQUEST['scope'] as $k => $v ){
+				$args['scope'][absint($k)] = sanitize_text_field($v);
+			}
 		}
 	}
 	return $args;
+}
+
+function em_get_search_views(){
+	$search_views = array(
+		'calendar' => array(
+			'name' => __('Calendar', 'events-manager'),
+		),
+		'map' => array(
+			'name' => __('Map', 'events-manager'),
+		),
+		'list' => array(
+			'name' => __('List', 'events-manager'),
+		),
+		'list-grouped' => array(
+			'name' => __('Grouped Lists', 'events-manager'),
+		),
+	);
+	return apply_filters('em_get_search_views', $search_views);
 }
 
 /*
@@ -717,38 +864,45 @@ function em_options_input_password($title, $name, $description ='') {
 	<?php
 }
 
-function em_options_textarea($title, $name, $description ='') {
+function em_options_textarea($title, $name, $description ='', $resetable = false) {
 	$translate = EM_ML::is_option_translatable($name);
 	?>
 	<tr valign="top" id='<?php echo esc_attr($name);?>_row'>
-		<th scope="row"><?php echo esc_html($title); ?></th>
-			<td>
-				<textarea name="<?php echo esc_attr($name) ?>" id="<?php echo esc_attr($name) ?>" rows="6"><?php echo esc_attr(get_option($name), ENT_QUOTES);?></textarea>			
-		    	<?php if( $translate ): ?><span class="em-translatable  dashicons dashicons-admin-site"></span><?php endif; ?>
-		    	<br />
-				<?php 
-					if( $translate ){
-						echo '<div class="em-ml-options"><table class="form-table">';
-						foreach( EM_ML::get_langs() as $lang => $lang_name ){
-							if( $lang != EM_ML::$wplang ){
-								?>
-								<tr>
-									<td class="lang"><?php echo $lang_name; ?></td>
-									<td class="lang-text"><textarea name="<?php echo esc_attr($name) ?>_ml[<?php echo $lang ?>]" id="<?php echo esc_attr($name.'_'.$lang) ?>" style="width: 100%" size="45"><?php echo esc_attr(EM_ML::get_option($name, $lang, false), ENT_QUOTES); ?></textarea></td>
-								</tr>
-								<?php
-							}else{
-								$default_lang = '<input name="'.esc_attr($name).'_ml['.EM_ML::$wplang.']" type="hidden" id="'. esc_attr($name.'_'. EM_ML::$wplang) .'" value="'. esc_attr(get_option($name), ENT_QUOTES).'" />';
-							}
+		<th scope="row">
+			<?php echo esc_html($title); ?>
+			<?php if( $resetable ): ?>
+			<a href="#" class="em-option-resettable em-tooltip" aria-label="<?php esc_attr_e('Reset to default value?', 'events-manager'); ?>" data-name="<?php echo esc_attr($name) ?>" data-nonce="<?php echo wp_create_nonce('option-default-'.$name); ?>">
+				<span class="dashicons dashicons-undo"></span>
+			</a>
+			<?php endif; ?>
+		</th>
+		<td>
+			<textarea name="<?php echo esc_attr($name) ?>" id="<?php echo esc_attr($name) ?>" rows="6"><?php echo esc_attr(get_option($name), ENT_QUOTES);?></textarea>
+	        <?php if( $translate ): ?><span class="em-translatable  dashicons dashicons-admin-site"></span><?php endif; ?>
+	        <br />
+			<?php
+				if( $translate ){
+					echo '<div class="em-ml-options"><table class="form-table">';
+					foreach( EM_ML::get_langs() as $lang => $lang_name ){
+						if( $lang != EM_ML::$wplang ){
+							?>
+							<tr>
+								<td class="lang"><?php echo $lang_name; ?></td>
+								<td class="lang-text"><textarea name="<?php echo esc_attr($name) ?>_ml[<?php echo $lang ?>]" id="<?php echo esc_attr($name.'_'.$lang) ?>" style="width: 100%" size="45"><?php echo esc_attr(EM_ML::get_option($name, $lang, false), ENT_QUOTES); ?></textarea></td>
+							</tr>
+							<?php
+						}else{
+							$default_lang = '<input name="'.esc_attr($name).'_ml['.EM_ML::$wplang.']" type="hidden" id="'. esc_attr($name.'_'. EM_ML::$wplang) .'" value="'. esc_attr(get_option($name), ENT_QUOTES).'" />';
 						}
-						echo '</table>';
-						echo '<em>'.__('If left blank, the default value will be used.','events-manager').'</em>';
-						echo $default_lang.'</div>';
 					}
-				?>
-				<em><?php echo $description; ?></em>
-			</td>
-		</tr>
+					echo '</table>';
+					echo '<em>'.__('If left blank, the default value will be used.','events-manager').'</em>';
+					echo $default_lang.'</div>';
+				}
+			?>
+			<em><?php echo $description; ?></em>
+		</td>
+	</tr>
 	<?php
 }
 

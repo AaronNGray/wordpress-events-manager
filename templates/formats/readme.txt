@@ -1,4 +1,6 @@
-Files in this folder or in wp-content/themes/yourthemedir/plugins/events-manager/formats/ would be used to replace formatting options in the settings page. This allows you a much greater degree of flexibility as you can use PHP go do all sorts of customizations to your events.
+Files in this folder or in wp-content/themes/yourthemedir/plugins/events-manager/formats/ could be used to replace formatting options in the settings page. This allows you a much greater degree of flexibility as you can use PHP go do all sorts of customizations to your events.
+
+These files are also used to save a placeholder format during installation of the plugin, or if resetting a format setting.
 
 To overwrite a formatting option, you need to firstly create a file here with the same name as the setting name in the wp_options table without the dbem_ prefix. So, for example:
 

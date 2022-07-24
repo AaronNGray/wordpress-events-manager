@@ -7,11 +7,16 @@
  * 
  * $args - the args passed onto EM_Locations::output()
  * 
- */ 
+ */
+/* @var array $args - the args passed onto EM_Locations::output() */
 $args = apply_filters('em_content_locations_args', $args);
-
-if( get_option('dbem_css_loclist') ) echo "<div class='css-locations-list'>";
-
-echo EM_Locations::output( $args );
-
-if( get_option('dbem_css_loclist') ) echo "</div>";
+if( empty($args['id']) ) $args['id'] = rand(); // prevent warnings
+$id = esc_attr($args['id']);
+?>
+<div class="em em-view-container" id="em-view-<?php echo $id; ?>" data-view="location-list">
+	<div class="em-list em-locations-list <?php em_template_classes('locations-list'); ?>" id="em-locations-list-<?php echo $id; ?>" data-view-id="<?php echo $id; ?>">
+		<?php
+		echo EM_Locations::output( $args );
+		?>
+	</div>
+</div>

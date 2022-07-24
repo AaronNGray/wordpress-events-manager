@@ -24,7 +24,15 @@ function em_bookings_page(){
 	do_action('em_bookings_admin_page');
 	if( !empty($_REQUEST['_wpnonce']) ){ $_REQUEST['_wpnonce'] = $_GET['_wpnonce'] = $_POST['_wpnonce'] = esc_attr($_REQUEST['_wpnonce']); } //XSS fix just in case here too
 	if( !empty($_REQUEST['action']) && substr($_REQUEST['action'],0,7) != 'booking' ){ //actions not starting with booking_
-		do_action('em_bookings_'.$_REQUEST['action']);
+		?>
+		<div class="wrap em-bookings-admin-custom-<?php esc_attr($_REQUEST['action']); ?> <?php em_template_classes('bookings-admin'); ?>">
+			<div class="input">
+			<?php
+			do_action('em_bookings_'.$_REQUEST['action']);
+			?>
+			</div>
+		</div>
+		<?php
 	}elseif( !empty($_REQUEST['booking_id']) ){
 		em_bookings_single();
 	}elseif( !empty($_REQUEST['person_id']) ){
@@ -39,18 +47,19 @@ function em_bookings_page(){
 }
 
 /**
- * Generates the bookings dashboard, showing information on all events 
+ * Generates the bookings dashboard, showing information on all events
  */
 function em_bookings_dashboard(){
 	global $EM_Notices;
 	?>
-	<div class='wrap em-bookings-dashboard'>
+	<div class='em-bookings-admin-dashboard em-bookings-dashboard <?php em_template_classes('bookings-admin'); ?>'>
+		<div class="input">
 		<?php if( is_admin() ): ?>
   		<h1><?php esc_html_e('Event Bookings Dashboard', 'events-manager'); ?></h1>
   		<?php else: echo $EM_Notices; ?>
   		<?php endif; ?>
   		<div class="em-bookings-recent">
-			<h2><?php esc_html_e('Recent Bookings','events-manager'); ?></h2>	
+			<h2><?php esc_html_e('Recent Bookings','events-manager'); ?></h2>
 	  		<?php
 			$EM_Bookings_Table = new EM_Bookings_Table();
 			$EM_Bookings_Table->status = get_option('dbem_bookings_approval') ? 'needs-attention':'confirmed';
@@ -59,12 +68,13 @@ function em_bookings_dashboard(){
   		</div>
   		<br class="clear" />
   		<div class="em-bookings-events">
-			<h2><?php esc_html_e('Events With Bookings Enabled','events-manager'); ?></h2>		
+			<h2><?php esc_html_e('Events With Bookings Enabled','events-manager'); ?></h2>
 			<?php em_bookings_events_table(); ?>
 			<?php do_action('em_bookings_dashboard'); ?>
 		</div>
+		</div>
 	</div>
-	<?php		
+	<?php
 }
 
 /**
@@ -75,13 +85,17 @@ function em_bookings_event(){
 	//check that user can access this page
 	if( is_object($EM_Event) && !$EM_Event->can_manage('manage_bookings','manage_others_bookings') ){
 		?>
-		<div class="wrap"><h2><?php esc_html_e('Unauthorized Access','events-manager'); ?></h2><p><?php esc_html_e('You do not have the rights to manage this event.','events-manager'); ?></p></div>
+		<div class="wrap <?php em_template_classes('bookings-admin'); ?>">
+			<h2><?php esc_html_e('Unauthorized Access','events-manager'); ?></h2>
+			<p><?php esc_html_e('You do not have the rights to manage this event.','events-manager'); ?></p>
+		</div>
 		<?php
 		return false;
 	}
 	$header_button_classes = is_admin() ? 'page-title-action':'button add-new-h2';
 	?>
-	<div class='wrap'>
+	<div class='em-bookings-admin-event <?php em_template_classes('bookings-admin'); ?>'>
+		<div class="input">
 		<?php if( is_admin() ): ?><h1 class="wp-heading-inline"><?php else: ?><h2><?php endif; ?>		
   			<?php echo sprintf(__('Manage %s Bookings', 'events-manager'), "'{$EM_Event->event_name}'"); ?>
   		<?php if( is_admin() ): ?></h1><?php endif; ?>
@@ -93,7 +107,7 @@ function em_bookings_event(){
   			<?php do_action('em_admin_event_booking_options_buttons'); ?>
 		<?php if( !is_admin() ): ?></h2><?php else: ?><hr class="wp-header-end" /><?php endif; ?>
   		<?php if( !is_admin() ) echo $EM_Notices; ?>  
-		<div>
+		<div class="input">
 			<p><strong><?php esc_html_e('Event Name','events-manager'); ?></strong> : <?php echo esc_html($EM_Event->event_name); ?></p>
 			<p>
 				<strong><?php esc_html_e('Availability','events-manager'); ?></strong> : 
@@ -122,6 +136,7 @@ function em_bookings_event(){
 		$EM_Bookings_Table->output();
   		?>
 		<?php do_action('em_bookings_event_footer', $EM_Event); ?>
+		</div>
 	</div>
 	<?php
 }
@@ -135,13 +150,17 @@ function em_bookings_ticket(){
 	//check that user can access this page
 	if( is_object($EM_Ticket) && !$EM_Ticket->can_manage() ){
 		?>
-		<div class="wrap"><h2><?php esc_html_e('Unauthorized Access','events-manager'); ?></h2><p><?php esc_html_e('You do not have the rights to manage this ticket.','events-manager'); ?></p></div>
+		<div class="wrap <?php em_template_classes('bookings-admin'); ?>">
+			<h2><?php esc_html_e('Unauthorized Access','events-manager'); ?></h2>
+			<p><?php esc_html_e('You do not have the rights to manage this ticket.','events-manager'); ?></p>
+		</div>
 		<?php
 		return false;
 	}
 	$header_button_classes = is_admin() ? 'page-title-action':'button add-new-h2';
 	?>
-	<div class='wrap'>
+	<div class='em-bookings-admin-ticket <?php em_template_classes('bookings-admin'); ?>'>
+		<div class="input">
 		<?php if( is_admin() ): ?><h1 class="wp-heading-inline"><?php else: ?><h2><?php endif; ?>
   			<?php echo sprintf(__('Ticket for %s', 'events-manager'), "'{$EM_Event->name}'"); ?>
   		<?php if( is_admin() ): ?></h1><?php endif; ?>
@@ -170,6 +189,7 @@ function em_bookings_ticket(){
 		$EM_Bookings_Table->output();
   		?>
 		<?php do_action('em_bookings_ticket_footer', $EM_Ticket); ?>
+		</div>
 	</div>
 	<?php	
 }
@@ -182,13 +202,17 @@ function em_bookings_single(){
 	//check that user can access this page
 	if( is_object($EM_Booking) && !$EM_Booking->can_manage() ){
 		?>
-		<div class="wrap"><h2><?php esc_html_e('Unauthorized Access','events-manager'); ?></h2><p><?php esc_html_e('You do not have the rights to manage this event.','events-manager'); ?></p></div>
+		<div class="wrap <?php em_template_classes('bookings-admin'); ?>">
+			<h2><?php esc_html_e('Unauthorized Access','events-manager'); ?></h2>
+			<p><?php esc_html_e('You do not have the rights to manage this event.','events-manager'); ?></p>
+		</div>
 		<?php
 		return false;
 	}
 	do_action('em_booking_admin', $EM_Booking);
 	?>
-	<div class='wrap' id="em-bookings-admin-booking">
+	<div class='em-bookings-admin-single <?php em_template_classes('bookings-admin'); ?>' id="em-bookings-admin-booking">
+		<div class="input">
 		<?php if( is_admin() ): ?><h1><?php else: ?><h2><?php endif; ?>		
   			<?php esc_html_e('Edit Booking', 'events-manager'); ?>
 		<?php if( !is_admin() ): ?></h2><?php else: ?></h1><?php endif; ?>
@@ -478,6 +502,7 @@ function em_bookings_single(){
 		</div>
 		<br style="clear:both;" />
 		<?php do_action('em_bookings_single_footer', $EM_Booking); ?>
+		</div>
 	</div>
 	<?php
 	
@@ -497,13 +522,17 @@ function em_bookings_person(){
 	}
 	if( !$has_booking && !current_user_can('manage_others_bookings') ){
 		?>
-		<div class="wrap"><h2><?php esc_html_e('Unauthorized Access','events-manager'); ?></h2><p><?php esc_html_e('You do not have the rights to manage this event.','events-manager'); ?></p></div>
+		<div class="wrap <?php em_template_classes('bookings-admin'); ?>">
+			<h2><?php esc_html_e('Unauthorized Access','events-manager'); ?></h2>
+			<p><?php esc_html_e('You do not have the rights to manage this event.','events-manager'); ?></p>
+		</div>
 		<?php
 		return false;
 	}
 	$header_button_classes = is_admin() ? 'page-title-action':'button add-new-h2';
 	?>
-	<div class='wrap'>
+	<div class='em-bookings-admin-person <?php em_template_classes('bookings-admin'); ?>'>
+		<div class="input">
 		<?php if( is_admin() ): ?><h1 class="wp-heading-inline"><?php else: ?><h2><?php endif; ?>
   			<?php esc_html_e('Manage Person\'s Booking', 'events-manager'); ?>
   		<?php if( is_admin() ): ?></h1><?php endif; ?>
@@ -540,6 +569,7 @@ function em_bookings_person(){
 		$EM_Bookings_Table->output();
   		?>
 		<?php do_action('em_bookings_person_footer', $EM_Person); ?>
+		</div>
 	</div>
 	<?php
 }
@@ -550,7 +580,10 @@ function em_printable_booking_report() {
 	if( isset($_GET['page']) && $_GET['page']=='events-manager-bookings' && isset($_GET['action']) && $_GET['action'] == 'bookings_report' && is_object($EM_Event)){
 		if( is_object($EM_Event) && !$EM_Event->can_manage('edit_events','edit_others_events') ){
 			?>
-			<div class="wrap"><h2><?php esc_html_e('Unauthorized Access','events-manager'); ?></h2><p><?php esc_html_e('You do not have the rights to manage this event.','events-manager'); ?></p></div>
+			<div class="wrap <?php em_template_classes('bookings-admin'); ?>">
+				<h2><?php esc_html_e('Unauthorized Access','events-manager'); ?></h2>
+				<p><?php esc_html_e('You do not have the rights to manage this event.','events-manager'); ?></p>
+			</div>
 			<?php
 			return false;
 		}

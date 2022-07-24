@@ -399,6 +399,7 @@ class EM_Bookings_Table{
 							}
 							?>
 						</select>
+						<?php do_action('em_bookings_table_output_table_filters', $this); ?>
 						<input name="pno" type="hidden" value="1" />
 						<input id="post-query-submit" class="button-secondary" type="submit" value="<?php esc_attr_e( 'Filter' )?>" />
 						<?php if( $EM_Event !== false ): ?>

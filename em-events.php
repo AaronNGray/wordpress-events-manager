@@ -23,8 +23,9 @@ function em_content($page_content) {
 	$args = array(				
 		'owner' => false,
 		'pagination' => 1,
+		'id' => rand(),
 	);
-	$args['ajax'] = isset($args['ajax']) ? $args['ajax']:(!defined('EM_AJAX') || EM_AJAX );
+	$args['ajax'] = isset($args['ajax']) ? $args['ajax']:EM_AJAX_SEARCH;
 	if( !post_password_required() && in_array($post->ID, array($events_page_id, $locations_page_id, $categories_page_id, $edit_bookings_page_id, $edit_events_page_id, $edit_locations_page_id, $my_bookings_page_id, $tags_page_id)) ){
 		get_post();
 		$content = apply_filters('em_content_pre', '', $page_content);
@@ -53,20 +54,20 @@ function em_content($page_content) {
 						if( empty($args['scope']) ){
 						    $args['scope'] = get_option('dbem_events_page_scope');
 						}
+						$args['view'] = get_option('dbem_event_list_groupby') ? 'list-grouped':'list';
 						if( get_option('dbem_events_page_search_form') ){
 							//load the search form and pass on custom arguments (from settings page)
-							$search_args = em_get_search_form_defaults();
+							$args['has_view'] = true; // prevent search from generating its own view container
+							$search_args = em_get_search_form_defaults($args);
 							em_locate_template('templates/events-search.php', true, array('args'=>$search_args));
 						}
 						$args['limit'] = !empty($args['limit']) ? $args['limit'] : get_option('dbem_events_default_limit');
-						if( !empty($args['ajax']) ){ echo '<div class="em-search-ajax">'; } //AJAX wrapper open
-						if( get_option('dbem_event_list_groupby') ){
+						if( $args['view'] == 'list-grouped' ){
 							$args['date_format'] = get_option('dbem_event_list_groupby_format');
 							em_locate_template('templates/events-list-grouped.php', true, array('args'=>$args));
 						}else{
 							em_locate_template('templates/events-list.php', true, array('args'=>$args));
 						}
-						if( !empty($args['ajax']) ) echo "</div>"; //AJAX wrapper close
 					}
 				}
 			}elseif( $post->ID == $locations_page_id && $locations_page_id != 0 ){
@@ -80,16 +81,15 @@ function em_content($page_content) {
 					if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'search_locations' ){
 						$args = EM_Locations::get_post_search( array_merge($args, $_REQUEST) );
 					}
+					$search_args = em_get_search_form_defaults();
 					if( get_option('dbem_locations_page_search_form') ){
 						//load the search form and pass on custom arguments (from settings page)
-						$search_args = em_get_search_form_defaults();
+						$args['has_view'] = true; // prevent search from generating its own view container
+						$search_args = em_get_search_form_defaults( $args, 'locations' );
 						//remove date and category
-						$search_args['search_categories'] = $search_args['search_scope'] = false; 
 						em_locate_template('templates/locations-search.php', true, array('args'=>$search_args));
 					}
-					if( !empty($args['ajax']) ){ echo '<div class="em-search-ajax">'; } //AJAX wrapper open
 					em_locate_template('templates/locations-list.php',true, array('args'=>$args));
-					if( !empty($args['ajax']) ) echo "</div>"; //AJAX wrapper close
 				}
 			}elseif( $post->ID == $categories_page_id && $categories_page_id != 0 ){
 				$args['limit'] = !empty($args['limit']) ? $args['limit'] : get_option('dbem_categories_default_limit');
@@ -128,11 +128,29 @@ function em_content($page_content) {
 	return $page_content;
 }
 //add the_content filter AFTER wp_head functions have run, so we don't interfere with plugins like WP SEO and other meta-related plugins that make use of the_content for our pages
-function em_add_content_filter_after_head(){
-	add_filter('the_content', 'em_content');
+function em_add_content_filter(){
+	// only add this one
+	if( !has_action('the_content', 'em_content') ) {
+		add_filter('the_content', 'em_content');
+	}
+}
+function em_remove_content_filter(){
+	remove_filter('the_content', 'em_content');
 }
 //remember that this gets removed by taxonomy pages showing a single taxonomy page, so careful if changing the priority
-add_action('wp_head', 'em_add_content_filter_after_head', 1000);
+add_action('wp_head', 'em_add_content_filter', 1000);
+add_action('wp_head', 'em_remove_content_filter', 1);
+/**
+ * @return void
+ */
+function add_content_filter_template_include( $template ){
+	// add the_content earlier than above in FSE situations
+	if( preg_match('/'.WPINC.'\/template-canvas.php$/', $template ) ){
+		em_add_content_filter();
+	}
+	return $template;
+}
+add_action('template_include', 'add_content_filter_template_include');
 
 /**
  * Filter for titles when on event pages

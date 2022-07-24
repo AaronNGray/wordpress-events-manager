@@ -1,15 +1,4 @@
 <?php
-/* This general search will find matches within event_name, event_notes, and the location_name, address, town, state and country. */ 
-$args = !empty($args) ? $args:array(); /* @var $args array */ 
-?>
-<!-- START General Search -->
-<div class="em-search-text em-search-field">
-	<script type="text/javascript">
-	EM.search_term_placeholder = '<?php echo esc_js($args['search_term_label']); ?>';
-	</script>
-	<label>
-		<span class="screen-reader-text"><?php echo esc_html($args['search_term_label']); ?></span>
-		<input type="text" name="em_search" class="em-events-search-text em-search-text" value="<?php echo esc_attr($args['search']); ?>" />
-	</label>
-</div>
-<!-- END General Search -->
+// This file will eventually become the mian 'Search'.php entry point, any templates overriding this file previously may have been overriding the file which is now search-text.php, and should rename it subsequently.
+$template = em_locate_template('templates/search/search-term.php', false);
+include( $template );

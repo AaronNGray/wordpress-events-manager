@@ -296,7 +296,7 @@ $limit $offset
 		$accepted_args = !empty($accepted_args) ? $accepted_args : array_keys(self::get_default_search());
 		$return = parent::get_post_search($args, $filter, $request, $accepted_args);
 		//remove unwanted arguments or if not explicitly requested
-		if( empty($_REQUEST['scope']) && empty($request['scope']) && !empty($return['scope']) ){
+		if( empty($args['scope']) && !empty($return['scope']) ){
 			unset($return['scope']);
 		}
 		return apply_filters('em_locations_get_post_search', $return);

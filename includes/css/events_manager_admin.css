@@ -183,6 +183,8 @@ table.em-caps-table th, table.em-caps-table td { width:auto !important; }
 .em-ml-options .lang { width:100px; }
 .em-menu-group .postbox.always-open .inside { display:block !important; }
 .em-menu-group .postbox.closed { border-bottom:1px solid #ccd0d4; }
+a.em-option-resettable { text-decoration: none; }
+.em-option-resettable .dashicons { width: 16px; height:16px; line-height:16px; font-size:16px; }
 
 /* Widget Tables CSS */
 .em_obj .table-wrap{

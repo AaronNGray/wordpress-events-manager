@@ -13,13 +13,13 @@
 	/* @var int $page */
 	$url = esc_url(add_query_arg(array('scope' => null, 'status' => null, 'em_search' => null, 'pno' => null, 'admin_mode' => null))); //template for cleaning the link for each view below
 	?>
-	<div class="em-events-admin-list">
-		<?php
+	<div class="em-events-admin-list <?php em_template_classes('events-admin'); ?>">
+		<form id="posts-filter" action="" method="get" class="input">
+			<?php
 			echo $EM_Notices;
 			//add new button will only appear if called from em_event_admin template tag, or if the $show_add_new var is set
 			if(!empty($show_add_new) && current_user_can('edit_events')) echo '<a class="em-button button add-new-h2" href="'.em_add_get_params($_SERVER['REQUEST_URI'],array('action'=>'edit','scope'=>null,'status'=>null,'event_id'=>null, 'success'=>null)).'">'.__('Add New','events-manager').'</a>';
-		?>
-		<form id="posts-filter" action="" method="get">
+			?>
 			<div class="subsubsub">
 				<?php $url = esc_url(add_query_arg(array('scope'=>null,'status'=>null,'em_search'=>null,'pno'=>null, 'admin_mode'=>null))); //template for cleaning the link for each view below ?>
 				<a href='<?php echo add_query_arg('view', 'future', $url); ?>' <?php echo ( !isset($_GET['view']) ) ? 'class="current"':''; ?>><?php _e ( 'Upcoming', 'events-manager'); ?> <span class="count">(<?php echo $future_count; ?>)</span></a> &nbsp;|&nbsp;

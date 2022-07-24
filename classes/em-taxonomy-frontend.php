@@ -81,7 +81,8 @@ class EM_Taxonomy_Frontend {
 			//set the template
 			$template = locate_template(array('page.php','index.php'),false); //category becomes a page
 			//sort out filters
-			add_filter('wp_head', 'EM_Taxonomy_Frontend::remove_em_the_content', 10000);
+			remove_action('wp_head', 'em_add_content_filter', 1000);
+			remove_action('template_include', 'add_content_filter_template_include');
 			add_filter('the_content', array(self::$this_class,'the_content')); //come in slightly early and consider other plugins
 			// Meta Tag Manager Tweaks
 			if( defined('MTM_VERSION') ) {

@@ -18,9 +18,12 @@ class EM_Locations_Widget extends WP_Widget {
     		'scope' => 'future',
     		'order' => 'ASC',
     		'limit' => 5,
-    		'format' => '<li>#_LOCATIONLINK<ul><li>#_LOCATIONADDRESS</li><li>#_LOCATIONTOWN</li></ul></li>',
-    	    'no_locations_text' => '<li>'.__('No locations', 'events-manager').'</li>',
-    		'orderby' => 'event_start_date,event_start_time,location_name'
+		    'format_header' => '<div class="em-list-widget em-locations-widget '. implode(' ', em_get_template_classes('widget-locations')) .'">',
+		    'format' => EM_Formats::dbem_block_location_list_item_format(''),
+		    'format_footer' => '</div>',
+    	    'no_locations_text' => '<div class="em-list-no-items">'.__('No locations', 'events-manager').'</div>',
+    		'orderby' => 'event_start_date,event_start_time,location_name',
+		    'v6' => false,
     	);
     	$this->em_orderby_options = array(
     		'event_start_date, event_start_time, location_name' => __('Event start date/time, location name','events-manager'),
@@ -43,12 +46,17 @@ class EM_Locations_Widget extends WP_Widget {
     	
 	    //make sure no owner searches are being run
 		$instance['owner'] = false;
-		//legacy sanitization
-		if( !preg_match('/^<li/i', trim($instance['format'])) ) $instance['format'] = '<li>'. $instance['format'] .'</li>';
+	
+	    //legacy stuff - deal with unsaved pre-v6 items, v6 saved and preview modes
+	    $v6 = EM_Options::get('v6', null);
+	    //add li tags to old widgets that have no forced li wrappers
+	    if( ($v6 && empty($instance['v6'])) || $v6 === 'p' || $v6 === 'p' ){
+		    $instance = $this->get_v6_instance_options($instance);
+	    }
 		//get locations
 		$locations = EM_Locations::get(apply_filters('em_widget_locations_get_args',$instance));
 		//output locations
-		echo "<ul>";
+		echo $instance['format_header'];
 		if ( count($locations) > 0 ){
 			foreach($locations as $location){
 				echo $location->output($instance['format']);
@@ -56,10 +64,19 @@ class EM_Locations_Widget extends WP_Widget {
 		}else{
 		    echo $instance['no_locations_text'];
 		}
-		echo "</ul>";               
+		echo $instance['format_footer'];
 		
 	    echo $args['after_widget'];
     }
+	
+	function get_v6_instance_options( $instance ){
+		ob_start();
+		em_locate_template('formats/block_location_list_item_format.php', true);
+		$instance['format_header'] = '<div class="em-locations-widget em-list-widget '. implode(' ', em_get_template_classes('widget-locations')) .'">';
+		$instance['format'] = ob_get_clean();
+		$instance['format_footer'] = '</div>';
+		return $instance;
+	}
 
     /** @see WP_Widget::update */
     function update($new_instance, $old_instance) {
@@ -68,10 +85,6 @@ class EM_Locations_Widget extends WP_Widget {
     		if( !isset($new_instance[$key]) ){
     			$new_instance[$key] = $value;
     		}
-    		//make sure formats and the no locations text are wrapped with li tags
-		    if( ($key == 'format' || $key == 'no_locations_text') && !preg_match('/^<li/i', trim($new_instance[$key])) ){
-            	$new_instance[$key] = '<li>'.$new_instance[$key].'</li>';
-		    }
 		    //balance tags and sanitize output formats
 		    if( in_array($key, array('format', 'no_locations_text')) ){
 		        if( is_multisite() && !em_wp_is_super_admin() ) $new_instance[$key] = wp_kses_post($new_instance[$key]); //for multisite
@@ -84,6 +97,14 @@ class EM_Locations_Widget extends WP_Widget {
     /** @see WP_Widget::form */
     function form($instance) {
     	$instance = array_merge($this->defaults, $instance);
+	    $v6 = EM_Options::get('v6', null);
+	    if( ($v6 === true || $v6 === 'undo') && empty($instance['v6']) ){
+		    $instance = $this->get_v6_instance_options($instance);
+	    }elseif( empty($instance['v6']) && $instance['format'] !== $this->defaults['format'] ) {
+		    // still unmigrated, not saved either during v6
+		    $instance['format_header'] = '<ul>';
+		    $instance['format_footer'] = '</ul>';
+	    }
         ?>
 		<p>
 			<label for="<?php echo $this->get_field_id('title'); ?>"><?php esc_html_e('Title', 'events-manager'); ?>: </label>
@@ -120,11 +141,18 @@ class EM_Locations_Widget extends WP_Widget {
 				<option value="DESC" <?php echo ($instance['order'] == 'DESC') ? 'selected="selected"':''; ?>><?php esc_html_e('Descending','events-manager'); ?></option>
 			</select>
 		</p>
-		<em><?php echo sprintf( esc_html__('The list is wrapped in a %s tag, so if an %s tag is not wrapping the formats below it will be added automatically.','events-manager'), '<code>&lt;ul&gt;</code>', '<code>&lt;li&gt;</code>'); ?></em>
-		<p>
-			<label for="<?php echo $this->get_field_id('format'); ?>"><?php esc_html_e('List item format','events-manager'); ?>: </label>
-			<textarea rows="10" cols="20" class="widefat" id="<?php echo $this->get_field_id('format'); ?>" name="<?php echo $this->get_field_name('format'); ?>"><?php echo esc_textarea($instance['format']); ?></textarea>
-		</p>
+	    <p>
+		    <label for="<?php echo $this->get_field_id('format_header'); ?>"><?php esc_html_e('List item header format','events-manager'); ?>: </label>
+		    <textarea rows="5" cols="24" id="<?php echo $this->get_field_id('format_header'); ?>" name="<?php echo $this->get_field_name('format_header'); ?>" class="widefat"><?php echo esc_textarea($instance['format_header'] ); ?></textarea>
+	    </p>
+	    <p>
+		    <label for="<?php echo $this->get_field_id('format'); ?>"><?php esc_html_e('List item format','events-manager'); ?>: </label>
+		    <textarea rows="10" cols="24" id="<?php echo $this->get_field_id('format'); ?>" name="<?php echo $this->get_field_name('format'); ?>" class="widefat"><?php echo esc_textarea($instance['format']); ?></textarea>
+	    </p>
+	    <p>
+		    <label for="<?php echo $this->get_field_id('format_footer'); ?>"><?php esc_html_e('List item footer format','events-manager'); ?>: </label>
+		    <textarea rows="5" cols="24" id="<?php echo $this->get_field_id('format_footer'); ?>" name="<?php echo $this->get_field_name('format_footer'); ?>" class="widefat"><?php echo esc_textarea($instance['format_footer']); ?></textarea>
+	    </p>
 		<p>
 			<label for="<?php echo $this->get_field_id('no_locations_text'); ?>"><?php esc_html_e('No Locations message','events-manager'); ?>: </label>
 			<input type="text" id="<?php echo $this->get_field_id('no_locations_text'); ?>" name="<?php echo $this->get_field_name('no_locations_text'); ?>" value="<?php echo esc_attr( $instance['no_locations_text'] ); ?>" >

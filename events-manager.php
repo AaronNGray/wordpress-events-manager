@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Events Manager
-Version: 5.12.1
+Version: 6.0
 Plugin URI: http://wp-events-plugin.com
 Description: Event registration and booking management for WordPress. Recurring events, locations, webinars, google maps, rss, ical, booking registration and more!
 Author: Marcus Sykes
@@ -10,7 +10,7 @@ Text Domain: events-manager
 */
 
 /*
-Copyright (c) 2021, Marcus Sykes
+Copyright (c) 2022, Marcus Sykes
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -28,19 +28,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 // Setting constants
-define('EM_VERSION', 5.99912); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
+define('EM_VERSION', '6.0.0.8'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
 define('EM_PRO_MIN_VERSION', 2.6712); //self expanatory
 define('EM_PRO_MIN_VERSION_CRITICAL', 2.377); //self expanatory
 define('EM_DIR', dirname( __FILE__ )); //an absolute path to this directory
 define('EM_DIR_URI', trailingslashit(plugins_url('',__FILE__))); //an absolute path to this directory
 define('EM_SLUG', plugin_basename( __FILE__ )); //for updates
 
-//temporarily disable AJAX by default, future updates will eventually have this turned on as we work out some kinks
-if( !defined('EM_AJAX') ){
-	define( 'EM_AJAX', get_option('dbem_events_page_ajax', (defined('EM_AJAX_SEARCH') && EM_AJAX_SEARCH)) );
-}
+// AJAX now enabled by default, disable if you really want to (but why? it's so nice!)
+if( !defined('EM_AJAX_SEARCH') ) define( 'EM_AJAX_SEARCH', true );
+if( !defined('EM_AJAX') ) define( 'EM_AJAX', true );
 
-if( !defined('EM_CONDITIONAL_RECURSIONS') ) define('EM_CONDITIONAL_RECURSIONS', get_option('dbem_conditional_recursions', 1)); //allows for conditional recursios to be nested
+if( !defined('EM_CONDITIONAL_RECURSIONS') ) define('EM_CONDITIONAL_RECURSIONS', get_option('dbem_conditional_recursions', 2)); //allows for conditional recursios to be nested, 2 recommended due to our default template formats
 
 //EM_MS_GLOBAL
 if( is_multisite() && get_site_option('dbem_ms_global_table') ){
@@ -212,12 +211,33 @@ class EM_Loader {
  * Contains functions for loading styles on both admin and public sides.
  */
 class EM_Scripts_and_Styles {
+	
+	public static $locale;
+	public static $localize_flatpickr;
+	
 	public static function init(){
 		if( is_admin() ){
 			//Scripts and Styles
 			add_action('admin_enqueue_scripts', array('EM_Scripts_and_Styles','admin_enqueue'));
 		}else{
 			add_action('wp_enqueue_scripts', array('EM_Scripts_and_Styles','public_enqueue'));
+		}
+		static::$locale = substr(get_locale(), 0, 2);
+	}
+	
+	public static function register(){
+		// localization detection
+		// register scripts
+		if( (defined('WP_DEBUG') && WP_DEBUG) || (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG) ) {
+			//wp_register_script('em-select2', plugins_url('includes/external/select2/js/select2.full.js', __FILE__), array('jquery'), EM_VERSION);
+			//wp_register_style('em-select2', plugins_url('includes/external/select2/css/select2.css', __FILE__), array('jquery'), EM_VERSION);
+			wp_register_script('em-selectize', plugins_url('includes/external/selectize/js/standalone/selectize.js', __FILE__), array('jquery'), EM_VERSION);
+			wp_register_style('em-selectize', plugins_url('includes/external/selectize/css/selectize.bootstrap5.css', __FILE__), array('jquery'), EM_VERSION);
+		}else{
+			//wp_register_script('em-select2', plugins_url('includes/external/select2/js/select2.full.min.js', __FILE__), array('jquery'), EM_VERSION);
+			//wp_register_style('em-select2', plugins_url('includes/external/select2/css/select2.min.css', __FILE__), array('jquery'), EM_VERSION);
+			wp_register_script('em-selectize', plugins_url('includes/external/selectize/js/standalone/selectize.js', __FILE__), array('jquery'), EM_VERSION);
+			wp_register_style('em-selectize', plugins_url('includes/external/selectize/css/selectize.bootstrap5.css', __FILE__), array('jquery'), EM_VERSION);
 		}
 	}
 
@@ -226,6 +246,7 @@ class EM_Scripts_and_Styles {
 	 */
 	public static function public_enqueue() {
 	    global $wp_query;
+		static::register();
 		$pages = array( //pages which EM needs CSS or JS
            	'events' => get_option('dbem_events_page'),
            	'edit-events' => get_option('dbem_edit_events_page'),
@@ -254,7 +275,7 @@ class EM_Scripts_and_Styles {
                 $script_deps['jquery-ui-core'] = 'jquery-ui-core';
                 $script_deps['jquery-ui-datepicker'] = 'jquery-ui-datepicker';
                 if( get_option('dbem_search_form_geo') ){
-                	$script_deps['jquery-ui-autocomplete'] = 'jquery-ui-autocomplete';
+                	$script_deps['em-selectize'] = 'em-selectize';
                 }
             }
             if( (!empty($pages['edit-events']) && is_page($pages['edit-events'])) || get_option('dbem_js_limit_events_form') === '0' || in_array($obj_id, explode(',', get_option('dbem_js_limit_events_form'))) ){
@@ -262,7 +283,7 @@ class EM_Scripts_and_Styles {
                 $script_deps['jquery-ui-core'] = 'jquery-ui-core';
                 $script_deps['jquery-ui-datepicker'] = 'jquery-ui-datepicker';
 	            if( !get_option('dbem_use_select_for_locations') ){
-					$script_deps['jquery-ui-autocomplete'] = 'jquery-ui-autocomplete';
+					$script_deps['em-selectize'] = 'em-selectize';
 		        }
 			}
             if( (!empty($pages['edit-bookings']) && is_page($pages['edit-bookings'])) || get_option('dbem_js_limit_edit_bookings') === '0' || in_array($obj_id, explode(',', get_option('dbem_js_limit_edit_bookings'))) ){
@@ -290,18 +311,30 @@ class EM_Scripts_and_Styles {
 	        	'jquery-ui-position'=>'jquery-ui-position',
 	        	'jquery-ui-sortable'=>'jquery-ui-sortable',
 	        	'jquery-ui-datepicker'=>'jquery-ui-datepicker',
-	        	'jquery-ui-autocomplete'=>'jquery-ui-autocomplete',
+	        	'em-selectize'=>'em-selectize',
 	        	'jquery-ui-dialog'=>'jquery-ui-dialog'
             );
         }
+		if( static::$localize_flatpickr ){
+			$script_deps['em-flatpickr-localization'] = 'em-flatpickr-localization';
+		}
         $script_deps = apply_filters('em_public_script_deps', $script_deps);
         if( !empty($script_deps) ){ //given we depend on jQuery, there must be at least a jQuery dep for our file to be loaded
 			wp_enqueue_script('events-manager', plugins_url('includes/js/events-manager.js',__FILE__), array_values($script_deps), EM_VERSION); //jQuery will load as dependency
+	        if( static::$locale != 'en' && file_exists(EM_DIR."/includes/external/flatpickr/l10n/".static::$locale.".min.js") ){
+		        if( (defined('WP_DEBUG') && WP_DEBUG) || (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG) ) {
+			        wp_enqueue_script('em-flatpickr-localization', plugins_url("includes/external/flatpickr/l10n/" . static::$locale . ".js", __FILE__), array('events-manager'), EM_VERSION);
+		        }else{
+			        wp_enqueue_script('em-flatpickr-localization', plugins_url("includes/external/flatpickr/l10n/" . static::$locale . ".min.js", __FILE__), array('events-manager'), EM_VERSION);
+		        }
+		        static::$localize_flatpickr = true;
+	        }
 			self::localize_script();
     		do_action('em_enqueue_scripts');
         }
         
 		//Now decide on showing the CSS file
+		$min = !((defined('WP_DEBUG') && WP_DEBUG) || (defined('EM_DEBUG') && EM_DEBUG)) ? '.min':'';
 		if( get_option('dbem_css_limit') ){
 			$includes = get_option('dbem_css_limit_include');
 			$excludes = get_option('dbem_css_limit_exclude');
@@ -312,26 +345,29 @@ class EM_Scripts_and_Styles {
 				$exclude = true;
 			}
 			if( !empty($include) && empty($exclude) ){
-			    wp_enqueue_style('events-manager', plugins_url('includes/css/events_manager.css',__FILE__), array(), EM_VERSION); //main css
+			    wp_enqueue_style('events-manager', plugins_url('includes/css/events-manager'.$min.'.css',__FILE__), array(), EM_VERSION); //main css
 	    		do_action('em_enqueue_styles');
 			}
 		}else{
-			wp_enqueue_style('events-manager', plugins_url('includes/css/events_manager.css',__FILE__), array(), EM_VERSION); //main css
+			wp_enqueue_style('events-manager', plugins_url('includes/css/events-manager'.$min.'.css',__FILE__), array(), EM_VERSION); //main css
 	    	do_action('em_enqueue_styles');
 		}
 	}
 	
 	public static function admin_enqueue( $hook_suffix = false ){
-		if( $hook_suffix == 'post.php' || (!empty($_GET['page']) && substr($_GET['page'],0,14) == 'events-manager') || (!empty($_GET['post_type']) && in_array($_GET['post_type'], array(EM_POST_TYPE_EVENT,EM_POST_TYPE_LOCATION,'event-recurring'))) ){
+		if( $hook_suffix == 'post.php' || $hook_suffix === true || (!empty($_GET['page']) && substr($_GET['page'],0,14) == 'events-manager') || (!empty($_GET['post_type']) && in_array($_GET['post_type'], array(EM_POST_TYPE_EVENT,EM_POST_TYPE_LOCATION,'event-recurring'))) ){
 			if( $hook_suffix == 'post.php' && empty($_GET['post_type']) && !empty($_GET['post']) ){
 				// don't load if the post being edited isn't an EM one
 				$post = get_post($_GET['post']);
 				if( !in_array($post->post_type, array(EM_POST_TYPE_EVENT,EM_POST_TYPE_LOCATION,'event-recurring')) ) return;
 			}
+			static::register();
 			wp_enqueue_style( 'wp-color-picker' );
-			wp_enqueue_script('events-manager', plugins_url('includes/js/events-manager.js',__FILE__), array('jquery', 'jquery-ui-core','jquery-ui-widget','jquery-ui-position','jquery-ui-sortable','jquery-ui-datepicker','jquery-ui-autocomplete','jquery-ui-dialog','wp-color-picker'), EM_VERSION);
+			$min = !((defined('WP_DEBUG') && WP_DEBUG) || (defined('EM_DEBUG') && EM_DEBUG)) ? '.min':'';
+			wp_enqueue_script('events-manager', plugins_url('includes/js/events-manager'.$min.'.js',__FILE__), array('jquery', 'jquery-ui-core','jquery-ui-widget','jquery-ui-position','jquery-ui-sortable','jquery-ui-datepicker','em-selectize','jquery-ui-dialog','wp-color-picker'), EM_VERSION);
 		    do_action('em_enqueue_admin_scripts');
-			wp_enqueue_style('events-manager-admin', plugins_url('includes/css/events_manager_admin.css',__FILE__), array(), EM_VERSION);
+			wp_enqueue_style('events-manager-admin', plugins_url('includes/css/events-manager-admin'.$min.'.css',__FILE__), array(), EM_VERSION);
+			wp_enqueue_style('events-manager', plugins_url('includes/css/events-manager'.$min.'.css',__FILE__), array(), EM_VERSION); //main css
 			do_action('em_enqueue_admin_styles');
 			self::localize_script();
 		}
@@ -343,18 +379,32 @@ class EM_Scripts_and_Styles {
 	public static function localize_script(){
 		global $em_localized_js;
 		$locale_code = substr ( get_locale(), 0, 2 );
-		$date_format = get_option('dbem_date_format_js') ? get_option('dbem_date_format_js'):'yy-mm-dd'; //prevents blank datepickers if no option set
 		//Localize
 		$em_localized_js = array(
 			'ajaxurl' => admin_url('admin-ajax.php'),
 			'locationajaxurl' => admin_url('admin-ajax.php?action=locations_search'),
 			'firstDay' => get_option('start_of_week'),
 			'locale' => $locale_code,
-			'dateFormat' => $date_format,
-			'ui_css' => plugins_url('includes/css/jquery-ui.min.css', __FILE__),
+			'dateFormat' => 'yy-mm-dd', //get_option('dbem_date_format_js', 'yy-mm-dd'), // DEPRECATED (legacy jQuery UI datepicker) - prevents blank datepickers if no option set
+			'ui_css' => plugins_url('includes/css/jquery-ui/build.min.css', __FILE__),
+			'selectize_css' => plugins_url('includes/external/selectize/css/selectize.bootstrap5.min.css', __FILE__),
 			'show24hours' => get_option('dbem_time_24h'),
 			'is_ssl' => is_ssl(),
+			'autocomplete_limit' => apply_filters('em_locations_autocomplete_limit', 10),
+			'calendar' => array(
+				'breakpoints' => array( 'small' => 560, 'medium' => 908, 'large' => false, ), // reorder this array for efficiency if you override it, so smallest is first, largest or false is last
+			),
+			'datepicker' => array(
+				'format' => get_option('dbem_datepicker_format', 'Y-m-d'),
+			),
+			'search' => array(
+				'breakpoints' => array( 'small' => 650, 'medium' => 850, 'full' => false, ) // reorder this array for efficiency if you override it, so smallest is first, largest or false is last
+			)
 		);
+		// localize flatpickr
+		if( static::$localize_flatpickr ){
+			$em_localized_js['datepicker']['locale'] = static::$locale;
+		}
 		//maps api key
 		if( get_option('dbem_gmap_is_active') ){
 			if( get_option('dbem_google_maps_browser_key') ){
@@ -365,7 +415,7 @@ class EM_Scripts_and_Styles {
 			}
 		}
 		//debug mode
-		if( defined('WP_DEBUG') && WP_DEBUG ) $em_localized_js['ui_css'] = plugins_url('includes/css/jquery-ui.css', __FILE__);
+		if( defined('WP_DEBUG') && WP_DEBUG ) $em_localized_js['ui_css'] = plugins_url('includes/css/jquery-ui/build.css', __FILE__);
 		//booking-specific stuff
 		if( get_option('dbem_rsvp_enabled') ){
 			$offset = defined('EM_BOOKING_MSG_JS_OFFSET') ? EM_BOOKING_MSG_JS_OFFSET : 30;
@@ -422,6 +472,7 @@ class EM_Scripts_and_Styles {
 			    $em_localized_js['close_text'] = __('Collapse All','events-manager');
 			    $em_localized_js['open_text'] = __('Expand All','events-manager');
 			}
+			$em_localized_js['option_reset'] = __('Option value has been reverted. Please save your settings for it to take effect.', 'events-manager');
 		}		
 		wp_localize_script('events-manager','EM', apply_filters('em_wp_localize_script', $em_localized_js));
 	}
@@ -505,7 +556,7 @@ function em_init(){
 	$EM_Mailer = new EM_Mailer();
 	//Upgrade/Install Routine
 	if( is_admin() && current_user_can('manage_options') ){
-		if( EM_VERSION > get_option('dbem_version', 0) || (is_multisite() && !EM_MS_GLOBAL && get_option('em_ms_global_install')) ){
+		if( version_compare(EM_VERSION, get_option('dbem_version', 0), '>') || (is_multisite() && !EM_MS_GLOBAL && get_option('em_ms_global_install')) ){
 			require_once( dirname(__FILE__).'/em-install.php');
 			em_install();
 		}
@@ -679,30 +730,80 @@ function em_locate_template( $template_name, $load=false, $the_args = array() ) 
 }
 
 /**
+ * Outputs a classlist according to component and theme, which can be hooked into or altered according to EM settings page.
+ * @param string $component    The component being displayed, such as events-list, single-event, etc.
+ * @param string $theme        The name of the EM theme used, currently just 'six'
+ * @return array
+ */
+function em_get_template_classes( $component, $theme = 'pixelbones' ){
+	$classes = array('em');
+	$show_theme_class = true;
+	switch( $component ){
+		case 'events-list':
+			$show_theme_class = get_option('dbem_css_evlist');
+			break;
+		case 'bookings-admin':
+			$show_theme_class = get_option('dbem_css_rsvpadmin');
+			break;
+		case 'events-editor':
+			$show_theme_class = get_option('dbem_css_editors');
+			break;
+		case 'locations-list':
+			$show_theme_class = get_option('dbem_css_loclist');
+			break;
+		case 'booking-form':
+			$show_theme_class = get_option('dbem_css_rsvp');
+			break;
+		case 'categories-list':
+			$show_theme_class = get_option('dbem_css_catlist');
+			break;
+		case 'tags-list':
+			$show_theme_class = get_option('dbem_css_taglist');
+			break;
+	}
+	if( is_admin() || $show_theme_class ) $classes[] = 'pixelbones';
+	return apply_filters('em_get_template_classes', $classes, $component, $theme);
+}
+
+/**
+ * @see em_get_template_classes()
+ * @param $component
+ * @param $theme
+ * @return void
+ */
+function em_template_classes( $component, $theme = 'pixelbones' ){
+	echo esc_attr(implode(' ', em_get_template_classes($component, $theme)));
+}
+
+/**
  * Quick class to dynamically catch wp_options that are EM formats and need replacing with template files.
  * Since the options filter doesn't have a catchall filter, we send all filters to the __call function and figure out the option that way.
+ * @method event_list_item_format()
  */
 class EM_Formats {
-	function __construct(){ add_action( 'events_manager_loaded', array(&$this, 'add_filters')); }
-	function add_filters(){
+	public static function init(){
+		add_action( 'events_manager_loaded', 'EM_Formats::add_filters');
+	}
+	public static function add_filters(){
 		//you can hook into this filter and activate the format options you want to override by supplying the wp option names in an array, just like in the database.
 		$formats = apply_filters('em_formats_filter', array());
 		foreach( $formats as $format_name ){
-			add_filter('pre_option_'.$format_name, array(&$this, $format_name), 1,1);
+			add_filter('pre_option_'.$format_name, 'EM_Formats::'. $format_name, 1,1);
 		}
 	}
-	function __call( $name, $value ){
-		$format = em_locate_template( 'formats/'.substr($name, 5).'.php' );
+	public static function __callStatic($name, $args ){
+		$value = empty($args) || !isset($args[0]) ? '' : $args[0];
+		$name = preg_replace('/^dbem_/', '', $name);
+		$format = em_locate_template( 'formats/'.$name.'.php' );
 		if( $format ){
 			ob_start();
 			include($format);
-			$value[0] = ob_get_clean();
+			$value = ob_get_clean();
 		}
-		return $value[0];
+		return $value;
 	}
 }
-global $EM_Formats;
-$EM_Formats = new EM_Formats();
+EM_Formats::init();
 
 /**
  * Catches the event rss feed requests
@@ -798,4 +899,9 @@ function em_check_pro_compatability(){
 	}
 }
 add_action('plugins_loaded','em_check_pro_compatability', 1);
+
+$v6 = EM_Options::get('v6', null);
+if( $v6 !== null ){
+	include('v6-migrate.php');
+}
 ?>

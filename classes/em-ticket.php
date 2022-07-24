@@ -275,6 +275,7 @@ class EM_Ticket extends EM_Object{
 		if( !empty($this->ticket_start) ) $this->ticket_start .= ' '. $this->sanitize_time($start_time);
 		$end_time = !empty($post['ticket_end_time']) ? $post['ticket_end_time'] : $this->get_event()->start()->format('H:i');
 		if( !empty($this->ticket_end) ) $this->ticket_end .= ' '. $this->sanitize_time($end_time);
+		$this->start = $this->end = false; // reset start/end objects
 		//sort out user availability restrictions
 		$this->ticket_members = ( !empty($post['ticket_type']) && $post['ticket_type'] == 'members' ) ? 1:0;
 		$this->ticket_guests = ( !empty($post['ticket_type']) && $post['ticket_type'] == 'guests' ) ? 1:0;

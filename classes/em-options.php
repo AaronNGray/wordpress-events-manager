@@ -19,7 +19,7 @@ class EM_Options {
 	 */
 	public static function get( $option_name, $default = array(), $dataset = 'dbem_data', $site = false ){
 		$data = $site ? get_site_option($dataset) : get_option($dataset);
-		if( !empty($data[$option_name]) ){
+		if( isset($data[$option_name]) ){
 			return $data[$option_name];
 		}else{
 			return $default;

@@ -1,5 +1,4 @@
 <?php
-
 //Function composing the options subpanel
 function em_options_save(){
 	global $EM_Notices; /* @var EM_Notices $EM_Notices */
@@ -387,6 +386,15 @@ function em_admin_email_test_ajax(){
 }
 add_action('wp_ajax_em_admin_test_email','em_admin_email_test_ajax');
 
+function em_admin_option_default_ajax() {
+	if( current_user_can('activate_plugins') && wp_verify_nonce($_REQUEST['nonce'], 'option-default-'.$_REQUEST['option_name']) && preg_match('/^[a-zA-Z_0-9]+$/', $_REQUEST['option_name']) ) {
+		$return = call_user_func("EM_Formats::".$_REQUEST['option_name'], '');
+		echo $return;
+	}
+	exit();
+}
+add_action('wp_ajax_em_admin_get_option_default','em_admin_option_default_ajax');
+
 function em_admin_options_reset_page(){
 	if( check_admin_referer('em_reset_'.get_current_user_id().'_wpnonce') && em_wp_is_super_admin() ){
 		?>
@@ -456,6 +464,8 @@ function em_admin_options_page() {
 	$save_button = '<tr><th>&nbsp;</th><td><p class="submit" style="margin:0px; padding:0px; text-align:right;"><input type="submit" class="button-primary" name="Submit" value="'. __( 'Save Changes', 'events-manager') .' ('. __('All','events-manager') .')" /></p></td></tr>';
 	
 	if( !is_multisite() ) em_pro_update_notice();
+	
+	do_action('em_options_page_header');
 	
 	if( defined('EM_SETTINGS_TABS') && EM_SETTINGS_TABS ){
 	    $tabs_enabled = true;

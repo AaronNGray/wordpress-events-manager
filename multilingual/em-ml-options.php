@@ -58,6 +58,10 @@ class EM_ML_Options {
 				'dbem_small_calendar_event_title_separator',
 				'dbem_full_calendar_month_format',
 				'dbem_full_calendar_event_format',
+				'dbem_calendar_large_pill_format',
+				'dbem_calendar_preview_modal_date_format',
+				'dbem_calendar_preview_modal_event_format',
+				'dbem_calendar_preview_tooltip_event_format',
 				'dbem_display_calendar_events_limit_msg',
 				//Ical
 				'dbem_ical_description_format',

@@ -35,6 +35,7 @@ class EM_Object {
 		//TODO accept all objects as search options as well as ids (e.g. location vs. location_id, person vs. person_id)
 		//Create minimal defaults array, merge it with supplied defaults array
 		$super_defaults = array(
+			'id' => rand(),
 			'limit' => false,
 			'scope' => 'future',
 			'timezone' => false, //default blog timezone
@@ -64,7 +65,6 @@ class EM_Object {
 			'pagination'=>false,
 			'array'=>false,
 			'owner'=>false,
-			'rsvp'=>false, //deprecated for bookings
 			'bookings' => false, //if set to true, only events with bookings enabled are returned
 			'search'=>false,
 			'geo'=>false, //reserved for future searching via name
@@ -171,7 +171,11 @@ class EM_Object {
 				$defaults['scope'][1] = '';
 			}
 			if( empty($defaults['scope'][0]) && empty($defaults['scope'][1]) ){
-				$defaults['scope'] = $super_defaults['scope'];
+				if( !empty($defaults['scope']['name']) ) {
+					$defaults['scope'] = $defaults['scope']['name'];
+				}else{
+					$defaults['scope'] = $super_defaults['scope'];
+				}
 			}
 		}
 		//ORDER and GROUP BY ORDER - split up string array, if just text do a quick validation and set to default if upon failure
@@ -230,8 +234,6 @@ class EM_Object {
 		$category = $args['category'];// - not used anymore, accesses the $args directly
 		$tag = $args['tag'];// - not used anymore, accesses the $args directly
 		$location = $args['location'];
-		$bookings = $args['rsvp'];
-		$bookings = $args['bookings'] !== false ? absint($args['bookings']):$bookings;
 		$owner = $args['owner'];
 		$event = $args['event'];
 		$month = $args['month'];
@@ -585,19 +587,22 @@ class EM_Object {
 		//END TAXONOMY FILTERS
 	
 		//If we want rsvped items, we usually check the event
-		if( $bookings == 1 ){
-			$conditions['bookings'] = 'event_rsvp=1';
-		}elseif( $bookings === 'user' && is_user_logged_in()){
-			//get bookings of user
-			$EM_Person = new EM_Person(get_current_user_id());
-			$booking_ids = $EM_Person->get_bookings(true);
-			if( count($booking_ids) > 0 ){
-				$conditions['bookings'] = "(event_id IN (SELECT event_id FROM ".EM_BOOKINGS_TABLE." WHERE booking_id IN (".implode(',',$booking_ids).")))";
-			}else{
-				$conditions['bookings'] = "(event_id = 0)";
+		if( isset($args['bookings']) && $args['bookings'] !== false ){
+			$bookings = absint($args['bookings']);
+			if( $args['bookings'] === 'user' && is_user_logged_in()) {
+				//get bookings of user
+				$EM_Person = new EM_Person(get_current_user_id());
+				$booking_ids = $EM_Person->get_bookings(true);
+				if (count($booking_ids) > 0) {
+					$conditions['bookings'] = "(event_id IN (SELECT event_id FROM " . EM_BOOKINGS_TABLE . " WHERE booking_id IN (" . implode(',', $booking_ids) . ")))";
+				} else {
+					$conditions['bookings'] = "(event_id = 0)";
+				}
+			}elseif( $bookings == 1 ){
+				$conditions['bookings'] = 'event_rsvp=1';
+			}elseif( $bookings == 0 && $bookings !== false ){
+				$conditions['bookings'] = 'event_rsvp=0';
 			}
-		}elseif( $bookings == 0 && $bookings !== false ){
-			$conditions['bookings'] = 'event_rsvp=0';
 		}
 		//Default ownership belongs to an event, child objects can just overwrite this if needed.
 		if( is_numeric($owner) ){
@@ -675,8 +680,6 @@ class EM_Object {
 		$category = $args['category'];
 		$tag = $args['tag'];
 		$location = $args['location'];
-		$bookings = $args['rsvp'];
-		$bookings = !empty($args['bookings']) ? $args['bookings']:$bookings;
 		$owner = $args['owner'];
 		$event = $args['event'];
 		$month = $args['month'];
@@ -899,7 +902,7 @@ class EM_Object {
 		}
 	
 		//If we want rsvped items, we usually check the event
-		if( $bookings == 1 ){
+		if( $args['bookings'] == 1 ){
 			$query[] = array( 'key' => '_event_rsvp', 'value' => 1, 'compare' => '=' );
 		}
 		//Default ownership belongs to an event, child objects can just overwrite this if needed.
@@ -1035,7 +1038,7 @@ class EM_Object {
 	public static function get_post_search($args = array(), $filter = false, $request = array(), $accepted_searches = array()){
 		if( empty($request) ) $request = $_REQUEST;
 		if( !empty($request['em_search']) && empty($args['search']) ) $request['search'] = $request['em_search']; //em_search is included to circumvent wp search GET/POST clashes
-		$accepted_searches = !empty($accepted_searches) ? $accepted_searches : self::get_default_search();
+		$accepted_searches = !empty($accepted_searches) ? $accepted_searches : static::get_default_search();
 		$accepted_searches = array_diff($accepted_searches, array('format', 'format_header', 'format_footer'));
 		$accepted_searches = apply_filters('em_accepted_searches', $accepted_searches, $args);
 		//merge variables from the $request into $args

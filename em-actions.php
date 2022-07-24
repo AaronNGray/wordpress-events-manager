@@ -60,7 +60,7 @@ function em_init_actions() {
 	 	}
 	
 		if(isset($_REQUEST['ajaxCalendar']) && $_REQUEST['ajaxCalendar']) {
-			//FIXME if long events enabled originally, this won't show up on ajax call
+			$_REQUEST['has_search'] = false; //prevent search from loading up again
 			echo EM_Calendar::output($_REQUEST, false);
 			die();
 		}
@@ -233,13 +233,19 @@ function em_init_actions() {
 				}
 				$location_cond = apply_filters('em_actions_locations_search_cond', $location_cond);
 				$term = (isset($_REQUEST['term'])) ? '%'.$wpdb->esc_like(wp_unslash($_REQUEST['term'])).'%' : '%'.$wpdb->esc_like(wp_unslash($_REQUEST['q'])).'%';
+				$limit = apply_filters('em_locations_autocomplete_limit', 10);
+				$page = !empty($_REQUEST['page']) && is_numeric($_REQUEST['page']) ? absint($_REQUEST['page']) : 1;
+				$offset = ($page - 1) * $limit;
+				
+				// Get the results
 				$sql = $wpdb->prepare("
 					SELECT 
 						location_id AS `id`,
 						Concat( location_name )  AS `label`,
+						Concat( location_name )  AS `text`,
 						location_name AS `value`,
-						location_address AS `address`, 
-						location_town AS `town`, 
+						location_address AS `address`,
+						location_town AS `town`,
 						location_state AS `state`,
 						location_region AS `region`,
 						location_postcode AS `postcode`,
@@ -247,8 +253,8 @@ function em_init_actions() {
 						location_latitude AS `latitude`,
 						location_longitude AS `longitude`
 					FROM ".EM_LOCATIONS_TABLE." 
-					WHERE ( `location_name` LIKE %s ) AND location_status=1 $location_cond LIMIT 10
-				", $term);
+					WHERE ( `location_name` LIKE %s ) AND location_status=1 $location_cond LIMIT $limit OFFSET $offset
+				", $term); // 'label' is now for backwards compatibility
 				$results = $wpdb->get_results($sql);
 			}
 			echo EM_Object::json_encode($results);
@@ -698,32 +704,77 @@ add_action('wp_ajax_em_bookings_table','em_ajax_bookings_table');
  */
 function em_ajax_search_and_pagination(){
 	$args = array( 'owner' => false, 'pagination' => 1, 'ajax' => true);
-	echo '<div class="em-search-ajax">';
 	ob_start();
 	if( $_REQUEST['action'] == 'search_events' ){
+		// new and default way of doing things
+		$view = !empty($_REQUEST['view']) && preg_match('/^[a-zA-Z0-9-_]+$/', $_REQUEST['view']) ? $_REQUEST['view'] : 'list';
 		$args['scope'] = get_option('dbem_events_page_scope');
 		$args = EM_Events::get_post_search($args);
+		$search_args = em_get_search_form_defaults($args);
+		$args = array_merge($search_args, $args);
 		$args['limit'] = !empty($args['limit']) ? $args['limit'] : get_option('dbem_events_default_limit');
-		em_locate_template('templates/events-list.php', true, array('args'=>$args)); //if successful, this template overrides the settings and defaults, including search
-	}elseif( $_REQUEST['action'] == 'search_events_grouped' && defined('DOING_AJAX') ){
-		$args['scope'] = get_option('dbem_events_page_scope');
-		$args = EM_Events::get_post_search($args);
-		$args['limit'] = !empty($args['limit']) ? $args['limit'] : get_option('dbem_events_default_limit');
-		em_locate_template('templates/events-list-grouped.php', true, array('args'=>$args)); //if successful, this template overrides the settings and defaults, including search
-	}elseif( $_REQUEST['action'] == 'search_locations' && defined('DOING_AJAX') ){
+		switch( $view ){
+			case 'list-grouped':
+				em_locate_template('templates/events-list-grouped.php', true, array('args'=>$args)); //if successful, this template overrides the settings and defaults, including search
+				break;
+			case 'list':
+				em_locate_template('templates/events-list.php', true, array('args'=>$args)); //if successful, this template overrides the settings and defaults, including search
+				break;
+			case 'map':
+				$args['width'] = '100%';
+				$args['height'] = 0;
+				echo em_get_events_map_shortcode( $args );
+				break;
+			case 'calendar':
+				$args['has_search'] = false; // prevent view and search getting output again
+				echo EM_Calendar::output( $args );
+				break;
+			default:
+				if( has_action('em_events_search_view_'.$view) ){
+					do_action('em_events_search_view_'.$view, $args);
+				}else{
+					em_locate_template('templates/events-list.php', true, array('args'=>$args)); //if successful, this template overrides the settings and defaults, including search
+				}
+				break;
+		}
+	}elseif( $_REQUEST['action'] == 'search_locations'){
+		// new and default way of doing things
+		$view = !empty($_REQUEST['view']) && preg_match('/^[a-zA-Z0-9-_]+$/', $_REQUEST['view']) ? $_REQUEST['view'] : 'list';
 		$args = EM_Locations::get_post_search($args);
-		$args['limit'] = !empty($args['limit']) ? $args['limit'] : get_option('dbem_locations_default_limit');
-		em_locate_template('templates/locations-list.php', true, array('args'=>$args)); //if successful, this template overrides the settings and defaults, including search
-	}elseif( $_REQUEST['action'] == 'search_tags' && defined('DOING_AJAX') ){
-		$args = EM_Tags::get_post_search($args);
-		$args['limit'] = !empty($args['limit']) ? $args['limit'] : get_option('dbem_tags_default_limit');
-		em_locate_template('templates/tags-list.php', true, array('args'=>$args)); //if successful, this template overrides the settings and defaults, including search
-	}elseif( $_REQUEST['action'] == 'search_cats' && defined('DOING_AJAX') ){
-		$args = EM_Categories::get_post_search($args);
-		$args['limit'] = !empty($args['limit']) ? $args['limit'] : get_option('dbem_categories_default_limit');
-		em_locate_template('templates/categories-list.php', true, array('args'=>$args)); //if successful, this template overrides the settings and defaults, including search
+		$search_args = em_get_search_form_defaults($args);
+		$args = array_merge($search_args, $args);
+		if( !empty($args['eventful']) ) $args['scope'] = 'future'; // so eventful searches show upcoming event locations only
+		switch( $view ){
+			case 'list':
+				$args = EM_Locations::get_post_search($args);
+				$args['limit'] = !empty($args['limit']) ? $args['limit'] : get_option('dbem_locations_default_limit');
+				em_locate_template('templates/locations-list.php', true, array('args'=>$args)); //if successful, this template overrides the settings and defaults, including search
+				break;
+			case 'map':
+				$args = EM_Locations::get_post_search($args);
+				$args['width'] = '100%';
+				$args['height'] = 0;
+				$args['limit'] = 0;
+				echo em_get_locations_map_shortcode( $args );
+				break;
+		}
+	}else{
+		if( $_REQUEST['action'] == 'search_events_grouped' && defined('DOING_AJAX') ) {
+			// legacy
+			$args['scope'] = get_option('dbem_events_page_scope');
+			$args = EM_Events::get_post_search($args);
+			$args['limit'] = !empty($args['limit']) ? $args['limit'] : get_option('dbem_events_default_limit');
+			em_locate_template('templates/events-list-grouped.php', true, array('args' => $args)); //if successful, this template overrides the settings and defaults, including search
+		}elseif( $_REQUEST['action'] == 'search_tags' && defined('DOING_AJAX') ){
+			$args = EM_Tags::get_post_search($args);
+			$args['limit'] = !empty($args['limit']) ? $args['limit'] : get_option('dbem_tags_default_limit');
+			em_locate_template('templates/tags-list.php', true, array('args'=>$args)); //if successful, this template overrides the settings and defaults, including search
+		}elseif( $_REQUEST['action'] == 'search_cats' && defined('DOING_AJAX') ){
+			$args = EM_Categories::get_post_search($args);
+			$args['limit'] = !empty($args['limit']) ? $args['limit'] : get_option('dbem_categories_default_limit');
+			em_locate_template('templates/categories-list.php', true, array('args'=>$args)); //if successful, this template overrides the settings and defaults, including search
+		}
 	}
-	echo '</div>';
 	echo apply_filters('em_ajax_'.$_REQUEST['action'], ob_get_clean(), $args);
 	exit();
 }

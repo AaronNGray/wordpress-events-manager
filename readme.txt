@@ -4,8 +4,8 @@ Donate link: http://wp-events-plugin.com
 Tags: bookings, calendar, tickets, events, buddypress, event management, google maps, maps, locations, registration, zoom
 Text Domain: events-manager
 Requires at least: 5.2
-Tested up to: 6.0
-Stable tag: 5.12.1
+Tested up to: 6.0.1
+Stable tag: 6.0
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
@@ -14,7 +14,7 @@ Fully featured event registration management including recurring events, locatio
 
 Events Manager is a full-featured event registration plugin for WordPress based on the principles of flexibility, reliability and powerful features!
 
-Version 5 now makes events and locations WordPress Custom Post Types, allowing for more possibilities than ever before!
+*Version 6 is the biggest update to date, with a complete overhaul of our calendars, lists, searches and other front-end items. Check it out and enjoy!*
 
 * [Demo](http://demo.wp-events-plugin.com/)
 * [Documentation](http://wp-events-plugin.com/documentation/)
@@ -22,6 +22,7 @@ Version 5 now makes events and locations WordPress Custom Post Types, allowing f
 
 = Main Features =
 
+* Beautiful calendars, search pages, lists and booking forms to enhance your site events.
 * Easy event registration (single day with start/end times)
 * Recurring and long (multi-day) event registration
 * Bookings Management (including approval/rejections, export CVS, and more!)
@@ -111,14 +112,45 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 
 == Screenshots ==
 
-1. Event registration and user submitted events pending approval
-2. Event ticketing and bookings forms, can be easily styled.
-3. Multiple tickets with constraints and prices
-4. Locations with google map integration
-5. Event registration page
-6. Manage attendees with various booking reports
+1. Innovative responsive calendar with rings to show eventful dates, colored by category, clickable to expand more event information.
+2. Completely customizable event widgets/blocks and shortcodes.
+3. Beautiful event pages which can be completely customized via our settings page.
+4. Share your events to popular calendar clients.
+5. Display information about your location in widgets, blocks and shortcodes too.
+6. Easily skip to the future with our new calendar navigation and search filters.
+7. Easy-to-use search filters, whether on the phone or desktop.
+8. Search for events and locations within a search radius using Google geo searches.
+9. Intuitive search UI for your visitors.
+10. QUickly switch between search views.
+11. View your events on a Google Map, filter with searches.
+12. Multiple calendar styles, fully responsive according to the width of the calendar.
+13. Responsivve way for mini-calendar to intuitively show dates with many events within a quick glance.
+14. Responsive lists that adapt to the size of its containing content.
+15. Clean forms for submitting and managing events, as well as booking events for users.
 
 == Changelog ==
+= 6.0 =
+* MAJOR UI overhaul inclusding complete rewrite of calendars, lists, search
+* Large overhaul of booking forms, but even more to come here!
+* new base CSS framework to offer maximum theme consistency
+* partial overhaul of front-end editors to add responsive support (more to come!)
+* minor tweaks to dashboard editor meta boxes (more to come)
+* responsive support for all front-end display items
+* new datepicker and autocomplete modules
+* added limitation to only future events in event calendar
+* added search views, switch between maps, lists and calendars from the search
+* mucn much more new UI related upgrades
+* fixed bug in single ticket mode not updating "available until" time upon saving
+* fixed bookings="user" not working in 5.12 update
+* fixed issue where site language is respected over profile language in admin area for EM content
+* tweaked EM_Calendar::get() sorting to order by start datetime,
+* tweaked EM_Calendar::get() to consider multi-day events as all-day events for purposes of $event_ts_marker indexes,
+* fixed calendar day links containing the limit query param,
+* added EM_Event::get_event_colors() for category color meta
+* added action em_booking_status_changed, em_bookings_table_output_table_filters
+* changed booking_status DB field to allow double-digit status numbers
+* fixed display issues on EM-generated pages wtih block themes
+
 = 5.12.1 =
 * fixed issue with scope sanitization preventing search form searching by date range
 * added limitation to prevent JS loading on non-EM post type editors to potentially help prevent 3rd party conflicts
@@ -1045,7 +1077,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * fixed 5.5 bug where search attributes being included in pagination links when not necessary
 * fixed calendar not using ordering as per settings
 * fixed chronological ordering on calendars with long and all-day events
-* fixed geo.js not being overridable an overridable template file
+* fixed geo.bak.js not being overridable an overridable template file
 * fixed limit=0 being ignored in shortcodes and functions
 * fixed pagination being forced for categories_list shortcode regardless of attribute
 

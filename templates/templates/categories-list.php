@@ -9,9 +9,13 @@
  * 
  */ 
 $args = apply_filters('em_content_categories_args', $args);
-
-if( get_option('dbem_css_catlist') ) echo "<div class='css-cats-list'>";
-
-echo EM_Categories::output( $args );
-
-if( get_option('dbem_css_catlist') ) echo "</div>";
+if( empty($args['id']) ) $args['id'] = rand(); // prevent warnings
+$id = esc_attr($args['id']);
+?>
+<div class="em em-view-container" id="em-view-<?php echo $id; ?>" data-view="list">
+	<div class="em-list em-categories-list <?php em_template_classes('categories-list'); ?>" id="em-categories-list-<?php echo $id; ?>" data-view-id="<?php echo $id; ?>">
+		<?php
+		echo EM_Categories::output( $args );
+		?>
+	</div>
+</div>

@@ -13,11 +13,13 @@ $EM_Tickets = $EM_Event->get_bookings()->get_tickets(); //already instantiated, 
 $collumns = $EM_Tickets->get_ticket_collumns(); //array of collumn type => title
 ?>
 <table class="em-tickets" cellspacing="0" cellpadding="0">
-	<tr>
-		<?php foreach($collumns as $type => $name): ?>
-		<th class="em-bookings-ticket-table-<?php echo $type; ?>"><?php echo $name; ?></th>
-		<?php endforeach; ?>
-	</tr>
+	<thead>
+		<tr>
+			<?php foreach($collumns as $type => $name): ?>
+			<th class="em-bookings-ticket-table-<?php echo $type; ?>"><?php echo $name; ?></th>
+			<?php endforeach; ?>
+		</tr>
+	</thead>
 	<?php foreach( $EM_Tickets->tickets as $EM_Ticket ): /* @var $EM_Ticket EM_Ticket */ ?>
 		<?php if( $EM_Ticket->is_displayable() ): ?>
 			<?php do_action('em_booking_form_tickets_loop_header', $EM_Ticket); //do not delete ?>

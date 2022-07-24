@@ -9,10 +9,10 @@
 	/* @var $EM_Location EM_Location */
 	if ( get_option('dbem_gmap_is_active') && ( is_object($EM_Location) && $EM_Location->location_latitude != 0 && $EM_Location->location_longitude != 0 ) ) {
 		//assign random number for element id reference
-		$rand = substr(md5(rand().rand()),0,5);
+		$rand = rand();
 		//get dimensions with px or % added in
-		$width = (!empty($args['width'])) ? $args['width']:get_option('dbem_map_default_width','400px');
-		$height = (!empty($args['height'])) ? $args['height']:get_option('dbem_map_default_height','300px');
+		$width = (isset($args['width'])) ? $args['width']:get_option('dbem_map_default_width','400px');
+		$height = (isset($args['height'])) ? $args['height']:get_option('dbem_map_default_height','300px');
 		$width = preg_match('/(px)|%/', $width) ? $width:$width.'px';
 		$height = preg_match('/(px)|%/', $height) ? $height:$height.'px';
 		//generate map depending on type
@@ -20,14 +20,30 @@
 			$map_url = $EM_Location->get_google_maps_embed_url();
 			?>
 			<div class="em-location-map-container"  style='position:relative; background: #CDCDCD; width: <?php echo $width ?>; height: <?php echo $height ?>;'>
-				<iframe style="width:100%; height:100%; border:0;" src="<?php echo esc_attr($map_url); ?>" allowfullscreen></iframe>
+				<iframe class="em-location-map" style="width:100%; height:100%; border:0;" src="<?php echo esc_attr($map_url); ?>" allowfullscreen></iframe>
 			</div>
 			<?php
 		}else{
 			?>
-			<div class="em-location-map-container"  style='position:relative; background: #CDCDCD; width: <?php echo $width ?>; height: <?php echo $height ?>;'>
+			<div class="em em-location-map-container" style="position:relative; <?php if( $width ) echo 'width:'. esc_attr($width).';'; ?> <?php if( $height ) echo 'height: '. esc_attr($height) .';' ?>">
 				<div class='em-location-map' id='em-location-map-<?php echo $rand ?>' style="width: 100%; height: 100%;">
-					<?php _e('Loading Map....', 'events-manager'); ?>
+					<div class="em-loading-maps">
+						<span><?php _e('Loading Map....', 'events-manager'); ?></span>
+						<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin: auto; background: none; display: block; shape-rendering: auto;" width="200px" height="200px" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
+							<rect x="19.5" y="26" width="11" height="48" fill="#85a2b6">
+								<animate attributeName="y" repeatCount="indefinite" dur="1s" calcMode="spline" keyTimes="0;0.5;1" values="2;26;26" keySplines="0 0.5 0.5 1;0 0.5 0.5 1" begin="-0.2s"></animate>
+								<animate attributeName="height" repeatCount="indefinite" dur="1s" calcMode="spline" keyTimes="0;0.5;1" values="96;48;48" keySplines="0 0.5 0.5 1;0 0.5 0.5 1" begin="-0.2s"></animate>
+							</rect>
+							<rect x="44.5" y="26" width="11" height="48" fill="#bbcedd">
+								<animate attributeName="y" repeatCount="indefinite" dur="1s" calcMode="spline" keyTimes="0;0.5;1" values="8;26;26" keySplines="0 0.5 0.5 1;0 0.5 0.5 1" begin="-0.1s"></animate>
+								<animate attributeName="height" repeatCount="indefinite" dur="1s" calcMode="spline" keyTimes="0;0.5;1" values="84;48;48" keySplines="0 0.5 0.5 1;0 0.5 0.5 1" begin="-0.1s"></animate>
+							</rect>
+							<rect x="69.5" y="26" width="11" height="48" fill="#dce4eb">
+								<animate attributeName="y" repeatCount="indefinite" dur="1s" calcMode="spline" keyTimes="0;0.5;1" values="8;26;26" keySplines="0 0.5 0.5 1;0 0.5 0.5 1"></animate>
+								<animate attributeName="height" repeatCount="indefinite" dur="1s" calcMode="spline" keyTimes="0;0.5;1" values="84;48;48" keySplines="0 0.5 0.5 1;0 0.5 0.5 1"></animate>
+							</rect>
+						</svg>
+					</div>
 				</div>
 			</div>
 			<div class='em-location-map-info' id='em-location-map-info-<?php echo $rand ?>' style="display:none; visibility:hidden;">

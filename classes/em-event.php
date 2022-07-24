@@ -1658,6 +1658,47 @@ class EM_Event extends EM_Object{
 		return apply_filters('em_event_get_categories', $this->categories, $this);
 	}
 	
+	
+	/**
+	 * Returns an array of colors of this event based on the category assigned. Will return a pre-formatted CSS variables assignment for use in the style attribute of HTML elements.
+	 * @param bool $css_vars
+	 * @return array|string
+	 */
+	public function get_colors( $css_vars = false ){
+		$orig_color = get_option('dbem_category_default_color');
+		$color = $borderColor = $orig_color;
+		$textColor = '#fff';
+		if ( get_option('dbem_categories_enabled') && !empty ( $this->get_categories()->categories )) {
+			foreach($this->get_categories()->categories as $EM_Category){
+				/* @var $EM_Category EM_Category */
+				if( $EM_Category->get_color() != '' ){
+					$color = $borderColor = $EM_Category->get_color();
+					if( preg_match("/#fff(fff)?/i",$color) ){
+						$textColor = '#777';
+						$borderColor = '#ccc';
+					}
+					break;
+				}
+			}
+		}
+		$event_color = array(
+			'background-color' => $color,
+			'border-color' => $borderColor,
+			'color' => $textColor,
+		);
+		$event_color = apply_filters('em_event_get_colors', $event_color, $this);
+		if( $css_vars ){
+			// get event colors
+			$css_color_vars = array();
+			foreach( $event_color as $k => $v ){
+				$css_color_vars[] = '--event-'.$k.':'.$v.';';
+			}
+			return implode(';', $css_color_vars);
+		}else{
+			return $event_color;
+		}
+	}
+	
 	/**
 	 * Gets the parent of this event, if none exists, null is returned.
 	 * @return EM_Event|null
@@ -2109,12 +2150,25 @@ class EM_Event extends EM_Object{
 								$show_condition = !in_array($attendee_booking_status, $user_bookings);
 							}
 						}
+					}elseif ( $condition == 'has_category' ||  $condition == 'no_category' ){
+						//event is in this category
+						$terms = get_the_terms( $this->post_id, EM_TAXONOMY_CATEGORY);
+						$show_condition = $condition == 'has_category' ? !empty($terms) : empty($terms);
 					}elseif ( preg_match('/^has_category_([a-zA-Z0-9_\-,]+)$/', $condition, $category_match)){
 					    //event is in this category
 						$show_condition = has_term(explode(',', $category_match[1]), EM_TAXONOMY_CATEGORY, $this->post_id);
 					}elseif ( preg_match('/^no_category_([a-zA-Z0-9_\-,]+)$/', $condition, $category_match)){
 					    //event is NOT in this category
 						$show_condition = !has_term(explode(',', $category_match[1]), EM_TAXONOMY_CATEGORY, $this->post_id);
+					}elseif ( $condition == 'has_tag' ||  $condition == 'no_tag' ){
+						//event is in this category
+						$terms = get_the_terms( $this->post_id, EM_TAXONOMY_TAG);
+						$show_condition = $condition == 'has_tag' ? !empty($terms) : empty($terms);
+					}elseif ( $condition == 'has_taxonomy' ||  $condition == 'no_taxonomy' ){
+						//event is in this category
+						$cats = get_the_terms( $this->post_id, EM_TAXONOMY_CATEGORY);
+						$tax = get_the_terms( $this->post_id, EM_TAXONOMY_TAG);
+						$show_condition = $condition == 'has_taxonomy' ? !empty($tax) || !empty($cats) : empty($tax) && empty($cats);
 					}elseif ( preg_match('/^has_tag_([a-zA-Z0-9_\-,]+)$/', $condition, $tag_match)){
 					    //event has this tag
 						$show_condition = has_term(explode(',', $tag_match[1]), EM_TAXONOMY_TAG, $this->post_id);
@@ -2574,6 +2628,22 @@ class EM_Event extends EM_Object{
     					$replace = ob_get_clean();
                     }
 					break;
+				case '#_EVENTTAGSLINE':
+					$tags = get_the_terms($this->post_id, EM_TAXONOMY_TAG);
+					if( is_array($tags) && count($tags) > 0 ){
+						$tags_list = array();
+						foreach($tags as $tag) {
+							$link = get_term_link($tag->slug, EM_TAXONOMY_TAG);
+							if( is_wp_error($link) ) $link = '';
+							$tags_list[] = '<a href="' . $link . '">' . $tag->name . '</a>';
+						}
+					}
+					if( !empty($tags_list) ) {
+						$replace = implode(', ', $tags_list);
+					}else{
+						$replace = get_option ( 'dbem_no_categories_message' );
+					}
+					break;
 				case '#_CATEGORIES': //deprecated
 				case '#_EVENTCATEGORIES':
 				    $replace = '';
@@ -2582,6 +2652,17 @@ class EM_Event extends EM_Object{
     					$template = em_locate_template('placeholders/categories.php', true, array('EM_Event'=>$this));
     					$replace = ob_get_clean();
 				    }
+					break;
+				case '#_EVENTCATEGORIESLINE':
+					$categories = array();
+					foreach( $this->get_categories() as $EM_Category ){
+						$categories[] = $EM_Category->output("#_CATEGORYLINK");
+					}
+					if( !empty($categories) ) {
+						$replace = implode(', ', $categories);
+					}else{
+						$replace = get_option ( 'dbem_no_categories_message' );
+					}
 					break;
 				//Ical Stuff
 				case '#_EVENTICALURL':
@@ -2611,33 +2692,50 @@ class EM_Event extends EM_Object{
 					}
 					//build url
 					$gcal_url = 'https://www.google.com/calendar/event?action=TEMPLATE&text=event_name&dates=start_date/end_date&details=post_content&location=location_name&trp=false&sprop=event_url&sprop=name:blog_name&ctz=event_timezone';
-					$gcal_url = str_replace('event_name', urlencode($this->event_name), $gcal_url);
-					$gcal_url = str_replace('start_date', urlencode($dateStart), $gcal_url);
-					$gcal_url = str_replace('end_date', urlencode($dateEnd), $gcal_url);
-					$gcal_url = str_replace('location_name', urlencode($this->get_location()->get_full_address(', ', true)), $gcal_url);
-					$gcal_url = str_replace('blog_name', urlencode(get_bloginfo()), $gcal_url);
-					$gcal_url = str_replace('event_url', urlencode($this->get_permalink()), $gcal_url);
-					$gcal_url = str_replace('event_timezone', urlencode($this->event_timezone), $gcal_url);
-					//calculate URL length so we know how much we can work with to make a description.
-					if( !empty($this->post_excerpt) ){
-						$gcal_url_description = $this->post_excerpt;
-					}else{
-						$matches = explode('<!--more', $this->post_content);
-						$gcal_url_description = wp_kses_data($matches[0]);
-					}
-					$gcal_url_length = strlen($gcal_url) - 9;
-					if( strlen($gcal_url_description) + $gcal_url_length > 1350 ){
-						$gcal_url_description = substr($gcal_url_description, 0, 1380 - $gcal_url_length - 3 ).'...';
-					}
-					$gcal_url = str_replace('post_content', urlencode($gcal_url_description), $gcal_url);
-					//get the final url
-					$replace = $gcal_url;
+					$replace = $this->generate_ical_url($gcal_url, $dateStart, $dateEnd);
 					if( $result == '#_EVENTGCALLINK' ){
 						$img_url = 'https://www.google.com/calendar/images/ext/gc_button2.gif';
 						$replace = '<a href="'.esc_url($replace).'" target="_blank"><img src="'.esc_url($img_url).'" alt="0" border="0"></a>';
 					}
 					break;
+				case '#_EVENTOUTLOOKLIVELINK':
+				case '#_EVENTOUTLOOKLIVEURL':
+				case '#_EVENTOFFICE365LINK':
+				case '#_EVENTOFFICE365URL':
+					$base_url = $result == '#_EVENTOUTLOOKLIVELINK' || $result == '#_EVENTOUTLOOKLIVEURL' ? 'https://outlook.live.com':'https://outlook.office.com';
+					if($this->event_all_day && $this->event_start_date == $this->event_end_date){
+						$dateStart	= $this->start()->copy()->format('c');
+						$dateEnd	= $this->end()->copy()->sub('P1D')->format('c');
+						$url = $base_url.'/calendar/0/deeplink/compose?allday=true&body=post_content&location=location_name&path=/calendar/action/compose&rru=addevent&startdt=start_date&enddt=end_date&subject=event_name';
+					}else{
+						$dateStart	= $this->start()->copy()->format('c');
+						$dateEnd = $this->end()->copy()->format('c');
+						$url = $base_url.'/calendar/0/deeplink/compose?allday=false&body=post_content&location=location_name&path=/calendar/action/compose&rru=addevent&startdt=start_date&enddt=end_date&subject=event_name';
+					}
+					$replace = $this->generate_ical_url( $url, $dateStart, $dateEnd );
+					if( $result == '#_EVENTOUTLOOKLIVELINK' ){
+						$replace = '<a href="'.esc_url($replace).'" target="_blank">Outlook Live</a>';
+					}
+					break;
+					// dt = 2022-07-20T15:15:00+00:00 to 2022-07-21T15:45:00+00:00
+					//https://outlook.live.com/calendar/0/deeplink/compose?allday=false&body=post_content&location=location_name&path=/calendar/action/compose&rru=addevent&startdt=start_date&enddt=end_date&subject=event_name
+					// startdt = 2022-07-20  &  enddt = 2022-07-19 (-1 day)
+					//https://outlook.live.com/calendar/0/deeplink/compose?allday=allday_value&body=post_content&location=location_name&path=/calendar/action/compose&rru=addevent&startdt=start_date&enddt=end_date&subject=event_name
 				//Event location (not physical location)
+				case '#_EVENTADDTOCALENDAR':
+					ob_start();
+					?>
+					<button type="button" class="em-event-add-to-calendar em-tooltip-ddm em-clickable input" data-button-width="match" data-tooltip-class="em-add-to-calendar-tooltip"><span class="em-icon em-icon-calendar"></span> <?php esc_html_e('Add To Calendar', 'events-manager'); ?></button>
+					<div class="em-tooltip-ddm-content em-event-add-to-calendar-content">
+						<a class="em-a2c-download" href="<?php echo esc_url($this->get_ical_url()); ?>" target="_blank"><?php echo sprintf(esc_html__('Download %s', 'events-manager'), 'ICS'); ?></a>
+						<a class="em-a2c-google" href="<?php echo esc_url($this->output('#_EVENTGCALURL')); ?>" target="_blank"><?php esc_html_e('Google Calendar', 'events-manager'); ?></a>
+						<a class="em-a2c-apple" href="<?php echo esc_url(str_replace(array('http://','https://'), 'webcal://', $this->get_ical_url())); ?>" target="_blank">iCalendar</a>
+						<a class="em-a2c-office" href="<?php echo esc_url($this->output('#_EVENTOFFICE365URL')); ?>" target="_blank">Office 365</a>
+						<a class="em-a2c-outlook" href="<?php echo esc_url($this->output('#_EVENTOUTLOOKLIVEURL')); ?>" target="_blank">Outlook Live</a>
+					</div>
+					<?php
+					$replace = ob_get_clean();
+					break;
 				case '#_EVENTLOCATION':
 					if( $this->has_event_location() ) {
 						if (!empty($placeholders[3][$key])) {
@@ -2727,6 +2825,31 @@ class EM_Event extends EM_Object{
 		    $event_string = str_replace("\n",'\n',$event_string);
 		}
 		return apply_filters('em_event_output', $event_string, $this, $format, $target);
+	}
+	
+	public function generate_ical_url($url, $dateStart, $dateEnd, $description_max_length = 1350 ){
+		//replace url template placeholders
+		$url = str_replace('event_name', urlencode($this->event_name), $url);
+		$url = str_replace('start_date', urlencode($dateStart), $url);
+		$url = str_replace('end_date', urlencode($dateEnd), $url);
+		$url = str_replace('location_name', urlencode($this->get_location()->get_full_address(', ', true)), $url);
+		$url = str_replace('blog_name', urlencode(get_bloginfo()), $url);
+		$url = str_replace('event_url', urlencode($this->get_permalink()), $url);
+		$url = str_replace('event_timezone', urlencode($this->event_timezone), $url); // Google specific
+		//calculate URL length so we know how much we can work with to make a description.
+		if( !empty($this->post_excerpt) ){
+			$description = $this->post_excerpt;
+		}else{
+			$matches = explode('<!--more', $this->post_content);
+			$description = wp_kses_data($matches[0]);
+		}
+		$url_length = strlen($url) - 9;
+		// truncate
+		if( $description_max_length && strlen($description) + $url_length > $description_max_length ){
+			$description = substr($description, 0, $description_max_length - $url_length - 3 ).'...';
+		}
+		$url = str_replace('post_content', urlencode($description), $url);
+		return $url;
 	}
 	
 	function output_times( $time_format = false, $time_separator = false , $all_day_message = false, $use_site_timezone = false ){

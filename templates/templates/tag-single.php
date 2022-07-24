@@ -8,5 +8,13 @@
  */
 global $EM_Tag;
 /* @var $EM_Tag EM_Tag */
-echo $EM_Tag->output_single();
+if( empty($args['id']) ) $args['id'] = rand(); // prevent warnings
+$id = esc_attr($args['id']);
 ?>
+<div class="em em-view-container" id="em-view-<?php echo $id; ?>" data-view="tag">
+	<div class="em-item em-item-single em-taxonomy em-taxonomy-single em-tag em-tag-single <?php em_template_classes('single-tag'); ?> em-tag-<?php echo esc_attr($EM_Tag->term_id); ?>" id="em-tag-<?php echo $id; ?>" data-view-id="<?php echo $id; ?>">
+		<?php
+		echo $EM_Tag->output_single();
+		?>
+	</div>
+</div>

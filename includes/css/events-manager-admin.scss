@@ -1,0 +1,51 @@
+.wp-admin .em.pixelbones{
+	--font-size: inherit;
+	--line-height: inherit;
+	--font-weight : inherit;
+	--font-family : inherit;
+}
+/* New Stuff **/
+.wp-admin {
+	@import 'partials/admin/when';
+}
+.event-form-recurrence {
+	fieldset.inline {
+		display: inline-block;
+	}
+}
+
+.event-form-when {
+	label, legend {
+		display: block;
+		width: 100%;
+		margin-bottom: 8px;
+
+		&.inline-left {
+			width: auto;
+			display: inline-block;
+			padding-right: 5px;
+			padding-left: 3px;
+		}
+	}
+	.em-time-range fieldset {
+		margin-bottom: 10px;
+	}
+	> * {
+		margin-bottom: 15px !important;
+	}
+	> p {
+		margin-bottom: 20px !important;
+	}
+	input.em-date-start-end {
+		width: 100%;
+		background: #fff;
+	}
+}
+
+:not(.em-location-where) .em-location-data {
+	> div:first-child {
+		margin-bottom: 20px;
+	}
+}
+
+@import 'events_manager_admin.css';

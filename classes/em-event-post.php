@@ -22,6 +22,7 @@ class EM_Event_Post {
 			//display as page template?
 			if( get_option('dbem_cp_events_template') ){
 				add_filter('single_template',array('EM_Event_Post','single_template'));
+				
 			}
 			//add classes to body and post_class()
 			if( get_option('dbem_cp_events_post_class') != '' ){
@@ -58,14 +59,25 @@ class EM_Event_Post {
 	public static function single_template($template){
 		global $post;
 		if( !locate_template('single-'.EM_POST_TYPE_EVENT.'.php') && $post->post_type == EM_POST_TYPE_EVENT ){
+			if( function_exists('wp_is_block_theme')  && wp_is_block_theme() && current_theme_supports( 'block-templates' ) ) {
+				$is_block_theme = true;
+				$template_name = 'single';
+			}
 			//do we have a default template to choose for events?
 			if( get_option('dbem_cp_events_template') == 'page' ){
 				$post_templates = array('page.php','index.php');
+				if( !empty($is_block_theme) ){
+					$block_templates = array('page.html', 'single.html', 'index.html');
+					$template_name = 'page';
+				}
 			}else{
 			    $post_templates = array(get_option('dbem_cp_events_template'));
 			}
 			if( !empty($post_templates) ){
-			    $post_template = locate_template($post_templates,false);
+				$post_template = locate_template($post_templates, false);
+				if( !empty($is_block_theme) ){
+					$post_template = locate_block_template($post_template, $template_name, $post_templates);
+				}
 			    if( !empty($post_template) ) $template = $post_template;
 			}
 		}

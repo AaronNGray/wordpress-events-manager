@@ -15,8 +15,9 @@ class EM_Calendar extends EM_Object {
 		$args = apply_filters('em_calendar_get_args', $args);
 		$original_args = $args;
 		$args = self::get_default_search($args);
-		$full = $args['full']; //For ZDE, don't delete pls
 		//figure out what month to look for, if we need to
+		$EM_DateTime = new EM_DateTime();
+		$today = $EM_DateTime->copy();
 		if( empty($args['month']) && is_array($args['scope']) ){
 			//if a scope is supplied, figure out the month/year we're after, which will be between these two dates.
 			$EM_DateTime = new EM_DateTime($args['scope'][0]);
@@ -26,9 +27,23 @@ class EM_Calendar extends EM_Object {
 			$month = $args['month'] = $EM_DateTime->format('n');
 			$year = $args['year'] = $EM_DateTime->format('Y');
 		}else{
-			//if month/year supplied, we use those or later on default to current month/year
-			$month = $args['month']; 
-			$year = $args['year'];
+			if( !empty($args['month']) && !empty($args['year']) ){
+				// check if we're looking for a future date, in which case we don't force anything
+				if( $args['scope'] == 'future' ){
+					$search_date = $EM_DateTime->copy()->setDate($args['year'], $args['month'], $EM_DateTime->format('d'));
+					if( $search_date > $today ) {
+						$month = $args['month'];
+						$year = $args['year'];
+					}
+				}else{
+					$month = $args['month'];
+					$year = $args['year'];
+				}
+			}
+			if( !isset($month) ){
+				$month = $args['month'] = $EM_DateTime->format('m');
+				$year = $args['year'] = $EM_DateTime->format('Y');
+			}
 		}
 		$long_events = $args['long_events'];
 		$limit = $args['limit']; //limit arg will be used per day and not for events search
@@ -140,37 +155,50 @@ class EM_Calendar extends EM_Object {
 		//Get an array of arguments that don't include default valued args
 		$link_args = self::get_query_args($args);
 		$link_args['ajaxCalendar'] = 1;
-		$previous_url = esc_url_raw(add_query_arg( array_merge($link_args, array('mo'=>$month_last, 'yr'=>$year_last)) ));
 		$next_url = esc_url_raw(add_query_arg( array_merge($link_args, array('mo'=>$month_next, 'yr'=>$year_next)) ));
-		
-	 	$weekdays = array('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday');
-	 	if(!empty($args['full'])) {
- 		    if( get_option('dbem_full_calendar_abbreviated_weekdays') ) $weekdays = array('Sun','Mon','Tue','Wed','Thu','Fri','Sat');
- 			$day_initials_length =  get_option('dbem_full_calendar_initials_length');
- 		} else {
- 		    if ( get_option('dbem_small_calendar_abbreviated_weekdays') ) $weekdays = array('Sun','Mon','Tue','Wed','Thu','Fri','Sat');
-	 		$day_initials_length = get_option('dbem_small_calendar_initials_length');
- 		}
- 		
-		for( $n = 0; $n < $start_of_week; $n++ ) {   
-			$last_day = array_shift($weekdays);     
-			$weekdays[]= $last_day;
+		$calendar_array['links'] = array( 'previous_url'=>'', 'next_url'=>$next_url, 'today_url' => '');
+		// add today and previous links if scope permits
+		if( $today->format('Y-n') != $year.'-'.absint($month) ) {
+			$calendar_array['links']['today_url'] = esc_url_raw(add_query_arg( array_merge($link_args, array('mo'=>$today->format('m'), 'yr'=>$today->format('Y'))) ));
 		}
-	   
-		$days_initials_array = array();
-		//translate day names, some languages may have special circumstances
-		if( $day_initials_length == 1 && in_array(EM_ML::$current_language, array('zh_CN', 'zh_TW')) ){
-			//Chinese single initial day names are different
-			$days_initials_array = array('日','一','二','三','四','五','六');
-		}else{
-			//all other languages
-			foreach($weekdays as $weekday) {
-				$days_initials_array[] = esc_html(self::translate_and_trim($weekday, $day_initials_length));
+		if( $args['scope'] !== 'future' || $today->format('Y-n') !== $year.'-'.absint($month) ){ // don't show if future scope and this month
+			$calendar_array['links']['previous_url'] = esc_url_raw(add_query_arg( array_merge($link_args, array('mo'=>$month_last, 'yr'=>$year_last)) ));
+		}
+		// Set up weekday headers
+	 	$weekdays = array(
+			'small' => array('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'),
+		    'large' => array('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'),
+		);
+        if( get_option('dbem_full_calendar_abbreviated_weekdays') ) $weekdays['large'] = array('Sun','Mon','Tue','Wed','Thu','Fri','Sat');
+		if( get_option('dbem_small_calendar_abbreviated_weekdays') ) $weekdays['small'] = array('Sun','Mon','Tue','Wed','Thu','Fri','Sat');
+		$day_initials_lengths = array('large' => get_option('dbem_full_calendar_initials_length'), 'small' => get_option('dbem_small_calendar_initials_length'));
+	 
+		foreach( $day_initials_lengths as $size => $day_initials_length ){
+			// re-order weekdays for start day of week being first in array
+			for( $n = 0; $n < $start_of_week; $n++ ) {
+				$last_day = array_shift($weekdays[$size]);
+				$weekdays[$size][] = $last_day;
+			}
+			$days_initials_array = array();
+			//translate day names, some languages may have special circumstances
+			if( $day_initials_length == 1 && in_array(EM_ML::$current_language, array('zh_CN', 'zh_TW')) ){
+				//Chinese single initial day names are different, we resort it here as per above
+				$weekdays = array('日','一','二','三','四','五','六');
+				for( $n = 0; $n < $start_of_week; $n++ ) { $last_day = array_shift($weekdays); $weekdays[]= $last_day; }
+				$calendar_array['row_headers_'.$size] = array('日','一','二','三','四','五','六');
+			}else{
+				//all other languages
+				foreach($weekdays[$size] as $weekday) {
+					$days_initials_array[] = esc_html(self::translate_and_trim($weekday, $day_initials_length));
+				}
+				$calendar_array['row_headers_'.$size] = $days_initials_array;
 			}
 		}
-		
-		$calendar_array['links'] = array( 'previous_url'=>$previous_url, 'next_url'=>$next_url);
-		$calendar_array['row_headers'] = $days_initials_array;
+		if( !empty($args['full']) ) {
+			$calendar_array['row_headers'] = $calendar_array['row_headers_large'];
+		}else{
+			$calendar_array['row_headers'] = $calendar_array['row_headers_small'];
+		}
 		
 		// Now we break each key of the array  
 		// into a week and create a new table row for each 
@@ -201,15 +229,26 @@ class EM_Calendar extends EM_Object {
 		}
 		
 		//query the database for events in this time span with $offset days before and $outset days after this month to account for these cells in the calendar
+		$scope = $args['scope'] === 'future' ? 'future' : null;
+		// we're looking for start of month - offset
 		$scope_datetime_start = new EM_DateTime("{$year}-{$month}-1");
-		$scope_datetime_end = new EM_DateTime($scope_datetime_start->format('Y-m-t'));
-		$scope_datetime_start->sub('P'.$offset.'D');
+		$scope_datetime_end = new EM_DateTime($scope_datetime_start->format('Y-m-t')); // get it here before we subtract
+		if( $scope === 'future' ){
+			// if month is this month, start datetime must be today
+			$scope_datetime_today = new EM_DateTime();
+			if( $scope_datetime_start < $scope_datetime_today ){
+				$scope_datetime_start = $scope_datetime_today;
+			}
+		}else{
+			$scope_datetime_start->sub('P'.$offset.'D');
+		}
 		$scope_datetime_end->add('P'.$outset.'D');
 		//we have two methods here, one for high-volume event sites i.e. many thousands of events per month, and another for thousands or less per month.
 		$args['array'] = true; //we're getting an array first to avoid extra queries during object creation
 		unset($args['month']);
 		unset($args['year']);
 		unset($args['limit']); //limits in the events search won't help
+		$args['orderby'] = 'event_start'; // allows for folding all-day and multi-days on top of each other above regular events
 		if( defined('EM_CALENDAR_OPT') && EM_CALENDAR_OPT ){
 			//here we loop through each day, query that specific date, and then compile a list of event objects
 			//in this mode the count will never be accurate, we're grabing at most (31 + 14 days) * (limit + 1) events to reduce memory loads
@@ -224,16 +263,18 @@ class EM_Calendar extends EM_Object {
 				$scope_datetime_loop += (86400); //add a day
 			}
 		}else{
-			//just load all the events for this time-range
+			//just load all the events for this time-range, or just future events
 			$args['scope'] = array( $scope_datetime_start->format('Y-m-d'), $scope_datetime_end->format('Y-m-d'));
 			$events = EM_Events::get($args);
 		}
 		//back to what it was
+		if( $scope ) { //set back to future (currently supported only)
+			$args['scope'] = $scope;
+		}
 		$args['month'] = $month; 
 		$args['year'] = $year;
 		$args['limit'] = $limit; 
 	
-		$event_format = get_option('dbem_full_calendar_event_format'); 
 		$event_title_format = get_option('dbem_small_calendar_event_title_format');
 		$event_title_separator_format = get_option('dbem_small_calendar_event_title_separator');
 		
@@ -243,6 +284,14 @@ class EM_Calendar extends EM_Object {
 			//Go through the events and slot them into the right d-m index
 			foreach($events as $event) {
 				$event = apply_filters('em_calendar_output_loop_start', $event);
+				// first, we will ignore any past events that are still loaded within the month (these would be 'earlier today')
+				if( $args['scope'] === 'future' ){
+					$event_cutoff = get_option('dbem_events_current_are_past') ? $event['event_start']:$event['event_end']; // remember, this is UTC, not local!
+					$EM_DateTime = new EM_DateTime($event_cutoff, 'UTC');
+					if( $scope_datetime_start > $EM_DateTime ){
+						continue;
+					}
+				}
 				if( $long_events ){
 					//If $long_events is set then show a date as eventful if there is an multi-day event which runs during that day
 					$event_start = new EM_DateTime($event['event_start_date'], $event['event_timezone']);
@@ -256,7 +305,7 @@ class EM_Calendar extends EM_Object {
 							$EM_Event = EM_MS_GLOBAL ? em_get_event($event['post_id'], $event['blog_id']) : $EM_Event = em_get_event($event['post_id'], 'post_id');
 							if( empty($eventful_days[$event_eventful_date]) || !is_array($eventful_days[$event_eventful_date]) ) $eventful_days[$event_eventful_date] = array();
 							//add event to array with a corresponding timestamp for sorting of times including long and all-day events
-							$event_ts_marker = ($EM_Event->event_all_day) ? 0 : (int) $event_start->getTimestamp();
+							$event_ts_marker = ($EM_Event->event_all_day || ($EM_Event->event_start_date != $EM_Event->event_end_date)) ? 0 : (int) $event_start->getTimestamp();
 							while( !empty($eventful_days[$event_eventful_date][$event_ts_marker]) ){
 								$event_ts_marker++; //add a second
 							}
@@ -286,6 +335,7 @@ class EM_Calendar extends EM_Object {
 		}
 		//generate a link argument string containing event search only
 		$day_link_args = self::get_query_args( array_intersect_key($original_args, EM_Events::get_post_search($args, true) ));
+		if( !empty($day_link_args['limit']) ) unset($day_link_args['limit']);
 		//get event link 
 		if( get_option("dbem_events_page") > 0 ){
 			$event_page_link = get_permalink(get_option("dbem_events_page")); //PAGE URI OF EM
@@ -335,28 +385,132 @@ class EM_Calendar extends EM_Object {
 				$calendar_array['cells'][$day_key]['events'] = $events;
 			}
 		}
+		$calendar_array['args'] = $args; // pass on args as well, as they've bene cleaned too
 		return apply_filters('em_calendar_get',$calendar_array, $args);
 	}
 	
-	public static function output($args = array(), $wrapper = true) {
+	public static function output($base_args = array(), $wrapper = true) {
 		//Let month and year REQUEST override for non-JS users
-		$args['limit'] = !empty($args['limit']) ? $args['limit'] : get_option('dbem_display_calendar_events_limit'); //limit arg will be used per day and not for events search
-		if( !empty($_REQUEST['mo']) || !empty($args['mo']) ){
-			$args['month'] = ($_REQUEST['mo']) ? $_REQUEST['mo']:$args['mo'];	
+		$base_args['limit'] = !empty($base_args['limit']) ? $base_args['limit'] : get_option('dbem_display_calendar_events_limit'); //limit arg will be used per day and not for events search
+		if( !empty($_REQUEST['mo']) || !empty($base_args['mo']) ){
+			$base_args['month'] = ($_REQUEST['mo']) ? $_REQUEST['mo']:$base_args['mo'];
 		}
-		if( !empty($_REQUEST['yr']) || !empty($args['yr']) ){
-			$args['year'] = (!empty($_REQUEST['yr'])) ? $_REQUEST['yr']:$args['yr'];
+		if( !empty($_REQUEST['yr']) || !empty($base_args['yr']) ){
+			$base_args['year'] = (!empty($_REQUEST['yr'])) ? $_REQUEST['yr']:$base_args['yr'];
 		}
-		$calendar_array  = self::get($args);
-		$template = (!empty($args['full'])) ? 'templates/calendar-full.php':'templates/calendar-small.php';
+		if( !empty($_REQUEST['month_year']) && preg_match('/^[0-9]{4}\-[0-9]{2}$/', $_REQUEST['month_year']) ){
+			$year_month = explode('-', $_REQUEST['month_year']);
+			$base_args['month'] = absint($year_month[1]);
+			$base_args['year'] = absint($year_month[0]);
+		}
+		$calendar_array  = self::get($base_args);
+		$args = array_merge($base_args, $calendar_array['args']);
+		// get any template-specific $_REQUEST info here
+		if( isset($_REQUEST['has_advanced_trigger']) ) $args['has_advanced_trigger'] = !empty($_REQUEST['has_advanced_trigger']);
+		// merge default search args and generate search
+		$args['view'] = 'calendar';
+		$args['has_view'] = true; // adding a view div further down, so the search doesn't make its own
+		if( empty($args['views']) ) $args['views'] = 'calendar';
+		if( !isset($args['show_search']) ) $args['show_search'] = false; // don't show the search bar above by default, filters yes
+		if( !isset($args['has_search']) ) $args['has_search'] = false; // by default no search
+		$args['has_advanced_trigger'] = ($args['has_search'] && !$args['show_search']) || !empty($args['has_advanced_trigger']); // override search trigger option if search is hidden
+		$args = em_get_search_form_defaults($args);
+		// output main form
 		ob_start();
-		em_locate_template($template, true, array('calendar'=>$calendar_array,'args'=>$args));
-		if($wrapper){
-			$calendar = '<div id="em-calendar-'.rand(100,200).'" class="em-calendar-wrapper">'.ob_get_clean().'</div>';
-		}else{
-			$calendar = ob_get_clean();
+		// do we output a search form first?
+		if( !empty($args['has_search']) ){
+			$args['search_scope'] = false;
+			em_locate_template('templates/events-search.php', true, array('args' => $args));
 		}
-		return apply_filters('em_calendar_output', $calendar, $args);
+		// re-assign classes (clean-up search assignments)
+		$args['css_classes'] = false;
+		/* START New Config Options */
+			// default values for styling args
+			$args['calendar_preview_mode'] = !empty($args['calendar_preview_mode']) ? $args['calendar_preview_mode'] : get_option('dbem_calendar_preview_mode'); //modal, tooltips, none
+			$args['calendar_preview_mode_date'] = !empty($args['calendar_preview_mode_date']) ? $args['calendar_preview_mode_date'] : get_option('dbem_calendar_preview_mode_date'); //modal, none
+			$args['calendar_event_style'] = !empty($args['calendar_event_style']) ? $args['calendar_event_style'] : 'pill'; // WIP, will add more styles here
+			if( empty($args['calendar_size']) && isset($args['full']) ){ // legacy arg
+				$args['calendar_size'] = !empty($args['full']) ? 'large' : 'small';
+			}elseif( !empty($args['calendar_size']) ){
+				$allowed_sizes = apply_filters('em_calendar_output_sizes', array('large', 'medium', 'small'));
+				$args['calendar_size'] = in_array($args['calendar_size'], $allowed_sizes) ? $args['calendar_size'] : 'large'; //large will sort itself out
+			}
+			$calendar_array['css'] = array(
+				'calendar_classes' => array('preview-'.$args['calendar_preview_mode']),
+				'dates_classes' => array('event-style-'.$args['calendar_event_style']),
+			);
+			if( $args['calendar_preview_mode_date'] !== 'none' ){
+				$calendar_array['css']['calendar_classes'][] = 'responsive-dateclick-modal';
+			}
+			// add extra args
+			$allowed_heights = apply_filters('em_calendar_output_dates_heights', array(
+				'even' => 'even-height', // height of each row will adjust to match tallest cell in table
+				'aspect' => 'even-aspect', // default - height will match width of cell, unless there is more content
+				'auto' => '', // each cell in a row will adjust height to tallest cell in that row
+			));
+			if( !empty($args['calendar_dates_height']) && isset($allowed_heights[$args['calendar_dates_height']]) ){
+				$calendar_array['css']['dates_classes'][] = $allowed_heights[$args['calendar_dates_height']];
+			}else{
+				$calendar_array['css']['dates_classes'][] = 'even-aspect';
+			}
+			if( isset($args['calendar_size']) ){
+				// calendar won't switch responsively
+				$calendar_array['css']['calendar_classes'][] = 'size-'.$args['calendar_size'];
+				$calendar_array['css']['calendar_classes'][] = 'size-fixed';
+			}else{
+				$calendar_array['css']['calendar_classes'][] = 'size-small';
+			}
+			if( !empty($args['has_advanced_trigger']) ) $calendar_array['css']['calendar_classes'][] = 'with-advanced';
+			$EM_DateTime = new EM_DateTime($calendar_array['month_start'], 'UTC');
+			if( $EM_DateTime->format('Y-m') === date('Y-m') ) $calendar_array['css']['calendar_classes'][] = 'this-month';
+		/* END New Config Options */
+		
+		?>
+		<div class="em em-view-container" id="em-view-<?php echo absint($args['id']); ?>" data-view="calendar">
+			<?php
+			// output calendar
+			$template = (!empty($args['full'])) ? 'templates/calendar-full.php':'templates/calendar-small.php';
+			if( !em_locate_template($template) ) $template = 'calendar/calendar.php'; // backcompat
+			em_locate_template($template, true, array('calendar'=>$calendar_array,'args'=>$args));
+			// output vars that should persist on searches
+			?>
+			<div class="em-view-custom-data" id="em-view-custom-data-<?php echo absint($args['id']); ?>">
+				<?php
+				$ignore_keys = array('page','offset', 'pagination', 'array'); // stuff we don't need to consider
+				$global_args_keys = array('has_advanced_trigger', 'month', 'year', 'scope', 'id', 'view_id'); // things both searches and caelendar navs need
+				$search_exclusive_args_keys = array_keys(array_diff_key( static::get_default_search(), em_get_search_form_defaults() )); //vars only searches need
+				$calendar_exclusive_args_keys = array_keys(array_diff_key( static::get_default_search(), $args )); // vars only the calendar needs
+				$custom_args = array('global' => array(), 'search' => array(), 'calendar' => array());
+				foreach( $args as $name => $value ){
+					if( in_array($name, $ignore_keys) ) continue;
+					if( $name === 'scope' ) $value = $value['name'];
+					if( is_array($value) ) $value = implode(',', $value);
+					if( $value === true || $value === false ) $value = $value ? 1:0; // make sure we get a 1 or 0
+					if( in_array($name, $global_args_keys) ){
+						$custom_args['global'][$name] = $value;
+					}elseif( in_array($name, $search_exclusive_args_keys) ){
+						$custom_args['search'][$name] = $value;
+					}elseif( in_array($name, $calendar_exclusive_args_keys) ){
+						$custom_args['calendar'][$name] = $value;
+					}
+				}
+				?>
+				<form class="em-view-custom-data-search" id="em-view-custom-data-search-<?php echo absint($args['id']); ?>">
+					<?php foreach( array_merge($custom_args['search'], $custom_args['global']) as $name => $value ): ?>
+					<input type="hidden" name="<?php echo esc_attr($name); ?>" value="<?php echo esc_attr($value); ?>">
+					<?php endforeach; ?>
+				</form>
+				<form class="em-view-custom-data-calendar" id="em-view-custom-data-calendar-<?php echo absint($args['id']); ?>">
+					<?php foreach( array_merge($custom_args['calendar'], $custom_args['global']) as $name => $value ): ?>
+						<input type="hidden" name="<?php echo esc_attr($name); ?>" value="<?php echo esc_attr($value); ?>">
+					<?php endforeach; ?>
+				</form>
+			</div>
+		</div>
+		<?php
+		
+		// return the buffer
+		return apply_filters('em_calendar_output', ob_get_clean(), $args);
 	}
 
 
@@ -444,7 +598,7 @@ class EM_Calendar extends EM_Object {
 		//These defaults aren't for db queries, but flags for what to display in calendar output
 		$defaults = array( 
 			'recurring' => false, //we don't initially look for recurring events only events and recurrences of recurring events
-			'full' => 0, //Will display a full calendar with event names
+			//'full' => 0, //Will display a full calendar with event names
 			'long_events' => 0, //Events that last longer than a day
 			'scope' => false,
 			'status' => 1, //approved events only
@@ -465,7 +619,10 @@ class EM_Calendar extends EM_Object {
 		}else{
 			$defaults = array_merge($defaults, $array_or_defaults);
 		}
-		$defaults['long_events'] = !empty($array['full']) ? get_option('dbem_full_calendar_long_events') : get_option('dbem_small_calendar_long_events');
+		$defaults['long_events'] = !isset($array['full']) || $array['full'] ? get_option('dbem_full_calendar_long_events') : get_option('dbem_small_calendar_long_events');
+		if( !empty($array['calendar_size']) ){
+			$defaults['long_events'] = $array['calendar_size'] == 'small' ? get_option('dbem_small_calendar_long_events') : get_option('dbem_full_calendar_long_events');
+		}
 		//specific functionality
 		if(is_multisite()){
 			global $bp;
@@ -477,7 +634,7 @@ class EM_Calendar extends EM_Object {
 			}
 		}
 		$atts = parent::get_default_search($defaults, $array);
-		$atts['full'] = ($atts['full']==true) ? 1:0;
+		if( isset($array['full']) ) $atts['full'] = ($array['full']) ? 1:0; //deprecated, we're changing this now to calendar_size for display purposes
 		$atts['long_events'] = ($atts['long_events']==true) ? 1:0;
 		return apply_filters('em_calendar_get_default_search', $atts, $array, $defaults);
 	}

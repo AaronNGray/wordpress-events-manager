@@ -19,12 +19,15 @@ class EM_Widget extends WP_Widget {
     		'order' => 'ASC',
     		'limit' => 5,
     		'category' => 0,
-    		'format' => '<li>#_EVENTLINK<ul><li>#_EVENTDATES</li><li>#_LOCATIONTOWN</li></ul></li>',
+			'format_header' => '<div class="em-list-widget em-events-widget '. implode(' ', em_get_template_classes('widget-events')) .'">',
+    		'format' => EM_Formats::dbem_block_event_list_item_format(''),
+			'format_footer' => '</div>',
     		'nolistwrap' => false,
     		'orderby' => 'event_start_date,event_start_time,event_name',
 			'all_events' => 0,
 			'all_events_text' => __('all events', 'events-manager'),
-			'no_events_text' => '<li>'.__('No events', 'events-manager').'</li>'
+			'no_events_text' => '<div class="em-list-no-items">'.__('No events', 'events-manager').'</div>',
+		    'v6' => false,
     	);
 		$this->em_orderby_options = apply_filters('em_settings_events_default_orderby_ddm', array(
 			'event_start_date,event_start_time,event_name' => __('start date, start time, event name','events-manager'),
@@ -50,10 +53,12 @@ class EM_Widget extends WP_Widget {
     	//remove owner searches
 		$instance['owner'] = false;
 		
-		//legacy stuff
+		//legacy stuff - deal with unsaved pre-v6 items, v6 saved and preview modes
+	    $v6 = EM_Options::get('v6', null);
 		//add li tags to old widgets that have no forced li wrappers
-		if ( !preg_match('/^<li/i', trim($instance['format'])) ) $instance['format'] = '<li>'. $instance['format'] .'</li>';
-		if (!preg_match('/^<li/i', trim($instance['no_events_text'])) ) $instance['no_events_text'] = '<li>'.$instance['no_events_text'].'</li>';
+	    if( ($v6 && empty($instance['v6'])) || $v6 === 'p' || $v6 === 'p' ){
+			$instance = $this->get_v6_instance_options($instance);
+	    }
 		//orderby fix for previous versions with old orderby values
 		if( !array_key_exists($instance['orderby'], $this->em_orderby_options) ){
 			//replace old values
@@ -73,7 +78,7 @@ class EM_Widget extends WP_Widget {
 		$events = EM_Events::get(apply_filters('em_widget_events_get_args',$instance));
 		
 		//output events
-		echo "<ul>";
+	    echo $instance['format_header'];
 		if ( count($events) > 0 ){
 			foreach($events as $event){				
 				echo $event->output( $instance['format'] );
@@ -85,10 +90,19 @@ class EM_Widget extends WP_Widget {
 			$events_link = (!empty($instance['all_events_text'])) ? em_get_link($instance['all_events_text']) : em_get_link(__('all events','events-manager'));
 			echo '<li class="all-events-link">'.$events_link.'</li>';
 		}
-		echo "</ul>";
+	    echo $instance['format_footer'];
 		
 	    echo $args['after_widget'];
     }
+	
+	function get_v6_instance_options( $instance ){
+		ob_start();
+		em_locate_template('formats/block_event_list_item_format.php', true);
+		$instance['format_header'] = '<div class="em-list-widget em-events-widget '. implode(' ', em_get_template_classes('widget-events')) .'">';
+		$instance['format'] = ob_get_clean();
+		$instance['format_footer'] = '</div>';
+		return $instance;
+	}
 
     /** @see WP_Widget::update */
     function update($new_instance, $old_instance) {
@@ -96,23 +110,32 @@ class EM_Widget extends WP_Widget {
     		if( !isset($new_instance[$key]) ){
     			$new_instance[$key] = $value;
     		}
-    		//make sure formats and the no locations text are wrapped with li tags
-		    if( ($key == 'format' || $key == 'no_events_text') && !preg_match('/^<li/i', trim($new_instance[$key])) ){
-            	$new_instance[$key] = '<li>'.force_balance_tags($new_instance[$key]).'</li>';
-		    }
 		    //balance tags and sanitize output formats
 		    if( in_array($key, array('format', 'no_events_text', 'all_events_text')) ){
 		        if( is_multisite() && !em_wp_is_super_admin() ) $new_instance[$key] = wp_kses_post($new_instance[$key]); //for multisite
 		        $new_instance[$key] = force_balance_tags($new_instance[$key]);
 		    }
     	}
+		$new_instance['v6'] = EM_Options::get('v6', false);
     	return $new_instance;
     }
 
     /** @see WP_Widget::form */
     function form($instance) {
     	$instance = array_merge($this->defaults, $instance);
+		
+		// fix legacy stuff
     	$instance = $this->fix_scope($instance); // depcreciate
+	    $v6 = EM_Options::get('v6', null);
+		if( ($v6 === true || $v6 === 'undo') && empty($instance['v6']) ){
+			$instance = $this->get_v6_instance_options($instance);
+		}elseif( empty($instance['v6']) && $instance['format'] !== $this->defaults['format'] ) {
+			// still unmigrated, not saved either during v6
+			$instance['format_header'] = '<ul>';
+			$instance['format_footer'] = '</ul>';
+			if ( !preg_match('/^<li/i', trim($instance['format'])) ) $instance['format'] = '<li>'. $instance['format'] .'</li>';
+			if (!preg_match('/^<li/i', trim($instance['no_events_text'])) ) $instance['no_events_text'] = '<li class="no-events">'.$instance['no_events_text'].'</li>';
+		}
         ?>
 		<p>
 			<label for="<?php echo $this->get_field_id('title'); ?>"><?php esc_html_e('Title', 'events-manager'); ?>: </label>
@@ -181,11 +204,18 @@ class EM_Widget extends WP_Widget {
 			} 
 		}).trigger('change');
 		</script>
-		<em><?php echo sprintf( esc_html__('The list is wrapped in a %s tag, so if an %s tag is not wrapping the formats below it will be added automatically.','events-manager'), '<code>&lt;ul&gt;</code>', '<code>&lt;li&gt;</code>'); ?></em>
+	    <p>
+		    <label for="<?php echo $this->get_field_id('format_header'); ?>"><?php esc_html_e('List item header format','events-manager'); ?>: </label>
+		    <textarea rows="5" cols="24" id="<?php echo $this->get_field_id('format_header'); ?>" name="<?php echo $this->get_field_name('format_header'); ?>" class="widefat"><?php echo esc_textarea($instance['format_header'] ); ?></textarea>
+	    </p>
         <p>
 			<label for="<?php echo $this->get_field_id('format'); ?>"><?php esc_html_e('List item format','events-manager'); ?>: </label>
 			<textarea rows="5" cols="24" id="<?php echo $this->get_field_id('format'); ?>" name="<?php echo $this->get_field_name('format'); ?>" class="widefat"><?php echo esc_textarea($instance['format']); ?></textarea>
 		</p>
+	    <p>
+		    <label for="<?php echo $this->get_field_id('format_footer'); ?>"><?php esc_html_e('List item footer format','events-manager'); ?>: </label>
+		    <textarea rows="5" cols="24" id="<?php echo $this->get_field_id('format_footer'); ?>" name="<?php echo $this->get_field_name('format_footer'); ?>" class="widefat"><?php echo esc_textarea($instance['format_footer']); ?></textarea>
+	    </p>
 		<p>
 			<label for="<?php echo $this->get_field_id('no_events_text'); ?>"><?php _e('No events message','events-manager'); ?>: </label>
 			<input type="text" id="<?php echo $this->get_field_id('no_events_text'); ?>" name="<?php echo $this->get_field_name('no_events_text'); ?>" value="<?php echo esc_attr( $instance['no_events_text'] ); ?>" >

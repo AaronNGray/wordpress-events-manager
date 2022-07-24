@@ -9,9 +9,13 @@
  * 
  */
 $args = apply_filters('em_content_events_args', $args);
-
-if( get_option('dbem_css_evlist') ) echo "<div class='css-events-list'>";
-
-echo EM_Events::output_grouped($args); //note we're grabbing the content, not em_get_events_list_grouped function
-    
-if( get_option('dbem_css_evlist') ) echo "</div>";
+if( empty($args['id']) ) $args['id'] = rand(); // prevent warnings
+$id = esc_attr($args['id']);
+?>
+<div class="em em-view-container" id="em-view-<?php echo $id; ?>" data-view="list-grouped">
+	<div class="em-list em-events-list em-events-list-grouped <?php em_template_classes('events-list'); ?>" id="em-events-list-grouped<?php echo $id; ?>">
+	<?php
+	echo EM_Events::output_grouped($args); //note we're grabbing the content, not em_get_events_list_grouped function
+	?>
+	</div>
+</div>

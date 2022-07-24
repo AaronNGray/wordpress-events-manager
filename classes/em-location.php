@@ -941,7 +941,7 @@ class EM_Location extends EM_Object {
 					break;
 				case '#_LOCATIONFULLLINE':
 				case '#_LOCATIONFULLBR':
-					$glue = $result == '#_LOCATIONFULLLINE' ? ', ':'<br />';
+					$glue = $result == '#_LOCATIONFULLLINE' ? ', ':'<br>';
 					$replace = $this->get_full_address($glue);
 					break;
 				case '#_MAP': //Deprecated (but will remain)
@@ -1089,11 +1089,11 @@ class EM_Location extends EM_Object {
 				    $args['format_footer'] = get_option('dbem_location_event_list_item_footer_format');
 				    $args['format'] = get_option('dbem_location_event_list_item_format');
 				    $args['no_results_msg'] = get_option('dbem_location_no_events_message');
-					$args['limit'] = get_option('dbem_location_event_list_limit');
+					$args['limit'] = !empty($placeholders[3][$key]) && is_numeric($placeholders[3][$key]) ? absint($placeholders[3][$key]) : get_option('dbem_location_event_list_limit');
 					$args['orderby'] = get_option('dbem_location_event_list_orderby');
 					$args['order'] = get_option('dbem_location_event_list_order');
 					$args['page'] = (!empty($_REQUEST['pno']) && is_numeric($_REQUEST['pno']) )? $_REQUEST['pno'] : 1;
-					if( $target == 'email' ){
+					if( $target == 'email' || !empty($placeholders[3][$key])  ){
 						$args['pagination'] = 0;
 						$args['page'] = 1;
 					}
@@ -1171,5 +1171,3 @@ class EM_Location extends EM_Object {
 		return apply_filters('em_location_get_google_maps_embed_url', $url, $this);
 	}
 }
-
-$loc = new EM_Location();

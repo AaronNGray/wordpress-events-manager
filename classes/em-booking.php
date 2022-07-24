@@ -1007,6 +1007,7 @@ class EM_Booking extends EM_Object{
 			$this->feedback_message = sprintf(__('Booking %s.','events-manager'), $action_string);
 			$result = apply_filters('em_booking_set_status', $result, $this); // run the filter before emails go out, in case others need to hook in first
 			if( $result && $email && $this->previous_status != $this->booking_status ){ //email if status has changed
+				do_action('em_booking_status_changed', $this, array('status' => $status, 'email' => $email, 'ignore_spaces' => $ignore_spaces)); // method params passed as array
 				if( $this->email() ){
 				    if( $this->mails_sent > 0 ){
 				        $this->feedback_message .= " ".__('Email Sent.','events-manager');
