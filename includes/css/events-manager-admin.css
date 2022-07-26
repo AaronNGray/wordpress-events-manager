@@ -75,6 +75,18 @@
   margin-bottom: 20px;
 }
 
+.wp-admin .em-postbox-notice.em-postbox-notice-info {
+  border-left: 4px solid #72aee6;
+}
+.wp-admin .em-postbox-notice span.status {
+  font-style: italic;
+}
+.wp-admin .em-postbox-notice span.status.enabled {
+  color: #00a32a;
+}
+.wp-admin .em-postbox-notice span.status.disabled {
+  color: #999;
+}
 .wp-admin .em-settings-notice {
   background: #fff;
   border: 1px solid #c3c4c7;
@@ -82,14 +94,6 @@
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
   margin: 10px 0 20px 0;
   padding: 20px;
-  /*
-
-  <!--
-  <div class="em-settings-notice em-settings-notice-info">
-  	<p>Some Text Here</p>
-  </div>
-  -->
-  	 */
 }
 .wp-admin .em-settings-notice.em-settings-notice-info {
   border-left-color: #72aee6;
@@ -99,6 +103,26 @@
 }
 .wp-admin .em-settings-notice p:last-child {
   margin-bottom: 0;
+}
+.wp-admin .dbem_advanced_formatting_modes_row th {
+  text-decoration: 2px underline dotted #c45500;
+  text-underline-offset: 6px;
+}
+.wp-admin .dbem_advanced_formatting_modes_row th, .wp-admin .dbem_advanced_formatting_modes_row td {
+  color: #c45500;
+}
+.wp-admin #em-opt-advanced-formatting .inside {
+  display: grid;
+  width: 100%;
+  column-gap: 30px;
+  grid-template-columns: min-content 1fr;
+}
+.wp-admin #em-opt-advanced-formatting .em-af-status {
+  font-size: 110%;
+  font-weight: bold;
+}
+.wp-admin #em-opt-advanced-formatting .em-af-status .em-af-status-save {
+  color: #c45500;
 }
 
 /*# sourceMappingURL=events-manager-admin.css.map */

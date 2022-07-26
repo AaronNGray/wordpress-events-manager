@@ -4,44 +4,20 @@ class EM_v6_Migration {
 		add_action('init', 'EM_v6_Migration::pro');
 		$v6 = EM_Options::get('v6', null);
 		if( $v6 === null ) return;
-		if( (!is_admin() || defined('DOING_AJAX')) && $v6 === 'p' ){
-			add_filter('em_formats_filter', 'EM_v6_Migration::preview_formats', 1, 1);
+		if( (!is_admin() || defined('EM_DOING_AJAX')) && $v6 === 'p' ){
+			add_action('events_manager_loaded', 'EM_v6_Migration::preview_formats', 1);
 		}
 		add_action('admin_init', 'EM_v6_Migration::actions');
 		add_action('em_options_page_header', 'EM_v6_Migration::em_options_page_header');
 	}
 	
-	public static function preview_formats( $array ){
-		$new_formats = static::get_new_formats();
-		return $array + $new_formats;
-	}
-	
-	public static function get_new_formats(){
-		return array(
-			'dbem_event_list_item_format_header',
-			'dbem_event_list_item_format',
-			'dbem_event_list_item_format_footer',
-			'dbem_single_event_format',
-			
-			'dbem_location_list_item_format_header',
-			'dbem_location_list_item_format',
-			'dbem_location_list_item_format_footer',
-			'dbem_single_location_format',
-			
-			'dbem_categories_list_item_format_header',
-			'dbem_categories_list_item_format',
-			'dbem_categories_list_item_format_footer',
-			'dbem_category_page_format',
-			
-			'dbem_tags_list_item_format_header',
-			'dbem_tags_list_item_format',
-			'dbem_tags_list_item_format_footer',
-			'dbem_tag_page_format',
-			
-			'dbem_calendar_preview_modal_event_format',
-			'dbem_calendar_preview_modal_date_format',
-			'dbem_calendar_preview_tooltip_event_format',
-		);
+	public static function preview_formats(){
+		if( !current_user_can('manage_options') ) return;
+		add_filter('pre_option_dbem_advanced_formatting', '__return_zero');
+		add_filter('pre_option_dbem_css_theme_font_weight', '__return_zero');
+		add_filter('pre_option_dbem_css_theme_font_family', '__return_zero');
+		add_filter('pre_option_dbem_css_theme_font_size', '__return_zero');
+		add_filter('pre_option_dbem_css_theme_line_height', '__return_zero');
 	}
 	
 	public static function actions(){
@@ -63,18 +39,27 @@ class EM_v6_Migration {
 					remove_filter('em_formats_filter', 'EM_v6_Migration::preview_formats', 1);
 					// copy over new formats overriding old ones, but putting them in an 'undo' var
 					$undo = array();
-					foreach( static::get_new_formats() as $format ){
+					foreach( EM_Formats::get_default_formats( true ) as $format ){
 						$format_content = call_user_func('EM_Formats::'.$format, '');
 						$undo[$format] = get_option($format);
 						update_option($format, $format_content );
 					}
 					update_option('dbem_v6_undo', $undo, false); // no auto-loading this
+					// add overriding styling
+					update_option('dbem_advanced_formatting', 0);
+					update_option('dbem_css_theme_font_weight', 0);
+					update_option('dbem_css_theme_font_family', 0);
+					update_option('dbem_css_theme_font_size', 0);
+					update_option('dbem_css_theme_line_height', 0);
+					// remove notices and add confirmation
 					EM_Admin_Notices::remove('v6-update', is_multisite());
+					EM_Admin_Notices::remove('v6-update2', is_multisite());
 					$EM_Notices->add_confirm(esc_html__('You nave successfully migrated to the default v6 formatting options, enjoy! We have an undo option, just in case...', 'events-manager'), true);
 					break;
 				case 'dismiss':
 					unset($data['v6']);
 					EM_Admin_Notices::remove('v6-update', is_multisite());
+					EM_Admin_Notices::remove('v6-update2', is_multisite());
 					break;
 				case 'dismiss-undo':
 					delete_option('dbem_v6_undo');
@@ -83,6 +68,11 @@ class EM_v6_Migration {
 				case 'undo':
 					$data['v6'] = false;
 					$undo = get_option('dbem_v6_undo');
+					update_option('dbem_advanced_formatting', 2);
+					update_option('dbem_css_theme_font_weight', 1);
+					update_option('dbem_css_theme_font_family', 1);
+					update_option('dbem_css_theme_font_size', 1);
+					update_option('dbem_css_theme_line_height', 1);
 					if( empty($undo) ){
 						$EM_Notices->add_error('Oh dear... looks like the undo data was deleted from your wp_options table. Please see if you have a backup of that table and look for the <strong>dbem_v6_undo</strong> option_name value.', true);
 					}else{

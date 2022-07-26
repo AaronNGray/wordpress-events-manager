@@ -329,14 +329,30 @@
 			</tbody>
 			<tbody class="all-css">
 				<?php
-				em_options_radio_binary ( __( 'Enable Theme Styling?', 'events-manager'), 'dbem_css_theme', esc_html__("We impose some theme styling rules which help normalize the look of Events Manager accross themes and overrides general theming. This is limited to our components but will prevent your theme from taking over things like fonts, font-sizes, form structures etc. You can also disable strict styling for individual components below.", 'events-manager'));
+				em_options_radio_binary ( __( 'Enable Theme Styling?', 'events-manager'), 'dbem_css_theme', esc_html__("We impose some theme styling rules which help normalize the look of Events Manager accross themes and overrides general theming. This is limited to our components but will prevent your theme from taking over things like fonts, font-sizes, form structures etc. You can also disable strict styling for individual components below.", 'events-manager'), null, '.theme-css');
 				?>
 			</tbody>
-			<tr class="em-header all-css"><td colspan="2">
-				<h4><?php _e('Individual Components','events-manager'); ?></h4>
-				<p><?php esc_html_e("Here you can disable individual item styling eompletely or just allow basic styling. Basic styling will try to impose general structuring (such as calendar structures) but won't use our Strict styling rules.", 'events-manager'); ?></p>
-			</td></tr>
+			<tbody class="theme-css">
+				<tr><td colspan="2">
+					<h4><?php _e('Individual Components','events-manager'); ?></h4>
+					<p>
+					<?php echo sprintf(esc_html__('Our theme has multiple CSS variables that can be overriden easily. The options below could be overriden just as easily via one line of CSS in your %s settings area, for example %s'), '<em>'.__('Customizer').' > '. __('Additional CSS').'</em>', '<code>body .em.pixelbones{ --font-family:arial, --font-size:14px; --font-weight: normal; --line-height:16px; }</code>'); ?>
+					</p>
+				</td></tr>
+				<?php
+				$settings = array(0 => esc_html__('Default plugin setting', 'events-manager'), 1 => esc_html__('Inherit your theme settings', 'events-manager'));
+				$desc = esc_html__('Our default setting is %s');
+				em_options_select ( __( 'Default font family', 'events-manager'), 'dbem_css_theme_font_family', $settings, sprintf($desc, '<code>"Raleway", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;</code>') );
+				em_options_select ( __( 'Base font size', 'events-manager'), 'dbem_css_theme_font_size', $settings, sprintf($desc, '<code>16px</code>') );
+				em_options_select ( __( 'Base line height', 'events-manager'), 'dbem_css_theme_line_height', $settings, sprintf($desc, '<code>20px</code>') );
+				em_options_select ( __( 'Base font weight', 'events-manager'), 'dbem_css_theme_font_weight', $settings, sprintf($desc, '<code>400</code>') );
+				?>
+			</tbody>
 	        <tbody class="all-css">
+				<tr class="em-header all-css"><td colspan="2">
+					<h4><?php _e('Individual Components','events-manager'); ?></h4>
+					<p><?php esc_html_e("Here you can disable individual item styling eompletely or just allow basic styling. Basic styling will try to impose general structuring (such as calendar structures) but won't use our Strict styling rules.", 'events-manager'); ?></p>
+				</td></tr>
 				<?php
 					$select = array(
 						1 => __('Enabled','events-manager'), 0 => __('Disabled', 'events-manager'), 2 => __('Basic Only', 'events-manager')

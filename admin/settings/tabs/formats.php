@@ -1,6 +1,61 @@
 <?php if( !function_exists('current_user_can') || !current_user_can('manage_options') ) return; ?>
 <!-- FORMAT OPTIONS -->
-<div class="em-menu-formats em-menu-group"  <?php if( !defined('EM_SETTINGS_TABS') || !EM_SETTINGS_TABS) : ?>style="display:none;"<?php endif; ?>>				
+<div class="em-menu-formats em-menu-group"  <?php if( !defined('EM_SETTINGS_TABS') || !EM_SETTINGS_TABS) : ?>style="display:none;"<?php endif; ?>>
+
+	<?php
+	$current_status = absint(get_option('dbem_advanced_formatting'));
+	$disabled_text = __('Disabled', 'events-manager');
+	$enabled_text = __('Enabled', 'events-manager');
+	$current_text = $current_status ? '<span class="status enabled">('. $enabled_text .')</span>' : '<span class="status disabled">('.$disabled_text.')</span>';
+	?>
+	<div  class="postbox em-postbox-notice em-postbox-notice-info" id="em-opt-advanced-formatting" data-enabled-text="(<?php echo esc_attr($enabled_text); ?>)" data-disabled-text="(<?php echo esc_attr($disabled_text); ?>)">
+		<div class="handlediv" title="<?php __('Click to toggle', 'events-manager'); ?>"><br /></div><h3><span><?php _e ( 'Advanced Mode', 'events-manager'); ?> <?php echo $current_text ?></span></h3>
+		<div class="inside">
+			<input type="hidden" name="dbem_advanced_formatting" id="em-advanced-formatting" value="<?php echo $current_status; ?>">
+			<div>
+				<?php
+				$advanced_mode = esc_html__('Advanced Mode', 'events-manager');
+				$advanced_mode_super = esc_html__('Super Advanced Mode', 'events-manager');
+				$disable_text = sprintf(esc_html__('Disable %s', 'events-manager'), $advanced_mode);
+				$enable_text = sprintf(esc_html__('Enable %s', 'events-manager'), $advanced_mode);
+				?>
+				<p>
+				<a href="#" class="em-af-toggle button-primary show-0" data-set-status="1"><?php echo $enable_text; ?></a>
+				<a href="#" class="em-af-toggle button-secondary show-1 show-2" data-set-status="0"><?php echo $disable_text; ?></a>
+				</p>
+				<?php
+				$disable_text = sprintf(esc_html__('Disable %s', 'events-manager'), $advanced_mode_super);
+				$enable_text = sprintf(esc_html__('Enable %s', 'events-manager'), $advanced_mode_super);
+				$current_text = $current_status ? $disable_text : $enable_text;
+				?>
+				<a href="#" class="em-af-toggle button-secondary show-2" data-set-status="1"><?php echo $disable_text; ?></a>
+				<a href="#" class="em-af-toggle button-primary show-1 show-0" data-set-status="2"><?php echo $enable_text; ?></a>
+			</div>
+			<div>
+				<?php
+				$am = '<code>'. $advanced_mode .'</code>';
+				$sam = '<code>'.$advanced_mode_super.'</code>';
+				?>
+				<p class="em-af-status" data-status="<?php echo $current_status; ?>">
+					<span class="em-af-status-0"><?php echo sprintf( esc_html__('You have currently disabled %s', 'events-manager'), $am ); ?></span>
+					<span class="em-af-status-1"><?php echo sprintf( esc_html__('You have currently enabled %s', 'events-manager'), $am ); ?></span>
+					<span class="em-af-status-2"><?php echo sprintf( esc_html__('You have currently enabled %s', 'events-manager'), $sam ); ?></span>
+					<span class="em-af-status-save"><?php esc_html_e('Save your settings for this to take effect!', 'events-manager'); ?></span>
+				</p>
+				<p>
+					<?php echo sprintf(esc_html__("%s allows you to modify some or all of the formats used by Events Manager to generate your content. You can choose to override default formats and customize them to your needs. You do not lose your previously defined custom formats should you enable/disable %s or choose to not override a certain set of formats, they'll appear again once you enable %s again for that content.", 'events-manager'), $am, $am, $am); ?>
+				</p>
+				<p>
+					<?php echo sprintf(esc_html__("%s overrides all formatting choices, which will be be taken from the settings defined on this page. If you want to override only certain formatting, choose the %s instead.", 'events-manager'), $sam, $am); ?>
+				</p>
+				<p>
+					<?php esc_html_e('Clicking these buttons will not have any effect until you save your settings!', 'events-manager'); ?>
+				</p>
+			</div>
+
+		</div>
+	</div>
+
 	<div  class="postbox " id="em-opt-events-formats" >
 	<div class="handlediv" title="<?php __('Click to toggle', 'events-manager'); ?>"><br /></div><h3><span><?php _e ( 'Events', 'events-manager'); ?> </span></h3>
 	<div class="inside">
@@ -14,33 +69,72 @@
 			em_options_select(__('Events page grouping','events-manager'), 'dbem_event_list_groupby', $grouby_modes, __('If you choose a group by mode, your events page will display events in groups of your chosen time range.','events-manager'));
 			em_options_input_text(__('Events page grouping header','events-manager'), 'dbem_event_list_groupby_header_format', __('Choose how to format your group headings.','events-manager').' '. sprintf(__('#s will be replaced by the date format below', 'events-manager'), 'http://codex.wordpress.org/Formatting_Date_and_Time'));
 			em_options_input_text(__('Events page grouping date format','events-manager'), 'dbem_event_list_groupby_format', __('Choose how to format your group heading dates. Leave blank for default.','events-manager').' '. sprintf(__('Date and Time formats follow the <a href="%s">WordPress time formatting conventions</a>', 'events-manager'), 'http://codex.wordpress.org/Formatting_Date_and_Time'));
-			em_options_textarea ( __( 'Default event list format header', 'events-manager'), 'dbem_event_list_item_format_header', __( 'This content will appear just above your code for the default event list format. Default is blank', 'events-manager'), true );
+			em_options_input_text ( __( 'List events by date title', 'events-manager'), 'dbem_list_date_title', __( 'If viewing a page for events on a specific date, this is the title that would show up. To insert date values, use <a href="http://www.php.net/manual/en/function.date.php">PHP time format characters</a>  with a <code>#</code> symbol before them, i.e. <code>#m</code>, <code>#M</code>, <code>#j</code>, etc.<br/>', 'events-manager') );
+			if( EM_MS_GLOBAL && !get_option('dbem_ms_global_events_links') ){
+				em_options_input_text ( sprintf(__( 'Single %s title format', 'events-manager'),__('event','events-manager')), 'dbem_event_page_title_format', sprintf(__( 'The format of a single %s page title.', 'events-manager'),__('event','events-manager')).' '.__( 'This is only used when showing events from other blogs.', 'events-manager').$events_placeholder_tip );
+			}
+			?>
+
+		    <tr class="em-subheader"><td colspan="2"><h5><?php esc_html_e( 'Event List Formats', 'events-manager'); ?></h5></td></tr>
+		    <?php
+		    em_options_input_text ( __( 'No events message', 'events-manager'), 'dbem_no_events_message', __( 'The message displayed when no events are available.', 'events-manager') );
+			?>
+		    
+		    <!-- ADVANCED Formatting -->
+		    <tbody class="am-af">
+		        <?php
+		        em_options_radio_binary ( __( 'Override Default Formats?', 'events-manager'), 'dbem_advanced_formatting_modes[events-list]', '', '', '.am-af-events-list' );
+		        ?>
+		    </tbody>
+		    <tbody class="am-af am-af-events-list">
+		    <?php
+		    em_options_textarea ( __( 'Default event list format header', 'events-manager'), 'dbem_event_list_item_format_header', __( 'This content will appear just above your code for the default event list format. Default is blank', 'events-manager'), true );
 		 	em_options_textarea ( __( 'Default event list format', 'events-manager'), 'dbem_event_list_item_format', __( 'The format of any events in a list.', 'events-manager').$events_placeholder_tip, true );
 			em_options_textarea ( __( 'Default event list format footer', 'events-manager'), 'dbem_event_list_item_format_footer', __( 'This content will appear just below your code for the default event list format. Default is blank', 'events-manager'), true );
-			em_options_input_text ( __( 'No events message', 'events-manager'), 'dbem_no_events_message', __( 'The message displayed when no events are available.', 'events-manager') );
-			em_options_input_text ( __( 'List events by date title', 'events-manager'), 'dbem_list_date_title', __( 'If viewing a page for events on a specific date, this is the title that would show up. To insert date values, use <a href="http://www.php.net/manual/en/function.date.php">PHP time format characters</a>  with a <code>#</code> symbol before them, i.e. <code>#m</code>, <code>#M</code>, <code>#j</code>, etc.<br/>', 'events-manager') );
-			?>
-		 	<tr class="em-header">
-		 	    <td colspan="2">
-		 	        <h4><?php echo sprintf(__('Single %s Page','events-manager'),__('Event','events-manager')); ?></h4>
-		 	        <em><?php echo sprintf(__('These formats can be used on %s pages or on other areas of your site displaying an %s.','events-manager'),__('event','events-manager'),__('event','events-manager'));?></em>
-		 	</tr>
-		 	<?php
-			if( EM_MS_GLOBAL && !get_option('dbem_ms_global_events_links') ){
-			 	em_options_input_text ( sprintf(__( 'Single %s title format', 'events-manager'),__('event','events-manager')), 'dbem_event_page_title_format', sprintf(__( 'The format of a single %s page title.', 'events-manager'),__('event','events-manager')).' '.__( 'This is only used when showing events from other blogs.', 'events-manager').$events_placeholder_tip );
-			}
+		    ?>
+		    </tbody>
+		    <!-- /ADVANCED Formatting -->
+
+		    <!-- ADVANCED Formatting -->
+		    <tbody class="am-af">
+			    <tr class="em-header">
+			        <td colspan="2">
+			            <h4><?php echo sprintf(__('Single %s Page','events-manager'),__('Event','events-manager')); ?></h4>
+			            <em><?php echo sprintf(__('These formats can be used on %s pages or on other areas of your site displaying an %s.','events-manager'),__('event','events-manager'),__('event','events-manager'));?></em>
+			        </td>
+			    </tr>
+		 	    <?php
+		        em_options_radio_binary(__('Override Default Formats?', 'events-manager'), 'dbem_advanced_formatting_modes[event-single]', '', '', '.am-af-event-single');
+				?>
+		    </tbody>
+		    <tbody class="am-af am-af-event-single">
+		    <?php
 			em_options_textarea ( sprintf(__('Single %s page format', 'events-manager'),__('event','events-manager')), 'dbem_single_event_format', sprintf(__( 'The format used to display %s content on single pages or elsewhere on your site.', 'events-manager'),__('event','events-manager')).$events_placeholder_tip, true);
 			?>
-			<tr class="em-header">
-			    <td colspan="2">
-			        <h4><?php echo sprintf(__('%s Excerpts','events-manager'),__('Event','events-manager')); ?></h4>
-		 	        <em><?php echo sprintf(__('These formats can be used when WordPress automatically displays %s excerpts on your site and %s is enabled in your %s settings tab.','events-manager'),__('event','events-manager'),'<strong>'.__( 'Override Excerpts with Formats?', 'events-manager').'</strong>','<a href="#formats" class="nav-tab-link" rel="#em-menu-pages">'.__('Pages','events-manager').'  &gt; '.sprintf(__('%s List/Archives','events-manager'),__('Event','events-manager')).'</a>');?></em>
-			    </td>
-			</tr>
-		 	<?php
-		 	em_options_textarea ( sprintf(__('%s excerpt', 'events-manager'),__('Event','events-manager')), 'dbem_event_excerpt_format', __( 'Used if an excerpt has been defined.', 'events-manager').$events_placeholder_tip );				 	
-		 	em_options_textarea ( sprintf(__('%s excerpt fallback', 'events-manager'),__('Event','events-manager')), 'dbem_event_excerpt_alt_format', __( 'Used if an excerpt has not been defined.', 'events-manager').$events_placeholder_tip );
-			
+		    </tbody>
+		    <!-- /ADVANCED Formatting -->
+
+		    <!-- ADVANCED Formatting -->
+		    <tbody class="am-af">
+			    <tr class="em-header">
+				    <td colspan="2">
+					    <h4><?php echo sprintf(__('%s Excerpts','events-manager'),__('Event','events-manager')); ?></h4>
+					    <em><?php echo sprintf(__('These formats can be used when WordPress automatically displays %s excerpts on your site and %s is enabled in your %s settings tab.','events-manager'),__('event','events-manager'),'<strong>'.__( 'Override Excerpts with Formats?', 'events-manager').'</strong>','<a href="#formats" class="nav-tab-link" rel="#em-menu-pages">'.__('Pages','events-manager').'  &gt; '.sprintf(__('%s List/Archives','events-manager'),__('Event','events-manager')).'</a>');?></em>
+				    </td>
+			    </tr>
+			    <?php
+			    em_options_radio_binary(__('Override Default Formats?', 'events-manager'), 'dbem_advanced_formatting_modes[event-excerpt]', '', '', '.am-af-event-excerpt');
+			    ?>
+		    </tbody>
+		    <tbody class="am-af am-af-event-excerpt">
+		    <?php
+		    em_options_textarea ( sprintf(__('%s excerpt', 'events-manager'),__('Event','events-manager')), 'dbem_event_excerpt_format', __( 'Used if an excerpt has been defined.', 'events-manager').$events_placeholder_tip, true );
+		    em_options_textarea ( sprintf(__('%s excerpt fallback', 'events-manager'),__('Event','events-manager')), 'dbem_event_excerpt_alt_format', __( 'Used if an excerpt has not been defined.', 'events-manager').$events_placeholder_tip, true );
+			?>
+		    </tbody>
+		    <!-- /ADVANCED Formatting -->
+		    
+			<?php
 			echo $save_button;
 			?>
 		</table>
@@ -182,10 +276,23 @@
 		    <?php
 		    em_options_select( __( 'Event Preview Mode', 'events-manager'), 'dbem_calendar_preview_mode', array('tooltips' => esc_html__('Tooltip', 'events-manager'), 'modal' => esc_html__('Modal Popup', 'events-manager'), 'none' => esc_html__('No Preview', 'events-manager')), __( 'Choose how to show a information about an event when clicking or hovering over a single event on the calendar.','events-manager') );
 		    em_options_select( __( 'Date Preview Mode', 'events-manager'), 'dbem_calendar_preview_mode_date', array('modal' => esc_html__('Modal Popup', 'events-manager'), 'none' => esc_html__('Direct Link', 'events-manager')), __( 'Choose whether to show a preview of the upcoming events for the date clicked on, or directly link to the calendar day.','events-manager') );
-		    em_options_textarea ( __( 'Event Modal Preview', 'events-manager'), 'dbem_calendar_preview_modal_event_format', sprintf(esc_html__( 'Used to show a single event when preview mode is set to %s.', 'events-manager'), '<code>'.esc_html__('Modal Popup', 'events-manager').'</code>'), true );
-		    em_options_textarea ( __( 'Date Events Modal Preview', 'events-manager'), 'dbem_calendar_preview_tooltip_event_format', sprintf(esc_html__( 'Used to format each event in a list when previewing a single date.', 'events-manager'), '<code>'.esc_html__('Tooltip', 'events-manager').'</code>'), true );
-		    em_options_textarea ( __( 'Event Modal Preview', 'events-manager'), 'dbem_calendar_preview_modal_date_format', sprintf(esc_html__( 'Used to show a single event when preview mode is set to %s.', 'events-manager'), '<code>'.esc_html__('Modal Popup', 'events-manager').'</code>'), true );
+		    ?>
+
+		    <!-- ADVANCED Formatting -->
+		    <tbody class="am-af">
+		    <?php
+		    em_options_radio_binary ( __( 'Override Default Formats?', 'events-manager'), 'dbem_advanced_formatting_modes[calendar-previews]', '', '', '.am-af-calendar-previews' );
+		    ?>
+		    </tbody>
+		    <tbody class="am-af am-af-calendar-previews">
+		    <?php
+		    em_options_textarea ( __( 'Event modal preview format', 'events-manager'), 'dbem_calendar_preview_modal_event_format', sprintf(esc_html__( 'Used to show a single event when preview mode is set to %s.', 'events-manager'), '<code>'.esc_html__('Modal Popup', 'events-manager').'</code>'), true );
+		    em_options_textarea ( __( 'Event tooltip preview format', 'events-manager'), 'dbem_calendar_preview_tooltip_event_format', sprintf(esc_html__( 'Used to show a single event when preview mode is set to %s.', 'events-manager'), '<code>'.esc_html__('Tooltip', 'events-manager').'</code>'), true );
+		    em_options_textarea ( __( 'Events date modal preview format', 'events-manager'), 'dbem_calendar_preview_modal_date_format', esc_html__( 'Used to format each event in a list when previewing a single date in a modal popup.', 'events-manager'), true );
     		?>
+		    </tbody>
+		    <!-- /ADVANCED Formatting -->
+		    
     		<tr class="em-header"><td colspan="2"><h4><?php _e('Full-Size Calendar','events-manager'); ?></h4></td></tr>
 		    <?php
 		    $large_tip = sprintf(esc_html__('This setting will be applied if you choose to specifically show a size %s calendar.', 'events-manager'), esc_html__('large', 'events-manager'));
@@ -239,7 +346,7 @@
 					<em><?php _e('When Events Manager displays lists of events the default behavior is ordering by start date in ascending order. To change this, modify the values above.','events-manager'); ?></em>
 				</td>
 		   	</tr>
-		   	<?php 
+		   	<?php
 		   		em_options_input_text ( __( 'Calendar events/day limit', 'events-manager'), 'dbem_display_calendar_events_limit', __( 'Limits the number of events on each calendar day. Leave blank for no limit.', 'events-manager') );
 		   		em_options_input_text ( __( 'More Events message', 'events-manager'), 'dbem_display_calendar_events_limit_msg', __( 'Text with link to calendar day page with all events for that day if there are more events than the limit above, leave blank for no link as the day number is also a link.', 'events-manager') );
 		   	?>
@@ -261,41 +368,80 @@
 	<div class="handlediv" title="<?php __('Click to toggle', 'events-manager'); ?>"><br /></div><h3><span><?php _e ( 'Locations', 'events-manager'); ?> </span></h3>
 	<div class="inside">
     	<table class="form-table">
-		 	<tr class="em-header"><td colspan="2"><h4><?php echo sprintf(__('%s Page','events-manager'),__('Locations','events-manager')); ?></h4></td></tr>
+		    <tr class="em-header"><td colspan="2"><h4><?php echo sprintf(__('%s Page','events-manager'),__('Locations','events-manager')); ?></h4></td></tr>
+		    <?php
+		    em_options_input_text ( sprintf(__( 'No %s message', 'events-manager'),__('Locations','events-manager')), 'dbem_no_locations_message', sprintf( __( 'The message displayed when no %s are available.', 'events-manager'), __('locations','events-manager')) );
+		    ?>
+		    
+		    <!-- ADVANCED Formatting -->
+		    <tbody class="am-af">
+			    <?php em_options_radio_binary ( __( 'Override Default Formats?', 'events-manager'), 'dbem_advanced_formatting_modes[locations-list]', '', '', '.am-af-locations-list' ); ?>
+		    </tbody>
+		    <tbody class="am-af am-af-locations-list">
 			<?php
 			em_options_textarea ( sprintf(__('%s list header format','events-manager'),__('Locations','events-manager')), 'dbem_location_list_item_format_header', sprintf(__( 'This content will appear just above your code for the %s list format below. Default is blank', 'events-manager'), __('locations','events-manager')), true );
 		 	em_options_textarea ( sprintf(__('%s list item format','events-manager'),__('Locations','events-manager')), 'dbem_location_list_item_format', sprintf(__( 'The format of a single %s in a list.', 'events-manager'), __('locations','events-manager')).$locations_placeholder_tip, true );
 			em_options_textarea ( sprintf(__('%s list footer format','events-manager'),__('Locations','events-manager')), 'dbem_location_list_item_format_footer', sprintf(__( 'This content will appear just below your code for the %s list format above. Default is blank', 'events-manager'), __('locations','events-manager')), true );
-			em_options_input_text ( sprintf(__( 'No %s message', 'events-manager'),__('Locations','events-manager')), 'dbem_no_locations_message', sprintf( __( 'The message displayed when no %s are available.', 'events-manager'), __('locations','events-manager')) );
 		 	?>
-		 	<tr class="em-header">
-		 	    <td colspan="2">
-		 	        <h4><?php echo sprintf(__('Single %s Page','events-manager'),__('Location','events-manager')); ?></h4>
-		 	        <em><?php echo sprintf(__('These formats can be used on %s pages or on other areas of your site displaying an %s.','events-manager'),__('location','events-manager'),__('location','events-manager'));?></em>
-		 	</tr>
-		 	<?php
+		    </tbody>
+		    <!-- /ADVANCED Formatting -->
+		    
+		    <!-- ADVANCED Formatting -->
+		    <tbody class="am-af">
+			    <tr class="em-header">
+				    <td colspan="2">
+					    <h4><?php echo sprintf(__('Single %s Page','events-manager'),__('Location','events-manager')); ?></h4>
+					    <em><?php echo sprintf(__('These formats can be used on %s pages or on other areas of your site displaying an %s.','events-manager'),__('location','events-manager'),__('location','events-manager'));?></em>
+				    </td>
+			    </tr>
+			    <?php em_options_radio_binary ( __( 'Override Default Formats?', 'events-manager'), 'dbem_advanced_formatting_modes[location-single]', '', '', '.am-af-location-single' ); ?>
+		    </tbody>
+		    <tbody class="am-af am-af-location-single">
+		    <?php
 			if( EM_MS_GLOBAL && get_option('dbem_ms_global_location_links') ){
 			  em_options_input_text (sprintf( __( 'Single %s title format', 'events-manager'),__('location','events-manager')), 'dbem_location_page_title_format', sprintf(__( 'The format of a single %s page title.', 'events-manager'),__('location','events-manager')).$locations_placeholder_tip );
 			}
 			em_options_textarea ( sprintf(__('Single %s page format', 'events-manager'),__('location','events-manager')), 'dbem_single_location_format', sprintf(__( 'The format of a single %s page.', 'events-manager'),__('location','events-manager')).$locations_placeholder_tip, true );
 			?>
-			<tr class="em-header">
-			    <td colspan="2">
-			        <h4><?php echo sprintf(__('%s Excerpts','events-manager'),__('Location','events-manager')); ?></h4>
-		 	        <em><?php echo sprintf(__('These formats can be used when WordPress automatically displays %s excerpts on your site and %s is enabled in your %s settings tab.','events-manager'),__('location','events-manager'),'<strong>'.__( 'Override Excerpts with Formats?', 'events-manager').'</strong>','<a href="#formats" class="nav-tab-link" rel="#em-menu-pages">'.__('Pages','events-manager').'  &gt; '.sprintf(__('%s List/Archives','events-manager'),__('Location','events-manager')).'</a>');?></em>
-			    </td>
-			</tr>
-		 	<?php
-		 	em_options_textarea ( sprintf(__('%s excerpt', 'events-manager'),__('Location','events-manager')), 'dbem_location_excerpt_format', __( 'Used if an excerpt has been defined.', 'events-manager').$locations_placeholder_tip );				 	
-		 	em_options_textarea ( sprintf(__('%s excerpt fallback', 'events-manager'),__('Location','events-manager')), 'dbem_location_excerpt_alt_format', __( 'Used if an excerpt has not been defined.', 'events-manager').$locations_placeholder_tip );
+		    </tbody>
+		    <!-- /ADVANCED Formatting -->
+		    
+		    <!-- ADVANCED Formatting -->
+		    <tbody class="am-af">
+			    <tr class="em-header">
+				    <td colspan="2">
+					    <h4><?php echo sprintf(__('%s Excerpts','events-manager'),__('Location','events-manager')); ?></h4>
+					    <em><?php echo sprintf(__('These formats can be used when WordPress automatically displays %s excerpts on your site and %s is enabled in your %s settings tab.','events-manager'),__('location','events-manager'),'<strong>'.__( 'Override Excerpts with Formats?', 'events-manager').'</strong>','<a href="#formats" class="nav-tab-link" rel="#em-menu-pages">'.__('Pages','events-manager').'  &gt; '.sprintf(__('%s List/Archives','events-manager'),__('Location','events-manager')).'</a>');?></em>
+				    </td>
+			    </tr>
+			    <?php em_options_radio_binary ( __( 'Override Default Formats?', 'events-manager'), 'dbem_advanced_formatting_modes[location-excerpt]', '', '', '.am-af-location-excerpt' ); ?>
+		    </tbody>
+		    <tbody class="am-af am-af-location-excerpt">
+		    <?php
+		 	em_options_textarea ( sprintf(__('%s excerpt', 'events-manager'),__('Location','events-manager')), 'dbem_location_excerpt_format', __( 'Used if an excerpt has been defined.', 'events-manager').$locations_placeholder_tip, true );
+		 	em_options_textarea ( sprintf(__('%s excerpt fallback', 'events-manager'),__('Location','events-manager')), 'dbem_location_excerpt_alt_format', __( 'Used if an excerpt has not been defined.', 'events-manager').$locations_placeholder_tip, true );
 			?>
-		 	<tr class="em-header"><td colspan="2"><h4><?php echo sprintf(__('%s List Formats','events-manager'),__('Event','events-manager')); ?></h4></td></tr>
-		 	<?php
-		 	em_options_input_text ( __( 'Default event list format header', 'events-manager'), 'dbem_location_event_list_item_header_format', __( 'This content will appear just above your code for the default event list format. Default is blank', 'events-manager') );
-		 	em_options_textarea ( sprintf(__( 'Default %s list format', 'events-manager'),__('events','events-manager')), 'dbem_location_event_list_item_format', sprintf(__( 'The format of the events the list inserted in the location page through the %s element.', 'events-manager').$events_placeholder_tip, '<code>#_LOCATIONNEXTEVENTS</code>, <code>#_LOCATIONPASTEVENTS</code>, <code>#_LOCATIONALLEVENTS</code>') );
-			em_options_input_text ( __( 'Default event list format footer', 'events-manager'), 'dbem_location_event_list_item_footer_format', __( 'This content will appear just below your code for the default event list format. Default is blank', 'events-manager') );
-			em_options_textarea ( sprintf(__( 'No %s message', 'events-manager'),__('events','events-manager')), 'dbem_location_no_events_message', sprintf(__( 'The message to be displayed in the list generated by %s when no events are available.', 'events-manager'), '<code>#_LOCATIONNEXTEVENTS</code>, <code>#_LOCATIONPASTEVENTS</code>, <code>#_LOCATIONALLEVENTS</code>') );
+		    </tbody>
+		    <!-- /ADVANCED Formatting -->
+		    
+		    <tr class="em-header"><td colspan="2"><h4><?php echo sprintf(__('%s List Formats','events-manager'),__('Event','events-manager')); ?></h4></td></tr>
+		    <?php
+		    em_options_input_text ( sprintf(__( 'No %s message', 'events-manager'),__('events','events-manager')), 'dbem_location_no_events_message', sprintf(__( 'The message to be displayed in the list generated by %s when no events are available.', 'events-manager'), '<code>#_LOCATIONNEXTEVENTS</code>, <code>#_LOCATIONPASTEVENTS</code>, <code>#_LOCATIONALLEVENTS</code>') );
 			?>
+		    
+		    <!-- ADVANCED Formatting -->
+		    <tbody class="am-af">
+			    <?php em_options_radio_binary ( __( 'Override Default Formats?', 'events-manager'), 'dbem_advanced_formatting_modes[location-event-lists]', '', '', '.am-af-location-event-lists' ); ?>
+		    </tbody>
+		    <tbody class="am-af am-af-location-event-lists">
+		 	<?php
+		 	em_options_input_text ( __( 'Default event list format header', 'events-manager'), 'dbem_location_event_list_item_header_format', __( 'This content will appear just above your code for the default event list format. Default is blank', 'events-manager') , '', true );
+		 	em_options_textarea ( sprintf(__( 'Default %s list format', 'events-manager'),__('events','events-manager')), 'dbem_location_event_list_item_format', sprintf(__( 'The format of the events the list inserted in the location page through the %s element.', 'events-manager').$events_placeholder_tip, '<code>#_LOCATIONNEXTEVENTS</code>, <code>#_LOCATIONPASTEVENTS</code>, <code>#_LOCATIONALLEVENTS</code>') , true );
+			em_options_input_text ( __( 'Default event list format footer', 'events-manager'), 'dbem_location_event_list_item_footer_format', __( 'This content will appear just below your code for the default event list format. Default is blank', 'events-manager') , '', true );
+			?>
+		    </tbody>
+		    <!-- /ADVANCED Formatting -->
+		    
 		 	<tr class="em-header"><td colspan="2">
 		 		<h4><?php echo sprintf(__('Single %s Format','events-manager'),__('Event','events-manager')); ?></h4>
 		 		<p><?php echo sprintf(__('The settings below are used when using the %s placeholder','events-manager'), '<code>#_LOCATIONNEXTEVENT</code>'); ?></p>
@@ -318,25 +464,60 @@
     		<?php
     		em_options_input_text(sprintf(esc_html__('Default %s color','events-manager'), esc_html__('category','events-manager')), 'dbem_category_default_color', sprintf(esc_html_x('Colors must be in a valid %s format, such as #FF00EE.', 'hex format', 'events-manager'), '<a href="http://en.wikipedia.org/wiki/Web_colors">hex</a>'));
     		?>
-		 	<tr class="em-header"><td colspan="2"><h4><?php echo sprintf(__('%s Page','events-manager'),__('Categories','events-manager')); ?></h4></td></tr>
+		    
+		    <tr class="em-header"><td colspan="2"><h4><?php echo sprintf(__('%s Page','events-manager'),__('Categories','events-manager')); ?></h4></td></tr>
+		    <?php
+		    em_options_input_text ( sprintf(__( 'No %s message', 'events-manager'),__('Categories','events-manager')), 'dbem_no_categories_message', sprintf( __( 'The message displayed when no %s are available.', 'events-manager'), __('categories','events-manager')) );
+		    ?>
+		    
+		    <!-- ADVANCED Formatting -->
+		    <tbody class="am-af">
+			    <?php em_options_radio_binary ( __( 'Override Default Formats?', 'events-manager'), 'dbem_advanced_formatting_modes[categories-list]', '', '', '.am-af-categories-list' ); ?>
+		    </tbody>
+		    <tbody class="am-af am-af-categories-list">
 			<?php
 			em_options_textarea ( sprintf(__('%s list header format','events-manager'),__('Categories','events-manager')), 'dbem_categories_list_item_format_header', sprintf(__( 'This content will appear just above your code for the %s list format below. Default is blank', 'events-manager'), __('categories','events-manager')), true );
 		 	em_options_textarea ( sprintf(__('%s list item format','events-manager'),__('Categories','events-manager')), 'dbem_categories_list_item_format', sprintf(__( 'The format of a single %s in a list.', 'events-manager'), __('categories','events-manager')).$categories_placeholder_tip, true );
 			em_options_textarea ( sprintf(__('%s list footer format','events-manager'),__('Categories','events-manager')), 'dbem_categories_list_item_format_footer', sprintf(__( 'This content will appear just below your code for the %s list format above. Default is blank', 'events-manager'), __('categories','events-manager')), true );
-			em_options_input_text ( sprintf(__( 'No %s message', 'events-manager'),__('Categories','events-manager')), 'dbem_no_categories_message', sprintf( __( 'The message displayed when no %s are available.', 'events-manager'), __('categories','events-manager')) );
 		 	?>
-		 	<tr class="em-header"><td colspan="2"><h4><?php echo sprintf(__('Single %s Page','events-manager'),__('Category','events-manager')); ?></h4></td></tr>
+		    </tbody>
+		    <!-- /ADVANCED Formatting -->
+		    
+		    <tr class="em-header"><td colspan="2"><h4><?php echo sprintf(__('Single %s Page','events-manager'),__('Category','events-manager')); ?></h4></td></tr>
+		    <?php
+		    em_options_input_text ( sprintf(__( 'Single %s title format', 'events-manager'),__('category','events-manager')), 'dbem_category_page_title_format', __( 'The format of a single category page title.', 'events-manager').$categories_placeholder_tip );
+		    ?>
+
+		    <!-- ADVANCED Formatting -->
+		    <tbody class="am-af">
+			    <?php em_options_radio_binary ( __( 'Override Default Formats?', 'events-manager'), 'dbem_advanced_formatting_modes[category-single]', '', '', '.am-af-category-single' ); ?>
+		    </tbody>
+		    <tbody class="am-af am-af-category-single">
 		 	<?php
-			em_options_input_text ( sprintf(__( 'Single %s title format', 'events-manager'),__('category','events-manager')), 'dbem_category_page_title_format', __( 'The format of a single category page title.', 'events-manager').$categories_placeholder_tip );
 			em_options_textarea ( sprintf(__('Single %s page format', 'events-manager'),__('category','events-manager')), 'dbem_category_page_format', sprintf(__( 'The format of a single %s page.', 'events-manager'),__('category','events-manager')).$categories_placeholder_tip, true );
 		 	?>
-		 	<tr class="em-header"><td colspan="2"><h4><?php echo sprintf(__('%s List Formats','events-manager'),__('Event','events-manager')); ?></h4></td></tr>
-		 	<?php
-		 	em_options_input_text ( __( 'Default event list format header', 'events-manager'), 'dbem_category_event_list_item_header_format', __( 'This content will appear just above your code for the default event list format. Default is blank', 'events-manager') );
-		 	em_options_textarea ( sprintf(__( 'Default %s list format', 'events-manager'),__('events','events-manager')), 'dbem_category_event_list_item_format', sprintf(__( 'The format of the events the list inserted in the category page through the %s element.', 'events-manager').$events_placeholder_tip, '<code>#_CATEGORYPASTEVENTS</code>, <code>#_CATEGORYNEXTEVENTS</code>, <code>#_CATEGORYALLEVENTS</code>') );
-			em_options_input_text ( __( 'Default event list format footer', 'events-manager'), 'dbem_category_event_list_item_footer_format', __( 'This content will appear just below your code for the default event list format. Default is blank', 'events-manager') );
-			em_options_textarea ( sprintf(__( 'No %s message', 'events-manager'),__('events','events-manager')), 'dbem_category_no_events_message', sprintf(__( 'The message to be displayed in the list generated by %s when no events are available.', 'events-manager'), '<code>#_CATEGORYPASTEVENTS</code>, <code>#_CATEGORYNEXTEVENTS</code>, <code>#_CATEGORYALLEVENTS</code>') );
+		    </tbody>
+		    <!-- /ADVANCED Formatting -->
+
+
+		    <tr class="em-header"><td colspan="2"><h4><?php echo sprintf(__('%s List Formats','events-manager'),__('Event','events-manager')); ?></h4></td></tr>
+		    <?php
+		    em_options_input_text ( sprintf(__( 'No %s message', 'events-manager'),__('events','events-manager')), 'dbem_category_no_events_message', sprintf(__( 'The message to be displayed in the list generated by %s when no events are available.', 'events-manager'), '<code>#_CATEGORYPASTEVENTS</code>, <code>#_CATEGORYNEXTEVENTS</code>, <code>#_CATEGORYALLEVENTS</code>') );
 			?>
+		    
+		    <!-- ADVANCED Formatting -->
+		    <tbody class="am-af">
+			    <?php em_options_radio_binary ( __( 'Override Default Formats?', 'events-manager'), 'dbem_advanced_formatting_modes[category-events-list]', '', '', '.am-af-category-events-list' ); ?>
+		    </tbody>
+		    <tbody class="am-af am-af-category-events-list">
+		 	<?php
+		 	em_options_input_text ( __( 'Default event list format header', 'events-manager'), 'dbem_category_event_list_item_header_format', __( 'This content will appear just above your code for the default event list format. Default is blank', 'events-manager'), '', true );
+		 	em_options_textarea ( sprintf(__( 'Default %s list format', 'events-manager'),__('events','events-manager')), 'dbem_category_event_list_item_format', sprintf(__( 'The format of the events the list inserted in the category page through the %s element.', 'events-manager').$events_placeholder_tip, '<code>#_CATEGORYPASTEVENTS</code>, <code>#_CATEGORYNEXTEVENTS</code>, <code>#_CATEGORYALLEVENTS</code>'), true );
+			em_options_input_text ( __( 'Default event list format footer', 'events-manager'), 'dbem_category_event_list_item_footer_format', __( 'This content will appear just below your code for the default event list format. Default is blank', 'events-manager'), '', true );
+			?>
+		    </tbody>
+		    <!-- /ADVANCED Formatting -->
+		    
 		 	<tr class="em-header"><td colspan="2">
 		 		<h4><?php echo sprintf(__('Single %s Format','events-manager'),__('Event','events-manager')); ?></h4>
 		 		<p><?php echo sprintf(__('The settings below are used when using the %s placeholder','events-manager'), '<code>#_CATEGORYNEXTEVENT</code>'); ?></p>
@@ -359,25 +540,58 @@
     		<?php
     		em_options_input_text(sprintf(esc_html__('Default %s color','events-manager'), esc_html__('tag','events-manager')), 'dbem_tag_default_color', sprintf(esc_html_x('Colors must be in a valid %s format, such as #FF00EE.', 'hex format', 'events-manager'), '<a href="http://en.wikipedia.org/wiki/Web_colors">hex</a>'));
     		?>
-		 	<tr class="em-header"><td colspan="2"><h4><?php echo sprintf(__('%s Page','events-manager'),__('Tags','events-manager')); ?></h4></td></tr>
+
+		    <tr class="em-header"><td colspan="2"><h4><?php echo sprintf(__('%s Page','events-manager'),__('Tags','events-manager')); ?></h4></td></tr>
+		    <?php
+		    em_options_input_text ( sprintf(__( 'No %s message', 'events-manager'),__('Tags','events-manager')), 'dbem_no_tags_message', sprintf( __( 'The message displayed when no %s are available.', 'events-manager'), __('tags','events-manager')) );
+		    ?>
+		    
+		    <!-- ADVANCED Formatting -->
+		    <tbody class="am-af">
+			    <?php em_options_radio_binary ( __( 'Override Default Formats?', 'events-manager'), 'dbem_advanced_formatting_modes[tags-list]', '', '', '.am-af-tags-list' ); ?>
+		    </tbody>
+		    <tbody class="am-af am-af-tags-list">
 			<?php
 			em_options_textarea ( sprintf(__('%s list header format','events-manager'),__('Tags','events-manager')), 'dbem_tags_list_item_format_header', sprintf(__( 'This content will appear just above your code for the %s list format below. Default is blank', 'events-manager'), __('tags','events-manager')), true );
 		 	em_options_textarea ( sprintf(__('%s list item format','events-manager'),__('Tags','events-manager')), 'dbem_tags_list_item_format', sprintf(__( 'The format of a single %s in a list.', 'events-manager'), __('tags','events-manager')).$categories_placeholder_tip, true);
 			em_options_textarea ( sprintf(__('%s list footer format','events-manager'),__('Tags','events-manager')), 'dbem_tags_list_item_format_footer', sprintf(__( 'This content will appear just below your code for the %s list format above. Default is blank', 'events-manager'), __('tags','events-manager')), true );
-			em_options_input_text ( sprintf(__( 'No %s message', 'events-manager'),__('Tags','events-manager')), 'dbem_no_tags_message', sprintf( __( 'The message displayed when no %s are available.', 'events-manager'), __('tags','events-manager')) );
 		 	?>
-		 	<tr class="em-header"><td colspan="2"><h4><?php echo sprintf(__('Single %s Page','events-manager'),__('Tag','events-manager')); ?></h4></td></tr>
+		    </tbody>
+		    <!-- /ADVANCED Formatting -->
+		    
+		    <tr class="em-header"><td colspan="2"><h4><?php echo sprintf(__('Single %s Page','events-manager'),__('Tag','events-manager')); ?></h4></td></tr>
+		    <?php em_options_input_text ( sprintf(__( 'Single %s title format', 'events-manager'),__('tag','events-manager')), 'dbem_tag_page_title_format', __( 'The format of a single tag page title.', 'events-manager').$categories_placeholder_tip ); ?>
+
+		    <!-- ADVANCED Formatting -->
+		    <tbody class="am-af">
+			    <?php em_options_radio_binary ( __( 'Override Default Formats?', 'events-manager'), 'dbem_advanced_formatting_modes[tag-single]', '', '', '.am-af-tag-single' ); ?>
+		    </tbody>
+		    <tbody class="am-af am-af-tag-single">
 		 	<?php
-			em_options_input_text ( sprintf(__( 'Single %s title format', 'events-manager'),__('tag','events-manager')), 'dbem_tag_page_title_format', __( 'The format of a single tag page title.', 'events-manager').$categories_placeholder_tip );
 			em_options_textarea ( sprintf(__('Single %s page format', 'events-manager'),__('tag','events-manager')), 'dbem_tag_page_format', sprintf(__( 'The format of a single %s page.', 'events-manager'),__('tag','events-manager')).$categories_placeholder_tip, true );
 		 	?>
-		 	<tr class="em-header"><td colspan="2"><h4><?php echo sprintf(__('%s List Formats','events-manager'),__('Event','events-manager')); ?></h4></td></tr>
-		 	<?php
-			em_options_input_text ( __( 'Default event list format header', 'events-manager'), 'dbem_tag_event_list_item_header_format', __( 'This content will appear just above your code for the default event list format. Default is blank', 'events-manager') );
-		 	em_options_textarea ( sprintf(__( 'Default %s list format', 'events-manager'),__('events','events-manager')), 'dbem_tag_event_list_item_format', __( 'The format of the events the list inserted in the tag page through the <code>#_TAGNEXTEVENTS</code>, <code>#_TAGNEXTEVENTS</code> and <code>#_TAGALLEVENTS</code> element.', 'events-manager').$categories_placeholder_tip );
-			em_options_input_text ( __( 'Default event list format footer', 'events-manager'), 'dbem_tag_event_list_item_footer_format', __( 'This content will appear just below your code for the default event list format. Default is blank', 'events-manager') );
-			em_options_textarea ( sprintf(__( 'No %s message', 'events-manager'),__('events','events-manager')), 'dbem_tag_no_events_message', __( 'The message to be displayed in the list generated by <code>#_TAGNEXTEVENTS</code>, <code>#_TAGNEXTEVENTS</code> and <code>#_TAGALLEVENTS</code> when no events are available.', 'events-manager') );
+		    </tbody>
+		    <!-- /ADVANCED Formatting -->
+
+		    <tr class="em-header"><td colspan="2"><h4><?php echo sprintf(__('%s List Formats','events-manager'),__('Event','events-manager')); ?></h4></td></tr>
+		    <?php
+		    em_options_input_text ( sprintf(__( 'No %s message', 'events-manager'),__('events','events-manager')), 'dbem_tag_no_events_message', __( 'The message to be displayed in the list generated by <code>#_TAGNEXTEVENTS</code>, <code>#_TAGNEXTEVENTS</code> and <code>#_TAGALLEVENTS</code> when no events are available.', 'events-manager') );
 			?>
+		    
+		    <!-- ADVANCED Formatting -->
+		    <tbody class="am-af">
+			    
+			    <?php em_options_radio_binary ( __( 'Override Default Formats?', 'events-manager'), 'dbem_advanced_formatting_modes[tag-events-list]', '', '', '.am-af-tag-events-list' ); ?>
+		    </tbody>
+		    <tbody class="am-af am-af-tag-events-list">
+		 	<?php
+			em_options_input_text ( __( 'Default event list format header', 'events-manager'), 'dbem_tag_event_list_item_header_format', __( 'This content will appear just above your code for the default event list format. Default is blank', 'events-manager'), '', true );
+		 	em_options_textarea ( sprintf(__( 'Default %s list format', 'events-manager'),__('events','events-manager')), 'dbem_tag_event_list_item_format', __( 'The format of the events the list inserted in the tag page through the <code>#_TAGNEXTEVENTS</code>, <code>#_TAGNEXTEVENTS</code> and <code>#_TAGALLEVENTS</code> element.', 'events-manager').$categories_placeholder_tip, true );
+			em_options_input_text ( __( 'Default event list format footer', 'events-manager'), 'dbem_tag_event_list_item_footer_format', __( 'This content will appear just below your code for the default event list format. Default is blank', 'events-manager'), '', true );
+			?>
+		    </tbody>
+		    <!-- /ADVANCED Formatting -->
+		    
 		 	<tr class="em-header"><td colspan="2">
 		 		<h4><?php echo sprintf(__('Single %s Format','events-manager'),__('Event','events-manager')); ?></h4>
 		 		<p><?php echo sprintf(__('The settings below are used when using the %s placeholder','events-manager'), '<code>#_TAGNEXTEVENT</code>'); ?></p>
@@ -463,19 +677,30 @@
 				<?php em_options_input_text(__('Default map width','events-manager'), 'dbem_map_default_width', sprintf(__('Can be in form of pixels or a percentage such as %s or %s.', 'events-manager'), '<code>100%</code>', '<code>100px</code>')); ?>
 				<?php em_options_input_text(__('Default map height','events-manager'), 'dbem_map_default_height', sprintf(__('Can be in form of pixels or a percentage such as %s or %s.', 'events-manager'), '<code>100%</code>', '<code>100px</code>')); ?>
 			</tr>
-			<tr class="em-header"><td colspan="2">
-				<h4><?php _e('Global Map Format','events-manager'); ?></h4>
-				<p><?php echo sprintf(__('If you use the %s <a href="%s">shortcode</a>, you can display a map of all your locations and events, the settings below will be used.','events-manager'), '<code>[locations_map]</code>','http://wp-events-plugin.com/documentation/shortcodes/'); ?></p>
-			</td></tr>
+			
+			<!-- ADVANCED Formatting -->
+			<tbody class="am-af">
+			<?php em_options_radio_binary ( __( 'Override Default Formats?', 'events-manager'), 'dbem_advanced_formatting_modes[maps]', '', '', '.am-af-maps' ); ?>
+			</tbody>
+			<tbody class="am-af am-af-maps">
+				<tr class="em-header"><td colspan="2">
+					<h4><?php _e('Global Map Format','events-manager'); ?></h4>
+					<p><?php echo sprintf(__('If you use the %s <a href="%s">shortcode</a>, you can display a map of all your locations and events, the settings below will be used.','events-manager'), '<code>[locations_map]</code>','http://wp-events-plugin.com/documentation/shortcodes/'); ?></p>
+				</td></tr>
+				<?php
+				em_options_textarea ( __( 'Location balloon format', 'events-manager'), 'dbem_map_text_format', __( 'The format of the text appearing in the balloon describing the location.', 'events-manager').' '.__( 'Event.', 'events-manager').$locations_placeholder_tip, true );
+				?>
+				<tr class="em-header"><td colspan="2">
+					<h4><?php _e('Single Location/Event Map Format','events-manager'); ?></h4>
+					<p><?php echo sprintf(_e('If you use the <code>#_LOCATIONMAP</code> <a href="%s">placeholder</a> when displaying individual event and location information, the settings below will be used.','events-manager'), '<code>[locations_map]</code>','http://wp-events-plugin.com/documentation/placeholders/'); ?></p>
+				</td></tr>
+				<?php
+				em_options_textarea ( __( 'Location balloon format', 'events-manager'), 'dbem_location_baloon_format', __( 'The format of the text appearing in the balloon describing the location.', 'events-manager').$events_placeholder_tip, true );
+				?>
+			</tbody>
+			<!-- /ADVANCED Formatting -->
+			
 			<?php
-			em_options_textarea ( __( 'Location balloon format', 'events-manager'), 'dbem_map_text_format', __( 'The format of the text appearing in the balloon describing the location.', 'events-manager').' '.__( 'Event.', 'events-manager').$locations_placeholder_tip );
-			?>
-			<tr class="em-header"><td colspan="2">
-				<h4><?php _e('Single Location/Event Map Format','events-manager'); ?></h4>
-				<p><?php echo sprintf(_e('If you use the <code>#_LOCATIONMAP</code> <a href="%s">placeholder</a> when displaying individual event and location information, the settings below will be used.','events-manager'), '<code>[locations_map]</code>','http://wp-events-plugin.com/documentation/placeholders/'); ?></p>
-			</td></tr>
-			<?php
-			em_options_textarea ( __( 'Location balloon format', 'events-manager'), 'dbem_location_baloon_format', __( 'The format of the text appearing in the balloon describing the location.', 'events-manager').$events_placeholder_tip );
 			echo $save_button;     
 			?> 
 		</table>

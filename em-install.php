@@ -482,8 +482,8 @@ function em_add_options() {
 		'dbem_event_list_groupby_header_format' => '<h2>#s</h2>',
 		'dbem_display_calendar_in_events_page' => 0,
 		'dbem_single_event_format' => EM_Formats::dbem_single_event_format(''),
-	    'dbem_event_excerpt_format' => '#_EVENTDATES @ #_EVENTTIMES - #_EVENTEXCERPT',
-	    'dbem_event_excerpt_alt_format' => '#_EVENTDATES @ #_EVENTTIMES - #_EVENTEXCERPT{55}',
+	    'dbem_event_excerpt_format' => EM_Formats::dbem_event_excerpt_format(''),
+	    'dbem_event_excerpt_alt_format' => EM_Formats::dbem_event_excerpt_alt_format(''),
 		'dbem_event_page_title_format' => '#_EVENTNAME',
 		'dbem_event_all_day_message' => __('All Day','events-manager'),
 		'dbem_no_events_message' => sprintf(__( 'No %s', 'events-manager'),__('Events','events-manager')),
@@ -499,27 +499,13 @@ function em_add_options() {
 		'dbem_location_list_item_format' => EM_Formats::dbem_location_list_item_format(''),
 		'dbem_location_list_item_format_footer' => EM_Formats::dbem_location_list_item_format_footer(''),
 		'dbem_location_page_title_format' => '#_LOCATIONNAME',
-		'dbem_single_location_format' => '<div style="float:right; margin:0px 0px 15px 15px;">#_LOCATIONMAP</div>
-<p>
-	<strong>'.__('Address','events-manager').'</strong><br/>
-	#_LOCATIONADDRESS<br/>
-	#_LOCATIONTOWN<br/>
-	#_LOCATIONSTATE<br/>
-	#_LOCATIONREGION<br/>
-	#_LOCATIONPOSTCODE<br/>
-	#_LOCATIONCOUNTRY
-</p>
-<br style="clear:both" />
-#_LOCATIONNOTES
-
-<h3>'.__('Upcoming Events','events-manager').'</h3>
-<p>#_LOCATIONNEXTEVENTS</p>',
-	    'dbem_location_excerpt_format' => '#_LOCATIONEXCERPT',
-	    'dbem_location_excerpt_alt_format' => '#_LOCATIONEXCERPT{55}',
-		'dbem_location_no_events_message' => '<li>'.__('No events in this location', 'events-manager').'</li>',
-		'dbem_location_event_list_item_header_format' => "<ul>",
-		'dbem_location_event_list_item_format' => "<li>#_EVENTLINK - #_EVENTDATES - #_EVENTTIMES</li>",
-		'dbem_location_event_list_item_footer_format' => "</ul>",
+		'dbem_single_location_format' => EM_Formats::dbem_single_location_format(''),
+	    'dbem_location_excerpt_format' => EM_Formats::dbem_location_excerpt_format(''),
+	    'dbem_location_excerpt_alt_format' => EM_Formats::dbem_location_excerpt_alt_format(''),
+		'dbem_location_no_events_message' => __('No events in this location', 'events-manager'),
+		'dbem_location_event_list_item_header_format' => EM_Formats::dbem_location_event_list_item_header_format(''),
+		'dbem_location_event_list_item_format' => EM_Formats::dbem_location_event_list_item_format(''),
+		'dbem_location_event_list_item_footer_format' => EM_Formats::dbem_location_event_list_item_footer_format(''),
 		'dbem_location_event_list_limit' => 20,
 		'dbem_location_event_list_orderby' => 'event_start_date,event_start_time,event_name',
 		'dbem_location_event_list_order' => 'ASC',
@@ -530,17 +516,17 @@ function em_add_options() {
 		'dbem_categories_default_orderby' => 'name',
 		'dbem_categories_default_order' =>  'ASC',
 		//Categories Page Formatting
-		'dbem_categories_list_item_format_header' => '<ul class="em-categories-list">',
-		'dbem_categories_list_item_format' => '<li>#_CATEGORYLINK</li>',
-		'dbem_categories_list_item_format_footer' => '</ul>',
+		'dbem_categories_list_item_format_header' => EM_Formats::dbem_categories_list_item_format_header(''),
+		'dbem_categories_list_item_format' => EM_Formats::dbem_categories_list_item_format(''),
+		'dbem_categories_list_item_format_footer' => EM_Formats::dbem_categories_list_item_format_footer(''),
 		'dbem_no_categories_message' =>  sprintf(__( 'No %s', 'events-manager'),__('Categories','events-manager')),
 		//Category Formatting
 		'dbem_category_page_title_format' => '#_CATEGORYNAME',
-		'dbem_category_page_format' => '#_CATEGORYNOTES<h3>'.__('Upcoming Events','events-manager').'</h3>#_CATEGORYNEXTEVENTS',
-		'dbem_category_no_events_message' => '<li>'.__('No events in this category', 'events-manager').'</li>',
-		'dbem_category_event_list_item_header_format' => '<ul>',
-		'dbem_category_event_list_item_format' => "<li>#_EVENTLINK - #_EVENTDATES - #_EVENTTIMES</li>",
-		'dbem_category_event_list_item_footer_format' => '</ul>',
+		'dbem_category_page_format' => EM_Formats::dbem_category_page_format(''),
+		'dbem_category_no_events_message' =>  __('No events in this category', 'events-manager'),
+		'dbem_category_event_list_item_header_format' => EM_Formats::dbem_category_event_list_item_header_format(''),
+		'dbem_category_event_list_item_format' => EM_Formats::dbem_category_event_list_item_format(''),
+		'dbem_category_event_list_item_footer_format' => EM_Formats::dbem_category_event_list_item_footer_format(''),
 		'dbem_category_event_list_limit' => 20,
 		'dbem_category_event_list_orderby' => 'event_start_date,event_start_time,event_name',
 		'dbem_category_event_list_order' => 'ASC',
@@ -551,18 +537,20 @@ function em_add_options() {
 		'dbem_tags_default_limit' => 10,
 		'dbem_tags_default_orderby' => 'name',
 		'dbem_tags_default_order' =>  'ASC',
+		
 		//Tags Page Formatting
-		'dbem_tags_list_item_format_header' => '<ul class="em-tags-list">',
-		'dbem_tags_list_item_format' => '<li>#_TAGLINK</li>',
-		'dbem_tags_list_item_format_footer' => '</ul>',
+		'dbem_tags_list_item_format_header' => EM_Formats::dbem_tags_list_item_format_header(''),
+		'dbem_tags_list_item_format' => EM_Formats::dbem_tags_list_item_format(''),
+		'dbem_tags_list_item_format_footer' => EM_Formats::dbem_tags_list_item_format_footer(''),
 		'dbem_no_tags_message' =>  sprintf(__( 'No %s', 'events-manager'),__('Tags','events-manager')),
 		//Tag Page Formatting
 		'dbem_tag_page_title_format' => '#_TAGNAME',
-		'dbem_tag_page_format' => '<h3>'.__('Upcoming Events','events-manager').'</h3>#_TAGNEXTEVENTS',
-		'dbem_tag_no_events_message' => '<li>'.__('No events with this tag', 'events-manager').'</li>',
-		'dbem_tag_event_list_item_header_format' => '<ul class="em-tags-list">',
-		'dbem_tag_event_list_item_format' => "<li>#_EVENTLINK - #_EVENTDATES - #_EVENTTIMES</li>",
-		'dbem_tag_event_list_item_footer_format' => '</ul>',
+		'dbem_tag_page_format' => EM_Formats::dbem_tag_page_format(''),
+		'dbem_tag_no_events_message' => __('No events with this tag', 'events-manager'),
+		'dbem_tag_event_list_item_header_format' => EM_Formats::dbem_tag_event_list_item_header_format(''),
+		'dbem_tag_event_list_item_format' => EM_Formats::dbem_tag_event_list_item_format(''),
+		'dbem_tag_event_list_item_footer_format' => EM_Formats::dbem_tag_event_list_item_footer_format(''),
+		
 		'dbem_tag_event_single_format' => '#_EVENTLINK - #_EVENTDATES - #_EVENTTIMES',
 		'dbem_tag_no_event_message' => __('No events with this tag', 'events-manager'),
 		'dbem_tag_event_list_limit' => 20,
@@ -590,8 +578,8 @@ function em_add_options() {
 		'dbem_google_maps_browser_key'=> '',
 		'dbem_map_default_width'=> '400px', //eventually will use %
 		'dbem_map_default_height'=> '300px',
-		'dbem_location_baloon_format' => '<strong>#_LOCATIONNAME</strong><br/>#_LOCATIONADDRESS - #_LOCATIONTOWN<br/><a href="#_LOCATIONPAGEURL">'.__('Events', 'events-manager').'</a>',
-		'dbem_map_text_format' => '<strong>#_LOCATIONNAME</strong><p>#_LOCATIONADDRESS</p><p>#_LOCATIONTOWN</p>',
+		'dbem_location_baloon_format' => EM_Formats::dbem_location_baloon_format(''),
+		'dbem_map_text_format' => EM_Formats::dbem_map_text_format(''),
 		//Email Config
 		'dbem_email_disable_registration' => 0,
 		'dbem_rsvp_mail_port' => 465,
@@ -739,6 +727,10 @@ function em_add_options() {
 		//custom CSS options for public pages
 		'dbem_css' => 1,
 		'dbem_css_theme' => 1,
+		'dbem_css_theme_font_family' => 0,
+		'dbem_css_theme_font_size' => 0,
+		'dbem_css_theme_font_weight' => 0,
+		'dbem_css_theme_line_height' => 0,
 		'dbem_css_calendar' => 1,
 		'dbem_css_editors' => 1,
 		'dbem_css_rsvp' => 1, //my bookings page
@@ -815,7 +807,8 @@ function em_add_options() {
 		'dbem_data_privacy_export_bookings' => 1,
 		'dbem_data_privacy_erase_events' => 1,
 		'dbem_data_privacy_erase_locations' => 1,
-		'dbem_data_privacy_erase_bookings' => 1
+		'dbem_data_privacy_erase_bookings' => 1,
+		'dbem_advanced_formatting' => 0,
 	);
 	
 	//do date js according to locale:
@@ -868,7 +861,7 @@ function em_upgrade_current_installation(){
 				$orderby[] = 'event_'.$val;
 			}
 		}
-		$orderby = (count($orderby) > 0) ? implode(',',$orderby):$dbem_options['dbem_events_default_orderby'];
+		$orderby = (count($orderby) > 0) ? implode(',',$orderby): get_option('dbem_events_default_orderby');
 		update_option('dbem_events_default_orderby',$orderby);
 		//Locations and categories weren't controlled in v4, so just reset them
 		update_option('dbem_locations_default_orderby','location_name');
@@ -1154,6 +1147,26 @@ function em_upgrade_current_installation(){
 		$message2 = sprintf(esc_html__('Please visit the %s to see migration options.', 'events-manager'), $settings_page_url);
 		$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'v6-update', 'who' => 'admin', 'where' => 'all', 'message' => "$message $message2" ));
 		EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
+	}
+	if( $current_version != '' && version_compare($current_version, '6.0', '>=') && version_compare($current_version, '6.0.1.1', '<') ){
+		$admin_data = get_option('dbem_data', array());
+		$admin_data['v6'] = false;
+		update_option('dbem_data', $admin_data);
+		// notify user of new update
+		$message = "<strong>We've made some changes to our template files since the 6.0 update which may break your currently saved formats. We're re-enabling preview/migration for you on the %s to have the chance to preview and reload our newly updated templates. Sorry for the inconvenience!</strong>";
+		$settings_page_url = '<a href="'.admin_url('admin.php?page=events-manager-options').'">'. esc_html__('settings page', 'events-manager-google').'</a>';
+		$message = sprintf($message, $settings_page_url);
+		$message .= '</p><p>'."We've also added some extra features to help transition, which can be found in <code>Settings > General > Styling Options</code> and a new Default/Advanced mode in <code>Settings > Formatting</code> which will allow your formats to automatically update themselves directly from our plugin rather than settings page.";
+		$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'v6-update2', 'who' => 'admin', 'where' => 'all', 'message' => $message, 'what'=>'warning' ));
+		EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
+	}
+	if( $current_version != '' && version_compare($current_version, '6.0.1.1', '<') ){
+		// enable advanced formatting for any previous users, looks like before, they can disable afterwards.
+		update_option('dbem_advanced_formatting', 2);
+		update_option('dbem_css_theme_font_weight', 1);
+		update_option('dbem_css_theme_font_family', 1);
+		update_option('dbem_css_theme_font_size', 1);
+		update_option('dbem_css_theme_line_height', 1);
 	}
 }
 

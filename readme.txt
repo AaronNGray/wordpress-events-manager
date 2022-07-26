@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 6.0.1
-Stable tag: 6.0
+Stable tag: 6.0.1
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
@@ -129,9 +129,15 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 15. Clean forms for submitting and managing events, as well as booking events for users.
 
 == Changelog ==
-= 6.0.0.1 (dev) =
+= 6.0.1 =
+* breaking changes to templates for those upgrading from 6.0, included warning/nudge for users upgrading from 6.0
 * added more fine-grained settings to the Settings > Styling Options section allowing to disable styling elements throughout the plugin
 * fixed modal transition CSS issues
+* added advanced mode enabling users to directly use some, all or none our plugin template files for formats rather than the settings page
+* improved reset option for all overridable placeholder formats in settings allowing for users to reload default formats into individual text boxes
+* added ability to override plugin template files via wp-content/plugin-templates/events-manager/
+* added styling options to allow the use of theme font family, width, height and weight
+* maded default styling options to use theme properties when upgrading from EM < v6.0.1
 
 = 6.0 =
 * MAJOR UI overhaul inclusding complete rewrite of calendars, lists, search

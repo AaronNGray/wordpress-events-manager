@@ -8,6 +8,8 @@ function em_options_save(){
 	 */
 	if( current_user_can('manage_options') && !empty($_POST['em-submitted']) && check_admin_referer('events-manager-options','_wpnonce') ){
 		//Build the array of options here
+		EM_Formats::remove_filters(true); // just in case
+		
 		foreach ($_POST as $postKey => $postValue){
 			if( $postKey != 'dbem_data' && substr($postKey, 0, 5) == 'dbem_' ){
 				//TODO some more validation/reporting
@@ -42,6 +44,24 @@ function em_options_save(){
 				}
 			}
 		}
+		
+		// check formatting mode and optimize autoloading of formats from wp_options, first we make it all auto-loadable
+		global $wpdb;
+		$formats_to_autoload = EM_Formats::get_default_formats( true );
+		array_walk($formats_to_autoload, 'sanitize_key');
+		$wpdb->query("UPDATE {$wpdb->options} SET autoload='yes' WHERE option_name IN ('". implode("','", $formats_to_autoload) ."')");
+		if( get_option('dbem_advanced_formatting') < 2 ){
+			// now we make only the ones that we're loading from files directly non-autoloadable
+			$formats_to_not_autoload = EM_Formats::get_default_formats();
+			array_walk($formats_to_not_autoload, 'sanitize_key');
+			$wpdb->query("UPDATE {$wpdb->options} SET autoload='no' WHERE option_name IN ('". implode("','", $formats_to_not_autoload) ."')");
+		}// if set to 2 then we're just autoloading everything anyway
+		if( get_option('dbem_advanced_formatting') == 1 ){
+			$wpdb->query("UPDATE {$wpdb->options} SET autoload='yes' WHERE option_name='dbem_advanced_formatting_modes'");
+		}else{
+			$wpdb->query("UPDATE {$wpdb->options} SET autoload='no' WHERE option_name='dbem_advanced_formatting_modes'");
+		}
+		
 		//set capabilities
 		if( !empty($_POST['em_capabilities']) && is_array($_POST['em_capabilities']) && (!is_multisite() || is_multisite() && em_wp_is_super_admin()) ){
 			global $em_capabilities_array, $wp_roles;

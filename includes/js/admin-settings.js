@@ -163,4 +163,39 @@ jQuery(document).ready(function($){
 	        dataType: 'text',
 	    })
 	});
+
+    let status = $('#em-advanced-formatting');
+    let af_toggle_action = function(){
+        const am = status.val();
+        if( am == 0 ){
+            $('.am-af').hide();
+        }else if( am == 1 ){
+            $('.am-af').show();
+            $('.dbem_advanced_formatting_modes_row').show(); // show toggles
+            $('.dbem_advanced_formatting_modes .em-trigger:checked').trigger('change');
+        }else{
+            $('.am-af').show(); // show everything
+            $('.dbem_advanced_formatting_modes_row').hide(); // hide toggles
+        }
+        $('.em-af-toggle, .em-af-status span').hide();
+        $('.em-af-toggle.show-'+ am).show();
+        $('.em-af-status-'+ am).show();
+        if( $('.em-af-status').attr('data-status') != am ){
+            $('.em-af-status .em-af-status-save').show();
+        }else{
+            $('.em-af-status .em-af-status-save').hide();
+        }
+    };
+	$('.em-af-toggle').on('click', function(e){
+	    e.preventDefault();
+        status.val( this.getAttribute('data-set-status') );
+        af_toggle_action();
+	});
+	af_toggle_action();
+
+    if( typeof EM.admin === 'object' && 'settings' in EM.admin ){
+        tippy( $('.dbem_advanced_formatting_modes_row th').toArray(), {
+            content : EM.admin.settings.option_override_tooltip,
+        });
+    }
 });

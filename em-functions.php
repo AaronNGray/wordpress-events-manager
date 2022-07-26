@@ -811,7 +811,7 @@ function em_checkbox_items($name, $array, $saved_values, $horizontal = true) {
 	echo $output;
 
 }
-function em_options_input_text($title, $name, $description ='', $default='') {
+function em_options_input_text($title, $name, $description ='', $default='', $resetable = false) {
     $translate = EM_ML::is_option_translatable($name);
     if( preg_match('/^(.+)\[(.+)?\]$/', $name, $matches) ){
     	$value = EM_Options::get($matches[2], $default, $matches[1]);
@@ -820,7 +820,14 @@ function em_options_input_text($title, $name, $description ='', $default='') {
     }
 	?>
 	<tr valign="top" id='<?php echo esc_attr($name);?>_row'>
-		<th scope="row"><?php echo esc_html($title); ?></th>
+		<th scope="row">
+			<?php echo esc_html($title); ?>
+			<?php if( $resetable ): ?>
+				<a href="#" class="em-option-resettable em-tooltip" aria-label="<?php esc_attr_e('Reset to default value?', 'events-manager'); ?>" data-name="<?php echo esc_attr($name) ?>" data-nonce="<?php echo wp_create_nonce('option-default-'.$name); ?>">
+					<span class="dashicons dashicons-undo"></span>
+				</a>
+			<?php endif; ?>
+		</th>
 	    <td>
 			<input name="<?php echo esc_attr($name) ?>" type="text" id="<?php echo esc_attr($name) ?>" value="<?php echo esc_attr($value, ENT_QUOTES); ?>" size="45" />
 	    	<?php if( $translate ): ?><span class="em-translatable dashicons dashicons-admin-site"></span><?php endif; ?>
@@ -930,10 +937,20 @@ function em_options_radio($name, $options, $title='') {
 
 function em_options_radio_binary($title, $name, $description='', $option_names = '', $trigger='', $untrigger=false) {
 	if( empty($option_names) ) $option_names = array(0 => __('No','events-manager'), 1 => __('Yes','events-manager'));
-	if( substr($name, 0, 7) == 'dbem_ms' ){
-		$list_events_page = get_site_option($name);
+	if( preg_match('/^(.+)\[([a-z_A-Z0-9\-]+)\]$/', $name, $match ) ){
+		// deal with an option stored as an array
+		$name_data = get_option($match[1]);
+		$value = !empty($name_data[$match[2]]);
+		$id = $match[1].'-'.$match[2];
+		$class = $match[1];
 	}else{
-		$list_events_page = get_option($name);
+		$id = $name;
+		$class = $name;
+		if( substr($name, 0, 7) == 'dbem_ms' ){
+			$value = get_site_option($name);
+		}else{
+			$value = get_option($name);
+		}
 	}
 	if( $untrigger ){
 		$trigger_att = ($trigger) ? 'data-trigger="'.esc_attr($trigger).'" class="em-untrigger"':'';
@@ -941,11 +958,11 @@ function em_options_radio_binary($title, $name, $description='', $option_names =
 		$trigger_att = ($trigger) ? 'data-trigger="'.esc_attr($trigger).'" class="em-trigger"':'';
 	}
 	?>
-   	<tr valign="top" id='<?php echo $name;?>_row'>
+   	<tr valign="top" class="<?php echo $class ?>_row" id='<?php echo $id;?>_row'>
    		<th scope="row"><?php echo esc_html($title); ?></th>
-   		<td>
-   			<?php echo $option_names[1]; ?> <input id="<?php echo esc_attr($name) ?>_yes" name="<?php echo esc_attr($name) ?>" type="radio" value="1" <?php if($list_events_page) echo "checked='checked'"; echo $trigger_att; ?> />&nbsp;&nbsp;&nbsp;
-			<?php echo $option_names[0]; ?> <input  id="<?php echo esc_attr($name) ?>_no" name="<?php echo esc_attr($name) ?>" type="radio" value="0" <?php if(!$list_events_page) echo "checked='checked'"; echo $trigger_att; ?> />
+   		<td class="<?php echo $class; ?>">
+   			<?php echo $option_names[1]; ?> <input id="<?php echo esc_attr($id) ?>_yes" name="<?php echo esc_attr($name) ?>" type="radio" value="1" <?php if($value) echo "checked='checked'"; echo $trigger_att; ?> />&nbsp;&nbsp;&nbsp;
+			<?php echo $option_names[0]; ?> <input id="<?php echo esc_attr($id) ?>_no" name="<?php echo esc_attr($name) ?>" type="radio" value="0" <?php if(!$value) echo "checked='checked'"; echo $trigger_att; ?> />
 			<br/><em><?php echo $description; ?></em>
 		</td>
    	</tr>

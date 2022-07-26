@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Events Manager
-Version: 6.0.0.1 
+Version: 6.0.1
 Plugin URI: http://wp-events-plugin.com
 Description: Event registration and booking management for WordPress. Recurring events, locations, webinars, google maps, rss, ical, booking registration and more!
 Author: Marcus Sykes
@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 // Setting constants
-define('EM_VERSION', '6.0.1'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
+define('EM_VERSION', '6.0.1.1'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
 define('EM_PRO_MIN_VERSION', 2.6712); //self expanatory
 define('EM_PRO_MIN_VERSION_CRITICAL', 2.377); //self expanatory
 define('EM_DIR', dirname( __FILE__ )); //an absolute path to this directory
@@ -221,6 +221,7 @@ class EM_Scripts_and_Styles {
 			add_action('admin_enqueue_scripts', array('EM_Scripts_and_Styles','admin_enqueue'));
 		}else{
 			add_action('wp_enqueue_scripts', array('EM_Scripts_and_Styles','public_enqueue'));
+			add_action('em_enqueue_styles', 'EM_Scripts_and_Styles::inline_enqueue');
 		}
 		static::$locale = substr(get_locale(), 0, 2);
 	}
@@ -354,6 +355,20 @@ class EM_Scripts_and_Styles {
 		}
 	}
 	
+	public static function inline_enqueue(){
+		// check if we want to override our theme basic styles as per styling options
+		if( get_option('dbem_css_theme') ){
+			$css = array();
+			if( get_option('dbem_css_theme_font_family') == 1 ) $css[] = '--font-family : inherit;';
+			if( get_option('dbem_css_theme_font_weight') == 1 ) $css[] = '--font-weight : inherit;';
+			if( get_option('dbem_css_theme_font_size') == 1 )   $css[] = '--font-size : 1em;';
+			if( get_option('dbem_css_theme_line_height') == 1 ) $css[] = '--line-height : inherit;';
+			if( !empty($css) ){
+				wp_add_inline_style( 'events-manager', 'body .em { '. implode(' ', $css) .' }' );
+			}
+		}
+	}
+	
 	public static function admin_enqueue( $hook_suffix = false ){
 		if( $hook_suffix == 'post.php' || $hook_suffix === true || (!empty($_GET['page']) && substr($_GET['page'],0,14) == 'events-manager') || (!empty($_GET['post_type']) && in_array($_GET['post_type'], array(EM_POST_TYPE_EVENT,EM_POST_TYPE_LOCATION,'event-recurring'))) ){
 			if( $hook_suffix == 'post.php' && empty($_GET['post_type']) && !empty($_GET['post']) ){
@@ -473,6 +488,11 @@ class EM_Scripts_and_Styles {
 			    $em_localized_js['open_text'] = __('Expand All','events-manager');
 			}
 			$em_localized_js['option_reset'] = __('Option value has been reverted. Please save your settings for it to take effect.', 'events-manager');
+			$em_localized_js['admin'] = array(
+				'settings' => array(
+					'option_override_tooltip' => __("You can override this specific set of formats rather than using the plugin defaults.")
+				),
+			);
 		}		
 		wp_localize_script('events-manager','EM', apply_filters('em_wp_localize_script', $em_localized_js));
 	}
@@ -715,9 +735,15 @@ function em_locate_template( $template_name, $load=false, $the_args = array() ) 
 	//First we check if there are overriding tempates in the child or parent theme
 	$located = locate_template(array('plugins/events-manager/'.$template_name));
 	if( !$located ){
-		$located = apply_filters('em_locate_template_default', $located, $template_name, $load, $the_args);
-		if ( !$located && file_exists(EM_DIR.'/templates/'.$template_name) ) {
-			$located = EM_DIR.'/templates/'.$template_name;
+		// now check the wp-content/plugin-templates/events-manager/ folder
+		if( file_exists(WP_CONTENT_DIR.'/plugin-templates/events-manager/'.$template_name) ){
+			$located = WP_CONTENT_DIR.'/plugin-templates/events-manager/'.$template_name;
+		}else{
+			// finally get the plugin from EM if no others exist
+			$located = apply_filters('em_locate_template_default', $located, $template_name, $load, $the_args);
+			if ( !$located && file_exists(EM_DIR.'/templates/'.$template_name) ) {
+				$located = EM_DIR.'/templates/'.$template_name;
+			}
 		}
 	}
 	$located = apply_filters('em_locate_template', $located, $template_name, $load, $the_args);
@@ -859,7 +885,7 @@ function em_get_template_classes($component, $subcomponents = array(), $just_sub
 add_filter('em_get_template_classes', '__return_empty_array');
 */
 /*
-add_filter('em_get_template_classes', function( $classes, $component, $additional_classes, $theme, $component_classes ){
+add_filter('em_get_template_classes', function( $classes, $component, $subcomponents, $just_subcomponent, $component_data, $subcomponents_data ){
 	$component_classes[] = 'em';
 	return $component_classes;
 }, 1, 5);
@@ -882,26 +908,143 @@ function em_template_classes( $component, $additional_classes = array(), $theme 
  * @method event_list_item_format()
  */
 class EM_Formats {
+	/**
+	 * @var array array of previously loaded formats for faster reference. much like get_option does
+	 */
+	public static $loaded_formats = array();
+	
 	public static function init(){
 		add_action( 'events_manager_loaded', 'EM_Formats::add_filters');
 	}
-	public static function add_filters(){
+	public static function add_filters( $get_all = false ){
 		//you can hook into this filter and activate the format options you want to override by supplying the wp option names in an array, just like in the database.
-		$formats = apply_filters('em_formats_filter', array());
+		if( is_admin() && !empty($_REQUEST['page']) && $_REQUEST['page'] == 'events-manager-options' ) return; // exit on setting pages to avoid content wiping
+		$formats = apply_filters('em_formats_filter', static::get_default_formats($get_all));
 		foreach( $formats as $format_name ){
 			add_filter('pre_option_'.$format_name, 'EM_Formats::'. $format_name, 1,1);
 		}
 	}
+	
+	public static function remove_filters( $get_all = false ){
+		$formats = apply_filters('em_formats_filter', static::get_default_formats($get_all));
+		foreach( $formats as $format_name ){
+			remove_filter('pre_option_'.$format_name, 'EM_Formats::'. $format_name, 1);
+		}
+	}
+	
+	/**
+	 * Intercepts the pre_option_ hooks and check if we have a php file format verion, if so that content is supplied.
+	 * @param string $name
+	 * @param string[] $args
+	 * @return string
+	 */
 	public static function __callStatic($name, $args ){
+		if( !empty(static::$loaded_formats[$name]) ){
+			return static::$loaded_formats[$name];
+		} // cached already
 		$value = empty($args) || !isset($args[0]) ? '' : $args[0];
-		$name = preg_replace('/^dbem_/', '', $name);
-		$format = em_locate_template( 'formats/'.$name.'.php' );
+		$filename = preg_replace('/^dbem_/', '', $name);
+		$format = em_locate_template( 'formats/'.$filename.'.php' );
 		if( $format ){
 			ob_start();
 			include($format);
 			$value = ob_get_clean();
 		}
+		static::$loaded_formats[$name] = $value;
 		return $value;
+	}
+	
+	/**
+	 * @return mixed|void
+	 */
+	public static function get_formatting_modes_map(){
+		$formatting_modes_map = array (
+			'events-list' => array(
+				'dbem_event_list_item_format_header',
+				'dbem_event_list_item_format',
+				'dbem_event_list_item_format_footer',
+			),
+			'event-single' => array(
+				'dbem_single_event_format',
+			),
+			'event-excerpt' => array(
+				'dbem_event_excerpt_format',
+				'dbem_event_excerpt_alt_format',
+			),
+			'calendar-previews' => array(
+				'dbem_calendar_preview_modal_event_format',
+				'dbem_calendar_preview_modal_date_format',
+				'dbem_calendar_preview_tooltip_event_format',
+			),
+			'locations-list' => array(
+				'dbem_location_list_item_format_header',
+				'dbem_location_list_item_format',
+				'dbem_location_list_item_format_footer',
+			),
+			'location-single' => array(
+				'dbem_single_location_format',
+			),
+			'location-excerpt' => array(
+				'dbem_location_excerpt_format',
+				'dbem_location_excerpt_alt_format',
+			),
+			'location-event-lists' => array(
+				'dbem_location_event_list_item_header_format',
+				'dbem_location_event_list_item_format',
+				'dbem_location_event_list_item_footer_format'
+			),
+			'categories-list' => array(
+				'dbem_categories_list_item_format_header',
+				'dbem_categories_list_item_format',
+				'dbem_categories_list_item_format_footer',
+			),
+			'category-single' => array(
+				'dbem_category_page_format',
+			),
+			'category-events-list' => array(
+				'dbem_category_event_list_item_header_format',
+				'dbem_category_event_list_item_format',
+				'dbem_category_event_list_item_footer_format',
+			),
+			'tags-list' => array(
+				'dbem_tags_list_item_format_header',
+				'dbem_tags_list_item_format',
+				'dbem_tags_list_item_format_footer',
+			),
+			'tag-single' => array(
+				'dbem_tag_page_format',
+			),
+			'tag-events-list' => array(
+				'dbem_tag_event_list_item_header_format',
+				'dbem_tag_event_list_item_format',
+				'dbem_tag_event_list_item_footer_format',
+			),
+			'maps' => array(
+				'dbem_map_text_format',
+				'dbem_location_baloon_format',
+			),
+		);
+		return apply_filters('em_formats_formatting_modes_map', $formatting_modes_map);
+	}
+	
+	public static function get_default_formats( $get_all = false ){
+		$default_formats = array();
+		$formatting_modes_map = static::get_formatting_modes_map();
+		if( get_option('dbem_advanced_formatting') == 0  || $get_all == true ){
+			// load all formats from files
+			foreach( $formatting_modes_map as $k => $formats ){
+				$default_formats = array_merge($default_formats, $formats);
+			}
+		}elseif( get_option('dbem_advanced_formatting') == 1 ){
+			// go through settings and see what needs loading from files and which don't
+			$formatting_modes = get_option('dbem_advanced_formatting_modes');
+			foreach( $formatting_modes as $mode => $status ){
+				if( !$status && !empty($formatting_modes_map[$mode]) ){
+					$default_formats = array_merge($default_formats, $formatting_modes_map[$mode]);
+				}
+			}
+		} // if set to 2 (or something else) we're loading everything direct from settings
+		return $default_formats;
 	}
 }
 EM_Formats::init();
