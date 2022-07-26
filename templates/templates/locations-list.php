@@ -13,8 +13,8 @@ $args = apply_filters('em_content_locations_args', $args);
 if( empty($args['id']) ) $args['id'] = rand(); // prevent warnings
 $id = esc_attr($args['id']);
 ?>
-<div class="em em-view-container" id="em-view-<?php echo $id; ?>" data-view="location-list">
-	<div class="em-list em-locations-list <?php em_template_classes('locations-list'); ?>" id="em-locations-list-<?php echo $id; ?>" data-view-id="<?php echo $id; ?>">
+<div class="<?php em_template_classes('view-container'); ?>" id="em-view-<?php echo $id; ?>" data-view="location-list">
+	<div class="<?php em_template_classes('locations-list'); ?>" id="em-locations-list-<?php echo $id; ?>" data-view-id="<?php echo $id; ?>">
 		<?php
 		echo EM_Locations::output( $args );
 		?>

@@ -10,8 +10,9 @@
 /* @var $args array */
 if( empty($args['id']) ) $args['id'] = rand(); // prevent warnings
 $id =  esc_attr($args['id']); // id of form for unique selections
+//em_template_classes('search', 'modal,search-advanced');
 ?>
-<div class="em-search em <?php echo esc_attr(implode(' ', $args['css_classes'])); ?>" id="em-search-<?php echo $id; ?>" data-view="<?php echo esc_attr($args['view']); ?>">
+<div class="<?php em_template_classes('search'); ?> <?php echo esc_attr(implode(' ', $args['css_classes'])); ?>" id="em-search-<?php echo $id; ?>" data-view="<?php echo esc_attr($args['view']); ?>">
 	<form action="<?php echo !empty($args['search_url']) ? esc_url($args['search_url']) : EM_URI; ?>" method="post" class="em-search-form" id="em-search-form-<?php echo $id; ?>">
 		<input type="hidden" name="action" value="<?php echo esc_attr($args['search_action']); ?>" />
 		<input type="hidden" name="view_id" value="<?php echo esc_attr($args['id']); ?>" />
@@ -80,8 +81,8 @@ $id =  esc_attr($args['id']); // id of form for unique selections
 				<?php endif; ?>
 			</div>
 		<?php else: // Search Form Pop-Up Shown as separate form ?>
-			<div class="em em-modal em-search-advanced <?php echo esc_attr(implode(' ', $args['css_classes_advanced'])); ?>" id="em-search-advanced-<?php echo $id; ?>" data-parent="em-search-form-<?php echo $id; ?>" data-view="<?php echo esc_attr($args['view']); ?>">
-				<div class="em-modal-popup em pixelbones ">
+			<div class="em-modal <?php em_template_classes('search', 'search-advanced'); ?> <?php echo esc_attr(implode(' ', $args['css_classes_advanced'])); ?>" id="em-search-advanced-<?php echo $id; ?>" data-parent="em-search-form-<?php echo $id; ?>" data-view="<?php echo esc_attr($args['view']); ?>">
+				<div class="em-modal-popup">
 					<header>
 						<a class="em-close-modal" href="#"></a><!-- close modal -->
 						<div class="em-modal-title">
@@ -141,5 +142,5 @@ $id =  esc_attr($args['id']); // id of form for unique selections
 </div>
 
 <?php if( empty($args['has_view']) ): // if called by another shortcode e.g. events_list, then that shortcode should generate the search form and wrap itself in the below ?>
-	<div class='em em-view-container <?php echo esc_attr(implode(' ', $args['css_classes'])); ?>' id="em-view-<?php echo $id; ?>" data-view="<?php echo esc_attr($args['view']); ?>"></div>
+	<div class='<?php em_template_classes('view-container'); ?> <?php echo esc_attr(implode(' ', $args['css_classes'])); ?>' id="em-view-<?php echo $id; ?>" data-view="<?php echo esc_attr($args['view']); ?>"></div>
 <?php endif; ?>

@@ -18,9 +18,9 @@ class EM_Locations_Widget extends WP_Widget {
     		'scope' => 'future',
     		'order' => 'ASC',
     		'limit' => 5,
-		    'format_header' => '<div class="em-list-widget em-locations-widget '. implode(' ', em_get_template_classes('widget-locations')) .'">',
+		    'format_header' => '',
 		    'format' => EM_Formats::dbem_block_location_list_item_format(''),
-		    'format_footer' => '</div>',
+		    'format_footer' => '',
     	    'no_locations_text' => '<div class="em-list-no-items">'.__('No locations', 'events-manager').'</div>',
     		'orderby' => 'event_start_date,event_start_time,location_name',
 		    'v6' => false,
@@ -56,6 +56,7 @@ class EM_Locations_Widget extends WP_Widget {
 		//get locations
 		$locations = EM_Locations::get(apply_filters('em_widget_locations_get_args',$instance));
 		//output locations
+	    echo '<div class="'. implode(' ', em_get_template_classes('locations-widget')) .'">';
 		echo $instance['format_header'];
 		if ( count($locations) > 0 ){
 			foreach($locations as $location){
@@ -65,16 +66,15 @@ class EM_Locations_Widget extends WP_Widget {
 		    echo $instance['no_locations_text'];
 		}
 		echo $instance['format_footer'];
+		echo '</div>';
 		
 	    echo $args['after_widget'];
     }
 	
 	function get_v6_instance_options( $instance ){
-		ob_start();
-		em_locate_template('formats/block_location_list_item_format.php', true);
-		$instance['format_header'] = '<div class="em-locations-widget em-list-widget '. implode(' ', em_get_template_classes('widget-locations')) .'">';
-		$instance['format'] = ob_get_clean();
-		$instance['format_footer'] = '</div>';
+		$instance['format_header'] = '';
+		$instance['format'] = EM_Formats::dbem_block_location_list_item_format('');
+		$instance['format_footer'] = '';
 		return $instance;
 	}
 

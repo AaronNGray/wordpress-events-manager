@@ -13,7 +13,7 @@
 	/* @var int $page */
 	$url = esc_url(add_query_arg(array('scope' => null, 'status' => null, 'em_search' => null, 'pno' => null, 'admin_mode' => null))); //template for cleaning the link for each view below
 	?>
-	<div class="em-events-admin-list <?php em_template_classes('events-admin'); ?>">
+	<div class="<?php em_template_classes('events-admin', 'events-admin-list'); ?>">
 		<form id="posts-filter" action="" method="get" class="input">
 			<?php
 			echo $EM_Notices;

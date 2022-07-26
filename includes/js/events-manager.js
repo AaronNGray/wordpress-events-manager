@@ -1453,29 +1453,28 @@ function em_esc_attr( str ){
 // Modal Open/Close
 let openModal = function( modal, onOpen = null ){
 	modal.appendTo(document.body);
-	modal.addClass('active').fadeIn(100).find('.em-modal-popup').addClass('active');
 	setTimeout( function(){
+        modal.addClass('active').find('.em-modal-popup').addClass('active');
 		jQuery(document).triggerHandler('em_modal_open', [modal]);
 		if( typeof onOpen === 'function' ){
 			onOpen();
 		}
-	}, 100);
+	}, 100); // timeout allows css transition
 };
 let closeModal = function( modal, onClose = null ){
-	modal.find('.em-modal-popup').removeClass('active');
-	modal.fadeOut(300).removeClass('active'); // delay 300 ms to allow transition
-	if( modal.attr('data-parent') ){
-		let wrapper = jQuery('#' + modal.attr('data-parent') );
-		if( wrapper.length ) {
-			modal.appendTo(wrapper);
-		}
-	}
+	modal.removeClass('active').find('.em-modal-popup').removeClass('active');
 	setTimeout( function(){
+        if( modal.attr('data-parent') ){
+            let wrapper = jQuery('#' + modal.attr('data-parent') );
+            if( wrapper.length ) {
+                modal.appendTo(wrapper);
+            }
+        }
 		modal.triggerHandler('em_modal_close');
 		if( typeof onClose === 'function' ){
 			onClose();
 		}
-	}, 100);
+	}, 500); // timeout allows css transition
 }
 jQuery(document).on('click', '.em-modal .em-close-modal', function(e){
 	let modal = jQuery(this).closest('.em-modal');

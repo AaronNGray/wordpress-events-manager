@@ -1,4 +1,4 @@
-.em-item.em-taxonomy {
+&.em-item.em-taxonomy, &.em-list .em-item.em-taxonomy {
 	.em-item-events {
 		p {
 			margin: 0 0 8px !important;
@@ -10,7 +10,7 @@
 		}
 	}
 }
-.em-item.em-taxonomy.em-category {
+&.em-item.em-taxonomy.em-category, &.em-list .em-item.em-taxonomy.em-category {
 	.em-item-image {
 		.em-item-image-placeholder {
 			background-image: var(--icon-category);

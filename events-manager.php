@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Events Manager
-Version: 6.0
+Version: 6.0.0.1 
 Plugin URI: http://wp-events-plugin.com
 Description: Event registration and booking management for WordPress. Recurring events, locations, webinars, google maps, rss, ical, booking registration and more!
 Author: Marcus Sykes
@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 // Setting constants
-define('EM_VERSION', '6.0.0.8'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
+define('EM_VERSION', '6.0.1'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
 define('EM_PRO_MIN_VERSION', 2.6712); //self expanatory
 define('EM_PRO_MIN_VERSION_CRITICAL', 2.377); //self expanatory
 define('EM_DIR', dirname( __FILE__ )); //an absolute path to this directory
@@ -729,41 +729,141 @@ function em_locate_template( $template_name, $load=false, $the_args = array() ) 
 	return $located;
 }
 
-/**
- * Outputs a classlist according to component and theme, which can be hooked into or altered according to EM settings page.
- * @param string $component    The component being displayed, such as events-list, single-event, etc.
- * @param string $theme        The name of the EM theme used, currently just 'six'
- * @return array
- */
-function em_get_template_classes( $component, $theme = 'pixelbones' ){
-	$classes = array('em');
-	$show_theme_class = true;
+function em_get_template_components_classes( $component ){
+	$component_classes = array('em-' . $component);
+	$show_theme_class = 1;
 	switch( $component ){
+		// Calendar
+		case 'calendar':
+		case 'calendar-preview':
+			$show_theme_class = get_option('dbem_css_calendar');
+			break;
+		// Lists
 		case 'events-list':
+			array_unshift($component_classes, 'em-list');
 			$show_theme_class = get_option('dbem_css_evlist');
 			break;
-		case 'bookings-admin':
-			$show_theme_class = get_option('dbem_css_rsvpadmin');
-			break;
-		case 'events-editor':
-			$show_theme_class = get_option('dbem_css_editors');
-			break;
-		case 'locations-list':
-			$show_theme_class = get_option('dbem_css_loclist');
-			break;
-		case 'booking-form':
-			$show_theme_class = get_option('dbem_css_rsvp');
-			break;
 		case 'categories-list':
+			array_unshift($component_classes, 'em-list');
 			$show_theme_class = get_option('dbem_css_catlist');
 			break;
 		case 'tags-list':
+			array_unshift($component_classes, 'em-list');
 			$show_theme_class = get_option('dbem_css_taglist');
 			break;
+		case 'locations-list':
+			array_unshift($component_classes, 'em-list');
+			$show_theme_class = get_option('dbem_css_loclist');
+			break;
+		case 'event-booking-form':
+			$show_theme_class = get_option('dbem_css_rsvp');
+			break;
+		case 'view-container':
+			$show_theme_class = 2; // not a theme wrapper, just a view wrapper
+			break;
+		// Single Items
+		case 'event-single':
+			array_unshift($component_classes, 'em-item', 'em-item-single', 'em-event');
+			$show_theme_class = get_option('dbem_css_event');
+			break;
+		case 'location-single':
+			array_unshift($component_classes, 'em-item', 'em-item-single', 'em-location');
+			$show_theme_class = get_option('dbem_css_location');
+			break;
+		case 'category-single':
+			array_unshift($component_classes, 'em-item', 'em-item-single', 'em-taxonomy', 'em-taxonomy-single', 'em-category');
+			$show_theme_class = get_option('dbem_css_category');
+			break;
+		case 'tag-single':
+			array_unshift($component_classes, 'em-item', 'em-item-single', 'em-taxonomy', 'em-taxonomy-single', 'em-tag');
+			$show_theme_class = get_option('dbem_css_tag');
+			break;
+		// Widgets/Blocks
+		case 'events-widget':
+		case 'locations-widget':
+			array_unshift($component_classes, 'em-list-widget');
+			break;
+		// Admin Areas
+		case 'bookings-admin':
+			$show_theme_class = get_option('dbem_css_rsvpadmin');
+			break;
+		case 'event-editor':
+		case 'location-editor':
+		case 'locations-admin':
+		case 'events-admin':
+			$show_theme_class = get_option('dbem_css_editors');
+			break;
+		// Others
+		case 'search':
+			$show_theme_class = get_option('dbem_css_search'); // we don't need pixelbones
+			break;
+		case 'my-bookings': // the 'my bookings' page for visitors, not admins
+			$show_theme_class = get_option('dbem_css_myrsvp'); // we don't need pixelbones
+			break;
 	}
-	if( is_admin() || $show_theme_class ) $classes[] = 'pixelbones';
-	return apply_filters('em_get_template_classes', $classes, $component, $theme);
+	return array('classes' => $component_classes, 'use_theme' => absint($show_theme_class) );
 }
+
+/**
+ * Returns a class list array according to the supplied component and subcomponent, which can be hooked into or altered according to EM settings page.
+ * The point of this function is to decide whether this component should include base (.em) and theme (.pixelite) clases to further style the component.
+ * Additionally, you can add one or more subcomponents which will also include their related classes but include base/theme classes if the main compononent allows this.
+ * This sort of scenario could be useful if displaying a list of events within another component, such as a calendar, and you want to style the list but use our calendar styles.
+ *
+ * @param string|false $component           The component being displayed, such as events-list, single-event, etc. and these are usually repeated into the classlist with an em- prefix
+ * @param string|array $subcomponents       Additional CSS components to be added which will get prefixed with em-
+ * @param string|array $just_subcomponent   If you want to display subcomponent clasess, but also decide whether to show the base classes ('em' and 'pixelbones') based on the main component, set to true and main component classes will not be returned
+ * @return array
+ */
+function em_get_template_classes($component, $subcomponents = array(), $just_subcomponent = false ){
+	// get base components
+	if( $component ) {
+		$component_data = em_get_template_components_classes($component);
+	}else{
+		// we assume here that we're looking here for subcomponent classes, nothing more
+		$component_data = array('classes' => array(), 'use_theme' => 0);
+	}
+	// get additional components
+	$subcomponent_classes = $subcomponents_data = array();
+	if( !empty($subcomponents) ){
+		if( !is_array($subcomponents) ) $subcomponents = str_replace(' ', '', explode(',', $subcomponents));
+		foreach($subcomponents as $subcomponent ){
+			// merge classes here as we go, store into data variable for the filter further down
+			$subcomponent_data = em_get_template_components_classes( $subcomponent );
+			$subcomponents_data[$subcomponent] = $subcomponent_data;
+			$subcomponent_classes = array_merge( $subcomponent_classes, $subcomponents_data[$subcomponent]['classes'] );
+		}
+	}
+	// add base classes (if applicable)
+	$base_classes = array();
+	$theme = 'pixelbones';
+	if( is_admin() && (!defined('EM_DOING_AJAX') || !EM_DOING_AJAX) ){
+		$base_classes = array('em', $theme);
+	}elseif( get_option('dbem_css') ) {
+		if( $component_data['use_theme'] ){
+			$base_classes[] = 'em'; // our base class
+			if( $component_data['use_theme'] !== 2 && get_option('dbem_css_theme') ) {
+				$base_classes[] = $theme;
+			} // if greater than 1 then it won't include pixelbones
+		}
+	}
+	if( $just_subcomponent ){
+		$classes = array_unique(array_merge($base_classes, $subcomponent_classes));
+	} else {
+		$classes = array_unique(array_merge($base_classes, $component_data['classes'], $subcomponent_classes));
+	}
+	return apply_filters('em_get_template_classes', $classes, $component, $subcomponents, $just_subcomponent, $component_data, $subcomponents_data);
+}
+
+/* Want to overpower our styling? See these examples:
+add_filter('em_get_template_classes', '__return_empty_array');
+*/
+/*
+add_filter('em_get_template_classes', function( $classes, $component, $additional_classes, $theme, $component_classes ){
+	$component_classes[] = 'em';
+	return $component_classes;
+}, 1, 5);
+*/
 
 /**
  * @see em_get_template_classes()
@@ -771,8 +871,9 @@ function em_get_template_classes( $component, $theme = 'pixelbones' ){
  * @param $theme
  * @return void
  */
-function em_template_classes( $component, $theme = 'pixelbones' ){
-	echo esc_attr(implode(' ', em_get_template_classes($component, $theme)));
+function em_template_classes( $component, $additional_classes = array(), $theme = null ){
+	$classes = em_get_template_classes($component, $additional_classes, $theme);
+	echo esc_attr(implode(' ', $classes));
 }
 
 /**

@@ -2,13 +2,13 @@
 For other event list and single event display CSS, see the _items.scss file
  */
 
-.em-event.em-event-single {
+&.em-event.em-event-single {
 	.em-event-meta-line.em-event-location {
 		line-height: 24px !important;
 	}
 }
 
-.em-event {
+&.em-event, &.em-events-list, &.em-events-widget {
 	.em-item-image {
 		.em-item-image-placeholder {
 			div.date {
@@ -34,7 +34,7 @@ For other event list and single event display CSS, see the _items.scss file
 	}
 }
 
-&.em-events-widget, .em-events-widget {
+&.em-events-widget {
 	.em-item {
 		.em-item-image-placeholder {
 			div.date {

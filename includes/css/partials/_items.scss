@@ -1,7 +1,7 @@
 /*
 Lists and Single Events
  */
-.em-item {
+&.em-item, &.em-list .em-item, &.em-list-widget .em-item {
 	.em-item-image {
 		min-width: 150px;
 		width: 100%;
@@ -69,7 +69,7 @@ Lists and Single Events
 /*
 Specific Single Styles
  */
-.em-item.em-item-single {
+&.em-item.em-item-single {
 	width: 100%;
 
 	.em-item-header {
@@ -158,7 +158,7 @@ Specific Single Styles
 	}
 }
 
-&.em-list, .em-list {
+&.em-list {
 	 width:100%;
 	 display: grid;
 	 grid-template-rows: 1fr; // one per line by default
@@ -265,7 +265,7 @@ Specific Single Styles
 	 }
  }
 
-em .em-item.em-item-single .em-item-meta {
+&.em-item.em-item-single .em-item-meta {
 	flex: 1 1 auto;
 	order: 1;
 	display: flex;
@@ -273,7 +273,7 @@ em .em-item.em-item-single .em-item-meta {
 	gap: 20px;
 }
 
-&.em-list-widget, .em-list-widget {
+&.em-list-widget {
 	display: flex;
 	flex-direction: column;
 	gap: 15px;

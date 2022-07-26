@@ -313,27 +313,54 @@
 	</div> <!-- .postbox --> 
 	
 	<div  class="postbox" id="em-opt-style-options" >
-	<div class="handlediv" title="<?php __('Click to toggle', 'events-manager'); ?>"><br /></div><h3><span><?php _e ( 'Styling Options', 'events-manager'); ?> (<?php _e('Advanced','events-manager'); ?>) <em>(Beta)</em></span></h3>
+	<div class="handlediv" title="<?php __('Click to toggle', 'events-manager'); ?>"><br /></div><h3><span><?php _e ( 'Styling Options', 'events-manager'); ?> (<?php _e('Advanced','events-manager'); ?>)</span></h3>
 	<div class="inside">
-		<p class="em-boxheader">
-			<?php _e('Events Manager imposes a minimal amount of styling on websites so that your themes can take over.','events-manager'); ?>
-			<?php _e('Below are some additional options for individual pages and sections, which you can turn on to enforce custom styling provided by the plugin or off if you want to do your own custom styling.','events-manager'); ?>
+		<p style="font-weight:bold; font-size:110%;">
+			<?php echo sprintf( esc_html__('We strongly recommend you check out our %s before disabling any styling here, in most cases you can make profound changes with a few line of CSS or PHP', 'events-manager'), '<a href="#" target="_blank">'. esc_html__('documentation', 'events-manager').'</a>' ); ?>
 		</p>
-        <table class="form-table">
-			<?php
-				em_options_radio_binary ( __( 'Search forms', 'events-manager'), 'dbem_css_search');
-			?>
-			<tr class="em-subheader"><td colspan="2">The options below currently have no effect, but are there so you know what may be added in future updates. You can leave them on if you want furture styling to take effect, or turn them off to keep your current styles as is.</td><tr>
-			<?php
-				em_options_radio_binary ( __( 'Event/Location admin pages', 'events-manager'), 'dbem_css_editors' );
-				em_options_radio_binary ( __( 'Booking admin pages', 'events-manager'), 'dbem_css_rsvpadmin' );
-				em_options_radio_binary ( __( 'Events list page', 'events-manager'), 'dbem_css_evlist' );
-				em_options_radio_binary ( __( 'Locations list page', 'events-manager'), 'dbem_css_loclist' );
-				em_options_radio_binary ( __( 'Event booking forms', 'events-manager'), 'dbem_css_rsvp' );
-				em_options_radio_binary ( __( 'Categories list page', 'events-manager'), 'dbem_css_catlist' );
-				em_options_radio_binary ( __( 'Tags list page', 'events-manager'), 'dbem_css_taglist' );
-				echo $save_button;
-			?>
+		<p class="em-boxheader">
+			<?php esc_html_e("Events Manager 6 onwards has optional styling that maximizes consistency accross different themes. If you'd like your theme to take over in some or all aspects of our plugin, you can disable our styling here.",'events-manager'); ?>
+		</p>
+		<table class="form-table">
+			<tbody>
+				<?php
+				em_options_radio_binary ( __( 'Enable All Styling?', 'events-manager'), 'dbem_css', esc_html__("You can disable ALL styling altogether by setting this to 'no'. By doing so, nothing will be styled, AT ALL, by Events Manager in the front-end. Basically, it's up to you and your theme!", 'events-manager'), null, '.all-css');
+				?>
+			</tbody>
+			<tbody class="all-css">
+				<?php
+				em_options_radio_binary ( __( 'Enable Theme Styling?', 'events-manager'), 'dbem_css_theme', esc_html__("We impose some theme styling rules which help normalize the look of Events Manager accross themes and overrides general theming. This is limited to our components but will prevent your theme from taking over things like fonts, font-sizes, form structures etc. You can also disable strict styling for individual components below.", 'events-manager'));
+				?>
+			</tbody>
+			<tr class="em-header all-css"><td colspan="2">
+				<h4><?php _e('Individual Components','events-manager'); ?></h4>
+				<p><?php esc_html_e("Here you can disable individual item styling eompletely or just allow basic styling. Basic styling will try to impose general structuring (such as calendar structures) but won't use our Strict styling rules.", 'events-manager'); ?></p>
+			</td></tr>
+	        <tbody class="all-css">
+				<?php
+					$select = array(
+						1 => __('Enabled','events-manager'), 0 => __('Disabled', 'events-manager'), 2 => __('Basic Only', 'events-manager')
+					);
+					em_options_select ( __( 'Events Calendar', 'events-manager'), 'dbem_css_calendar', $select );
+					em_options_select ( __( 'Events list page', 'events-manager'), 'dbem_css_evlist', $select );
+					em_options_select ( __( 'Locations list page', 'events-manager'), 'dbem_css_loclist', $select );
+					em_options_select ( __( 'Categories list page', 'events-manager'), 'dbem_css_catlist', $select );
+					em_options_select ( __( 'Tags list page', 'events-manager'), 'dbem_css_taglist', $select );
+					?><tr><td colspan="2"><hr></td></tr><?php
+					em_options_select ( __( 'Event pages', 'events-manager'), 'dbem_css_event', $select );
+					em_options_select ( __( 'Location pages', 'events-manager'), 'dbem_css_location', $select );
+					em_options_select ( __( 'Category pages', 'events-manager'), 'dbem_css_category', $select );
+					em_options_select ( __( 'Tag pages', 'events-manager'), 'dbem_css_tag', $select );
+					?><tr><td colspan="2"><hr></td></tr><?php
+					em_options_select ( __( 'Search forms', 'events-manager'), 'dbem_css_search', $select);
+					em_options_select ( __( 'Event booking forms', 'events-manager'), 'dbem_css_rsvp', $select );
+					?><tr><td colspan="2"><hr></td></tr><?php
+					em_options_select ( __( 'My bookings page', 'events-manager'), 'dbem_css_myrsvp', $select);
+					em_options_select ( __( 'Event/Location admin pages', 'events-manager'), 'dbem_css_editors', $select);
+					em_options_select ( __( 'Booking admin pages', 'events-manager'), 'dbem_css_rsvpadmin', $select );
+					echo $save_button;
+				?>
+			</tbody>
 		</table>
 	</div> <!-- . inside --> 
 	</div> <!-- .postbox -->

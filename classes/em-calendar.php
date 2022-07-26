@@ -466,7 +466,7 @@ class EM_Calendar extends EM_Object {
 		/* END New Config Options */
 		
 		?>
-		<div class="em em-view-container" id="em-view-<?php echo absint($args['id']); ?>" data-view="calendar">
+		<div class="<?php em_template_classes('view-container'); ?>" id="em-view-<?php echo absint($args['id']); ?>" data-view="calendar">
 			<?php
 			// output calendar
 			$template = (!empty($args['full'])) ? 'templates/calendar-full.php':'templates/calendar-small.php';

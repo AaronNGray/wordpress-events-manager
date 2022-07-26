@@ -25,7 +25,7 @@ if( !$is_open && !is_user_logged_in() && $EM_Event->get_bookings()->is_open(true
 	$show_tickets = get_option('dbem_bookings_tickets_show_unavailable') && get_option('dbem_bookings_tickets_show_member_tickets');
 }
 ?>
-<div class="em-event-booking-form <?php em_template_classes('booking-form'); ?> input">
+<div class="<?php em_template_classes('event-booking-form'); ?> input">
 	<?php 
 		// We are firstly checking if the user has already booked a ticket at this event, if so offer a link to view their bookings.
 		$EM_Booking = $EM_Event->get_bookings()->has_booking();

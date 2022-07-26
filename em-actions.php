@@ -703,6 +703,7 @@ add_action('wp_ajax_em_bookings_table','em_ajax_bookings_table');
  * Handles AJAX Searching and Pagination for events, locations, tags and categories
  */
 function em_ajax_search_and_pagination(){
+	if( !defined('EM_DOING_AJAX') ) define('EM_DOING_AJAX', true);
 	$args = array( 'owner' => false, 'pagination' => 1, 'ajax' => true);
 	ob_start();
 	if( $_REQUEST['action'] == 'search_events' ){

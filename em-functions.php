@@ -585,7 +585,7 @@ function em_get_search_form_defaults($base_args = array(), $context = 'events') 
 	$search_args = array();
 	$search_args['ajax'] = EM_AJAX_SEARCH;
 	$search_args['id'] = rand();
-	$search_args['css'] = get_option('dbem_css_search');
+	$search_args['css'] = get_option('dbem_css_search'); // deprecated
 	$search_args['search_action'] = 'search_events';
 	$search_args['search_advanced_text'] = get_option('dbem_search_form_advanced_show');
 	$search_args['search_text_show'] = get_option('dbem_search_form_advanced_show'); // deprecated
@@ -697,7 +697,6 @@ function em_get_search_form_defaults($base_args = array(), $context = 'events') 
 	}
 	if( !empty($args['css']) ){
 		$args['main_classes'][] = 'css-search'; // deprecated
-		$args['css_classes'][] = 'pixelbones';
 	}
 	
 	// legacy backwards compatible classes

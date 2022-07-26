@@ -14,7 +14,7 @@ function em_install() {
 		add_action ( 'admin_notices', 'em_update_required_notification' );
 		return;
    	}
-	if( EM_VERSION > $old_version || $old_version == '' || (is_multisite() && !EM_MS_GLOBAL && get_option('em_ms_global_install')) ){
+	if( version_compare(EM_VERSION, $old_version, '>') || $old_version == '' || (is_multisite() && !EM_MS_GLOBAL && get_option('em_ms_global_install')) ){
 		if( get_option('dbem_upgrade_throttle') <= time() || !get_option('dbem_upgrade_throttle') ){
 		 	// Creates the events table if necessary
 		 	if( !EM_MS_GLOBAL || (EM_MS_GLOBAL && is_main_site()) ){
@@ -737,6 +737,9 @@ function em_add_options() {
 		'dbem_bp_events_list_format_footer' => '</ul>',
 		'dbem_bp_events_list_none_format' => '<p class="em-events-list">'.__('No Events','events-manager').'</p>',
 		//custom CSS options for public pages
+		'dbem_css' => 1,
+		'dbem_css_theme' => 1,
+		'dbem_css_calendar' => 1,
 		'dbem_css_editors' => 1,
 		'dbem_css_rsvp' => 1, //my bookings page
 		'dbem_css_rsvpadmin' => 1, //my event bookings page
@@ -745,6 +748,11 @@ function em_add_options() {
 		'dbem_css_loclist' => 1,
 		'dbem_css_catlist' => 1,
 		'dbem_css_taglist' => 1,
+		'dbem_css_events' => 1,
+		'dbem_css_locations' => 1,
+		'dbem_css_categories' => 1,
+		'dbem_css_tags' => 1,
+		'dbem_css_myrsvp' => 1,
 		/*
 		 * Custom Post Options - set up to mimick old EM settings and install with minimal setup for most users
 		 */
@@ -845,9 +853,9 @@ function em_upgrade_current_installation(){
 		EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
 	}
 	
-	
-	if( !get_option('dbem_version') ){ add_option('dbem_credits',1); }
-	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5 ){
+	$current_version = get_option('dbem_version');
+	if( !$current_version ){ add_option('dbem_credits',1); }
+	if( $current_version != '' && $current_version < 5 ){
 		//make events, cats and locs pages
 		update_option('dbem_cp_events_template_page',1);
 		update_option('dbem_cp_locations_template_page',1);
@@ -873,16 +881,16 @@ function em_upgrade_current_installation(){
 		if( defined('EM_LOCATIONS_SLUG') && EM_LOCATIONS_SLUG != 'locations' ) update_option('dbem_cp_locations_slug', EM_LOCATIONS_SLUG);
 		if( defined('EM_CATEGORIES_SLUG') && EM_CATEGORIES_SLUG != 'categories' ) update_option('dbem_taxonomy_category_slug', $events_page->post_name.'/'.EM_CATEGORIES_SLUG);
 	}
-	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5.19 ){
+	if( $current_version != '' && $current_version < 5.19 ){
 		update_option('dbem_event_reapproved_email_subject',  get_option('dbem_event_approved_email_subject'));
 		update_option('dbem_event_reapproved_email_body', get_option('dbem_event_approved_email_body'));
 	}
-	if( get_option('dbem_version') != '' && get_option('dbem_version') <= 5.21 ){
+	if( $current_version != '' && $current_version <= 5.21 ){
 		//just remove all rsvp cut-off info
 		$wpdb->query("UPDATE ".$wpdb->postmeta." SET meta_value = NULL WHERE meta_key IN ('_event_rsvp_date','_event_rsvp_time') AND post_id IN (SELECT post_id FROM ".EM_EVENTS_TABLE." WHERE recurrence_id > 0)");
 		$wpdb->query("UPDATE ".EM_EVENTS_TABLE." SET event_rsvp_time = NULL, event_rsvp_date = NULL WHERE recurrence_id > 0");
 	}
-	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5.364 ){
+	if( $current_version != '' && $current_version < 5.364 ){
 		if( get_option('dbem_cp_events_template_page') ){
 			update_option('dbem_cp_events_template', 'page');
 			delete_option('dbem_cp_events_template_page');
@@ -900,7 +908,7 @@ function em_upgrade_current_installation(){
 		update_option('dbem_tag_event_single_format',get_option('dbem_tag_event_list_item_header_format').get_option('dbem_tag_event_list_item_format').get_option('dbem_tag_event_list_item_footer_format'));
 		update_option('dbem_tag_no_event_message',get_option('dbem_tag_event_list_item_header_format').get_option('dbem_tag_no_events_message').get_option('dbem_tag_event_list_item_footer_format'));
 	}
-	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5.38 ){
+	if( $current_version != '' && $current_version < 5.38 ){
 		update_option('dbem_dates_separator', get_option('dbem_dates_Seperator', get_option('dbem_dates_seperator',' - ')));
 		update_option('dbem_times_separator', get_option('dbem_times_Seperator', get_option('dbem_times_seperator',' - ')));
 		delete_option('dbem_dates_Seperator');
@@ -908,17 +916,17 @@ function em_upgrade_current_installation(){
 		delete_option('dbem_dates_seperator');
 		delete_option('dbem_times_seperator');
 	}
-	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5.4 ){
+	if( $current_version != '' && $current_version < 5.4 ){
 		//tax rates now saved at booking level, so that alterations to tax rates don't change previous booking prices
 		//any past bookings that don't get updated will adhere to these two values when calculating prices
 		update_option('dbem_legacy_bookings_tax_auto_add', get_option('dbem_bookings_tax_auto_add'));
 		update_option('dbem_legacy_bookings_tax', get_option('dbem_bookings_tax'));
 	}
-	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5.422 ){
+	if( $current_version != '' && $current_version < 5.422 ){
 		//copy registration email content into new setting
 		update_option('dbem_rss_limit',0);
 	}
-	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5.4425 ){
+	if( $current_version != '' && $current_version < 5.4425 ){
 		//copy registration email content into new setting
 		update_option('dbem_css_editors',0);
 		update_option('dbem_css_rsvp',0);
@@ -936,7 +944,7 @@ function em_upgrade_current_installation(){
 		delete_option('dbem_events_page_search'); //avoids the double search form on overridden templates
 		update_option('dbem_locations_page_search_form',0); //upgrades shouldn't get extra surprises
 	}
-	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5.512 ){
+	if( $current_version != '' && $current_version < 5.512 ){
 		update_option('dbem_search_form_geo_units',0); //don't display units search for previous installs
 		//correcting the typo
 		update_option('dbem_search_form_submit', get_option('dbem_serach_form_submit'));
@@ -950,11 +958,11 @@ function em_upgrade_current_installation(){
 			delete_option('dbem_serach_form_submit_ml'); //we can assume this isn't used in templates
 		}
 	}
-	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5.54 ){
+	if( $current_version != '' && $current_version < 5.54 ){
 		update_option('dbem_cp_events_excerpt_formats',0); //don't override excerpts in previous installs
 		update_option('dbem_cp_locations_excerpt_formats',0);
 	}
-	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5.55 ){
+	if( $current_version != '' && $current_version < 5.55 ){
 		//rename email templates sent to admins on new bookings
 		update_option('dbem_bookings_contact_email_cancelled_subject',get_option('dbem_contactperson_email_cancelled_subject'));
 		update_option('dbem_bookings_contact_email_cancelled_body',get_option('dbem_contactperson_email_cancelled_body'));
@@ -972,12 +980,12 @@ function em_upgrade_current_installation(){
 		delete_option('dbem_bookings_contact_email_subject');
 		delete_option('dbem_bookings_contact_email_body');
 	}
-	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5.62 ){
+	if( $current_version != '' && $current_version < 5.62 ){
 		//delete all _event_created_date and _event_date_modified records in post_meta, we don't need them anymore, they were never accurate to begin with, refer to the records in em_events table if still needed
 		$wpdb->query('DELETE FROM '.$wpdb->postmeta." WHERE (meta_key='_event_date_created' OR meta_key='_event_date_modified') AND post_id IN (SELECT ID FROM ".$wpdb->posts." WHERE post_type='".EM_POST_TYPE_EVENT."' OR post_type='event-recurring')");
 		$wpdb->query('ALTER TABLE '. $wpdb->prefix.'em_bookings CHANGE event_id event_id BIGINT(20) UNSIGNED NULL');
 	}
-	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5.66 ){
+	if( $current_version != '' && $current_version < 5.66 ){
 		if( get_option('dbem_ical_description_format') == "#_EVENTNAME - #_LOCATIONNAME - #_EVENTDATES - #_EVENTTIMES" ) update_option('dbem_ical_description_format',"#_EVENTNAME");
 		if( get_option('dbem_ical_location_format') == "#_LOCATION" ) update_option('dbem_ical_location_format', "#_LOCATIONNAME, #_LOCATIONFULLLINE, #_LOCATIONCOUNTRY");
 		$old_values = array(
@@ -985,7 +993,7 @@ function em_upgrade_current_installation(){
 				'dbem_ical_location_format' => "#_LOCATION",
 		);
 	}
-	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5.6636 ){
+	if( $current_version != '' && $current_version < 5.6636 ){
 		$sql = $wpdb->prepare("DELETE FROM {$wpdb->postmeta} WHERE meta_key='_post_id' AND post_id IN (SELECT ID FROM {$wpdb->posts} WHERE post_type=%s OR post_type=%s)", array(EM_POST_TYPE_EVENT, 'event-recurring'));
 		$wpdb->query($sql);
 		remove_filter('pre_option_dbem_bookings_registration_user', 'EM_People::dbem_bookings_registration_user');
@@ -998,7 +1006,7 @@ function em_upgrade_current_installation(){
 			delete_option('dbem_bookings_registration_user');
 		}
 	}
-	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5.821 ){
+	if( $current_version != '' && $current_version < 5.821 ){
 		$admin_data = get_option('dbem_data');
 		//upgrade tables only if we didn't do it before during earlier dev versions
 		if( empty($admin_data['datetime_backcompat']) ){
@@ -1045,7 +1053,7 @@ function em_upgrade_current_installation(){
 			EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
 		}
 	}
-	if( get_option('dbem_version') != '' && get_option('dbem_version') == 5.9 && is_multisite() && !EM_MS_GLOBAL && (is_network_admin() || is_main_site()) ){
+	if( $current_version != '' && $current_version == 5.9 && is_multisite() && !EM_MS_GLOBAL && (is_network_admin() || is_main_site()) ){
 		//warning just for users who upgraded to 5.9 on multisite without global tables enabled
 		$message = 'Due to a bug in 5.9 when updating to new timezones in MultiSite installations, you may notice some of your events are missing from lists.<br><br>To fix this problem, visit %s choose your timezone, select %s and click %s to update all your blogs to the desired timezone.';
 		$url = network_admin_url('admin.php?page=events-manager-options#general+admin-tools');
@@ -1060,20 +1068,20 @@ function em_upgrade_current_installation(){
 		));
 		EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
 	}
-	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5.93 ){
+	if( $current_version != '' && $current_version < 5.93 ){
 		$message = __('Events Manager has introduced new privacy tools to help you comply with international laws such as the GDPR, <a href="%s">see our documentation</a> for more information.','events-manager');
 		$message = sprintf( $message, 'https://wp-events-plugin.com/documentation/data-privacy-gdpr-compliance/?utm_source=plugin&utm_campaign=gdpr_update');
 		$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'gdpr_update', 'who' => 'admin', 'where' => 'all', 'message' => $message ));
 		EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
 	}
-	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5.95 ){
+	if( $current_version != '' && $current_version < 5.95 ){
 		$message = esc_html__('Google has introduced new pricing for displaying maps on your site. If you have moderate traffic levels, this may likely affect you with surprise and unexpected costs!', 'events-manager');
 		$message2 = esc_html__('Events Manager has implemented multiple ways to help prevent or reduce these costs drastically, please check our %s page for more information.', 'events-manager');
 		$message2 = sprintf($message2, '<a href="https://wp-events-plugin.com/documentation/google-maps/api-usage/?utm_source=plugin&utm_source=medium=settings&utm_campaign=gmaps-update">'.esc_html__('documentation', 'events-manager') .'</a>');
 		$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'gdpr_update', 'who' => 'admin', 'where' => 'all', 'message' => "<p>$message</p><p>$message2</p>" ));
 		EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
 	}
-	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5.9618 ){
+	if( $current_version != '' && $current_version < 5.9618 ){
 		$multisite_cond = '';
 		if( EM_MS_GLOBAL ){
 			if( is_main_site() ){
@@ -1092,14 +1100,14 @@ function em_upgrade_current_installation(){
 			update_option('dbem_smtp_encryption', 0);
 		}
 	}
-	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5.975 ){
+	if( $current_version != '' && $current_version < 5.975 ){
 		update_option('dbem_location_types', array('location'=>1));
 		$message = esc_html__('Events Manager has introduced location types, which can include online locations such as a URL or integrations with webinar platforms such as Zoom! Enable different location types in your settings page, for more information see our %s.', 'events-manager');
 		$message = sprintf( $message, '<a href="http://wp-events-plugin.com/documentation/location-types/" target="_blank">'. esc_html__('documentation', 'events-manager')).'</a>';
 		$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'location-types-update', 'who' => 'admin', 'where' => 'all', 'message' => "$message" ));
 		EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
 	}
-	if( get_option('dbem_version') != '' && get_option('dbem_version') < 5.9821 ){
+	if( $current_version != '' && $current_version < 5.9821 ){
 		// recreate all event_parent records in post meta
 		$sql = "DELETE FROM {$wpdb->postmeta} WHERE meta_key = '_event_parent' AND post_id IN (SELECT post_id FROM ".EM_EVENTS_TABLE.")";
 		$wpdb->query($sql);
@@ -1115,7 +1123,7 @@ function em_upgrade_current_installation(){
 		$wpdb->query($sql);
 	}
 	// last version check in numbers, 6 onwwards uses version_compare
-	if( get_option('dbem_version') != '' && version_compare(get_option('dbem_version'), '6.0.1', '<') ){
+	if( $current_version != '' && version_compare($current_version, '6.0', '<') ){
 		// convert jQuery UI DateFormat for max back-compat
 		$dateformat = get_option('dbem_date_format_js');
 		// check if there's any kind of non-convertable placeholders

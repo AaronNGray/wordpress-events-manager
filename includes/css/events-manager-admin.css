@@ -75,4 +75,30 @@
   margin-bottom: 20px;
 }
 
+.wp-admin .em-settings-notice {
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  border-left-width: 4px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+  margin: 10px 0 20px 0;
+  padding: 20px;
+  /*
+
+  <!--
+  <div class="em-settings-notice em-settings-notice-info">
+  	<p>Some Text Here</p>
+  </div>
+  -->
+  	 */
+}
+.wp-admin .em-settings-notice.em-settings-notice-info {
+  border-left-color: #72aee6;
+}
+.wp-admin .em-settings-notice p:first-child {
+  margin-top: 0;
+}
+.wp-admin .em-settings-notice p:last-child {
+  margin-bottom: 0;
+}
+
 /*# sourceMappingURL=events-manager-admin.css.map */

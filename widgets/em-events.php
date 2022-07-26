@@ -19,9 +19,9 @@ class EM_Widget extends WP_Widget {
     		'order' => 'ASC',
     		'limit' => 5,
     		'category' => 0,
-			'format_header' => '<div class="em-list-widget em-events-widget '. implode(' ', em_get_template_classes('widget-events')) .'">',
+			'format_header' => '',
     		'format' => EM_Formats::dbem_block_event_list_item_format(''),
-			'format_footer' => '</div>',
+			'format_footer' => '',
     		'nolistwrap' => false,
     		'orderby' => 'event_start_date,event_start_time,event_name',
 			'all_events' => 0,
@@ -78,6 +78,7 @@ class EM_Widget extends WP_Widget {
 		$events = EM_Events::get(apply_filters('em_widget_events_get_args',$instance));
 		
 		//output events
+	    echo '<div class="'. implode(' ', em_get_template_classes('events-widget')) .'">';
 	    echo $instance['format_header'];
 		if ( count($events) > 0 ){
 			foreach($events as $event){				
@@ -91,16 +92,15 @@ class EM_Widget extends WP_Widget {
 			echo '<li class="all-events-link">'.$events_link.'</li>';
 		}
 	    echo $instance['format_footer'];
+	    echo '</div>';
 		
 	    echo $args['after_widget'];
     }
 	
 	function get_v6_instance_options( $instance ){
-		ob_start();
-		em_locate_template('formats/block_event_list_item_format.php', true);
-		$instance['format_header'] = '<div class="em-list-widget em-events-widget '. implode(' ', em_get_template_classes('widget-events')) .'">';
-		$instance['format'] = ob_get_clean();
-		$instance['format_footer'] = '</div>';
+		$instance['format_header'] = '';
+		$instance['format'] = EM_Formats::block_event_list_item_format('');
+		$instance['format_footer'] = '';
 		return $instance;
 	}
 

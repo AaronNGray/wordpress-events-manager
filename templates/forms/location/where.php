@@ -2,7 +2,7 @@
 global $EM_Location, $post;
 $required = apply_filters('em_required_html','<i>*</i>');
 ?>
-<div class="em-location-where <?php em_template_classes('locations-editor'); if( get_option( 'dbem_gmap_is_active' ) ) echo ' has-map'; ?>">
+<div class="<?php em_template_classes('location-editor'); ?> em-location-where <?php if( get_option( 'dbem_gmap_is_active' ) ) echo 'has-map'; ?>">
 	<?php if ( get_option( 'dbem_gmap_is_active' ) ): ?>
 		<p class="em-location-data-maps-tip"><?php _e("If you're using the Google Maps, the more detail you provide, the more accurate Google can be at finding your location. If your address isn't being found, please <a href='http://maps.google.com'>try it on maps.google.com</a> by adding all the fields below separated by commas.",'events-manager')?></p>
 	<?php endif; ?>

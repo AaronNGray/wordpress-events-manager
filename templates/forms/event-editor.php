@@ -5,7 +5,7 @@
  * You also must keep the _wpnonce hidden field in this form too.
  */
 global $EM_Event, $EM_Notices, $bp;
-$template = isset($args['css_template']) ? esc_attr($args['css_template']) : 'em pixelbones';
+$template = isset($args['css_template']) ? esc_attr($args['css_template']) : implode(' ', em_get_template_classes('event-editor', 'event-editor-section', true));
 
 //check that user can access this page
 if( is_object($EM_Event) && !$EM_Event->can_manage('edit_events','edit_others_events') ){
@@ -25,8 +25,8 @@ if( !empty($_REQUEST['success']) ){
 }
 $id = rand(); // not related to searches, so we'll just add an ID for good practice
 ?>
-<div class="em em-view-container" id="em-view-<?php echo $id; ?>" data-view="event">
-	<form enctype='multipart/form-data' id="event-form-<?php echo $id; ?>" class="em-event-form <?php em_template_classes('single-event'); ?> <?php if( $EM_Event->is_recurring() ) echo 'em-event-admin-recurring' ?>"
+<div class="<?php em_template_classes('view-container'); ?>" id="em-view-<?php echo $id; ?>" data-view="event">
+	<form enctype='multipart/form-data' id="event-form-<?php echo $id; ?>" class="<?php em_template_classes('event-editor'); ?> <?php if( $EM_Event->is_recurring() ) echo 'em-event-admin-recurring' ?>"
 	      method="post" action="<?php echo esc_url(add_query_arg(array('success'=>null, 'action'=>null))); ?>" data-view-id="<?php echo $id; ?>">
 		<?php do_action('em_front_event_form_header', $EM_Event); ?>
 		<section class="event-form-submitter <?php echo $template; ?>">

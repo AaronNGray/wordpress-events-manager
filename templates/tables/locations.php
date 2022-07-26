@@ -11,7 +11,7 @@
 	/* @var int $offset */
 	$url = esc_url(add_query_arg(array('scope'=>null,'status'=>null,'location_id'=>null)));
 ?>
-<div class="em-locations-admin-list <?php em_template_classes('locations-admin'); ?>">
+<div class="<?php em_template_classes('locations-admin'); ?> em-locations-admin-list">
 <?php if(!is_admin()) echo $EM_Notices; ?>			  
 <form id='locations-filter' method='post' action='' class="input">
 	<?php

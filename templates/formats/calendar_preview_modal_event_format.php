@@ -1,7 +1,7 @@
 <?php
 /* We're treating this as a single-item list so it looks good oa modal */
 ?>
-<div class="em-events-list em-list">
+<div class="<?php em_template_classes('calendar-preview', 'events-list'); ?>">
 	<div class="em-event em-item" style="--default-border:#_CATEGORYCOLOR;">
 		<div class="em-item-image {no_image}has-placeholder{/no_image}">
 			{has_image}

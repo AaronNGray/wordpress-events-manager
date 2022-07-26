@@ -1,13 +1,13 @@
 // Modal Theme
 &.em-modal {
 	// Variables
-	$speed: 0.6s;
+	$speed: 0.3s;
 	$delay: ($speed * .5);
 	$easing: cubic-bezier(.55, 0, .1, 1);
 
 	// Overlay -- only show for tablet and up
 	@media only screen and (min-width: 40rem) {
-		display: none !important;
+		display: flex !important;
 		align-items: center !important;
 		justify-content: center !important;
 		position: fixed !important;
@@ -22,11 +22,10 @@
 		opacity: 0 !important;
 		visibility: hidden !important;
 		backface-visibility: hidden !important;
-		transition: opacity $speed $easing, visibility $speed $easing !important;
-		-webkit-transition: opacity $speed $easing, visibility $speed $easing !important;
+		transition: all $speed $easing !important;
+		-webkit-transition: all $speed $easing !important;
 
 		&.active {
-			display: flex !important;
 			opacity: 1 !important;
 			visibility: visible !important;
 			backdrop-filter: blur(4px); // temporary - uncomment
@@ -35,12 +34,6 @@
 
 	// repeated rules for the popup or if wrapped by a form (so that scrolling is possible)
 	@mixin popup-sizing() {
-		display: flex !important;
-		flex-direction: column !important;
-		align-items: flex-start !important;
-		justify-items: center !important;
-		justify-content: start !important;
-		position: relative !important;
 		margin: 0 auto !important;
 		padding: 0 !important;
 		width: 100% !important;
@@ -52,11 +45,18 @@
 	> form { // forms can be wrapped around modal-popup
 		@include popup-sizing();
 		border: none !important;
+		background: none !important;
 	}
 
 	// Modal main window
 	.em-modal-popup {
 		@include popup-sizing();
+		display: flex !important;
+		flex-direction: column !important;
+		align-items: flex-start !important;
+		justify-items: center !important;
+		justify-content: start !important;
+		position: relative !important;
 		background-color: #fff !important;
 		border-radius: 3px !important;
 		opacity: 0 !important;
@@ -65,6 +65,7 @@
 		backface-visibility: hidden !important;
 		transform: scale(1.2) !important;
 		transition: all $speed $easing !important;
+		transition-delay: $delay !important;
 		z-index: 99999 !important;
 
 		&.active {

@@ -22,12 +22,12 @@ For other event list and single event display CSS, see the _items.scss file
 		}
 	}
 }
-.em-location.em-event-single {
-	.em-event-meta-line.em-location-address {
+&.em-location {
+	.em-item-meta-line.em-location-address {
 		line-height: 24px !important;
 	}
 }
-.em-item.em-location {
+&.em-location, &.em-locations .em-locations-list {
 	.em-location-events {
 		p {
 			margin: 0 0 8px !important;

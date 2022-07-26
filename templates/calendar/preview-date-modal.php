@@ -5,15 +5,15 @@
 /* @var array        $args           The $args passed onto the calendar template via EM_Calendar                                                     */
 /* @var array        $calendar       The $calendar array of data passed on by EM_Calendar                                                            */
 ?>
-<div class="em em-modal em-cal-date-content" data-calendar-date="<?php echo $cell_data['date']; ?>" data-parent="em-cal-events-content-<?php echo esc_attr($args['id']); ?>">
-	<div class="em-modal-popup em pixelbones">
+<div class="<?php em_template_classes('calendar-preview', 'modal'); ?> em-cal-date-content" data-calendar-date="<?php echo $cell_data['date']; ?>" data-parent="em-cal-events-content-<?php echo esc_attr($args['id']); ?>">
+	<div class="em-modal-popup">
 		<header>
 			<a class="em-close-modal"></a><!-- close modal -->
 			<div class="em-modal-title">
 				<?php echo sprintf(esc_html__('Events on %s'), $EM_DateTime->formatDefault(false)); ?>
 			</div>
 		</header>
-		<div class="em-modal-content em-events-widget em-list-widget">
+		<div class="em-modal-content <?php em_template_classes('calendar-preview', 'events-widget'); /* we're adding some subcomponent class names not generic 'em' and 'pixelbones' classes */ ?>">
 			<?php foreach( $cell_data['events'] as $EM_Event ): /* @var EM_Event $EM_Event */ ?>
 				<?php echo $EM_Event->output( get_option('dbem_calendar_preview_modal_date_format') ); ?>
 			<?php endforeach; ?>

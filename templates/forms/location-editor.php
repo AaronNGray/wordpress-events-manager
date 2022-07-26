@@ -17,8 +17,8 @@ if( is_object($EM_Location) && !$EM_Location->can_manage('edit_locations','edit_
 if(!is_admin()) echo $EM_Notices;
 $id = rand(); // not related to searches, so we'll just add an ID for good practice
 ?>
-<div class="em em-view-container" id="em-view-<?php echo $id; ?>" data-view="location">
-	<form class="em-location-form em-locations-admin-list <?php em_template_classes('location-editor'); ?>" enctype='multipart/form-data' id='location-form' method='post' action='<?php echo esc_url(add_query_arg(array('success'=>null))); ?>'>
+<div class="<?php em_template_classes('view-container'); ?>" id="em-view-<?php echo $id; ?>" data-view="location">
+	<form class="<?php em_template_classes('location-editor'); ?> em-locations-admin-list" enctype='multipart/form-data' id='location-form' method='post' action='<?php echo esc_url(add_query_arg(array('success'=>null))); ?>'>
 		<input type='hidden' name='action' value='location_save' />
 		<input type='hidden' name='_wpnonce' value='<?php echo wp_create_nonce('location_save'); ?>' />
 		<input type='hidden' name='location_id' value='<?php echo $EM_Location->location_id ?>'/>

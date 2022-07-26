@@ -17,7 +17,7 @@
 		$offset = ( $page > 1 ) ? ($page-1)*$limit : 0;
 		echo $EM_Notices;
 		?>
-		<div class='em-my-bookings <?php em_template_classes('my-bookings'); ?>'>
+		<div class='<?php em_template_classes('my-bookings'); ?>'>
 				<?php if ( $bookings_count >= $limit ) : ?>
 				<div class='tablenav'>
 					<?php 
