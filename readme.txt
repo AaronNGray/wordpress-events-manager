@@ -129,6 +129,9 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 15. Clean forms for submitting and managing events, as well as booking events for users.
 
 == Changelog ==
+= 6.0.1.1 (dev) =
+* fixed CSS issues in the bookings admin dashboard
+
 = 6.0.1 =
 * breaking changes to templates for those upgrading from 6.0, included warning/nudge for users upgrading from 6.0
 * added more fine-grained settings to the Settings > Styling Options section allowing to disable styling elements throughout the plugin

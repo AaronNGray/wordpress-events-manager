@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Events Manager
-Version: 6.0.1
+Version: 6.0.1.1
 Plugin URI: http://wp-events-plugin.com
 Description: Event registration and booking management for WordPress. Recurring events, locations, webinars, google maps, rss, ical, booking registration and more!
 Author: Marcus Sykes
@@ -382,7 +382,9 @@ class EM_Scripts_and_Styles {
 			wp_enqueue_script('events-manager', plugins_url('includes/js/events-manager'.$min.'.js',__FILE__), array('jquery', 'jquery-ui-core','jquery-ui-widget','jquery-ui-position','jquery-ui-sortable','jquery-ui-datepicker','em-selectize','jquery-ui-dialog','wp-color-picker'), EM_VERSION);
 		    do_action('em_enqueue_admin_scripts');
 			wp_enqueue_style('events-manager-admin', plugins_url('includes/css/events-manager-admin'.$min.'.css',__FILE__), array(), EM_VERSION);
-			wp_enqueue_style('events-manager', plugins_url('includes/css/events-manager'.$min.'.css',__FILE__), array(), EM_VERSION); //main css
+			if( empty($_REQUEST['page']) || $_REQUEST['page'] != 'events-manager-bookings' ) {
+				wp_enqueue_style('events-manager', plugins_url('includes/css/events-manager' . $min . '.css', __FILE__), array(), EM_VERSION); //main css
+			}
 			do_action('em_enqueue_admin_styles');
 			self::localize_script();
 		}
