@@ -331,7 +331,8 @@ jQuery(document).ready( function($){
 					$('#em-bookings-table form.bookings-filter').trigger('submit');					
 					$(this).dialog('close');
 				}
-			}]
+			}],
+            appendTo : '#em-dialog-wrapper',
 		};
 		var em_bookings_export_dialog = {
 			modal : true,
@@ -344,9 +345,12 @@ jQuery(document).ready( function($){
 					$(this).children('form').trigger('submit');
 					$(this).dialog('close');
 				}
-			}]
+			}],
+			appendTo : '#em-dialog-wrapper',
 		};
 		if( $("#em-bookings-table-settings").length > 0 ){
+		    // Wrap dialogs in em wrapper
+		    $('<div id="em-dialog-wrapper" class="em"></div>').appendTo('body');
 			//Settings Overlay
 			$("#em-bookings-table-settings").dialog(em_bookings_settings_dialog);
 			$(document).on('click', '#em-bookings-table-settings-trigger', function(e){ e.preventDefault(); $("#em-bookings-table-settings").dialog('open'); });
@@ -842,6 +846,7 @@ jQuery(document).ready( function($){
 				if( instance.reference.getAttribute('data-tooltip-class') ) {
 					instance.popper.classList.add( instance.reference.getAttribute('data-tooltip-class') );
 				}
+				instance.popper.classList.add( 'em-tooltip-ddm-display' );
 				tippy_content.append(ddm_content);
 				ddm_content.classList.remove('em-tooltip-ddm-content');
 			},

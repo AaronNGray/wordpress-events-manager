@@ -660,7 +660,7 @@ class EM_Ticket extends EM_Object{
 		    }
 			ob_start();
 			?>
-			<select name="em_tickets[<?php echo $this->ticket_id ?>][spaces]" class="em-ticket-select" id="em-ticket-spaces-<?php echo $this->ticket_id ?>">
+			<select name="em_tickets[<?php echo $this->ticket_id ?>][spaces]" class="em-ticket-select" id="em-ticket-spaces-<?php echo $this->ticket_id ?>" data-ticket-id="<?php echo esc_attr($this->ticket_id); ?>">
 				<?php 
 					$min = ($this->ticket_min > 0) ? $this->ticket_min:1;
 					$max = ($this->ticket_max > 0) ? $this->ticket_max:get_option('dbem_bookings_form_max');

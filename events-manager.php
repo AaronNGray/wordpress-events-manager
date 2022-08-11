@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Events Manager
-Version: 6.0.1.1
+Version: 6.1
 Plugin URI: http://wp-events-plugin.com
 Description: Event registration and booking management for WordPress. Recurring events, locations, webinars, google maps, rss, ical, booking registration and more!
 Author: Marcus Sykes
@@ -28,9 +28,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 // Setting constants
-define('EM_VERSION', '6.0.1.1'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
-define('EM_PRO_MIN_VERSION', 2.6712); //self expanatory
-define('EM_PRO_MIN_VERSION_CRITICAL', 2.377); //self expanatory
+define('EM_VERSION', '6.1'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
+define('EM_PRO_MIN_VERSION', '3.0'); //self expanatory
+define('EM_PRO_MIN_VERSION_CRITICAL', '3.0'); //self expanatory
 define('EM_DIR', dirname( __FILE__ )); //an absolute path to this directory
 define('EM_DIR_URI', trailingslashit(plugins_url('',__FILE__))); //an absolute path to this directory
 define('EM_SLUG', plugin_basename( __FILE__ )); //for updates
@@ -117,6 +117,7 @@ include('classes/em-tags-frontend.php');
 include('classes/em-ticket-booking.php');
 include('classes/em-ticket.php');
 include('classes/em-tickets-bookings.php');
+include('classes/em-ticket-bookings.php');
 include('classes/em-tickets.php');
 //Admin Files
 if( is_admin() ){
@@ -169,6 +170,8 @@ if( EM_MS_GLOBAL ){
 	define('EM_RECURRENCE_TABLE',$prefix.'dbem_recurrence'); //TABLE NAME
 	define('EM_LOCATIONS_TABLE',$prefix.'em_locations'); //TABLE NAME
 	define('EM_BOOKINGS_TABLE',$prefix.'em_bookings'); //TABLE NAME
+	define('EM_BOOKINGS_META_TABLE',$prefix.'em_bookings_meta'); //TABLE NAME
+	define('EM_TICKETS_BOOKINGS_META_TABLE',$prefix.'em_tickets_bookings_meta'); //TABLE NAME
 
 //Backward compatability for old images stored in < EM 5
 if( EM_MS_GLOBAL ){
@@ -454,7 +457,7 @@ class EM_Scripts_and_Styles {
 				'bb_canceling' => get_option('dbem_booking_button_msg_canceling'),
 				'bb_cancelled' => get_option('dbem_booking_button_msg_cancelled'),
 				'bb_cancel_error' => get_option('dbem_booking_button_msg_cancel_error')
-			));		
+			));
 		}
 		$em_localized_js['txt_search'] = get_option('dbem_search_form_text_label',__('Search','events-manager'));
 		$em_localized_js['txt_searching'] = __('Searching...','events-manager');
@@ -495,8 +498,9 @@ class EM_Scripts_and_Styles {
 					'option_override_tooltip' => __("You can override this specific set of formats rather than using the plugin defaults.")
 				),
 			);
-		}		
-		wp_localize_script('events-manager','EM', apply_filters('em_wp_localize_script', $em_localized_js));
+		}
+		$em_localized_js = apply_filters('em_wp_localize_script', $em_localized_js);
+		wp_localize_script('events-manager','EM', $em_localized_js);
 	}
 }
 EM_Scripts_and_Styles::init();

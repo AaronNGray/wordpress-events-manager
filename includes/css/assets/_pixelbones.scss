@@ -13,20 +13,6 @@
 *  Breakpoints based on
 *	 https://medium.freecodecamp.org/the-100-correct-way-to-do-css-breakpoints-88d6a5ba1862
 */
-@mixin screen-readers-only(){
-	border: 0;
-	padding: 0;
-	margin: 0;
-	position: absolute !important;
-	height: 1px;
-	width: 1px;
-	overflow: hidden;
-	clip: rect(1px 1px 1px 1px); /* IE6, IE7 - a 0 height clip, off to the bottom right of the visible 1px box */
-	clip: rect(1px, 1px, 1px, 1px); /*maybe deprecated but we need to support legacy browsers */
-	clip-path: inset(50%); /*modern browsers, clip-path works inwards from each corner*/
-	white-space: nowrap; /* added line to stop words getting smushed together (as they go onto seperate lines and some screen readers do not understand line feeds as a space */
-}
-
 &.pixelbones {
     @import "normalize";
 
@@ -142,6 +128,7 @@
     /* Buttons
     –––––––––––––––––––––––––––––––––––––––––––––––––– */
     .button.input, button.input, input[type="submit"].input, input[type="reset"].input, input[type="button"].input,
+    &.input .button, &.input button, &.input input[type="submit"], &.input input[type="reset"], &.input input[type="button"],
 	.input .button, .input button, .input input[type="submit"], .input input[type="reset"], .input input[type="button"] {
         display: inline-block;
         height: 38px !important;
@@ -168,23 +155,27 @@
     }
 
 	.input .button:hover, .input button:hover, .input input[type="submit"]:hover, .input input[type="reset"]:hover, .input input[type="button"]:hover,
+	&.input .button:hover, &.input button:hover, &.input input[type="submit"]:hover, &.input input[type="reset"]:hover, &.input input[type="button"]:hover,
     .button.input:focus, button.input:focus, input[type="submit"].input:focus, input[type="reset"].input:focus, input[type="button"].input:focus {
         color: var(--text-color-normal) !important;
         border-color: var(--text-color-softer) !important;
         outline: 0 !important;
     }
+	&.input .button.button-primary, &.input button.button-primary, &.input input[type="submit"].button-primary, &.input input[type="reset"].button-primary, &.input input[type="button"].button-primary,
 	.input .button.button-primary, .input button.button-primary, .input input[type="submit"].button-primary, .input input[type="reset"].button-primary, .input input[type="button"].button-primary,
     .button.button-primary.input, button.button-primary.input, input[type="submit"].button-primary.input, input[type="reset"].button-primary.input, input[type="button"].button-primary.input {
         color: var(--button-primary-color) !important;
         background-color: var(--accent-color) !important;
         border-color: var(--accent-color) !important;
     }
+	&.input .button.button-primary:hover, &.input button.button-primary:hover, &.input input[type="submit"].button-primary:hover, &.input input[type="reset"].button-primary:hover, &.input input[type="button"].button-primary:hover,
 	.input .button.button-primary:hover, .input button.button-primary:hover, .input input[type="submit"].button-primary:hover, .input input[type="reset"].button-primary:hover, .input input[type="button"].button-primary:hover,
     .button.button-primary.input:focus, button.button-primary.input:focus, input[type="submit"].button-primary.input:focus, input[type="reset"].button-primary.input:focus, input[type="button"].button-primary.input:focus {
         color: var(--button-primary-color) !important;
         background-color: var(--accent-color-hover) !important;
         border-color: var(--accent-color-hover) !important;
     }
+	&.input button, &.input .button,
 	.input button, .input .button,
 	button.input, .button.input {
 		margin-bottom: 10px !important;
@@ -211,7 +202,7 @@
       box-shadow: none !important;
     }
 
-	.input {
+	.input, &.input {
 		input, textarea, select, fieldset {
 			margin-bottom: 15px !important;
 		}
@@ -449,7 +440,17 @@
     /* Utilities
     –––––––––––––––––––––––––––––––––––––––––––––––––– */
 	.screen-reader-text {
-		@include screen-readers-only();
+		border: 0;
+		padding: 0;
+		margin: 0;
+		position: absolute !important;
+		height: 1px;
+		width: 1px;
+		overflow: hidden;
+		clip: rect(1px 1px 1px 1px); /* IE6, IE7 - a 0 height clip, off to the bottom right of the visible 1px box */
+		clip: rect(1px, 1px, 1px, 1px); /*maybe deprecated but we need to support legacy browsers */
+		clip-path: inset(50%); /*modern browsers, clip-path works inwards from each corner*/
+		white-space: nowrap; /* added line to stop words getting smushed together (as they go onto seperate lines and some screen readers do not understand line feeds as a space */
 	}
 
     .u-full-width {

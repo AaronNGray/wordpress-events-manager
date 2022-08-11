@@ -108,19 +108,6 @@ function em_options_save(){
 		wp_safe_redirect($referrer);
 		exit();
 	}
-	//Migration
-	if( !empty($_GET['em_migrate_images']) && check_admin_referer('em_migrate_images','_wpnonce') && get_option('dbem_migrate_images') ){
-		include(plugin_dir_path(__FILE__).'../em-install.php');
-		$result = em_migrate_uploads();
-		if($result){
-			$failed = ( $result['fail'] > 0 ) ? $result['fail'] . ' images failed to migrate.' : '';
-			$EM_Notices->add_confirm('<strong>'.$result['success'].' images migrated successfully. '.$failed.'</strong>');
-		}
-		wp_safe_redirect(admin_url().'edit.php?post_type=event&page=events-manager-options&em_migrate_images');
-	}elseif( !empty($_GET['em_not_migrate_images']) && check_admin_referer('em_not_migrate_images','_wpnonce') ){
-		delete_option('dbem_migrate_images_nag');
-		delete_option('dbem_migrate_images');
-	}
 	//Uninstall
 	if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'uninstall' && current_user_can('activate_plugins') && !empty($_REQUEST['confirmed']) && check_admin_referer('em_uninstall_'.get_current_user_id().'_wpnonce') && em_wp_is_super_admin() ){
 		if( check_admin_referer('em_uninstall_'.get_current_user_id().'_confirmed','_wpnonce2') ){
@@ -482,8 +469,6 @@ function em_admin_options_page() {
 	
 	global $save_button;
 	$save_button = '<tr><th>&nbsp;</th><td><p class="submit" style="margin:0px; padding:0px; text-align:right;"><input type="submit" class="button-primary" name="Submit" value="'. __( 'Save Changes', 'events-manager') .' ('. __('All','events-manager') .')" /></p></td></tr>';
-	
-	if( !is_multisite() ) em_pro_update_notice();
 	
 	do_action('em_options_page_header');
 	

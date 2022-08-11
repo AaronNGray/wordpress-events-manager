@@ -1,7 +1,6 @@
 <?php
 class EM_v6_Migration {
 	public static function init(){
-		add_action('init', 'EM_v6_Migration::pro');
 		$v6 = EM_Options::get('v6', null);
 		if( $v6 === null ) return;
 		if( (!is_admin() || defined('EM_DOING_AJAX')) && $v6 === 'p' ){
@@ -134,16 +133,6 @@ class EM_v6_Migration {
 					</p>
 				</div>
 			<?php endif;
-		}
-	}
-	
-	/* Temporary Pro Compatibility Scripts for EM Version 6 */
-	public static function pro(){
-		if( defined('EMP_VERSION') && version_compare(EMP_VERSION, '3.0', '<') ){
-			remove_action('em_booking_form_footer', array('EM_Gateways','event_booking_form_footer'),10);
-			add_action('em_booking_form_footer_before_buttons', array('EM_Gateways','event_booking_form_footer'),10,2);
-			remove_action('em_booking_form_footer', array('EM_Coupons', 'em_booking_form_footer'),1);
-			add_action('em_booking_form_footer_before_buttons', array('EM_Coupons', 'em_booking_form_footer'),1,2);
 		}
 	}
 }

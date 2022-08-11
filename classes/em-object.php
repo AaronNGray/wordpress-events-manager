@@ -1732,4 +1732,42 @@ class EM_Object {
 		if( $decimal && $tax_rate > 0 ) $tax_rate = $tax_rate / 100;
 		return $tax_rate;
 	}
+	
+	/**
+	 * Untility function, generates a UUIDv4 without dashes.
+	 * @return string
+	 */
+	function generate_uuid(){
+		return str_replace('-', '', wp_generate_uuid4());
+	}
+	
+	/**
+	 * Used to process any tables containing meta, such as bookings_meta or tickets_bookings_meta
+	 * This may likely be moved into another object, which children extend instead of this. If you choose to depend on this function, keep an eye out in future updates, you're best off copying the code for now
+	 * @param array $raw_meta
+	 * @return array
+	 */
+	function process_meta( $raw_meta ){
+		$processed_meta = array();
+		foreach( $raw_meta as $meta ){
+			$meta_value = maybe_unserialize($meta['meta_value']);
+			$meta_key = $meta['meta_key'];
+			if( preg_match('/^_([a-zA-Z\-0-9]+)_/', $meta_key, $match) ){
+				$key = $match[1];
+				$subkey = str_replace('_'.$key.'_', '', $meta_key);
+				if( empty($processed_meta[$key]) ) $processed_meta[$key] = array();
+				if( !empty($processed_meta[$key][$subkey]) ){
+					if( !is_array($processed_meta[$key][$subkey]) ) {
+						$processed_meta[$key][$subkey] = array($processed_meta[$key][$subkey]);
+					}
+					$processed_meta[$key][$subkey][] = $meta_value;
+				}else{
+					$processed_meta[$key][$subkey] = $meta_value;
+				}
+			}else{
+				$processed_meta[$meta_key] = $meta_value;
+			}
+		}
+		return $processed_meta;
+	}
 }

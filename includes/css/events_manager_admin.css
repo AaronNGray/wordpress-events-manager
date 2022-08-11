@@ -144,6 +144,7 @@ table.em-tickets-bookings-table tbody td { text-align:center; }
 #em-bookings-export-cols-inactive, #em-bookings-cols-inactive { width:300px; }
 #em-bookings-export-cols-inactive li, #em-bookings-cols-inactive li { float:left; }
 /* Single Booking Edit View */
+#em-bookings-admin-booking form.em-booking-single-status-info, #em-bookings-admin-booking form.em-booking-single-status-edit { display:inline-block; }
 #em-bookings-admin-booking .postbox h3, #em-bookings-admin-booking .stuffbox h3 { font-size:16px; }
 #em-bookings-admin-booking .stuffbox .inside { padding: 0 12px 12px 12px; }
 #em-bookings-admin-booking .em-booking-single-info { display:none; }

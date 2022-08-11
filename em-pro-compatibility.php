@@ -21,3 +21,19 @@ if( EMP_VERSION < 2.377 && (!defined('EMP_2376_FIXED') || !EMP_2376_FIXED) ){
 		add_action ( 'network_admin_notices', 'em_empro_lt_2376_notice', 100 );
 	}
 }
+if( version_compare(EMP_VERSION, '3.0', '<') && (!defined('EMP_3_FIXED') || !EMP_3_FIXED) ){
+	function em_empro_lt_3_notice(){
+		?>
+		<div class="error">
+			<p>Due to some inevitable changes to some code in Events Manager 6.1, it is necessary to use Pro 3.0 or later, this change affects attendee forms.</p>
+			<p><a href="https://wp-events-plugin.com/documentation/v6-migration/">Click here for more information about these changes</a>, which includes a line of code you can use for fixing older versions of Pro without requiring an update. </p>
+			<p>You can remove this specific critical message by adding <code>define('EMP_3_FIXED', true);</code> to your wp-config.php file.</p>
+			<p><?php echo EM_COMPAT_MESSAGE_BE_GONE; ?></p>
+		</div>
+		<?php
+	}
+	if( em_wp_is_super_admin() ){
+		add_action ( 'admin_notices', 'em_empro_lt_3_notice', 100 );
+		add_action ( 'network_admin_notices', 'em_empro_lt_3_notice', 100 );
+	}
+}

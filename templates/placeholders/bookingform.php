@@ -89,20 +89,17 @@ if( !$is_open && !is_user_logged_in() && $EM_Event->get_bookings()->is_open(true
 							}
 							do_action('em_booking_form_after_user_details', $EM_Event);
 						?>
-						<?php
-							/* This action pre-theme makeover in v6 was used for any form actions such as payment selection, etc. and had to remain here for backwards compatibility. We suggest using other actions/filters as this contextually does not make sense anymore */
-							do_action('em_booking_form_footer', $EM_Event); //do not delete
-						?>
 					</div>
 					<?php do_action('em_booking_form_after_registration_info', $EM_Event); //do not delete ?>
 					<?php do_action('em_booking_form_before_confirmation', $EM_Event); //do not delete ?>
-					<?php if( !$EM_Event->is_free() && defined('EMP_VERSION') ): // this will change, once we implement price calculations further down ?>
-					<h3 class="em-booking-section-title"><?php esc_html_e('Payment and Confirmation', 'events-manager'); ?></h3>
-					<?php endif; ?>
 					<div class="em-booking-form-payment em-booking-section">
 						<?php do_action('em_booking_form_before_pricing', $EM_Event); //do not delete ?>
 						<div class="em-booking-price-summary"></div>
 						<?php do_action('em_booking_form_after_pricing', $EM_Event); //do not delete ?>
+						<?php
+						/* This action pre-theme makeover in v6 was used for any form actions such as payment selection, etc. and had to remain here for backwards compatibility. We suggest using other actions/filters as this contextually does not make sense anymore */
+						do_action('em_booking_form_footer', $EM_Event); //do not delete
+						?>
 						<div class="em-booking-buttons">
 							<?php do_action('em_booking_form_footer_before_buttons', $EM_Event); //do not delete ?>
 							<?php if( preg_match('/https?:\/\//',get_option('dbem_bookings_submit_button')) ): //Settings have an image url (we assume). Use it here as the button.?>

@@ -1,26 +1,5 @@
 //@import "../../assets/css/include-media";
-@mixin input-select-toggle( $width, $height, $background ){
-	&:after {
-		display: inline-flex !important;
-		content: '';
-		position: absolute;
-		border: 0 !important;
-		background-image: $background;
-		background-size: $width $height;
-		height: $height;
-		width: $width;
-		margin-top: calc( #{$height}/2 * -1 );
-		right: 8px;
-		top: 50%;
-	}
-}
-
-@mixin input-icon( $bg, $size : 18px ){
-	background: $bg 8px 50%  no-repeat !important;
-	background-size: $size !important;
-	padding-left: $size * 2 !important;
-
-}
+@import "partials/mixins";
 
 .em {
 	@import "assets/pixelbones.vars";
@@ -36,7 +15,6 @@
 
 	/** The Triggers - Search and other parts triggering search **/
 	button.em-clickable {
-		border : 0 !important;
 		cursor: pointer !important;
 		justify-self: start !important;
 		background-color: transparent;
@@ -48,19 +26,9 @@
 			outline: none;
 		}
 	}
-
-	button.input.em-tooltip-ddm {
-		background-image: var(--icon-chevron-down) !important;
-		background-position: calc(100% - 15px) 50% !important;
-		background-repeat: no-repeat !important;
-		background-size: 15px !important;
-		padding-right: 40px !important;
-	}
-	button.input.em-tooltip-ddm[aria-expanded="true"] {
-		background-image: var(--icon-chevron-up) !important;
-	}
-	.em-tooltip-ddm-content {
-		@include screen-readers-only();
+	.hidden {
+		display:none;
+		visibility: hidden;
 	}
 
 	/* General Styles */
@@ -72,6 +40,8 @@
 			width:1px !important;
 			height:1px !important;
 			overflow:hidden !important;
+			visibility : visible;
+			display: inherit;
 		}
 	}
 
@@ -129,70 +99,6 @@
 	--main-bg : #F5F5F5; // bookings
 	--main-h3-color : #777777; // bookings
 	--main-border-color : #cdcdcd; // bookings
-
-	/*
-		Icons
-	*/
-	.em-icon {
-		display: inline-block;
-		font-size: 20px;
-		line-height: 22px;
-		width: 20px;
-		height: 20px;
-		color: var(--meta-dashicons);
-		margin: 0 0 -4px; // leaves 16px line height
-		padding: 0;
-		background-position: 0 0;
-		background-repeat: no-repeat;
-		background-size: 20px;
-
-		&.em-icon-calendar { background-image : var(--icon-calendar); }
-		&.em-icon-clock { background-image : var(--icon-clock); }
-		&.em-icon-list-grouped { background-image : var(--icon-list-grouped); }
-		&.em-icon-spinner { background-image : var(--icon-spinner); }
-		&.em-icon-filter { background-image : var(--icon-filter); }
-		&.em-icon-list { background-image : var(--icon-list); }
-		&.em-icon-map { background-image : var(--icon-map); }
-		&.em-icon-location { background-image : var(--icon-location); }
-		&.em-icon-settings { background-image : var(--icon-settings); }
-		&.em-icon-close { background-image : var(--icon-close); }
-		&.em-icon-chevron-down { background-image : var(--icon-chevron-down); }
-		&.em-icon-chevron-up { background-image : var(--icon-chevron-up); }
-		&.em-icon-magnifying-glass { background-image : var(--icon-magnifying-glass); }
-		&.em-icon-location-on { background-image : var(--icon-location-on); }
-		&.em-icon-location-off { background-image : var(--icon-location-off); }
-		&.em-icon-checkmark { background-image : var(--icon-checkmark); }
-		&.em-icon-plus { background-image : var(--icon-plus); }
-		&.em-icon-minus { background-image : var(--icon-minus); }
-		&.em-icon-compass { background-image : var(--icon-compass); }
-		&.em-icon-options-v { background-image : var(--icon-options-v); }
-		&.em-icon-tag { background-image : var(--icon-tag); }
-		&.em-icon-folder { background-image : var(--icon-folder); }
-		&.em-icon-category { background-image : var(--icon-folder); }
-		&.em-icon-point-down { background-image : var(--icon-point-down); }
-		&.em-icon-ticket { background-image : var(--icon-ticket); }
-		&.em-icon-at { background-image : var(--icon-at); }
-	}
-	button.input, .button.input,
-	.input button, .input .button {
-		&.with-icon {
-			padding-left : 20px !important;
-			.em-icon {
-				margin-right: 6px;
-			}
-		}
-		&.with-icon-right {
-			padding-right : 20px !important;
-			.em-icon {
-				margin-left: 6px;
-			}
-		}
-		.em-icon {
-			width: 18px;
-			height: 18px;
-			background-size: 18px;
-		}
-	}
 
 }
 /* Fix z-index issues for some 3rd party stuff */

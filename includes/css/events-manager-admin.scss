@@ -5,8 +5,39 @@
 	--font-family : inherit;
 }
 /* New Stuff **/
+@import "partials/mixins";
 .wp-admin {
 	@import 'partials/admin/when';
+	@import 'partials/admin/bookings';
+	@import 'partials/icons';
+	@import 'partials/tooltips';
+	@import 'partials/libraries';
+	@import 'partials/buttons';
+
+	--button-icon-padding : 10px !important;
+
+	button.input.em-tooltip-ddm {
+		background-position: calc(100% - 5px) 50% !important;
+		padding-right: 25px !important;
+	}
+	.em-tooltip-ddm-display {
+		margin-top: -7px !important;
+		padding-top: 5px !important;
+		a {
+			margin-bottom: 5px;
+			display: inline-block;
+		}
+		a:focus {
+			outline: 0;
+			box-shadow: none;
+		}
+	}
+	.em {
+		.hidden {
+			display:none;
+			visibility: hidden;
+		}
+	}
 }
 .event-form-recurrence {
 	fieldset.inline {

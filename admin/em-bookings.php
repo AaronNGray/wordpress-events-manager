@@ -96,29 +96,30 @@ function em_bookings_event(){
 	?>
 	<div class='em-bookings-admin-event <?php em_template_classes('bookings-admin'); ?>'>
 		<div class="input">
-		<?php if( is_admin() ): ?><h1 class="wp-heading-inline"><?php else: ?><h2><?php endif; ?>		
+			
+			<?php if( is_admin() ): ?><h1 class="wp-heading-inline"><?php else: ?><h2><?php endif; ?>
   			<?php echo sprintf(__('Manage %s Bookings', 'events-manager'), "'{$EM_Event->event_name}'"); ?>
-  		<?php if( is_admin() ): ?></h1><?php endif; ?>
-  			<a href="<?php echo $EM_Event->get_permalink(); ?>" class="<?php echo $header_button_classes; ?>"><?php echo sprintf(__('View %s','events-manager'), __('Event', 'events-manager')) ?></a>
-  			<a href="<?php echo $EM_Event->get_edit_url(); ?>" class="<?php echo $header_button_classes; ?>"><?php echo sprintf(__('Edit %s','events-manager'), __('Event', 'events-manager')) ?></a>
+  		    <?php if( !is_admin() ): ?></h2><?php else: ?></h1><?php endif; // inverted to help IDEs ?>
+  			<a href="<?php echo $EM_Event->get_permalink(); ?>" class="button button-secondary"><?php echo sprintf(__('View %s','events-manager'), __('Event', 'events-manager')) ?></a>
+  			<a href="<?php echo $EM_Event->get_edit_url(); ?>" class="button button-secondary"><?php echo sprintf(__('Edit %s','events-manager'), __('Event', 'events-manager')) ?></a>
   			<?php if( locate_template('plugins/events-manager/templates/csv-event-bookings.php', false) ): //support for legacy template ?>
-  			<a href='<?php echo EM_ADMIN_URL ."&amp;page=events-manager-bookings&amp;action=bookings_export_csv&amp;_wpnonce=".wp_create_nonce('bookings_export_csv')."&amp;event_id=".$EM_Event->event_id ?>' class="<?php echo $header_button_classes; ?>"><?php esc_html_e('Export CSV','events-manager')?></a>
+  			<a href='<?php echo EM_ADMIN_URL ."&amp;page=events-manager-bookings&amp;action=bookings_export_csv&amp;_wpnonce=".wp_create_nonce('bookings_export_csv')."&amp;event_id=".$EM_Event->event_id ?>' class="button button-secondary"><?php esc_html_e('Export CSV','events-manager')?></a>
   			<?php endif; ?>
   			<?php do_action('em_admin_event_booking_options_buttons'); ?>
-		<?php if( !is_admin() ): ?></h2><?php else: ?><hr class="wp-header-end" /><?php endif; ?>
-  		<?php if( !is_admin() ) echo $EM_Notices; ?>  
-		<div class="input">
+			<hr class="wp-header-end">
+			
+	        <?php if( !is_admin() ) echo $EM_Notices; ?>
 			<p><strong><?php esc_html_e('Event Name','events-manager'); ?></strong> : <?php echo esc_html($EM_Event->event_name); ?></p>
 			<p>
-				<strong><?php esc_html_e('Availability','events-manager'); ?></strong> : 
+				<strong><?php esc_html_e('Availability','events-manager'); ?></strong> :
 				<?php echo $EM_Event->get_bookings()->get_booked_spaces() . '/'. $EM_Event->get_spaces() ." ". __('Spaces confirmed','events-manager'); ?>
 				<?php if( get_option('dbem_bookings_approval_reserved') ): ?>
 				, <?php echo $EM_Event->get_bookings()->get_available_spaces() . '/'. $EM_Event->get_spaces() ." ". __('Available spaces','events-manager'); ?>
 				<?php endif; ?>
 			</p>
 			<p>
-				<strong><?php esc_html_e('Date','events-manager'); ?></strong> : 
-				<?php echo $EM_Event->output_dates(false, " - "). ' @ ' . $EM_Event->output_times(false, ' - '); ?>						
+				<strong><?php esc_html_e('Date','events-manager'); ?></strong> :
+				<?php echo $EM_Event->output_dates(false, " - "). ' @ ' . $EM_Event->output_times(false, ' - '); ?>
 			</p>
 			<p>
 				<strong><?php esc_html_e('Location','events-manager'); ?></strong> :
@@ -128,14 +129,13 @@ function em_bookings_event(){
 				<a class="row-title" href="<?php echo admin_url(); ?>post.php?action=edit&amp;post=<?php echo $EM_Event->get_location()->post_id ?>"><?php echo ($EM_Event->get_location()->location_name); ?></a>
 				<?php endif; ?>
 			</p>
-		</div>
-		<h2><?php esc_html_e('Bookings','events-manager'); ?></h2>
-		<?php
-		$EM_Bookings_Table = new EM_Bookings_Table();
-		$EM_Bookings_Table->status = 'all';
-		$EM_Bookings_Table->output();
-  		?>
-		<?php do_action('em_bookings_event_footer', $EM_Event); ?>
+			<h2><?php esc_html_e('Bookings','events-manager'); ?></h2>
+			<?php
+			$EM_Bookings_Table = new EM_Bookings_Table();
+			$EM_Bookings_Table->status = 'all';
+			$EM_Bookings_Table->output();
+	        ?>
+			<?php do_action('em_bookings_event_footer', $EM_Event); ?>
 		</div>
 	</div>
 	<?php
@@ -157,38 +157,38 @@ function em_bookings_ticket(){
 		<?php
 		return false;
 	}
-	$header_button_classes = is_admin() ? 'page-title-action':'button add-new-h2';
 	?>
 	<div class='em-bookings-admin-ticket <?php em_template_classes('bookings-admin'); ?>'>
 		<div class="input">
-		<?php if( is_admin() ): ?><h1 class="wp-heading-inline"><?php else: ?><h2><?php endif; ?>
-  			<?php echo sprintf(__('Ticket for %s', 'events-manager'), "'{$EM_Event->name}'"); ?>
-  		<?php if( is_admin() ): ?></h1><?php endif; ?>
-  			<a href="<?php echo $EM_Event->get_edit_url(); ?>" class="<?php echo $header_button_classes; ?>"><?php esc_html_e('View/Edit Event','events-manager') ?></a>
-  			<a href="<?php echo $EM_Event->get_bookings_url(); ?>" class="<?php echo $header_button_classes; ?>"><?php esc_html_e('View Event Bookings','events-manager') ?></a>
-  		
-		<?php if( !is_admin() ): ?></h2><?php else: ?><hr class="wp-header-end" /><?php endif; ?>
-  		<?php if( !is_admin() ) echo $EM_Notices; ?>
-		<div>
-			<table>
-				<tr><td><?php echo __('Name','events-manager'); ?></td><td></td><td><?php echo $EM_Ticket->ticket_name; ?></td></tr>
-				<tr><td><?php echo __('Description','events-manager'); ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td></td><td><?php echo ($EM_Ticket->ticket_description) ? $EM_Ticket->ticket_description : '-'; ?></td></tr>
-				<tr><td><?php echo __('Price','events-manager'); ?></td><td></td><td><?php echo ($EM_Ticket->ticket_price) ? $EM_Ticket->ticket_price : '-'; ?></td></tr>
-				<tr><td><?php echo __('Spaces','events-manager'); ?></td><td></td><td><?php echo ($EM_Ticket->ticket_spaces) ? $EM_Ticket->ticket_spaces : '-'; ?></td></tr>
-				<tr><td><?php echo __('Min','events-manager'); ?></td><td></td><td><?php echo ($EM_Ticket->ticket_min) ? $EM_Ticket->ticket_min : '-'; ?></td></tr>
-				<tr><td><?php echo __('Max','events-manager'); ?></td><td></td><td><?php echo ($EM_Ticket->ticket_max) ? $EM_Ticket->ticket_max : '-'; ?></td></tr>
-				<tr><td><?php echo __('Start','events-manager'); ?></td><td></td><td><?php echo ($EM_Ticket->ticket_start) ? $EM_Ticket->start()->formatDefault() : '-'; ?></td></tr>
-				<tr><td><?php echo __('End','events-manager'); ?></td><td></td><td><?php echo ($EM_Ticket->ticket_end) ? $EM_Ticket->end()->formatDefault() : '-'; ?></td></tr>
-				<?php do_action('em_booking_admin_ticket_row', $EM_Ticket); ?>
-			</table>
-		</div>
-		<h2><?php esc_html_e('Bookings','events-manager'); ?></h2>
-		<?php
-		$EM_Bookings_Table = new EM_Bookings_Table();
-		$EM_Bookings_Table->status = get_option('dbem_bookings_approval') ? 'needs-attention':'confirmed';
-		$EM_Bookings_Table->output();
-  		?>
-		<?php do_action('em_bookings_ticket_footer', $EM_Ticket); ?>
+			
+			<?php if( is_admin() ): ?><h1 class="wp-heading-inline"><?php else: ?><h2><?php endif; ?>
+			<?php echo sprintf(__('Ticket for %s', 'events-manager'), "'{$EM_Event->name}'"); ?><?php echo sprintf(__('Manage %s Bookings', 'events-manager'), "'{$EM_Event->event_name}'"); ?>
+			<?php if( !is_admin() ): ?></h2><?php else: ?></h1><?php endif; // inverted to help IDEs ?>
+	        <a href="<?php echo $EM_Event->get_edit_url(); ?>" class="button button-secondary"><?php esc_html_e('View/Edit Event','events-manager') ?></a>
+	        <a href="<?php echo $EM_Event->get_bookings_url(); ?>" class="button button-secondary"><?php esc_html_e('View Event Bookings','events-manager') ?></a>
+			<hr class="wp-header-end" />
+				
+	        <?php if( !is_admin() ) echo $EM_Notices; ?>
+			<div>
+				<table>
+					<tr><td><?php echo __('Name','events-manager'); ?></td><td></td><td><?php echo $EM_Ticket->ticket_name; ?></td></tr>
+					<tr><td><?php echo __('Description','events-manager'); ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td></td><td><?php echo ($EM_Ticket->ticket_description) ? $EM_Ticket->ticket_description : '-'; ?></td></tr>
+					<tr><td><?php echo __('Price','events-manager'); ?></td><td></td><td><?php echo ($EM_Ticket->ticket_price) ? $EM_Ticket->ticket_price : '-'; ?></td></tr>
+					<tr><td><?php echo __('Spaces','events-manager'); ?></td><td></td><td><?php echo ($EM_Ticket->ticket_spaces) ? $EM_Ticket->ticket_spaces : '-'; ?></td></tr>
+					<tr><td><?php echo __('Min','events-manager'); ?></td><td></td><td><?php echo ($EM_Ticket->ticket_min) ? $EM_Ticket->ticket_min : '-'; ?></td></tr>
+					<tr><td><?php echo __('Max','events-manager'); ?></td><td></td><td><?php echo ($EM_Ticket->ticket_max) ? $EM_Ticket->ticket_max : '-'; ?></td></tr>
+					<tr><td><?php echo __('Start','events-manager'); ?></td><td></td><td><?php echo ($EM_Ticket->ticket_start) ? $EM_Ticket->start()->formatDefault() : '-'; ?></td></tr>
+					<tr><td><?php echo __('End','events-manager'); ?></td><td></td><td><?php echo ($EM_Ticket->ticket_end) ? $EM_Ticket->end()->formatDefault() : '-'; ?></td></tr>
+					<?php do_action('em_booking_admin_ticket_row', $EM_Ticket); ?>
+				</table>
+			</div>
+			<h2><?php esc_html_e('Bookings','events-manager'); ?></h2>
+			<?php
+			$EM_Bookings_Table = new EM_Bookings_Table();
+			$EM_Bookings_Table->status = get_option('dbem_bookings_approval') ? 'needs-attention':'confirmed';
+			$EM_Bookings_Table->output();
+	        ?>
+			<?php do_action('em_bookings_ticket_footer', $EM_Ticket); ?>
 		</div>
 	</div>
 	<?php	
@@ -211,9 +211,9 @@ function em_bookings_single(){
 	}
 	do_action('em_booking_admin', $EM_Booking);
 	?>
-	<div class='em-bookings-admin-single <?php em_template_classes('bookings-admin'); ?>' id="em-bookings-admin-booking">
+	<div class='wrap em-bookings-admin-single <?php em_template_classes('bookings-admin'); ?>' id="em-bookings-admin-booking">
 		<div class="input">
-		<?php if( is_admin() ): ?><h1><?php else: ?><h2><?php endif; ?>		
+		<?php if( is_admin() ): ?><h1><?php else: ?><h2><?php endif; ?>
   			<?php esc_html_e('Edit Booking', 'events-manager'); ?>
 		<?php if( !is_admin() ): ?></h2><?php else: ?></h1><?php endif; ?>
   		<?php if( !is_admin() ) echo $EM_Notices; ?>
@@ -281,6 +281,8 @@ function em_bookings_single(){
 				<div class="postbox">
 					<h3>
 						<?php esc_html_e( 'Booking Details', 'events-manager'); ?>
+						<?php $icons_class = is_admin() ? 'dashicons dashicons-info-outline' : 'em-icons em-icons-at'; ?>
+						<span class="em-tooltip <?php echo $icons_class ?>" aria-label="UUID : <?php echo esc_attr($EM_Booking->booking_uuid); ?>" data-tippy-interactive="true"></span>
 					</h3>
 					<div class="inside">
 						<?php
@@ -315,47 +317,93 @@ function em_bookings_single(){
 							    <input type='hidden' name='_wpnonce' value='<?php echo wp_create_nonce('booking_set_status_'.$EM_Booking->booking_id); ?>'/>
 								<br /><em><?php echo wp_kses_data(__('<strong>Notes:</strong> Ticket availability not taken into account when approving new bookings (i.e. you can overbook).','events-manager')); ?></em>
 							</form>
+							<?php do_action('em_bookings_admin_booking_details_actions', $EM_Booking); ?>
 						</div>
 						<form action="" method="post" class="em-booking-form">
-							<table class="em-tickets-bookings-table" cellpadding="0" cellspacing="0">
+							<table class="em-tickets em-tickets-bookings-table" cellpadding="0" cellspacing="0">
 								<thead>
-								<tr>
-									<th><?php esc_html_e('Ticket Type','events-manager'); ?></th>
-									<th><?php esc_html_e('Spaces','events-manager'); ?></th>
-									<th><?php esc_html_e('Price','events-manager'); ?></th>
-								</tr>
-								</thead>
-								<tbody>
-									<?php foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking): /* @var $EM_Ticket_Booking EM_Ticket_Booking */ ?>
 									<tr>
-										<td class="ticket-type"><a class="row-title" href="<?php echo em_add_get_params($EM_Event->get_bookings_url(), array('ticket_id'=>$EM_Ticket_Booking->ticket_id)); ?>"><?php echo $EM_Ticket_Booking->get_ticket()->ticket_name ?></a></td>
-										<td>
-											<span class="em-booking-single-info"><?php echo $EM_Ticket_Booking->get_spaces(); ?></span>
-											<div class="em-booking-single-edit"><input name="em_tickets[<?php echo $EM_Ticket_Booking->ticket_id; ?>][spaces]" class="em-ticket-select" id="em-ticket-spaces-<?php echo $EM_Ticket_Booking->ticket_id; ?>" value="<?php echo $EM_Ticket_Booking->get_spaces(); ?>" /></div>
-										</td>
-										<td><?php echo $EM_Ticket_Booking->get_price(true,true); ?></td>
+										<th><?php esc_html_e('Ticket Type','events-manager'); ?></th>
+										<th><?php esc_html_e('Spaces','events-manager'); ?></th>
+										<th><?php esc_html_e('Price','events-manager'); ?></th>
 									</tr>
+								</thead>
+								<?php
+									/* Show booked tickets in this booking, we'll add on the unbooked tickets here to prevent redundant code */
+									$EM_Tickets_Bookings = $EM_Booking->get_tickets_bookings();
+									$tickets_bookings = array(); // we'll use this ordered with all tickets
+									foreach( $EM_Event->get_bookings()->get_tickets()->tickets as $ticket_id => $EM_Ticket ){
+										if( empty($EM_Tickets_Bookings[$ticket_id]) ) {
+											$tickets_bookings[$ticket_id] = new EM_Ticket_Bookings(array('ticket' => $EM_Ticket, 'booking' => $EM_Booking));
+										}else{
+											$tickets_bookings[$ticket_id] = $EM_Tickets_Bookings[$ticket_id];
+										}
+									}
+								?>
+								<?php foreach($tickets_bookings as $ticket_id => $EM_Ticket_Bookings): /* @var $EM_Ticket_Bookings EM_Ticket_Bookings */ ?>
 									<?php
-										$shown_tickets[] = $EM_Ticket_Booking->ticket_id;
-										do_action('em_bookings_admin_ticket_row', $EM_Ticket_Booking->get_ticket(), $EM_Booking);
+									$ticket_id = absint($ticket_id); // sanitize for output
+									$EM_Ticket = $EM_Ticket_Bookings->get_ticket();
+									// Use the following for adding extra info, most appropriate place is within the edit area
+									do_action('em_bookings_admin_ticket_bookings_before', $EM_Ticket_Bookings);
 									?>
-									<?php endforeach; ?>
-									<?php if( count($shown_tickets) < count($EM_Event->get_bookings()->get_tickets()->tickets)): ?><tr>
-										<?php foreach($EM_Event->get_bookings()->get_tickets()->tickets as $EM_Ticket): /* @var $EM_Ticket EM_Ticket */ ?>
-											<?php if( !in_array($EM_Ticket->ticket_id, $shown_tickets) ): ?>
-											<tr>
-												<td class="ticket-type"><a class="row-title" href="<?php echo em_add_get_params($EM_Event->get_bookings_url(), array('ticket_id'=>$EM_Ticket->ticket_id)); ?>"><?php echo $EM_Ticket->ticket_name ?></a></td>
-												<td>
-													<span class="em-booking-single-info">0</span>
-													<div class="em-booking-single-edit"><input name="em_tickets[<?php echo $EM_Ticket->ticket_id; ?>][spaces]" class="em-ticket-select" id="em-ticket-spaces-<?php echo $EM_Ticket->ticket_id; ?>" value="0" /></div>
+									<tr class="em-ticket em-ticket-<?php echo $ticket_id; ?>">
+										<td class="ticket-type">
+											<a class="row-title" href="<?php echo em_add_get_params($EM_Event->get_bookings_url(), array('ticket_id'=>$ticket_id)); ?>"><?php echo $EM_Ticket_Bookings->get_ticket()->ticket_name ?></a>
+										</td>
+										<td>
+											<span class="em-booking-single-info"><?php echo $EM_Ticket_Bookings->get_spaces(); ?></span>
+											<div class="em-booking-single-edit">
+												<input name="em_tickets[<?php echo $ticket_id; ?>][spaces]" class="em-ticket-select em-ticket-spaces-<?php echo $ticket_id; ?>" value="<?php echo $EM_Ticket_Bookings->get_spaces(); ?>" data-ticket-id="<?php echo $ticket_id ?>"/>
+											</div>
+										</td>
+										<td><?php echo $EM_Ticket_Bookings->get_price(true,true); ?></td>
+									</tr>
+									<?php do_action('em_bookings_admin_ticket_row', $EM_Ticket_Bookings->get_ticket(), $EM_Booking, $EM_Ticket_Bookings); /* Keeping as legacy support for EM Pro < v3 */ ?>
+									<tbody class="em-ticket-bookings <?php if( !has_action('em_bookings_admin_ticket_booking_row') ) echo 'hidden'; ?> em-ticket-bookings-<?php echo $ticket_id; ?>" data-ticket-id="<?php echo $ticket_id; ?>">
+										<?php
+											// use the following
+											$shown_tickets[] = $ticket_id;
+											$ticket_attendee_num = 1;
+											do_action('em_bookings_admin_ticket_bookings_rows_before', $EM_Ticket_Bookings);
+										?>
+										<?php foreach( $EM_Ticket_Bookings as $ticket_uuid => $EM_Ticket_Booking ): /* @var EM_Ticket_Booking $EM_Ticket_Booking */ ?>
+											<?php do_action('em_bookings_admin_ticket_booking_row_before', $EM_Ticket_Booking, $ticket_attendee_num); ?>
+											<tr class="em-ticket-booking em-ticket-booking-<?php echo absint($EM_Ticket_Booking->ticket_booking_id); ?>"><!-- this will eventually move out into an enveloping element class for all ticket bookings of this ticket -->
+												<td colspan="3">
+													<div>
+														<p class="em-ticket-booking-attendee-number"><?php echo sprintf(esc_html__('Attendee %d', 'events-manager'), $ticket_attendee_num); ?></p>
+														<span class="em-booking-single-edit em-icon em-icon-close em-ticket-booking-remove-trigger em-tooltip" aria-label="<?php esc_html_e('Remove this ticket booking', 'events-manager'); ?>"></span>
+														<?php
+															// create a consistent naming structure for post vars, others can/should add stuff to the uuid part of each ticket booking
+															$name = "";
+															do_action('em_bookings_admin_ticket_booking_row', $EM_Ticket_Booking, $ticket_attendee_num);
+														?>
+														<input name="em_tickets[<?php echo $ticket_id; ?>][ticket_bookings][<?php echo esc_attr($ticket_uuid); ?>][ticket_booking_id]" type="hidden" value="<?php echo absint($EM_Ticket_Booking->ticket_booking_id); ?>">
+													</div>
 												</td>
-												<td><?php echo em_get_currency_symbol() ?>0.00</td>
 											</tr>
-											<?php do_action('em_bookings_admin_ticket_row', $EM_Ticket, $EM_Booking); ?>
-											<?php endif; ?>
+											<?php do_action('em_bookings_admin_ticket_booking_row_after', $EM_Ticket_Booking, $ticket_attendee_num); ?>
+											<?php $ticket_attendee_num++; ?>
 										<?php endforeach; ?>
-									<?php endif; ?>
-								</tbody>
+										<?php
+											do_action('em_bookings_admin_ticket_bookings_rows_after', $EM_Ticket_Bookings); // want $ticket_attendee_num? count the tickets
+										?>
+										<tr class="em-ticket-booking-template">
+											<td colspan="3">
+												<div>
+													<p class="em-ticket-booking-attendee-number"><?php echo str_replace('%d', '#NUM#', esc_html__('Attendee %d', 'events-manager')); ?></p>
+													<?php do_action('em_bookings_admin_ticket_booking_row_template', $EM_Ticket, $EM_Booking); ?>
+												</div>
+											</td>
+										</tr>
+										<?php
+											// Use the following for adding extra info, most appropriate place is within the edit area
+											do_action('em_bookings_admin_ticket_bookings_after', $EM_Ticket_Bookings);
+										?>
+									</tbody>
+								<?php endforeach; ?>
+								
 								<tfoot>
 									<?php
 										do_action('em_bookings_admin_ticket_totals_header');

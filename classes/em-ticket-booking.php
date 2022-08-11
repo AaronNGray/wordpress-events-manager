@@ -2,12 +2,14 @@
 class EM_Ticket_Booking extends EM_Object{
 	//DB Fields
 	var $ticket_booking_id;
+	var $ticket_uuid;
 	var $booking_id;
 	var $ticket_id;
 	var $ticket_booking_price;
-	var $ticket_booking_spaces;
+	var $ticket_booking_spaces = 1; // always 1 as of v6.1
 	var $fields = array(
 		'ticket_booking_id' => array('name'=>'id','type'=>'%d'),
+		'ticket_uuid' => array('name' => 'uuid', 'type' => '%s'),
 		'ticket_id' => array('name'=>'ticket_id','type'=>'%d'),
 		'booking_id' => array('name'=>'booking_id','type'=>'%d'),
 		'ticket_booking_price' => array('name'=>'price','type'=>'%f'),
@@ -19,6 +21,11 @@ class EM_Ticket_Booking extends EM_Object{
 		'spaces' => 'ticket_booking_spaces',
 	);
 	//Other Vars
+	/**
+	 * Any ticket meta stored in the em_ticket_bookings_meta table
+	 * @var array
+	 */
+	var $meta = array();
 	/**
 	 * Contains ticket object
 	 * @var EM_Ticket
@@ -36,20 +43,49 @@ class EM_Ticket_Booking extends EM_Object{
 	 * @param mixed $ticket_data
 	 */
 	function __construct( $ticket_data = false ){
-		if( $ticket_data !== false ){
+		global $wpdb;
+		if( $ticket_data !== false ) {
 			//Load ticket data
 			$ticket = array();
-			if( is_array($ticket_data) ){
+			if (is_array($ticket_data)) {
 				$ticket = $ticket_data;
-			}elseif( is_numeric($ticket_data) ){
-				//Retreiving from the database		
-				global $wpdb;
-				$sql = "SELECT * FROM ". EM_TICKETS_BOOKINGS_TABLE ." WHERE ticket_booking_id ='$ticket_data'";   
-			  	$ticket = $wpdb->get_row($sql, ARRAY_A);
+				// if we get supplied this info we should load the references so we don't need to later
+				if( !empty($ticket_data['booking']) && !empty($ticket_data['booking']->booking_uuid) ){
+					$this->booking = $ticket_data['booking'];
+				}
+				if( !empty($ticket_data['ticket']) && !empty($ticket_data['ticket']->ticket_id) ){
+					$this->ticket = $ticket_data['ticket'];
+				}
+			} elseif (is_numeric($ticket_data)) {
+				//Retreiving from the database
+				$sql = "SELECT * FROM " . EM_TICKETS_BOOKINGS_TABLE . " WHERE ticket_booking_id=%s";
+				$sql = $wpdb->prepare($sql, $ticket_data);
+				$ticket = $wpdb->get_row($sql, ARRAY_A);
+			} elseif( preg_match('/^[a-zA-Z0-9]{32}$/', $ticket_data) ){
+				$sql = "SELECT * FROM " . EM_TICKETS_BOOKINGS_TABLE . " WHERE ticket_uuid=%s";
+				$sql = $wpdb->prepare($sql, $ticket_data);
+				$ticket = $wpdb->get_row($sql, ARRAY_A);
 			}
 			//Save into the object
 			$this->to_object($ticket);
 			$this->compat_keys();
+			
+			//booking meta
+			if( !empty($ticket['ticket_booking_id']) ) {
+				$sql = $wpdb->prepare("SELECT meta_key, meta_value FROM " . EM_TICKETS_BOOKINGS_META_TABLE . " WHERE ticket_booking_id=%d", $ticket['ticket_booking_id']);
+				$ticket_meta_results = $wpdb->get_results($sql, ARRAY_A);
+				$this->meta = $this->process_meta($ticket_meta_results);
+			}
+			// sort out uuid if not assigned already
+			if (empty($this->ticket_uuid)) {
+				if( !empty($this->ticket_booking_id) ){
+					$this->ticket_uuid = md5($this->ticket_booking_id); // fallback, create a consistent but unique MD5 hash in case it's not saved for some reason.
+				} else {
+					$this->ticket_uuid = $this->generate_uuid();
+				}
+			}
+		}else{
+			$this->ticket_uuid = $this->generate_uuid();
 		}
 	}
 	
@@ -58,7 +94,11 @@ class EM_Ticket_Booking extends EM_Object{
 	 * @return string[]
 	 */
 	function __sleep(){
-		return array( 'ticket_booking_id','booking_id','ticket_id','ticket_booking_price','ticket_booking_spaces' );
+		return array( 'ticket_booking_id', 'ticket_uuid', 'booking_id','ticket_id','ticket_booking_price','ticket_booking_spaces' );
+	}
+	
+	public function get_post(){
+		return array('em_ticket_booking_get_post', true, $this);
 	}
 	
 	/**
@@ -98,6 +138,26 @@ class EM_Ticket_Booking extends EM_Object{
 				$this->feedback_message = __('There was a problem saving the ticket booking.', 'events-manager');
 				$this->errors[] = __('There was a problem saving the ticket booking.', 'events-manager');
 			}
+			if( $this->ticket_booking_id ){
+				//Step 2 - Save ticket meta
+				$wpdb->delete(EM_TICKETS_BOOKINGS_META_TABLE, array('ticket_booking_id' => $this->ticket_booking_id));
+				$meta_insert = array();
+				foreach( $this->meta as $meta_key => $meta_value ){
+					if( is_array($meta_value) ){
+						// we go down one level of array
+						foreach( $meta_value as $kk => $vv ){
+							if( is_array($vv) ) $vv = serialize($vv);
+							$meta_insert[] = $wpdb->prepare('(%d, %s, %s)', $this->ticket_booking_id, '_'.$meta_key.'_'.$kk, $vv);
+						}
+					}else{
+						$meta_insert[] = $wpdb->prepare('(%d, %s, %s)', $this->ticket_booking_id, $meta_key, $meta_value);
+					}
+				}
+				if( !empty($meta_insert) ){
+					
+					$wpdb->query('INSERT INTO '. EM_TICKETS_BOOKINGS_META_TABLE .' (ticket_booking_id, meta_key, meta_value) VALUES '. implode(',', $meta_insert));
+				}
+			}
 			$this->compat_keys();
 			return apply_filters('em_ticket_booking_save', ( count($this->errors) == 0 ), $this);
 		}else{
@@ -105,35 +165,23 @@ class EM_Ticket_Booking extends EM_Object{
 			$this->errors[] = __('There was a problem saving the ticket booking.', 'events-manager');
 			return apply_filters('em_ticket_booking_save', false, $this);
 		}
-		return true;
 	}	
 	
 
 	/**
-	 * Validates the ticket for saving. Should be run during any form submission or saving operation.
+	 * Validates the ticket during a booking
 	 * @return boolean
 	 */
-	function validate(){
-		$missing_fields = Array ();
-		foreach ( $this->required_fields as $field ) {
-			$true_field = $this->fields[$field]['name'];
-			if ( $this->$true_field == "") {
-				$missing_fields[] = $field;
-			}
-		}
-		if ( count($missing_fields) > 0){
-			// TODO Create friendly equivelant names for missing fields notice in validation 
-			$this->errors[] = __ ( 'Missing fields: ' ) . implode ( ", ", $missing_fields ) . ". ";
-		}
-		return apply_filters('em_ticket_booking_validate', count($this->errors) == 0, $this );
+	function validate( $override_availability = false ){
+		return apply_filters('em_ticket_booking_validate', true, $this, $override_availability );
 	}
 	
 	/**
-	 * Get the total number of spaces booked for this ticket within this booking.
+	 * Get the total number of spaces booked for this ticket within this booking. As of 6.1 it's always one space.
 	 * @return int
 	 */
 	function get_spaces(){
-		return apply_filters('em_booking_get_spaces',$this->ticket_booking_spaces,$this);
+		return 1;
 	}
 	
 	/**
@@ -143,8 +191,8 @@ class EM_Ticket_Booking extends EM_Object{
 	 */
 	function get_price( $format = false ){
 		if( $this->ticket_booking_price == 0 ){
-			//get the ticket, calculate price on spaces
-			$this->ticket_booking_price = $this->get_ticket()->get_price_without_tax() * $this->ticket_booking_spaces;
+			$this->calculate_price( true );
+			// depracated - preferable to use the _calculate_price filter
 			$this->ticket_booking_price = apply_filters('em_ticket_booking_get_price', $this->ticket_booking_price, $this);
 		}
 		$price = $this->ticket_booking_price;
@@ -178,6 +226,15 @@ class EM_Ticket_Booking extends EM_Object{
 		$price = $this->get_price() * (1 + $this->get_booking()->get_event()->get_tax_rate()/100);
 	    if( $format ) return $this->format_price($price);
 	    return $price; 
+	}
+	
+	function calculate_price( $force_refresh = false ){
+		if( $this->ticket_booking_price === null || $force_refresh ){
+			//get the ticket, calculate price on spaces
+			$this->ticket_booking_price = $this->get_ticket()->get_price_without_tax();
+			$this->ticket_booking_price = apply_filters('em_ticket_booking_calculate_price', $this->ticket_booking_price, $this, $force_refresh);
+		}
+		return $this->ticket_booking_price;
 	}
 	
 	/**
@@ -222,54 +279,84 @@ class EM_Ticket_Booking extends EM_Object{
 	 */
 	function delete(){
 		global $wpdb;
-		if( $this->ticket_booking_id ){
-			$sql = $wpdb->prepare("DELETE FROM ". EM_TICKETS_BOOKINGS_TABLE . " WHERE ticket_booking_id=%d LIMIT 1", $this->ticket_booking_id);
-		}elseif( !empty($this->ticket_id) && !empty($this->booking_id) ){
-			//in the event a ticket_booking_id isn't available we can delete via the booking and ticket id
-			$sql = $wpdb->prepare("DELETE FROM ". EM_TICKETS_BOOKINGS_TABLE . " WHERE ticket_id=%d AND booking_id=%d LIMIT 1", $this->ticket_id, $this->booking_id);
+		if( $this->ticket_booking_id ) {
+			$sql = $wpdb->prepare("DELETE FROM " . EM_TICKETS_BOOKINGS_TABLE . " WHERE ticket_booking_id=%d LIMIT 1", $this->ticket_booking_id);
+			$result = $wpdb->query( $sql );
+			$sql = $wpdb->prepare("DELETE FROM " . EM_TICKETS_BOOKINGS_META_TABLE . " WHERE ticket_booking_id=%d LIMIT 1", $this->ticket_booking_id);
+			$result_meta = $wpdb->query( $sql );
 		}else{
 			//cannot delete ticket
 			$result = false;
 		}
-		if( !empty($sql) ){
-			$result = $wpdb->query( $sql );
-		}
-		return apply_filters('em_ticket_booking_delete', ($result !== false ), $this);
+		return apply_filters('em_ticket_booking_delete', ($result !== false && $result_meta !== false ), $this);
 	}
 	
-
 	/**
-	 * Get the html options for quantities to go within a <select> container
-	 * @return string
+	 * Outputs ticket information, mainly reserved for add-ons that may extend ticket functionality, such as Pro.
+	 * @param $format
+	 * @param $target
+	 * @return mixed|void
 	 */
-	function get_spaces_options($zero_value = true){
-		$available_spaces = $this->get_available_spaces();
-		if( $available_spaces >= $this->min || ( empty($this->min) && $available_spaces > 0) ) {
-			ob_start();
-			?>
-			<select name="em_tickets[<?php echo $this->ticket_booking_id ?>][spaces]">
-				<?php 
-					$min = ($this->min > 0) ? $this->min:1;
-					$max = ($this->max > 0) ? $this->max:get_option('dbem_bookings_form_max');
-				?>
-				<?php if($zero_value) : ?><option>0</option><?php endif; ?>
-				<?php for( $i=$min; $i<=$max; $i++ ): ?>
-					<option><?php echo $i ?></option>
-				<?php endfor; ?>
-			</select>
-			<?php 
-			return ob_get_clean();
-		}else{
-			return false;
+	public function output($format, $target="html") {
+		preg_match_all('/\{([a-zA-Z0-9_\-,]+)\}(.+?)\{\/\1\}/s', $format, $conditionals);
+		if( count($conditionals[0]) > 0 ){
+			//Check if the language we want exists, if not we take the first language there
+			foreach($conditionals[1] as $key => $condition){
+				$show_condition = false;
+				$show_condition = apply_filters('em_ticket_booking_output_show_condition', $show_condition, $condition, $conditionals[0][$key], $this);
+				if($show_condition){
+					//calculate lengths to delete placeholders
+					$placeholder_length = strlen($condition)+2;
+					$replacement = substr($conditionals[0][$key], $placeholder_length, strlen($conditionals[0][$key])-($placeholder_length *2 +1));
+				}else{
+					$replacement = '';
+				}
+				$format = str_replace($conditionals[0][$key], apply_filters('em_ticket_booking_output_condition', $replacement, $condition, $conditionals[0][$key], $this), $format);
+			}
 		}
-			
+		$output_string = $format;
+		preg_match_all("/(#@?_?[A-Za-z0-9_]+)({([^}]+)})?/", $format, $placeholders);
+		$replaces = array();
+		foreach($placeholders[1] as $key => $result) {
+			$full_result = $placeholders[0][$key];
+			$placeholder_atts = array($result);
+			if( !empty($placeholders[3][$key]) ) $placeholder_atts[] = $placeholders[3][$key];
+			/* For now there's nothing to switch, pro and others override this
+			$replace = '';
+			switch( $result ){
+				default:
+					$replace = $full_result;
+					break;
+			}
+			*/
+			$replace = $full_result;
+			$replaces[$full_result] = apply_filters('em_ticket_booking_output_placeholder', $replace, $this, $full_result, $target, $placeholder_atts);
+		}
+		krsort($replaces);
+		foreach($replaces as $full_result => $replacement){
+			$output_string = str_replace($full_result, $replacement , $output_string );
+		}
+		return apply_filters('em_ticket_booking_output', $output_string, $this, $format, $target);
 	}
 	
+	
 	/**
-	 * Can the user manage this event? 
+	 * Can the user manage this ticket?
 	 */
 	function can_manage( $owner_capability = false, $admin_capability = false, $user_to_check = false ){
 		return ( $this->get_booking()->can_manage() );
+	}
+	
+	public function __debugInfo(){
+		$object = clone($this);
+		$object->booking = !empty($this->booking->booking_id) ? 'Booking ID #'.$this->booking->booking_id : 'New Booking - No ID';
+		$object->ticket = 'Ticket #'.$this->ticket_id . ' - ' . $this->get_ticket()->ticket_name;
+		$object->fields = 'Removed for export, uncomment from __debugInfo()';
+		$object->required_fields = 'Removed for export, uncomment from __debugInfo()';
+		$object->shortnames = 'Removed for export, uncomment from __debugInfo()';
+		$object->mime_types = 'Removed for export, uncomment from __debugInfo()';
+		if( empty($object->errors) ) $object->errors = false;
+		return (Array) $object;
 	}
 }
 ?>

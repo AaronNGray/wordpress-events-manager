@@ -22,11 +22,11 @@ $collumns = $EM_Tickets->get_ticket_collumns(); //array of collumn type => title
 	</thead>
 	<?php foreach( $EM_Tickets->tickets as $EM_Ticket ): /* @var $EM_Ticket EM_Ticket */ ?>
 		<?php if( $EM_Ticket->is_displayable() ): ?>
-			<?php do_action('em_booking_form_tickets_loop_header', $EM_Ticket); //do not delete ?>
-			<tr class="em-ticket" id="em-ticket-<?php echo $EM_Ticket->ticket_id; ?>">
+		<?php do_action('em_booking_form_tickets_loop_header', $EM_Ticket); //do not delete ?>
+			<tr class="em-ticket em-ticket-<?php echo $EM_Ticket->ticket_id; ?>">
 				<?php foreach( $collumns as $type => $name ): ?>
 					<?php
-					//output collumn by type, or call a custom action 
+					//output collumn by type, or call a custom action
 					switch($type){
 						case 'type':
 							?>
@@ -41,7 +41,7 @@ $collumns = $EM_Tickets->get_ticket_collumns(); //array of collumn type => title
 						case 'spaces':
 							?>
 							<td class="em-bookings-ticket-table-spaces">
-								<?php 
+								<?php
 									$default = !empty($_REQUEST['em_tickets'][$EM_Ticket->ticket_id]['spaces']) ? $_REQUEST['em_tickets'][$EM_Ticket->ticket_id]['spaces']:0;
 									$spaces_options = $EM_Ticket->get_spaces_options(true,$default);
 									echo ( $spaces_options ) ? $spaces_options:"<strong>".__('N/A','events-manager')."</strong>";
@@ -55,7 +55,7 @@ $collumns = $EM_Tickets->get_ticket_collumns(); //array of collumn type => title
 					}
 					?>
 				<?php endforeach; ?>
-			</tr>		
+			</tr>
 			<?php do_action('em_booking_form_tickets_loop_footer', $EM_Ticket); //do not delete ?>
 		<?php endif; ?>
 	<?php endforeach; ?>

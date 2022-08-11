@@ -34,6 +34,7 @@ function em_get_booking($id = false) {
 class EM_Booking extends EM_Object{
 	//DB Fields
 	var $booking_id;
+	var $booking_uuid;
 	var $event_id;
 	var $person_id;
 	var $booking_price = null;
@@ -45,6 +46,7 @@ class EM_Booking extends EM_Object{
 	var $booking_meta = array();
 	var $fields = array(
 		'booking_id' => array('name'=>'id','type'=>'%d'),
+		'booking_uuid' => array('name'=>'uuid','type'=>'%s'),
 		'event_id' => array('name'=>'event_id','type'=>'%d'),
 		'person_id' => array('name'=>'person_id','type'=>'%d'),
 		'booking_price' => array('name'=>'price','type'=>'%f'),
@@ -138,14 +140,31 @@ class EM_Booking extends EM_Object{
 				//Retrieving from the database
 				$sql = $wpdb->prepare("SELECT * FROM ". EM_BOOKINGS_TABLE ." WHERE booking_id =%d", $booking_data);
 				$booking = $wpdb->get_row($sql, ARRAY_A);
+			} elseif( preg_match('/^[a-zA-Z0-9]{32}$/', $booking_data) ){
+				$sql = $wpdb->prepare("SELECT * FROM " . EM_BOOKINGS_TABLE . " WHERE booking_uuid=%s", $booking_data);
+				$booking = $wpdb->get_row($sql, ARRAY_A);
 			}
 			//booking meta
-			$booking['booking_meta'] = (!empty($booking['booking_meta'])) ? maybe_unserialize($booking['booking_meta']):array();
+		    $booking['booking_meta'] = array(); // we don't use booking meta from the table anymore
+		    if( !empty($booking['booking_id']) ) {
+			    $sql = $wpdb->prepare("SELECT meta_key, meta_value FROM " . EM_BOOKINGS_META_TABLE . " WHERE booking_id=%d", $booking['booking_id']);
+			    $booking_meta_results = $wpdb->get_results($sql, ARRAY_A);
+		        $booking['booking_meta'] = $this->process_meta($booking_meta_results);
+		    }
 			//Save into the object
 			$this->to_object($booking);
 			$this->previous_status = $this->booking_status;
 			$this->booking_date = !empty($booking['booking_date']) ? $booking['booking_date']:false;
-		}
+		    if( empty($this->booking_uuid) ) {
+			    if( !empty($this->booking_id) ){
+				    $this->booking_uuid = md5($this->ticket_booking_id); // fallback, create a consistent but unique MD5 hash in case it's not saved for some reason.
+			    } else {
+				    $this->booking_uuid = $this->generate_uuid();
+			    }
+		    }
+		}else{
+		    $this->booking_uuid = $this->generate_uuid();
+	    }
 		//Do it here so things appear in the po file.
 		$this->status_array = array(
 			0 => __('Pending','events-manager'),
@@ -179,6 +198,8 @@ class EM_Booking extends EM_Object{
 			return ($this->booking_status == 0 && !get_option('dbem_bookings_approval') ) ? 1:$this->booking_status;
 	    }elseif( $var == 'person' ){
 	    	return $this->get_person();
+	    }elseif( $var == 'date' ){
+			return $this->date();
 	    }
 	    return null;
 	}
@@ -204,7 +225,7 @@ class EM_Booking extends EM_Object{
 	 * @return string[]
 	 */
 	public function __sleep(){
-		$array = array('booking_id','event_id','person_id','booking_price','booking_spaces','booking_comment','booking_status','booking_tax_rate','booking_taxes','booking_meta','notes','booking_date','person','feedback_message','errors','mails_sent','custom','previous_status','status_array','manage_override','tickets_bookings');
+		$array = array('booking_id','booking_uuid','event_id','person_id','booking_price','booking_spaces','booking_comment','booking_status','booking_tax_rate','booking_taxes','booking_meta','notes','booking_date','person','feedback_message','errors','mails_sent','custom','previous_status','status_array','manage_override','tickets_bookings');
 		if( !empty($this->bookings) ) $array[] = 'bookings'; // EM Pro backwards compatibility
 		return apply_filters('em_booking_sleep', $array, $this);
 	}
@@ -213,8 +234,11 @@ class EM_Booking extends EM_Object{
 	 * Repopulate the ticket bookings with this object and its event reference.
 	 */
 	public function __wakeup(){
-		foreach($this->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking){
-			$EM_Ticket_Booking->booking = $this;
+		foreach($this->get_tickets_bookings() as $EM_Ticket_Bookings){
+			$EM_Ticket_Bookings->booking = $this;
+			foreach( $EM_Ticket_Bookings as $EM_Ticket_Booking ){
+				$EM_Ticket_Booking->booking = $this;
+			}
 		}
 	}
 	
@@ -265,11 +289,29 @@ class EM_Booking extends EM_Object{
 			    $this->booking_id = $wpdb->insert_id;  
 				$this->feedback_message = __('Your booking has been recorded','events-manager'); 
 			}
-			//Step 2. Insert ticket bookings for this booking id if no errors so far
+			//Step 2. Insert meta and ticket bookings for this booking id if no errors so far
 			if( $result === false ){
 				$this->feedback_message = __('There was a problem saving the booking.', 'events-manager');
 				$this->errors[] = __('There was a problem saving the booking.', 'events-manager');
 			}else{
+				//Step 2a - Save booking meta
+				$wpdb->delete(EM_BOOKINGS_META_TABLE, array('booking_id' => $this->booking_id));
+				$meta_insert = array();
+				foreach( $this->booking_meta as $meta_key => $meta_value ){
+					if( is_array($meta_value) ){
+						// we go down one level of array
+						foreach( $meta_value as $kk => $vv ){
+							if( is_array($vv) ) $vv = serialize($vv);
+							$meta_insert[] = $wpdb->prepare('(%d, %s, %s)', $this->booking_id, '_'.$meta_key.'_'.$kk, $vv);
+						}
+					}else{
+						$meta_insert[] = $wpdb->prepare('(%d, %s, %s)', $this->booking_id, $meta_key, $meta_value);
+					}
+				}
+				if( !empty($meta_insert) ){
+					$wpdb->query('INSERT INTO '. EM_BOOKINGS_META_TABLE .' (booking_id, meta_key, meta_value) VALUES '. implode(',', $meta_insert));
+				}
+				// Step 2b - Save Ticket Bookings
 				$tickets_bookings_result = $this->get_tickets_bookings()->save();
 				if( !$tickets_bookings_result ){
 					if( !$update ){
@@ -344,26 +386,13 @@ class EM_Booking extends EM_Object{
 	 * @return boolean
 	 */
 	function get_post( $override_availability = false ){
-		$this->tickets_bookings = new EM_Tickets_Bookings($this->booking_id);
+		$this->tickets_bookings = new EM_Tickets_Bookings($this);
 		do_action('em_booking_get_post_pre',$this);
 		$result = array();
 		$this->event_id = absint($_REQUEST['event_id']);
 		if( isset($_REQUEST['em_tickets']) && is_array($_REQUEST['em_tickets']) && ($_REQUEST['em_tickets'] || $override_availability) ){
-			foreach( $_REQUEST['em_tickets'] as $ticket_id => $values){
-				//make sure ticket exists
-				$ticket_id = absint($ticket_id);
-				if( !empty($values['spaces']) || $override_availability ){
-					$args = array('ticket_id'=>$ticket_id, 'ticket_booking_spaces'=> absint($values['spaces']), 'booking_id'=>$this->booking_id);
-					if($this->get_event()->get_bookings()->ticket_exists($ticket_id)){
-							$EM_Ticket_Booking = new EM_Ticket_Booking($args);
-							$EM_Ticket_Booking->booking = $this;
-							if( !$this->tickets_bookings->add( $EM_Ticket_Booking, $override_availability ) ){
-							    $this->add_error($this->tickets_bookings->get_errors());
-							}
-					}else{
-						$this->errors[]=__('You are trying to book a non-existent ticket for this event.','events-manager');
-					}
-				}
+			if( !$this->get_tickets_bookings()->get_post( $override_availability ) ){
+				$this->add_error($this->tickets_bookings->get_errors());
 			}
 			$this->booking_comment = (!empty($_REQUEST['booking_comment'])) ? wp_kses_data(wp_unslash($_REQUEST['booking_comment'])):'';
 			//allow editing of tax rate
@@ -378,46 +407,29 @@ class EM_Booking extends EM_Object{
 			//re-run compatiblity keys function
 			$this->compat_keys(); //depracating in 6.0
 		}
-		return apply_filters('em_booking_get_post',count($this->errors) == 0,$this);
+		return apply_filters('em_booking_get_post', empty($this->errors), $this);
 	}
 	
 	function validate( $override_availability = false ){
 		//step 1, basic info
-		$basic = ( 
-			(empty($this->event_id) || is_numeric($this->event_id)) && 
-			(empty($this->person_id) || is_numeric($this->person_id)) &&
-			is_numeric($this->booking_spaces) && $this->booking_spaces > 0
-		);
+		$basic = (empty($this->event_id) || is_numeric($this->event_id)) && (empty($this->person_id) || is_numeric($this->person_id));
+		if( !$basic ){
+			$this->add_error('Incomplete booking information provided.');
+		}
 		//give some errors in step 1
-		if( $this->booking_spaces == 0 ){
+		if( !is_numeric($this->booking_spaces) || $this->booking_spaces == 0 ){
 			$this->add_error(get_option('dbem_booking_feedback_min_space'));
 		}
 		//step 2, tickets bookings info
-		if( count($this->get_tickets_bookings()) > 0 ){
-			$ticket_validation = array();
-			foreach($this->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking){ /* @var $EM_Ticket_Booking EM_Ticket_Booking */
-				if ( !$EM_Ticket_Booking->validate() ){
-					$ticket_validation[] = false;
-					$this->errors = array_merge($this->errors, $EM_Ticket_Booking->get_errors());
-				}
-			}
-			$result = $basic && !in_array(false,$ticket_validation);
-		}else{
-			$result = false;
+		if( !$this->get_tickets_bookings()->validate( $override_availability ) ){
+			$this->errors = array_merge( $this->errors, $this->get_tickets_bookings()->get_errors() );
 		}
+		
 		if( !$override_availability ){
 			// are bookings even available due to event and ticket cut-offs/restrictions? This is checked earlier in booking processes, but is relevant in checkout/cart situations where a previously-made booking is validated just before checkout
 			if( $this->get_event()->rsvp_end()->getTimestamp() < time() ){
 				$result = false;
 				$this->add_error(get_option('dbem_bookings_form_msg_closed'));
-			}else{
-				foreach( $this->get_tickets_bookings() as $EM_Ticket_Booking ){
-					if( !$EM_Ticket_Booking->get_ticket()->is_available() ){
-						$result = false;
-						$message = __('The ticket %s is no longer available.', 'events-manager');
-						$this->add_error(get_option('dbem_booking_feedback_ticket_unavailable', sprintf($message, "'".$EM_Ticket_Booking->get_ticket()->name."'")));
-					}
-				}
 			}
 			//is there enough space overall?
 			if( $this->get_event()->get_bookings()->get_available_spaces() < $this->get_spaces() ){
@@ -430,7 +442,7 @@ class EM_Booking extends EM_Object{
 		    $result = false;
 		    $this->add_error( sprintf(get_option('dbem_booking_feedback_spaces_limit'), $this->get_event()->event_rsvp_spaces));			
 		}
-		return apply_filters('em_booking_validate',$result,$this);
+		return apply_filters('em_booking_validate', empty($this->errors), $this);
 	}
 	
 	/**
@@ -946,6 +958,7 @@ class EM_Booking extends EM_Object{
 				$this->booking_status = false;
 				$this->feedback_message = sprintf(__('%s deleted', 'events-manager'), __('Booking','events-manager'));
 				$wpdb->delete( EM_META_TABLE, array('meta_key'=>'booking-note', 'object_id' => $this->booking_id), array('%s','%d'));
+				$wpdb->delete( EM_BOOKINGS_META_TABLE, array('booking_id'=> $this->booking_id), array('%d'));
 				do_action('em_booking_deleted', $this);
 			}else{
 				$this->add_error(sprintf(__('%s could not be deleted', 'events-manager'), __('Booking','events-manager')));
@@ -1273,7 +1286,7 @@ class EM_Booking extends EM_Object{
 	}	
 	
 	function email_messages(){
-		$msg = array( 'user'=> array('subject'=>'', 'body'=>''), 'admin'=> array('subject'=>'', 'body'=>'')); //blank msg template			
+		$msg = array( 'user'=> array('subject'=>'', 'body'=>'', 'attachments' => array()), 'admin'=> array('subject'=>'', 'body'=>'', 'attachments' => array())); //blank msg template
 		//admin messages won't change whether pending or already approved
 	    switch( $this->booking_status ){
 	    	case 0:

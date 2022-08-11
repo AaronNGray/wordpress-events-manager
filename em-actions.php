@@ -332,10 +332,8 @@ function em_init_actions() {
 				$EM_Booking = em_get_booking(array('person_id'=>get_current_user_id(), 'event_id'=>$EM_Event->event_id, 'booking_spaces'=>1)); //new booking
 				$EM_Ticket = $EM_Event->get_bookings()->get_tickets()->get_first();	
 				//get first ticket in this event and book one place there. similar to getting the form values in EM_Booking::get_post_values()
-				$EM_Ticket_Booking = new EM_Ticket_Booking(array('ticket_id'=>$EM_Ticket->ticket_id, 'ticket_booking_spaces'=>1));
-				$EM_Booking->tickets_bookings = new EM_Tickets_Bookings();
-				$EM_Booking->tickets_bookings->booking = $EM_Ticket_Booking->booking = $EM_Booking;
-				$EM_Booking->tickets_bookings->add( $EM_Ticket_Booking );
+				$EM_Ticket_Booking = new EM_Ticket_Booking(array('ticket_id'=>$EM_Ticket->ticket_id, 'booking_id' => $EM_Booking->booking_id, 'booking' => $EM_Booking));
+				$EM_Booking->get_tickets_bookings()->add( $EM_Ticket_Booking );
 				$post_validation = $EM_Booking->validate();
 				do_action('em_booking_add', $EM_Event, $EM_Booking, $post_validation);
 				if( $post_validation ){

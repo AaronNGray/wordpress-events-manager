@@ -10,7 +10,7 @@
 				<h3><?php esc_html_e('Location', 'events-manager'); ?></h3>
 				<div class="em-item-meta-line em-location-address">
 					<span class="em-icon-location em-icon"></span>
-					xxx#_LOCATIONFULLBR
+					#_LOCATIONFULLBR
 				</div>
 			</section>
 			{no_loc_image}

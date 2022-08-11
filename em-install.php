@@ -1,7 +1,7 @@
 <?php
 
 function em_install() {
-	global $wp_rewrite;
+	global $wp_rewrite, $em_do_not_finalize_upgrade;
 	switch_to_locale(EM_ML::$wplang); //switch to blog language (if applicable)
    	$wp_rewrite->flush_rules();
 	$old_version = get_option('dbem_version');
@@ -22,20 +22,17 @@ function em_install() {
 				em_create_events_meta_table();
 				em_create_locations_table();
 			  	em_create_bookings_table();
+			    em_create_bookings_meta_table();
 				em_create_tickets_table();
 				em_create_tickets_bookings_table();
+			    em_create_tickets_bookings_meta_table();
 		 		delete_option('em_ms_global_install'); //in case for some reason the user changed global settings
 			    add_action('em_ml_init', 'EM_ML::toggle_languages_index');
 		 	}else{
 		 		update_option('em_ms_global_install',1); //in case for some reason the user changes global settings in the future
 		 	}	
 			//New install, or Migrate?
-			if( $old_version < 5 && !empty($old_version) ){
-				update_option('dbem_upgrade_throttle', time()+300);
-				set_time_limit(300);
-				em_migrate_v4();
-				update_site_option('dbem_ms_update_nag',1);
-			}elseif( empty($old_version) ){
+			if( empty($old_version) ){
 				em_create_events_page();
 				update_option('dbem_hello_to_user',1);
 			}			
@@ -43,15 +40,17 @@ function em_install() {
 			em_set_capabilities();
 			em_add_options();
 			em_upgrade_current_installation();
-			do_action('events_manager_updated', $old_version );
-			//Update Version
-		  	update_option('dbem_version', EM_VERSION);
-			delete_option('dbem_upgrade_throttle');
-			delete_option('dbem_upgrade_throttle_time');
-			//last but not least, flush the toilet
-			global $wp_rewrite;
-			$wp_rewrite->flush_rules();
-			update_option('dbem_flush_needed',1);
+			if( empty($em_do_not_finalize_upgrade) ){
+				do_action('events_manager_updated', $old_version );
+				//Update Version
+			    update_option('dbem_version', EM_VERSION);
+				delete_option('dbem_upgrade_throttle');
+				delete_option('dbem_upgrade_throttle_time');
+				//last but not least, flush the toilet
+				global $wp_rewrite;
+				$wp_rewrite->flush_rules();
+				update_option('dbem_flush_needed',1);
+			}
 		}else{
 			function em_upgrading_in_progress_notification(){
 				global $EM_Booking;
@@ -190,7 +189,7 @@ function em_create_events_table() {
 }
 
 function em_create_events_meta_table(){
-	global  $wpdb, $user_level;
+	global  $wpdb;
 	$table_name = $wpdb->prefix.'em_meta';
 
 	// Creating the events table
@@ -212,7 +211,7 @@ function em_create_events_meta_table(){
 
 function em_create_locations_table() {
 
-	global  $wpdb, $user_level;
+	global  $wpdb;
 	$table_name = $wpdb->prefix.'em_locations';
 
 	// Creating the events table
@@ -244,14 +243,6 @@ function em_create_locations_table() {
 
 	if( $wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name ) {
 		dbDelta($sql);
-		/*
-		DEPRICATED - kept here as an example for how migrations from the wp_em_events table is fairly easy
-		//Add default values
-		$wpdb->query("INSERT INTO ".$table_name." (location_name, location_address, location_town, location_state, location_country, location_latitude, location_longitude, location_slug, location_owner, location_status, post_id) VALUES ('Arts Millenium Building', 'Newcastle Road','Galway','Galway','IE', 53.275, -9.06532, 'arts-millenium-building','".get_current_user_id()."', 1,0)");
-		$wpdb->query("INSERT INTO ".$table_name." (location_name, location_address, location_town, location_state, location_country, location_latitude, location_longitude, location_slug, location_owner, location_status, post_id) VALUES ('The Crane Bar', '2, Sea Road','Galway','Galway','IE', 53.2692, -9.06151, 'the-crane-bar','".get_current_user_id()."', 1, 0)");
-		$wpdb->query("INSERT INTO ".$table_name." (location_name, location_address, location_town, location_state, location_country, location_latitude, location_longitude, location_slug, location_owner, location_status, post_id) VALUES ('Taaffes Bar', '19 Shop Street','Galway','Galway','IE', 53.2725, -9.05321, 'taffes-bar','".get_current_user_id()."', 1, 0)");
-		em_migrate_locations($wpdb->get_results('SELECT * FROM '.$table_name, ARRAY_A));
-		*/
 	}else{
 		if( get_option('dbem_version') != '' && get_option('dbem_version') < 4.938 ){
 			$wpdb->query("ALTER TABLE $table_name CHANGE location_description post_content longtext NULL DEFAULT NULL");
@@ -272,11 +263,12 @@ function em_create_locations_table() {
 
 function em_create_bookings_table() {
 
-	global  $wpdb, $user_level;
+	global  $wpdb;
 	$table_name = $wpdb->prefix.'em_bookings';
 
 	$sql = "CREATE TABLE ".$table_name." (
 		booking_id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+		booking_uuid char(32) NOT NULL,
 		event_id bigint(20) unsigned NULL,
 		person_id bigint(20) unsigned NOT NULL,
 		booking_spaces int(5) NOT NULL,
@@ -287,6 +279,7 @@ function em_create_bookings_table() {
  		booking_tax_rate decimal(7,4) NULL DEFAULT NULL,
  		booking_taxes decimal(14,4) NULL DEFAULT NULL,
 		booking_meta LONGTEXT NULL,
+		booking_meta_migrated INT(1) NULL,
 		PRIMARY KEY  (booking_id)
 		) DEFAULT CHARSET=utf8 ;";
 	require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
@@ -295,11 +288,31 @@ function em_create_bookings_table() {
 	if( em_check_utf8mb4_tables() ) maybe_convert_table_to_utf8mb4( $table_name );
 }
 
+function em_create_bookings_meta_table() {
+	
+	global  $wpdb;
+	$table_name = $wpdb->prefix.'em_bookings_meta';
+	
+	// Creating the events table
+	$sql = "CREATE TABLE ".$table_name." (
+		meta_id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+		booking_id bigint(20) unsigned NOT NULL,
+		meta_key varchar(255) DEFAULT NULL,
+		meta_value longtext,
+		PRIMARY KEY  (meta_id)
+		) DEFAULT CHARSET=utf8 ";
+	
+	require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+	dbDelta($sql);
+	em_sort_out_table_nu_keys($table_name, array('booking_id','meta_key'));
+	if( em_check_utf8mb4_tables() ) maybe_convert_table_to_utf8mb4( $table_name );
+}
+
 
 //Add the categories table
 function em_create_tickets_table() {
 
-	global  $wpdb, $user_level;
+	global  $wpdb;
 	$table_name = $wpdb->prefix.'em_tickets';
 
 	// Creating the events table
@@ -332,22 +345,43 @@ function em_create_tickets_table() {
 
 //Add the categories table
 function em_create_tickets_bookings_table() {
-	global  $wpdb, $user_level;
+	global  $wpdb;
 	$table_name = $wpdb->prefix.'em_tickets_bookings';
 
 	// Creating the events table
 	$sql = "CREATE TABLE {$table_name} (
 		  ticket_booking_id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+		  ticket_uuid char(32) NOT NULL,
 		  booking_id bigint(20) unsigned NOT NULL,
 		  ticket_id bigint(20) unsigned NOT NULL,
 		  ticket_booking_spaces int(6) NOT NULL,
 		  ticket_booking_price decimal(14,4) NOT NULL,
+		  ticket_booking_order int(2) NULL,
 		  PRIMARY KEY  (ticket_booking_id)
 		) DEFAULT CHARSET=utf8 ;";
 
 	require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 	dbDelta($sql);
-	em_sort_out_table_nu_keys($table_name, array('booking_id','ticket_id'));
+	em_sort_out_table_nu_keys($table_name, array('ticket_uuid', 'booking_id','ticket_id'));
+	if( em_check_utf8mb4_tables() ) maybe_convert_table_to_utf8mb4( $table_name );
+}
+
+function em_create_tickets_bookings_meta_table() {
+	global  $wpdb;
+	$table_name = $wpdb->prefix.'em_tickets_bookings_meta';
+	
+	// Creating the events table
+	$sql = "CREATE TABLE ".$table_name." (
+		meta_id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+		ticket_booking_id bigint(20) unsigned NOT NULL,
+		meta_key varchar(255) DEFAULT NULL,
+		meta_value longtext,
+		PRIMARY KEY  (meta_id)
+		) DEFAULT CHARSET=utf8 ";
+	
+	require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+	dbDelta($sql);
+	em_sort_out_table_nu_keys($table_name, array('ticket_booking_id','meta_key'));
 	if( em_check_utf8mb4_tables() ) maybe_convert_table_to_utf8mb4( $table_name );
 }
 
@@ -1168,6 +1202,108 @@ function em_upgrade_current_installation(){
 		update_option('dbem_css_theme_font_size', 1);
 		update_option('dbem_css_theme_line_height', 1);
 	}
+	if( $current_version != '' && version_compare($current_version, '6.0.1.2', '<') ){
+		// slated for 6.1 - atomic tickets
+		$query = "UPDATE ". EM_TICKETS_BOOKINGS_TABLE ." SET ticket_uuid= LOWER(CONCAT( HEX(RANDOM_BYTES(4)), '', HEX(RANDOM_BYTES(2)), '4', SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3), '', HEX(FLOOR(ASCII(RANDOM_BYTES(1)) / 64) + 8), SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3), '', hex(RANDOM_BYTES(6)) ))";
+		$result = $wpdb->query($query. " WHERE ticket_uuid=''");
+		// do the same for regular bookings, allowing for unique IDs that can be used by guest users to access (future feature)
+		$query = "UPDATE ". EM_BOOKINGS_TABLE ." SET booking_uuid= LOWER(CONCAT( HEX(RANDOM_BYTES(4)), '', HEX(RANDOM_BYTES(2)), '4', SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3), '', HEX(FLOOR(ASCII(RANDOM_BYTES(1)) / 64) + 8), SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3), '', hex(RANDOM_BYTES(6)) ))";
+		$bookings_result = $wpdb->query( $query . " WHERE booking_uuid=''" );
+		if( $result === false || $bookings_result === false ){
+			$message = "<strong>Events Manager is trying to update your database, but the following error occured:</strong>";
+			$message .= '</p><p>'.'<code>'. $wpdb->last_error .'</code>';
+			$message .= '</p><p>It might be that reloading this page one or more times may complete the process, if you have a large number of bookings in your database. Alternatively, you can run one of these two queries directly into your WP database:';
+			$message .= '</p><p>'.'<code>'. $query .'</code>';
+			$message .= '</p>OR<p>'.'<code>'. "UPDATE ". EM_TICKETS_BOOKINGS_TABLE ." SET ticket_uuid= UUID()" .'</code>';
+			$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'v6.1-atomic-error', 'who' => 'admin', 'where' => 'all', 'message' => $message, 'what'=>'warning' ));
+			EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
+			global $em_do_not_finalize_upgrade;
+			$em_do_not_finalize_upgrade = true;
+		}else{
+			EM_Admin_Notices::remove('v6.1-atomic-error', is_multisite());
+		}
+		// Now go through current bookings and split the tickets up, 100 at a time
+		$query = 'SELECT ticket_booking_id, ticket_id, booking_id, ticket_booking_spaces, ticket_booking_price FROM '.EM_TICKETS_BOOKINGS_TABLE .' WHERE ticket_booking_spaces > 1 LIMIT 100';
+		$results = $wpdb->get_results( $query, ARRAY_A );
+		while( !empty($results) ){
+			$tickets_to_delete = array();
+			foreach( $results as $ticket_booking ) {
+				// first check that we maybe didn't die halfway through this and there aren't others with the same ticket/bookingid combo by simply deleting these
+				$wpdb->query('DELETE FROM '. EM_TICKETS_BOOKINGS_TABLE .' WHERE booking_id='. $ticket_booking['booking_id'] .' AND ticket_id='. $ticket_booking['ticket_id'] .' AND ticket_booking_id !='. $ticket_booking['ticket_booking_id'] .' AND ticket_booking_spaces = 1');
+				// now we generate split tickets, one space per ticket
+				$split_tickets = array();
+				$split_price = round($ticket_booking['ticket_booking_price'] / $ticket_booking['ticket_booking_spaces'], 4);
+				for( $i = 1; $i <= $ticket_booking['ticket_booking_spaces']; $i++ ){
+					$uuid = str_replace('-', '', wp_generate_uuid4());
+					$split_tickets[] = "('{$uuid}', '{$ticket_booking['ticket_id']}', '{$ticket_booking['booking_id']}', $split_price , 1)";
+				}
+				// insert the new split tickets and delete the old one, rinse and repeat
+				$wpdb->query('INSERT INTO '. EM_TICKETS_BOOKINGS_TABLE . ' (ticket_uuid, ticket_id, booking_id, ticket_booking_price, ticket_booking_spaces) VALUES '. implode(',', $split_tickets) );
+				$wpdb->query('DELETE FROM '. EM_TICKETS_BOOKINGS_TABLE . " WHERE ticket_booking_id='{$ticket_booking['ticket_booking_id']}'");
+			}
+			$results = $wpdb->get_results( $query, ARRAY_A );
+		}
+	}
+	if( $current_version != '' && version_compare($current_version, '6.1', '<') ){
+		// atomic booking meta! for 6.1
+		// let's go through every booking and split it all up
+		$query = 'SELECT booking_id, booking_meta FROM '. EM_BOOKINGS_TABLE ." WHERE booking_meta_migrated IS NULL";
+		$results = $wpdb->get_results( $query, ARRAY_A );
+		while( !empty($results) ){
+			$migrated_bookings = $booking_meta_split = array();
+			foreach( $results as $booking ) {
+				// now we generate split meta, any meta in an array should be dealt with by corresponding plugin (e.g. Pro for form field meta)
+				if( !empty($booking['booking_meta']) ) {
+					$booking_meta = unserialize($booking['booking_meta']);
+					foreach( $booking_meta as $k => $v ){
+						if( is_array($v) ) {
+							// we go down one level for automated array combining
+							$prefix = '_'.$k.'_';
+							foreach( $v as $kk => $vv ){
+								$kk = $prefix . $kk;
+								if( is_array($vv) ) $vv = serialize($vv);
+								$booking_meta_split[] = $wpdb->prepare("({$booking['booking_id']}, %s, %s)", $kk, $vv);
+							}
+						}else{
+							$booking_meta_split[] = $wpdb->prepare("({$booking['booking_id']}, %s, %s)", $k, $v);
+						}
+					}
+					// insert the new split tickets and delete the old one, rinse and repeat
+				}
+				// finally update the booking again so we know it was migrated
+				$migrated_bookings[] = absint($booking['booking_id']);
+			}
+			// first check that we maybe didn't die halfway through this and there aren't others with the same ticket/bookingid combo by simply deleting these
+			$wpdb->query('DELETE FROM '. EM_BOOKINGS_META_TABLE .' WHERE booking_id IN ('. implode(',', $migrated_bookings).')');
+			// now add the batch
+			$result = $wpdb->query('INSERT INTO '. EM_BOOKINGS_META_TABLE . ' (booking_id, meta_key, meta_value) VALUES '. implode(',', $booking_meta_split) );
+			if( $result === false ){
+				$message = "<strong>Events Manager is trying to update your database, but the following error occured whilst copying booking meta to the new ".EM_BOOKINGS_META_TABLE." table:</strong>";
+				$message .= '</p><p>'.'<code>'. $wpdb->last_error .'</code>';
+				$message .= '</p><p>This may likely need some sort of intervention, please get in touch with our support for more advice, we are sorry for the inconveneince.';
+				$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'v6.1-booking-atomic-meta-error', 'who' => 'admin', 'where' => 'all', 'message' => $message, 'what'=>'warning' ));
+				EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
+				global $em_do_not_finalize_upgrade;
+				$em_do_not_finalize_upgrade = true;
+				break;
+			} else {
+				$result = $wpdb->query('UPDATE '. EM_BOOKINGS_TABLE . ' SET booking_meta_migrated=1 WHERE booking_id IN ('. implode(',', $migrated_bookings).')');
+				if( $result === false ){
+					$message = "<strong>Events Manager is trying to update your database, but the following error occured whilst migrating to the new ".EM_BOOKINGS_META_TABLE." table:</strong>";
+					$message .= '</p><p>'.'<code>'. $wpdb->last_error .'</code>';
+					$message .= '</p><p>This may likely need some sort of intervention, please get in touch with our support for more advice, we are sorry for the inconveneince.';
+					$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'v6.1-booking-atomic-meta-error', 'who' => 'admin', 'where' => 'all', 'message' => $message, 'what'=>'warning' ));
+					EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
+					global $em_do_not_finalize_upgrade;
+					$em_do_not_finalize_upgrade = true;
+					break;
+				} else {
+					$results = $wpdb->get_results($query, ARRAY_A);
+				}
+			}
+		}
+		EM_Admin_Notices::remove('v6.1-booking-atomic-meta-error', is_multisite());
+	}
 }
 
 function em_set_mass_caps( $roles, $caps ){
@@ -1302,268 +1438,6 @@ function em_create_events_page(){
 	   		update_option('dbem_my_bookings_page', $bookings_post_id);
 	   	}
 	}
-}
-
-// migrate old dbem tables to new em ones
-function em_migrate_v4(){
-	global $wpdb, $blog_id;
-	//before making any moves, let's create new pages for locations na dcats
-	$event_page_id = get_option('dbem_events_page');
-	if( !empty($event_page_id) ){
-		if( !get_option('dbem_locations_page') ){
-		   	$post_data = array(
-				'post_status' => 'publish',
-		   		'post_parent' => $event_page_id,
-				'post_type' => 'page',
-				'ping_status' => get_option('default_ping_status'),
-				'post_content' => 'CONTENTS',
-				'post_excerpt' => '',
-				'post_title' => get_option('dbem_locations_page_title', __('Locations','events-manager')),
-		   		'post_slug' => get_option('dbem_cp_locations_slug')
-			);
-			$loc_post_id = wp_insert_post($post_data, false);
-	   		update_option('dbem_locations_page', $loc_post_id);
-		}
-		if( !get_option('dbem_categories_page') ){
-		   	//Now Categories Page
-		   	$post_data = array(
-				'post_status' => 'publish',
-		   		'post_parent' => $event_page_id,
-				'post_type' => 'page',
-				'ping_status' => get_option('default_ping_status'),
-				'post_content' => 'CONTENTS',
-				'post_excerpt' => '',
-				'post_title' => get_option('dbem_categories_page_title', __('Categories','events-manager')),
-		   		'post_slug' => get_option('dbem_cp_categories_slug')
-			);
-			$cat_post_id = wp_insert_post($post_data, false);
-	   		update_option('dbem_categories_page', $cat_post_id);
-		}
-		if( !get_option('dbem_my_bookings_page') ){
-		   	//Now Categories Page
-		   	$post_data = array(
-				'post_status' => 'publish',
-		   		'post_parent' => $event_page_id,
-				'post_type' => 'page',
-				'ping_status' => get_option('default_ping_status'),
-				'post_content' => 'CONTENTS',
-				'post_excerpt' => '',
-				'post_title' => __('My Bookings','events-manager'),
-		   		'post_slug' => 'my-bookings'
-			);
-			$bookings_post_id = wp_insert_post($post_data, false);
-	   		update_option('dbem_my_bookings_page', $bookings_post_id);
-		}
-	}
-	//set shared vars
-	$limit = 100;
-	//-- LOCATIONS --
-	if( !is_multisite() || (EM_MS_GLOBAL && is_main_site($blog_id)) || (!EM_MS_GLOBAL && is_multisite()) ){ //old locations will always belong to the main blog when migrated, since we didn't have previous blog ids
-		if( is_multisite() ){
-			$this_blog = $blog_id;
-		}else{
-			$this_blog = 0;
-		}
-		//set location statuses and blog id for all locations
-		$wpdb->query('UPDATE '.EM_LOCATIONS_TABLE.' SET location_status=1, blog_id='.$this_blog.' WHERE blog_id IS NULL');
-		//first create location posts
-		$sql = 'SELECT * FROM '.EM_LOCATIONS_TABLE.' WHERE post_id = 0 LIMIT '.$limit;
-		$locations = $wpdb->get_results($sql, ARRAY_A);
-		//get location image directory
-		$dir = (EM_IMAGE_DS == '/') ? 'locations/':'';
-		while( count($locations) > 0 ){
-			em_migrate_locations($locations);
-			$locations = $wpdb->get_results($sql, ARRAY_A); //get more locations and continue looping
-		}
-	}
-	//-- EVENTS & Recurrences --
-	if( is_multisite() ){
-		if(EM_MS_GLOBAL && is_main_site()){
-			$sql = "SELECT * FROM ".EM_EVENTS_TABLE." WHERE post_id=0 AND (blog_id=$blog_id OR blog_id=0 OR blog_id IS NULL) LIMIT $limit";
-		}elseif(EM_MS_GLOBAL){
-			$sql = "SELECT * FROM ".EM_EVENTS_TABLE." WHERE post_id=0 AND blog_id=$blog_id LIMIT $limit";
-		}else{
-			$sql = "SELECT * FROM ".EM_EVENTS_TABLE." WHERE post_id=0 LIMIT $limit";
-		}
-	}else{
-		$sql = "SELECT * FROM ".EM_EVENTS_TABLE." WHERE post_id=0 LIMIT $limit";
-	}
-	//create posts
-	$events = $wpdb->get_results($sql, ARRAY_A);
-	while( count($events) > 0 ){
-		em_migrate_events($events);
-		$events = $wpdb->get_results($sql, ARRAY_A); //get more locations and continue looping
-	}
-	//-- CATEGORIES --
-	//Create the terms according to category table, use the category owner for the term ids to store this
-	$categories = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix.'em_categories', ARRAY_A); //taking a wild-hope guess that there aren't too many categories on one site/blog
-	foreach( $categories as $category ){
-		//get all events with this category before resetting ids
-		$sql = "SELECT post_id FROM ".EM_EVENTS_TABLE.", ".EM_META_TABLE." WHERE event_id=object_id AND meta_key='event-category' AND meta_value='{$category['category_id']}'";
-		$category_posts = $wpdb->get_col($sql);
-		//get or create new term
-		$term = get_term_by('slug', $category['category_slug'], EM_TAXONOMY_CATEGORY);
-		if( $term === false ){
-			//term not created yet, let's create it
-			$term_array = wp_insert_term($category['category_name'], EM_TAXONOMY_CATEGORY, array(
-				'description' => $category['category_description'],
-				'slug' => $category['category_slug']
-			));
-			if( is_array($term_array) ){
-				//update category bg-color if used before
-				$wpdb->query('UPDATE '.EM_META_TABLE." SET object_id='{$term_array['term_id']}' WHERE meta_key='category-bgcolor' AND object_id={$category['category_id']}");
-				$wpdb->query('UPDATE '.EM_META_TABLE." SET meta_value='{$term_array['term_id']}' WHERE meta_key='event-category' AND meta_value={$category['category_id']}");
-				// and assign category image url if file exists
-				$dir = (EM_IMAGE_DS == '/') ? 'categories/':'';
-			  	foreach(array(1 => 'gif', 2 => 'jpg', 3 => 'png') as $mime_type) {
-					$file_name = $dir."category-{$category['category_id']}.$mime_type";
-					if( file_exists( EM_IMAGE_UPLOAD_DIR.$file_name) ) {
-			  			$wpdb->insert(EM_META_TABLE, array('object_id'=>$term_array['term_id'],'meta_key'=>'category-image','meta_value'=>EM_IMAGE_UPLOAD_URI.$file_name));
-			  			break;
-					}
-				}
-			}
-		}
-		//set event terms in wp tables
-		foreach($category_posts as $post_id){
-			wp_set_object_terms($post_id, $category['category_slug'], EM_TAXONOMY_CATEGORY, true);
-		}
-	}
-	update_option('dbem_migrate_images_nag', 1);
-	update_option('dbem_migrate_images', 1);
-}
-
-function em_migrate_events($events){
-	global $wpdb;
-	//disable actions
-	remove_action('save_post',array('EM_Event_Recurring_Post_Admin','save_post'));
-	remove_action('save_post',array('EM_Event_Post_Admin','save_post'),10,1);
-	$post_fields = array('event_slug','event_owner','event_name','event_attributes','post_id','post_content');
-	$event_metas = array(); //restart metas
-	foreach($events as $event){
-		//new post info
-		$post_array = array();
-		$post_array['post_type'] = $event['recurrence'] == 1 ? 'event-recurring' : EM_POST_TYPE_EVENT;
-		$post_array['post_title'] = $event['event_name'];
-		$post_array['post_content'] = $event['post_content'];
-		$post_array['post_status'] = (!isset($event['event_status']) || $event['event_status'])  ? 'publish':'pending';
-		$post_array['post_author'] = $event['event_owner'];
-		$post_array['post_slug'] = $event['event_slug'];
-		$event['start_ts'] = strtotime($event['event_start_date']);
-		$event['end_ts'] = strtotime($event['event_end_date']);
-		//Save post, register post id in index
-		$post_id = wp_insert_post($post_array);
-		if( is_wp_error($post_id) || $post_id == 0 ){ $post_id = 999999999999999999; }//hopefully nobody blogs that much... if you do, and you're reading this, maybe you should be hiring me for the upgrade ;) }
-		if( $post_id != 999999999999999999 ){
-			$wpdb->query('UPDATE '.EM_EVENTS_TABLE." SET post_id='$post_id' WHERE event_id='{$event['event_id']}'");
-			//meta
-	 		foreach($event as $meta_key => $meta_val){
-	 			if( !in_array($meta_key, $post_fields) && $meta_key != 'event_attributes' ){
-		 			$event_metas[] = $wpdb->prepare("(%d, '%s', '%s')", array($post_id, '_'.$meta_key, $meta_val));
-	 			}elseif($meta_key == 'event_attributes'){
-	 				$event_attributes = unserialize($meta_val); //from em table it's serialized
-					if( is_array($event_attributes) ){
-		 				foreach($event_attributes as $att_key => $att_val){
-			 				$event_metas[] = $wpdb->prepare("(%d, '%s', '%s')", array($post_id, $att_key, $att_val));
-		 				}
-					}
-	 			}
-	 		}
-		}
-	}
- 	//insert the metas in one go, faster than one by one
- 	if( count($event_metas) > 0 ){
-	 	$result = $wpdb->query("INSERT INTO ".$wpdb->postmeta." (post_id,meta_key,meta_value) VALUES ".implode(',',$event_metas));
- 	}
-}
-
-function em_migrate_locations($locations){
-	global $wpdb;
-	//disable actions
-	remove_action('save_post',array('EM_Location_Post_Admin','save_post'));
-	$location_metas = array(); //restart metas
-	$post_fields = array('post_id','location_slug','location_name','post_content','location_owner');
-	foreach($locations as $location){
-		//new post info
-		$post_array = array();
-		$post_array['post_type'] = EM_POST_TYPE_LOCATION;
-		$post_array['post_title'] = $location['location_name'];
-		$post_array['post_content'] = $location['post_content'];
-		$post_array['post_status'] = 'publish';
-		$post_array['post_author'] = $location['location_owner'];
-		//Save post, register post id in index
-		$post_id = wp_insert_post($post_array);
-		if( is_wp_error($post_id) || $post_id == 0 ){ $post_id = 999999999999999999; }//hopefully nobody blogs that much... if you do, and you're reading this, maybe you should be hiring me for the upgrade ;) }
-		$wpdb->query('UPDATE '.EM_LOCATIONS_TABLE." SET post_id='$post_id' WHERE location_id='{$location['location_id']}'");
-		//meta
- 		foreach($location as $meta_key => $meta_val){
- 			if( !in_array($meta_key, $post_fields) ){
-	 			$location_metas[] = $wpdb->prepare("(%d, '%s', '%s')", array($post_id, '_'.$meta_key, $meta_val));
- 			}
- 		}
-	}
- 	//insert the metas in one go, faster than one by one
- 	if( count($location_metas) > 0 ){
-	 	$result = $wpdb->query("INSERT INTO ".$wpdb->postmeta." (post_id,meta_key,meta_value) VALUES ".implode(',',$location_metas));
- 	}
-}
-
-function em_migrate_uploads(){
-	//build array of images
-	global $wpdb;
-	$mime_types = array(1 => 'gif', 2 => 'jpg', 3 => 'png');
-	require_once(ABSPATH . "wp-admin" . '/includes/file.php');
-	require_once(ABSPATH . "wp-admin" . '/includes/image.php');
-
-	$pattern = (EM_IMAGE_DS == '/') ? EM_IMAGE_UPLOAD_DIR.'*/*':EM_IMAGE_UPLOAD_DIR.'*';
-	$files = glob($pattern);
-	$file_array = array();
-	foreach($files as $file){
-		$matches = array();
-		if( preg_match('/\/(events|locations\/)?(event|location)-([0-9]+).([a-zA-Z]{3})/', $file, $matches) ){
-			$file_array[$matches[2]][$matches[3]] = array(
-				'file' => $file,
-				'url' => EM_IMAGE_UPLOAD_URI.$matches[1].$matches[2].'-'.$matches[3].'.'.$matches[4],
-				'type' => 'image/'.$matches[4],
-			);
-		}
-	}
-	$result = array('success'=>0, 'fail'=>0);
-	if( count($file_array) > 0 ){
-		foreach($file_array as $type => $file_type){
-			foreach($file_type as $id => $attachment){
-				if($type == 'event'){
-					$post = em_get_event($id);
-				}elseif($type == 'location'){
-					$post = em_get_location($id);
-				}
-				if ( !empty($post->ID) ){
-					$attachment_data = array(
-						'post_mime_type' => $attachment['type'],
-						'post_title' => $post->post_title,
-						'post_content' => '',
-						'post_status' => 'inherit'
-					);
-					$attachment_id = wp_insert_attachment( $attachment_data, $attachment['file'], $post->ID );
-					$attachment_metadata = wp_generate_attachment_metadata( $attachment_id, $attachment['file'] );
-					wp_update_attachment_metadata( $attachment_id,  $attachment_metadata );
-					//delete the old attachment
-					update_post_meta($post->post_id, '_thumbnail_id', $attachment_id);
-					//is it recurring? If so add attachment to recurrences
-					if( $type == 'event' && $post->is_recurring() ){
-						$results = $wpdb->get_col('SELECT post_id FROM '.EM_EVENTS_TABLE.' WHERE recurrence_id='.$post->event_id);
-						foreach ($results as $post_id){
-							update_post_meta($post_id, '_thumbnail_id', $attachment_id);
-						}
-					}
-					$result['success']++;
-				}
-			}
-		}
-	}
-	delete_option('dbem_migrate_images_nag');
-	delete_option('dbem_migrate_images');
-	return $result;
 }
 
 function em_migrate_datetime_timezones( $reset_new_fields = true, $migrate_date_fields = true, $timezone = false ){

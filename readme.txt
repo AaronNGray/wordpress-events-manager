@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 6.0.1
-Stable tag: 6.0.1
+Stable tag: 6.1
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
@@ -74,6 +74,12 @@ We have a premium [Pro add-on for Events Manager](http://eventsmanagerpro.com/go
 * PayPal, Stripe, Authorize.net and Offline Payments
 * Custom booking forms
 * Individual Attendee custom forms
+* Printable Invoices and Tickets
+* Send PDF tickets/invoices by email automatically
+* Check In/Out
+* QR Scanning
+ * Manage bookings on your phone
+ * Check In/Out users
 * Coupon Codes
 * Custom booking email per event and gateway
 * Faster support via private Pro forums
@@ -129,8 +135,26 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 15. Clean forms for submitting and managing events, as well as booking events for users.
 
 == Changelog ==
-= 6.0.1.1 (dev) =
+= 6.1 =
+* WARNING! MAJOR architecture change for how tickets are stored. This should be backward compatible and a well-tested migration process, but (as you should always do anyway) back up before upgrading!
 * fixed CSS issues in the bookings admin dashboard
+* fixed issues with jQuery UI dialogs losing their styling
+* fixed styling issues with the booking form,
+* fixed duplicate 'events span x days' field in recurring events editor
+* moved em_booking_form_footer action further down the booking form to ensure greater backwards compatibility with Pro updates
+* removed upgrade/migration options for EM v4
+* added split/atomic tickets so each space booked has its own ticket reference and uuid (backwards compatible)
+* added atomic booking meta with dedicated em_bookings_meta table and transition out of the old serialized booking (bookings_meta will still be synced for backwards compatibility for now)
+* added uuid v4 to ticket booking records and entire bookings (for later use such as retrieving booking info anonymously)
+* improved logic/architecture of booking ticket retrieval of post and validation by compartmentalizing each post/validation to specificly relevant objects
+* added new EM_Ticket_Bookings object to group individual ticket bookings of the same ticket within a booking
+* added ArrayAccess implementation to EM_Tickets_Bookings and EM_Ticket_Bookings for more sensible traversing for developers
+* added __debugInfo() to ticket objects to prevent irrelevant recursion whilst debugging print_r and var_dump
+* added improvements to installation process in the event that upgrade routines terminate early or time out
+* added multiple new actions for outputting ticket booking information on the booking admin
+* added default email attachment array so that all other hooks add to it rather than replace the array
+* added output() functionality for individual ticket bookings so that plugins can add placeholders
+* changed post handling of ticket booking objects so that new ticket bookings are assigned a uuid immmediately before calling actions/filters
 
 = 6.0.1 =
 * breaking changes to templates for those upgrading from 6.0, included warning/nudge for users upgrading from 6.0
