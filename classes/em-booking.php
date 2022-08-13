@@ -285,6 +285,11 @@ class EM_Booking extends EM_Object{
 				$data_types = $this->get_types($data);
 				$data['booking_date'] = $this->booking_date = gmdate('Y-m-d H:i:s');
 				$data_types[] = '%s';
+				// first check that the uuid is unique, if not change it and repeat until unique
+				while( $wpdb->get_var( $wpdb->prepare("SELECT booking_uuid FROM $table WHERE booking_uuid=%s", $this->booking_uuid) ) ){
+					$this->booking_uuid = $data['booking_uuid'] = $this->generate_uuid();
+				}
+				// now insert
 				$result = $wpdb->insert($table, $data, $data_types);
 			    $this->booking_id = $wpdb->insert_id;  
 				$this->feedback_message = __('Your booking has been recorded','events-manager'); 

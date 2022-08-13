@@ -126,6 +126,11 @@ class EM_Ticket_Booking extends EM_Object{
 			}else{
 				if($this->get_spaces() > 0){
 					//TODO better error handling
+					// first check that the uuid is unique, if not change it and repeat until unique
+					while( $wpdb->get_var( $wpdb->prepare("SELECT ticket_uuid FROM $table WHERE ticket_uuid=%s", $this->ticket_uuid) ) ){
+						$this->ticket_uuid = $data['ticket_uuid'] = $this->generate_uuid();
+					}
+					// now insert with unique uuid
 					$result = $wpdb->insert($table, $data, $this->get_types($data));
 				    $this->ticket_booking_id = $wpdb->insert_id;  
 					$this->feedback_message = __('Ticket booking created','events-manager'); 

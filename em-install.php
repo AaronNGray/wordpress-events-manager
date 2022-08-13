@@ -1203,25 +1203,52 @@ function em_upgrade_current_installation(){
 		update_option('dbem_css_theme_line_height', 1);
 	}
 	if( $current_version != '' && version_compare($current_version, '6.0.1.2', '<') ){
-		// slated for 6.1 - atomic tickets
-		$query = "UPDATE ". EM_TICKETS_BOOKINGS_TABLE ." SET ticket_uuid= LOWER(CONCAT( HEX(RANDOM_BYTES(4)), '', HEX(RANDOM_BYTES(2)), '4', SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3), '', HEX(FLOOR(ASCII(RANDOM_BYTES(1)) / 64) + 8), SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3), '', hex(RANDOM_BYTES(6)) ))";
-		$result = $wpdb->query($query. " WHERE ticket_uuid=''");
-		// do the same for regular bookings, allowing for unique IDs that can be used by guest users to access (future feature)
-		$query = "UPDATE ". EM_BOOKINGS_TABLE ." SET booking_uuid= LOWER(CONCAT( HEX(RANDOM_BYTES(4)), '', HEX(RANDOM_BYTES(2)), '4', SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3), '', HEX(FLOOR(ASCII(RANDOM_BYTES(1)) / 64) + 8), SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3), '', hex(RANDOM_BYTES(6)) ))";
-		$bookings_result = $wpdb->query( $query . " WHERE booking_uuid=''" );
-		if( $result === false || $bookings_result === false ){
-			$message = "<strong>Events Manager is trying to update your database, but the following error occured:</strong>";
-			$message .= '</p><p>'.'<code>'. $wpdb->last_error .'</code>';
-			$message .= '</p><p>It might be that reloading this page one or more times may complete the process, if you have a large number of bookings in your database. Alternatively, you can run one of these two queries directly into your WP database:';
-			$message .= '</p><p>'.'<code>'. $query .'</code>';
-			$message .= '</p>OR<p>'.'<code>'. "UPDATE ". EM_TICKETS_BOOKINGS_TABLE ." SET ticket_uuid= UUID()" .'</code>';
-			$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'v6.1-atomic-error', 'who' => 'admin', 'where' => 'all', 'message' => $message, 'what'=>'warning' ));
-			EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
-			global $em_do_not_finalize_upgrade;
-			$em_do_not_finalize_upgrade = true;
-		}else{
-			EM_Admin_Notices::remove('v6.1-atomic-error', is_multisite());
+		function v6012_sql_check_error( $result, $query, $table ){
+			global $wpdb;
+			if( $result === false ){
+				$message = "<strong>Events Manager is trying to update your database, but the following error occured:</strong>";
+				$message .= '</p><p>'.'<code>'. $wpdb->last_error .'</code>';
+				$message .= '</p><p>It might be that reloading this page one or more times may complete the process, if you have a large number of bookings in your database. Alternatively, you can run one of these two queries directly into your WP database:';
+				$message .= '</p><p>'.'<code>'. $query .'</code>';
+				$message .= '</p>OR<p>'.'<code>'. "UPDATE ". $table ." SET ticket_uuid= UUID()" .'</code>';
+				$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'v6.1-'.$table.'atomic-error', 'who' => 'admin', 'where' => 'all', 'message' => $message, 'what'=>'warning' ));
+				EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
+				global $em_do_not_finalize_upgrade;
+				$em_do_not_finalize_upgrade = true;
+			}else{
+				EM_Admin_Notices::remove('v6.1-'.$table.'atomic-error', is_multisite());
+			}
 		}
+		// slated for 6.1 - atomic tickets - tweaked for mariadb < 10.0 compatiability
+		$query = "UPDATE ". EM_TICKETS_BOOKINGS_TABLE ." SET ticket_uuid= MD5(RAND())";
+		//$query = "UPDATE ". EM_TICKETS_BOOKINGS_TABLE ." SET ticket_uuid= LOWER(CONCAT( HEX(RANDOM_BYTES(4)), '', HEX(RANDOM_BYTES(2)), '4', SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3), '', HEX(FLOOR(ASCII(RANDOM_BYTES(1)) / 64) + 8), SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3), '', hex(RANDOM_BYTES(6)) ))";
+		$result = $wpdb->query($query. " WHERE ticket_uuid=''");
+		if( $result !== false ) {
+			// check for duplicates, md5 has much more chnace of collision
+			$duplicate_check = 'SELECT ticket_booking_id FROM ' . EM_TICKETS_BOOKINGS_TABLE . ' GROUP BY ticket_uuid HAVING COUNT(ticket_uuid) > 1 LIMIT 1';
+			while( $result !== false && $wpdb->get_var($duplicate_check) !== null ) {
+				$query_recheck = 'UPDATE ' . EM_TICKETS_BOOKINGS_TABLE . ' SET ticket_uuid= MD5(RAND()) WHERE ticket_uuid IN (
+				    SELECT ticket_uuid FROM (SELECT ticket_uuid FROM ' . EM_TICKETS_BOOKINGS_TABLE . ' GROUP BY ticket_uuid HAVING COUNT(ticket_uuid) > 1) t2
+				)';
+				$result = $wpdb->query($query_recheck);
+			}
+		}
+		v6012_sql_check_error($result, $query, EM_TICKETS_BOOKINGS_TABLE);
+		// do the same for regular bookings, allowing for unique IDs that can be used by guest users to access (future feature)
+		$query = "UPDATE ". EM_BOOKINGS_TABLE ." SET booking_uuid= MD5(RAND())";
+		//$query = "UPDATE ". EM_BOOKINGS_TABLE ." SET booking_uuid= LOWER(CONCAT( HEX(RANDOM_BYTES(4)), '', HEX(RANDOM_BYTES(2)), '4', SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3), '', HEX(FLOOR(ASCII(RANDOM_BYTES(1)) / 64) + 8), SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3), '', hex(RANDOM_BYTES(6)) ))";
+		$result = $wpdb->query( $query . " WHERE booking_uuid=''" );
+		if( $result !== false ) {
+			// check for duplicates, md5 has much more chnace of collision
+			$duplicate_check = 'SELECT booking_id FROM ' . EM_BOOKINGS_TABLE . ' GROUP BY booking_uuid HAVING COUNT(booking_uuid) > 1 LIMIT 1';
+			while( $result !== false && $wpdb->get_var($duplicate_check) !== null ) {
+				$query_recheck = 'UPDATE ' . EM_BOOKINGS_TABLE . ' SET booking_uuid= MD5(RAND()) WHERE booking_uuid IN (
+				    SELECT booking_uuid FROM (SELECT booking_uuid FROM ' . EM_BOOKINGS_TABLE . ' GROUP BY booking_uuid HAVING COUNT(booking_uuid) > 1) t2
+				)';
+				$result = $wpdb->query($query_recheck);
+			}
+		}
+		v6012_sql_check_error($result, $query, EM_BOOKINGS_TABLE);
 		// Now go through current bookings and split the tickets up, 100 at a time
 		$query = 'SELECT ticket_booking_id, ticket_id, booking_id, ticket_booking_spaces, ticket_booking_price FROM '.EM_TICKETS_BOOKINGS_TABLE .' WHERE ticket_booking_spaces > 1 LIMIT 100';
 		$results = $wpdb->get_results( $query, ARRAY_A );

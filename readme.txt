@@ -135,6 +135,9 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 15. Clean forms for submitting and managing events, as well as booking events for users.
 
 == Changelog ==
+= 6.1.0.1 (dev) =
+* tweaked installation SQL so it's MariaDB-compatible
+
 = 6.1 =
 * WARNING! MAJOR architecture change for how tickets are stored. This should be backward compatible and a well-tested migration process, but (as you should always do anyway) back up before upgrading!
 * fixed CSS issues in the bookings admin dashboard
