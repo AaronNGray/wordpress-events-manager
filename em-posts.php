@@ -270,7 +270,7 @@ function wp_events_plugin_init(){
 		add_filter('gutenberg_can_edit_post_type', 'em_gutenberg_support', 10, 2 ); //Gutenberg
 	}
 	
-	if( strstr(EM_POST_TYPE_EVENT_SLUG, EM_POST_TYPE_LOCATION_SLUG) !== FALSE ){
+	if( EM_POST_TYPE_LOCATION_SLUG !== '' && strstr(EM_POST_TYPE_EVENT_SLUG, EM_POST_TYPE_LOCATION_SLUG) !== FALSE ){
 		//Now register posts, but check slugs in case of conflicts and reorder registrations
 		register_post_type(EM_POST_TYPE_EVENT, $event_post_type);
 		if ( get_option('dbem_recurrence_enabled') ){

@@ -1330,6 +1330,10 @@ function em_upgrade_current_installation(){
 			}
 		}
 		EM_Admin_Notices::remove('v6.1-booking-atomic-meta-error', is_multisite());
+		EM_Admin_Notices::remove('v6.1-atomic-error', is_multisite());
+	}
+	if( $current_version != '' && version_compare($current_version, '6.1.1', '<') ){
+		EM_Admin_Notices::remove('v6.1-atomic-error', is_multisite());
 	}
 }
 
