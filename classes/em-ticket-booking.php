@@ -52,9 +52,11 @@ class EM_Ticket_Booking extends EM_Object{
 				// if we get supplied this info we should load the references so we don't need to later
 				if( !empty($ticket_data['booking']) && !empty($ticket_data['booking']->booking_uuid) ){
 					$this->booking = $ticket_data['booking'];
+					$this->booking_id = $this->booking->booking_id;
 				}
 				if( !empty($ticket_data['ticket']) && !empty($ticket_data['ticket']->ticket_id) ){
 					$this->ticket = $ticket_data['ticket'];
+					$this->ticket_id = $this->ticket;
 				}
 			} elseif (is_numeric($ticket_data)) {
 				//Retreiving from the database
@@ -248,7 +250,7 @@ class EM_Ticket_Booking extends EM_Object{
 	 */
 	function get_booking(){
 		global $EM_Booking;
-		if( is_object($this->booking) && get_class($this->booking)=='EM_Booking' && ($this->booking->booking_id == $this->booking_id || (empty($this->ticket_booking_id) && empty($this->booking_id))) ){
+		if( is_object($this->booking) && $this->booking instanceof EM_Booking && ($this->booking->booking_id == $this->booking_id || (empty($this->ticket_booking_id) && empty($this->booking_id))) ){
 			return $this->booking;
 		}elseif( is_object($EM_Booking) && $EM_Booking->booking_id == $this->booking_id ){
 			$this->booking = $EM_Booking;
@@ -303,24 +305,26 @@ class EM_Ticket_Booking extends EM_Object{
 	 * @return mixed|void
 	 */
 	public function output($format, $target="html") {
-		preg_match_all('/\{([a-zA-Z0-9_\-,]+)\}(.+?)\{\/\1\}/s', $format, $conditionals);
-		if( count($conditionals[0]) > 0 ){
-			//Check if the language we want exists, if not we take the first language there
-			foreach($conditionals[1] as $key => $condition){
-				$show_condition = false;
-				$show_condition = apply_filters('em_ticket_booking_output_show_condition', $show_condition, $condition, $conditionals[0][$key], $this);
-				if($show_condition){
-					//calculate lengths to delete placeholders
-					$placeholder_length = strlen($condition)+2;
-					$replacement = substr($conditionals[0][$key], $placeholder_length, strlen($conditionals[0][$key])-($placeholder_length *2 +1));
-				}else{
-					$replacement = '';
+		$output_string = $format;
+		for ($i = 0 ; $i < EM_CONDITIONAL_RECURSIONS; $i++){
+			preg_match_all('/\{([a-zA-Z0-9_\-,]+)\}(.+?)\{\/\1\}/s', $format, $conditionals);
+			if( count($conditionals[0]) > 0 ){
+				//Check if the language we want exists, if not we take the first language there
+				foreach($conditionals[1] as $key => $condition){
+					$show_condition = false;
+					$show_condition = apply_filters('em_ticket_booking_output_show_condition', $show_condition, $condition, $conditionals[0][$key], $this);
+					if($show_condition){
+						//calculate lengths to delete placeholders
+						$placeholder_length = strlen($condition)+2;
+						$replacement = substr($conditionals[0][$key], $placeholder_length, strlen($conditionals[0][$key])-($placeholder_length *2 +1));
+					}else{
+						$replacement = '';
+					}
+					$output_string = str_replace($conditionals[0][$key], apply_filters('em_ticket_booking_output_condition', $replacement, $condition, $conditionals[0][$key], $this), $format);
 				}
-				$format = str_replace($conditionals[0][$key], apply_filters('em_ticket_booking_output_condition', $replacement, $condition, $conditionals[0][$key], $this), $format);
 			}
 		}
-		$output_string = $format;
-		preg_match_all("/(#@?_?[A-Za-z0-9_]+)({([^}]+)})?/", $format, $placeholders);
+		preg_match_all("/(#@?_?[A-Za-z0-9_]+)({([^}]+)})?/", $output_string, $placeholders);
 		$replaces = array();
 		foreach($placeholders[1] as $key => $result) {
 			$full_result = $placeholders[0][$key];

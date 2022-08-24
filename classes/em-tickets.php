@@ -1,8 +1,8 @@
 <?php
 /**
  * Deals with the ticket info for an event
- * @author marcus
  *
+ * @property EM_Event $event
  */
 class EM_Tickets extends EM_Object implements Iterator, Countable {
 	
@@ -21,6 +21,10 @@ class EM_Tickets extends EM_Object implements Iterator, Countable {
 	var $booking;
 	var $spaces;
 	
+	/**
+	 * @var EM_Event
+	 */
+	protected $event;
 	
 	/**
 	 * Creates an EM_Tickets instance
@@ -28,8 +32,9 @@ class EM_Tickets extends EM_Object implements Iterator, Countable {
 	 */
 	function __construct( $object = false ){
 		global $wpdb;
-		if( is_numeric($object) || (is_object($object) && in_array(get_class($object), array("EM_Event","EM_Booking"))) ){
+		if( is_numeric($object) || $object instanceof EM_Event || $object instanceof EM_Booking ){
 			$this->event_id = (is_object($object)) ? $object->event_id:$object;
+			if( $object instanceof EM_Event ) $this->event = $object;
 			$orderby_option = get_option('dbem_bookings_tickets_orderby');
 			$order_by = get_option('dbem_bookings_tickets_ordering') ? array('ticket_order ASC') : array();
 			$ticket_orderby_options = apply_filters('em_tickets_orderby_options', array(
@@ -43,7 +48,7 @@ class EM_Tickets extends EM_Object implements Iterator, Countable {
 			}else{
 				$order_by[] = 'ticket_price DESC, ticket_name ASC';
 			}
-		    if( is_object($object) && get_class($object) == 'EM_Booking' ){
+		    if( $object instanceof  EM_Booking ){
 				$sql = "SELECT * FROM ". EM_TICKETS_TABLE ." WHERE ticket_id IN (SELECT ticket_id FROM ".EM_TICKETS_BOOKINGS_TABLE." WHERE booking_id='{$object->booking_id}') ORDER BY ".implode(',', $order_by);
 		    }else{
 		        $sql = "SELECT * FROM ". EM_TICKETS_TABLE ." WHERE event_id ='{$this->event_id}' ORDER BY ".implode(',', $order_by);
@@ -52,10 +57,11 @@ class EM_Tickets extends EM_Object implements Iterator, Countable {
 			foreach ($tickets as $ticket){
 				$EM_Ticket = new EM_Ticket($ticket);
 				$EM_Ticket->event_id = $this->event_id;
+				$EM_Ticket->event = $this->event;
 				$this->tickets[$EM_Ticket->ticket_id] = $EM_Ticket;
 			}
 		}elseif( is_array($object) ){ //expecting an array of EM_Ticket objects or ticket db array
-			if( is_object(current($object)) && get_class(current($object)) == 'EM_Ticket' ){
+			if( current($object) instanceof EM_Ticket ){
 			    foreach($object as $EM_Ticket){
 					$this->tickets[$EM_Ticket->ticket_id] = $EM_Ticket;
 			    }
@@ -63,6 +69,7 @@ class EM_Tickets extends EM_Object implements Iterator, Countable {
 				foreach($object as $ticket){
 					$EM_Ticket = new EM_Ticket($ticket);
 					$EM_Ticket->event_id = $this->event_id;
+					$EM_Ticket->event = $this->event;
 					$this->tickets[$EM_Ticket->ticket_id] = $EM_Ticket;				
 				}
 			}
@@ -70,15 +77,40 @@ class EM_Tickets extends EM_Object implements Iterator, Countable {
 		do_action('em_tickets', $this, $object);
 	}
 	
+	public function __get( $prop ){
+		if( $prop == 'event' ){
+			return $this->get_event();
+		}
+	}
+	
+	public function __set( $prop, $val ){
+		if( $prop == 'event' && $val instanceof EM_Event ){
+			$this->event = $val;
+			$this->event_id = $this->event->event_id;
+		}
+	}
+	
+	public function __isset( $prop ) {
+		//start_timestamp and end_timestamp are deprecated, don't use them anymore
+		if ($prop == 'event') {
+			return !empty($this->event);
+		}
+	}
+	
 	/**
+	 * Returnds the event associated with this set of tickets, if there is one.
 	 * @return EM_Event
 	 */
 	function get_event(){
+		if( $this->event && $this->event->event_id == $this->event_id ){
+			return $this->event;
+		}
 		global $EM_Event;
 		if( is_object($EM_Event) && $EM_Event->event_id == $this->event_id ){
+			$this->event = $EM_Event;
 			return $EM_Event;
 		}else{
-			return new EM_Event($this->event_id);
+			$this->event = em_get_event($this->event_id);
 		}
 	}
 

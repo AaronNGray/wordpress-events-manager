@@ -407,7 +407,7 @@ jQuery(document).ready( function($){
 			return false;
 		});
 		//Approve/Reject Links
-		$(document).on('click', '.em-bookings-approve,.em-bookings-reject,.em-bookings-unapprove,.em-bookings-delete', function(){
+		$(document).on('click', '.em-bookings-approve,.em-bookings-reject,.em-bookings-unapprove,.em-bookings-delete,.em-bookings-ajax-action', function(){
 			var el = $(this); 
 			if( el.hasClass('em-bookings-delete') ){
 				if( !confirm(EM.booking_delete) ){ return false; }
@@ -461,6 +461,7 @@ jQuery(document).ready( function($){
 				success : function(response, statusText, xhr, $form) {
 					if(response.result){
 						button.text(EM.bb_booked);
+					    button.addClass('disabled');
 					}else{
 						button.text(EM.bb_error);
 					}
@@ -489,6 +490,7 @@ jQuery(document).ready( function($){
 				success : function(response, statusText, xhr, $form) {
 					if(response.result){
 						button.text(EM.bb_cancelled);
+					    button.addClass('disabled');
 					}else{
 						button.text(EM.bb_cancel_error);
 					}
@@ -497,7 +499,55 @@ jQuery(document).ready( function($){
 			});
 		}
 		return false;
-	});  
+	});
+	$(document).on('click', 'a.em-booking-button-action', function(e){
+		e.preventDefault();
+		var button = $(this);
+		var button_data = {
+            _wpnonce : button.attr('data-nonce'),
+            action : button.attr('data-action'),
+        }
+        if( button.attr('data-event-id') ) button_data.event_id =  button.attr('data-event-id');
+        if( button.attr('data-booking-id') ) button_data.booking_id =  button.attr('data-booking-id');
+		if( button.text() != EM.bb_booked && $(this).text() != EM.bb_booking){
+		    if( button.attr('data-loading') ){
+    			button.text(button.attr('data-loading'));
+    		}else{
+    			button.text(EM.bb_booking);
+    		}
+			$.ajax({
+				url: EM.ajaxurl,
+				dataType: 'jsonp',
+				data: button_data,
+				success : function(response, statusText, xhr, $form) {
+					if(response.result){
+					    if( button.attr('data-success') ){
+					        button.text(button.attr('data-success'));
+					    }else{
+						    button.text(EM.bb_booked);
+						}
+					    button.addClass('disabled');
+					}else{
+					    if( button.attr('data-error') ){
+					        button.text(button.attr('data-error'));
+					    }else{
+						    button.text(EM.bb_error);
+						}
+					}
+					if(response.message != '') alert(response.message);
+					$(document).triggerHandler('em_booking_button_action_response', [response, button]);
+				},
+				error : function(){
+                    if( button.attr('data-error') ){
+                        button.text(button.attr('data-error'));
+                    }else{
+                        button.text(EM.bb_error);
+                    }
+				}
+			});
+		}
+		return false;
+	});
 
 	//Datepicker - legacy
 	if( $('.em-date-single, .em-date-range, #em-date-start').length > 0 ){
@@ -1457,6 +1507,7 @@ function em_esc_attr( str ){
 
 // Modal Open/Close
 let openModal = function( modal, onOpen = null ){
+    modal = jQuery(modal);
 	modal.appendTo(document.body);
 	setTimeout( function(){
         modal.addClass('active').find('.em-modal-popup').addClass('active');
@@ -2531,6 +2582,110 @@ jQuery(document).ready( function($){
 	EM_ResizeObserver( {'small': 500, 'large' : false}, $('.em-login').toArray());
 
 });
+
+// handle generic ajax submission forms vanilla style
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('form.em-ajax-form').forEach( function(el){
+        el.addEventListener('submit', function(e){
+            e.preventDefault();
+            let form = e.currentTarget;
+            let formData =  new FormData(form);
+            let button = form.querySelector('button[type="submit"]');
+            let loader;
+
+            if( form.classList.contains('no-overlay-spinner') ){
+                form.classList.add('loading');
+            }else{
+                let loader = document.createElement('div');
+                loader.id = 'em-loading';
+                form.append(loader);
+            }
+
+            var request = new XMLHttpRequest();
+            if( form.getAttribute('data-api-url') ){
+                request.open('POST', form.getAttribute('data-api-url'), true);
+                request.setRequestHeader('X-WP-Nonce', EM.api_nonce);
+            }else{
+                request.open('POST', EM.ajaxurl, true);
+            }
+
+            request.onload = function() {
+                if( loader ) loader.remove();
+                if (this.status >= 200 && this.status < 400) {
+                    // Success!
+                    try {
+                        let data = JSON.parse(this.response);
+                        let notice;
+                        if( !form.classList.contains('no-inline-notice') ){
+                            notice = form.querySelector('.em-notice');
+                            if( !notice ){
+                                notice = document.createElement('li');
+                                form.prepend(notice);
+                                if( formData.get('action') ){
+                                    form.dispatchEvent( new CustomEvent( 'em_ajax_form_success_' + formData.get('action'), {
+                                        detail : {
+                                            form : form,
+                                            notice : notice,
+                                            response : data,
+                                        }
+                                    }) );
+                                }
+                            }
+                            notice.innerHTML = '';
+                            notice.setAttribute('class', 'em-notice');
+                        }
+                        if( data.result ){
+                            if( !form.classList.contains('no-inline-notice') ){
+                                notice.classList.add('em-notice-success');
+                                notice.innerHTML = data.message;
+                                form.replaceWith(notice);
+                            }else{
+                                form.classList.add('load-successful');
+                                form.classList.remove('loading');
+                                if( data.message ){
+                                    EM_Alert(data.message);
+                                }
+                            }
+                        }else{
+                            if( !form.classList.contains('no-inline-notice') ){
+                                notice.classList.add('em-notice-error');
+                                notice.innerHTML = data.errors;
+                            }else{
+                                EM_Alert(data.errors);
+                            }
+                        }
+                    } catch(e) {
+                        alert( 'Error Encountered : ' + e);
+                    }
+                } else {
+                    alert('Error encountered... please see debug logs or contact support.');
+                }
+                form.classList.remove('loading');
+            };
+
+            request.onerror = function() {
+                alert('Connection error encountered... please see debug logs or contact support.');
+            };
+
+            request.send( formData );
+            return false;
+        });
+    });
+});
+
+function EM_Alert( content ){
+    // find the alert modal, create if not
+    let modal = document.getElementById('em-alert-modal');
+    if( modal === null ){
+        modal = document.createElement('div');
+        modal.setAttribute('class', "em pixelbones em-modal");
+        modal.id = 'em-alert-modal';
+        modal.innerHTML = '<div class="em-modal-popup"><header><a class="em-close-modal"></a><div class="em-modal-title">&nbsp;</div></header><div class="em-modal-content" id="em-alert-modal-content"></div></div>';
+        document.body.append(modal);
+     }
+     document.getElementById('em-alert-modal-content').innerHTML = content;
+     openModal(modal);
+};
 
 /*!
  * jquery-timepicker v1.13.16 - Copyright (c) 2020 Jon Thornton - https://www.jonthornton.com/jquery-timepicker/

@@ -419,7 +419,6 @@ function em_init_actions() {
 			}
 		}elseif( $_REQUEST['action'] == 'booking_save' ){
 			em_verify_nonce('booking_save_'.$EM_Booking->booking_id);
-			do_action('em_booking_save', $EM_Event, $EM_Booking);
 			if( $EM_Booking->can_manage('manage_bookings','manage_others_bookings') ){
 				if ($EM_Booking->get_post(true) && $EM_Booking->validate(true) && $EM_Booking->save(false) ){
 					$EM_Notices->add_confirm( $EM_Booking->feedback_message, true );
@@ -454,26 +453,37 @@ function em_init_actions() {
 				}else{
 					$result = false;
 					$EM_Notices->add_error( $EM_Booking->get_errors() );
-					$feedback = $EM_Booking->feedback_message;	
+					$feedback = $EM_Booking->feedback_message;
 				}	
 			}
 		}elseif( $_REQUEST['action'] == 'booking_resend_email' ){
 			em_verify_nonce('booking_resend_email_'.$EM_Booking->booking_id);
 			if( $EM_Booking->can_manage('manage_bookings','manage_others_bookings') ){
 				if( $EM_Booking->email(false, true) ){
+					$result = true;
 				    if( $EM_Booking->mails_sent > 0 ) {
-				        $EM_Notices->add_confirm( __('Email Sent.','events-manager'), true );
+					    $feedback = __('Email Sent.','events-manager');
+				        $EM_Notices->add_confirm( $feedback, !defined('DOING_AJAX') );
 				    }else{
-				        $EM_Notices->add_confirm( _x('No emails to send for this booking.', 'bookings', 'events-manager'), true );
+					    $feedback = _x('No emails to send for this booking.', 'bookings', 'events-manager');
+				        $EM_Notices->add_confirm( $feedback, !defined('DOING_AJAX') );
 				    }
-					$redirect = !empty($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : em_wp_get_referer();
-					wp_safe_redirect( $redirect );
-					exit();
 				}else{
-					$result = false;
-					$EM_Notices->add_error( __('ERROR : Email Not Sent.','events-manager') );			
+					$EM_Notices->add_error( __('ERROR : Email Not Sent.','events-manager'), !defined('DOING_AJAX') );
 					$feedback = $EM_Booking->feedback_message;
-				}	
+				}
+				if( !empty($_REQUEST['em_ajax']) ){
+					if( $result ){
+						echo $feedback;
+					}else{
+						echo '<span style="color:red">'.$feedback.'</span>';
+					}
+					die();
+				}else{
+					$redirect = !empty($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : em_wp_get_referer();
+					wp_safe_redirect($redirect);
+					exit();
+				}
 			}
 		}elseif( $_REQUEST['action'] == 'booking_modify_person' ){
 			em_verify_nonce('booking_modify_person_'.$EM_Booking->booking_id);
@@ -518,12 +528,14 @@ function em_init_actions() {
 			die();
 		}
 	}elseif( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'booking_add' && !is_user_logged_in() && !get_option('dbem_bookings_anonymous')){
+		global $EM_Booking;
+		$EM_Booking = ( !empty($_REQUEST['booking_id']) ) ? em_get_booking($_REQUEST['booking_id']) : em_get_booking();
 		$EM_Notices->add_error( get_option('dbem_booking_feedback_log_in') );
-		if( !$result && defined('DOING_AJAX') ){
-			$return = array('result'=>false, 'message'=>$EM_Booking->feedback_message, 'errors'=>$EM_Notices->get_errors());
+		if( defined('DOING_AJAX') ){
+			$return = array('result'=>false, 'message'=>get_option('dbem_booking_feedback_log_in'), 'errors'=>$EM_Notices->get_errors());
 			echo EM_Object::json_encode(apply_filters('em_action_'.$_REQUEST['action'], $return, $EM_Booking));
+			die();
 		}
-		die();
 	}
 	
 	//AJAX call for searches

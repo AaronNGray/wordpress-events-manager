@@ -8,6 +8,8 @@
  * @param string ticket_description
  * @param string ticket_start
  * @param string ticket_end
+ *
+ * @property EM_Event $event
  */
 class EM_Ticket extends EM_Object{
 	//DB Fields
@@ -72,6 +74,11 @@ class EM_Ticket extends EM_Object{
 	protected $bookings_count = array();
 	
 	/**
+	 * @var EM_Event
+	 */
+	protected $event;
+	
+	/**
 	 * Creates ticket object and retreives ticket data (default is a blank ticket object). Accepts either array of ticket data (from db) or a ticket id.
 	 * @param mixed $ticket_data
 	 * @return null
@@ -124,8 +131,9 @@ class EM_Ticket extends EM_Object{
 			}else{
 				return $this->{$prop};
 			}
-		}
-	    if( $var == 'ticket_start' || $var == 'ticket_end' ){
+		}elseif( $var == 'event' ){
+			return $this->get_event();
+		}elseif( $var == 'ticket_start' || $var == 'ticket_end' ){
 	    	return $this->$var;
 	    }
 	   //these are deprecated properties, use the start() and end() functions directly instead
@@ -142,8 +150,11 @@ class EM_Ticket extends EM_Object{
 	public function __set( $prop, $val ){
 		if( $prop == 'name' || $prop == 'description' ){
 			$prop = 'ticket_'.$prop;
+		}elseif( $prop == 'event' && $val instanceof EM_Event ){
+			$this->event = $val;
+			$this->event_id = $this->event->event_id;
 		}
-		if( $prop == 'ticket_start' ){
+		elseif( $prop == 'ticket_start' ){
 			$this->{$prop} = $val;
 			$this->start = false;
 		}elseif( $prop == 'ticket_end' ){
@@ -172,7 +183,7 @@ class EM_Ticket extends EM_Object{
 		}elseif( $prop == 'ticket_end' || $prop == 'end_timestamp' ){
 			return !empty($this->ticket_end);
 		}
-		if( $prop == 'name' || $prop == 'ticket_name' || $prop == 'description' || $prop == 'ticket_description' ){
+		if( $prop == 'name' || $prop == 'ticket_name' || $prop == 'description' || $prop == 'ticket_description'  || $prop == 'event' ){
 			$prop = $prop == 'name' || $prop == 'description' ? 'ticket_'.$prop : $prop;
 			return !empty($this->{$prop});
 		}
@@ -341,16 +352,16 @@ class EM_Ticket extends EM_Object{
 		return apply_filters('em_ticket_validate', count($this->errors) == 0, $this );
 	}
 	
-	function is_available( $ignore_member_restrictions = false, $ignore_guest_restrictions = false ){
-		if( EM_Bookings::$disable_restrictions ) return true; // complete short-circuit
-		if( isset($this->is_available) && !$ignore_member_restrictions && !$ignore_guest_restrictions ) return apply_filters('em_ticket_is_available',  $this->is_available, $this); //save extra queries if doing a standard check
+	function is_available($ignore_member_restrictions = false, $ignore_guest_restrictions = false, $ignore_spaces = false ){
+		if( EM_Bookings::$disable_restrictions ) return apply_filters('em_ticket_is_available', true, $this, true, true, true); // complete short-circuit, but overriding functions should beware of the $disable_restrictions flag!
+		if( isset($this->is_available) && !$ignore_member_restrictions && !$ignore_guest_restrictions && !$ignore_spaces ) return apply_filters('em_ticket_is_available',  $this->is_available, $this, false, false, false); //save extra queries if doing a standard check
 		$is_available = false;
 		$EM_Event = $this->get_event();
 		$available_spaces = $this->get_available_spaces();
 		$condition_1 = empty($this->ticket_start) || $this->start()->getTimestamp() <= time();
 		$condition_2 = empty($this->ticket_end) || $this->end()->getTimestamp() >= time();
 		$condition_3 = $EM_Event->rsvp_end()->getTimestamp() > time(); //either defined ending rsvp time, or start datetime is used here
-		$condition_4 = !$this->ticket_members || ($this->ticket_members && is_user_logged_in()) || $ignore_member_restrictions;
+		$condition_4 = !$this->ticket_members || is_user_logged_in() || $ignore_member_restrictions;
 		$condition_5 = true;
 		if( !$ignore_member_restrictions && $this->ticket_members && !empty($this->ticket_members_roles) ){
 			//check if user has the right role to use this ticket
@@ -362,17 +373,60 @@ class EM_Ticket extends EM_Object{
 				}
 			}
 		}
-		$condition_6 = !$this->ticket_guests || ($this->ticket_guests && !is_user_logged_in()) || $ignore_guest_restrictions;
-		if( $condition_1 && $condition_2 && $condition_3 && $condition_4 && $condition_5 && $condition_6 ){
+		$condition_6 = !$this->ticket_guests || !is_user_logged_in() || $ignore_guest_restrictions;
+		if( $condition_1 && $condition_2 && $condition_3 && $condition_4 && $condition_5 && $condition_6  ){
 			//Time Constraints met, now quantities
 			if( $available_spaces > 0 && ($available_spaces >= $this->ticket_min || empty($this->ticket_min)) ){
 				$is_available = true;
+			}elseif( $ignore_spaces === true ) {
+				$is_available = true;
 			}
 		}
-		if( !$ignore_member_restrictions && !$ignore_guest_restrictions ){ //$this->is_available is only stored for the viewing user
+		if( !$ignore_member_restrictions && !$ignore_guest_restrictions && !$ignore_spaces ){ //$this->is_available is only stored for the viewing user
 			$this->is_available = $is_available;
 		}
-		return apply_filters('em_ticket_is_available', $is_available, $this, $ignore_guest_restrictions, $ignore_member_restrictions);
+		return apply_filters('em_ticket_is_available', $is_available, $this, $ignore_guest_restrictions, $ignore_member_restrictions, $ignore_spaces);
+	}
+	
+	/**
+	 * Checks if ticket is abailable to a specific user type based on user restrictions, other restrictions like dates, availability etc. is ignored. This can generically be guest (0 or false), registered user (true) or more specifically role (string) or a specific user ID (int).
+	 * If this check is for a generic registered user, a check will not be made for role restrictions, only if the ticket is restricted to logged in users.
+	 * @param int|WP_User|bool|string $user_type
+	 * @return bool
+	 * @since 6.1.1.1
+	 */
+	public function is_available_to( $user_type = 0 ){
+		if( $user_type === 0 || $user_type === false ){
+			// guest
+			return !$this->ticket_members;
+		}elseif( $user_type === true ){
+			// registered user, all but guest tickets theoretically available
+			return !$this->ticket_guests;
+		}elseif( is_numeric($user_type) || $user_type instanceof WP_User ){
+			// real user id or
+			if( $user_type instanceof WP_User ){
+				$user = $user_type;
+			}else{
+				$user = new WP_User($user_type);
+			} /*  @var WP_User $user */
+			if( $this->ticket_members && !empty($this->ticket_members_roles) ) {
+				if (count(array_intersect($user->roles, $this->ticket_members_roles)) > 0) {
+					return true;
+				}
+			}
+			// otherwise check if limited to guests
+			return !$this->ticket_guests;
+		}elseif( is_string($user_type) ){
+			// user role
+			if( $this->ticket_members && !empty($this->ticket_members_roles) ) {
+				if ( in_array($user_type, $this->ticket_members_roles) ){
+					return true;
+				}
+			}
+			// otherwise check if limited to guests
+			return !$this->ticket_guests;
+		}
+		return false;
 	}
 	
 	/**
@@ -527,13 +581,22 @@ class EM_Ticket extends EM_Object{
 	}
 	
 	/**
-	 * Smart event locator, saves a database read if possible.
-	 * @return EM_Event 
+	 * Returnds the event associated with this set of tickets, if there is one.
+	 * @return EM_Event
 	 */
 	function get_event(){
-		return em_get_event($this->event_id);
+		if( $this->event && $this->event->event_id == $this->event_id ){
+			return $this->event;
+		}
+		global $EM_Event;
+		if( is_object($EM_Event) && $EM_Event->event_id == $this->event_id ){
+			$this->event = $EM_Event;
+			return $EM_Event;
+		}else{
+			$this->event = em_get_event($this->event_id);
+			return $this->event;
+		}
 	}
-	
 	/**
 	 * returns array of EM_Booking objects that have this ticket
 	 * @return EM_Bookings
@@ -650,7 +713,8 @@ class EM_Ticket extends EM_Object{
 	 * @return string
 	 */
 	function get_spaces_options($zero_value = true, $default_value = 0){
-		$available_spaces = $this->get_available_spaces();		
+		$available_spaces = $this->get_available_spaces();
+		if( EM_Bookings::$disable_restrictions ) $available_spaces = get_option('dbem_bookings_form_max');
 		if( $this->is_available() ) {
 		    $min_spaces = $this->get_spaces_minimum();
 		    if( $default_value > 0 ){

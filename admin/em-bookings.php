@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * Deprecated - see em-actions.php - this will be removed at some point in 6.0
  * Check if there's any admin-related actions to take for bookings. All actions are caught here.
@@ -110,13 +110,16 @@ function em_bookings_event(){
 			
 	        <?php if( !is_admin() ) echo $EM_Notices; ?>
 			<p><strong><?php esc_html_e('Event Name','events-manager'); ?></strong> : <?php echo esc_html($EM_Event->event_name); ?></p>
+			<?php do_action('em_admin_event_booking_before_availibility', $EM_Event); ?>
 			<p>
 				<strong><?php esc_html_e('Availability','events-manager'); ?></strong> :
 				<?php echo $EM_Event->get_bookings()->get_booked_spaces() . '/'. $EM_Event->get_spaces() ." ". __('Spaces confirmed','events-manager'); ?>
 				<?php if( get_option('dbem_bookings_approval_reserved') ): ?>
 				, <?php echo $EM_Event->get_bookings()->get_available_spaces() . '/'. $EM_Event->get_spaces() ." ". __('Available spaces','events-manager'); ?>
 				<?php endif; ?>
+				<?php do_action('em_admin_event_booking_availibility', $EM_Event); ?>
 			</p>
+			<?php do_action('em_admin_event_booking_after_availibility', $EM_Event); ?>
 			<p>
 				<strong><?php esc_html_e('Date','events-manager'); ?></strong> :
 				<?php echo $EM_Event->output_dates(false, " - "). ' @ ' . $EM_Event->output_times(false, ' - '); ?>

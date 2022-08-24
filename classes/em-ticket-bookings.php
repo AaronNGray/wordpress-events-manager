@@ -36,7 +36,7 @@ class EM_Ticket_Bookings extends EM_Tickets_Bookings {
 		if( !empty($data) ){
 			if( is_array( $data ) ){
 				foreach( $data as $array_item ){
-					if( is_object($array_item) && ( is_a($array_item, 'EM_Ticket_Booking') || is_subclass_of($array_item, 'EM_Ticket_Booking')) ){
+					if( $array_item instanceof EM_Ticket_Booking ){
 						$is_booking_tickets_array = true;
 						break;
 					}
@@ -224,7 +224,7 @@ class EM_Ticket_Bookings extends EM_Tickets_Bookings {
 		if ( !$override_availability && $available_spaces < $spaces_needed ) {
 			$this->add_error(get_option('dbem_booking_feedback_full'));
 		}
-		if( !$this->get_ticket()->is_available() ){
+		if( !$override_availability && !$this->get_ticket()->is_available() ){
 			$message = __('The ticket %s is no longer available.', 'events-manager');
 			$this->add_error(get_option('dbem_booking_feedback_ticket_unavailable', sprintf($message, "'".$this->get_ticket()->name."'")));
 		}

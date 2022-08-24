@@ -25,7 +25,7 @@ button.input, .button.input,
 	}
 }
 
-button.em-clickable {
+button.em-clickable, form.em-ajax-form {
 	&.loading {
 		.loaded {
 			display: none;
@@ -36,7 +36,17 @@ button.em-clickable {
 			visibility: visible;
 		}
 	}
-	.loading-content {
+	&.load-successful{
+		.loaded {
+			display: none;
+			visibility: hidden;
+		}
+		.loaded-success{
+			display: inline-block;
+			visibility: visible;
+		}
+	}
+	.loading-content, .loaded-success {
 		display: none;
 		visibility: hidden;
 	}

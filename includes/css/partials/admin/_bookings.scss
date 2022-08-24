@@ -65,3 +65,16 @@
 		visibility: hidden;
 	}
 }
+#em-event-bookings {
+	.em-booking-options {
+		margin-top: 30px;
+		h4 {
+			font-size: 16px;
+			border-bottom : 1px solid #dedede;
+			padding-bottom:5px;
+			margin-bottom: 15px;
+			width: 100%;
+			display:block;
+		}
+	}
+}

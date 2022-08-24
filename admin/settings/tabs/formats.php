@@ -1,7 +1,12 @@
 <?php if( !function_exists('current_user_can') || !current_user_can('manage_options') ) return; ?>
 <!-- FORMAT OPTIONS -->
 <div class="em-menu-formats em-menu-group"  <?php if( !defined('EM_SETTINGS_TABS') || !EM_SETTINGS_TABS) : ?>style="display:none;"<?php endif; ?>>
-
+	<p>
+		<input type="checkbox" id="em-enable-codeEditor" value="1">
+		<label for="em-enable-codeEditor" class="em-tooltip" aria-label="<?php esc_attr_e('Enable a code/syntax highlighter when clicking on the larger formatting textbox options below, for easier editing of larger HTML parts.', 'events-manager'); ?>" style="text-decoration: 2px underline dotted #ccc; text-underline-offset: 4px;">
+			<?php esc_html_e('Enable Code Editor for Formats', 'events-manager'); ?>
+		</label>
+	</p>
 	<?php
 	$current_status = absint(get_option('dbem_advanced_formatting'));
 	$disabled_text = __('Disabled', 'events-manager');

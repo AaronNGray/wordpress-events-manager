@@ -135,6 +135,31 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 15. Clean forms for submitting and managing events, as well as booking events for users.
 
 == Changelog ==
+= 6.1.1.1 (dev) =
+* changed EM_Tickets, EM_Bookings and EM_Ticket so event object is stored as referece so get_event() all reference the same parent object,
+* changed em_bookings_ticket_exists hook for when tickets don't exist, $EM_Ticket is pssed as a blank EM_Ticket with the requested $ticket_id
+* removed erroneous em_boking_save action in em-actions.php before anything is actually saved
+* changed the booking_resend_email action to allow AJAX requests
+* changed PHP use of get_class() checks in if statements to instanceof so that extended classes pass,
+* added $event_ids array passed to em_bookings_deleted and em_bookings_delete actions/filters in EM_Bookings::delete() mass deletion,
+* added $force_refresh option to EM_Bookings->get_available_spaces()
+* added $ignore_spaces parameter to EM_Ticket->is_available()
+* added EM_Ticket->is_available_to() function
+* fixed availability issue for unavailable tickets when overriding as an admin
+* added extra action hooks to booking admin area
+* added reserved 'waitlist' booking status numbers 6-8 (if you use custom status numbers, we advise using above 100 for sake of avoiding core collision)
+* fixed some instances where EM_Booking::$disable_restrictions doesn't fully disable every restriction
+* added em_event_load_postdata_other_attributes filter allowing for custom event attributes/meta to be loaded with less code
+* [template change] moved booking form status notices from template into action-based output, default output of these now reside in the classes/em-event.php file
+* fixed some rare instances where EM_Ticket->get_event() doesn't work as intended
+* tweaked em_ticket_is_available to fire even with EM_Bookings::$disable_restrictions enabled
+* added conditionial custom placeholder recursion support for EM_Ticket_Booking objects
+* added JS support for general AJAX forms without need for specific JS code to work using vanilla JS
+* added JS EM_Alert function for generating alerts via modal
+* added $status and $EM_Booking vars to em_booking_button class
+* added code editor features to formats admin section for larger text boxes
+* added em-notice alert box css
+
 = 6.1.1 =
 * tweaked installation SQL so it's MariaDB-compatible
 * fixed php warning when no location permalink provided

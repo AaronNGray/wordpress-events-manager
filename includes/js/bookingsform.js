@@ -25,7 +25,13 @@ $(document).on('submit', '.em-booking-form', function(e){
 				$('<div class="em-booking-message-success em-booking-message">'+response.message+'</div>').insertBefore(em_booking_form);
 				em_booking_form.hide();
 				$('.em-booking-login').hide();
-				$(document).trigger('em_booking_success', [response]);
+				$(document).trigger('em_booking_success', [response, em_booking_form[0]]);
+				document.dispatchEvent( new CustomEvent('em_booking_success', {
+				    detail: {
+                        response : response,
+                        form : em_booking_form[0]
+                    }
+			    }));
 				if( response.redirect ){ //custom redirect hook
 					window.location.href = response.redirect;
 				}

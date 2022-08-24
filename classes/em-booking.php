@@ -8,7 +8,7 @@
 function em_get_booking($id = false) {
 	global $EM_Booking;
 	//check if it's not already global so we don't instantiate again
-	if( is_object($EM_Booking) && get_class($EM_Booking) == 'EM_Booking' ){
+	if( $EM_Booking instanceof EM_Booking ){
 		if( is_object($id) && $EM_Booking->booking_id == $id->booking_id ){
 			return apply_filters('em_get_booking', $EM_Booking);
 		}else{
@@ -16,10 +16,12 @@ function em_get_booking($id = false) {
 				return apply_filters('em_get_booking', $EM_Booking);
 			}elseif( is_array($id) && !empty($id['booking_id']) && $EM_Booking->booking_id == $id['booking_id'] ){
 				return apply_filters('em_get_booking', $EM_Booking);
+			}elseif( is_string($id) && strlen($id) == 32 && $EM_Booking->booking_uuid === $id ){
+				return apply_filters('em_get_booking', $EM_Booking);
 			}
 		}
 	}
-	if( is_object($id) && get_class($id) == 'EM_Booking' ){
+	if( $id instanceof EM_Booking ){
 		return apply_filters('em_get_booking', $id);
 	}else{
 		return apply_filters('em_get_booking', new EM_Booking($id));
@@ -140,7 +142,7 @@ class EM_Booking extends EM_Object{
 				//Retrieving from the database
 				$sql = $wpdb->prepare("SELECT * FROM ". EM_BOOKINGS_TABLE ." WHERE booking_id =%d", $booking_data);
 				$booking = $wpdb->get_row($sql, ARRAY_A);
-			} elseif( preg_match('/^[a-zA-Z0-9]{32}$/', $booking_data) ){
+			} elseif( is_string($booking_data) && preg_match('/^[a-zA-Z0-9]{32}$/', $booking_data) ){
 				$sql = $wpdb->prepare("SELECT * FROM " . EM_BOOKINGS_TABLE . " WHERE booking_uuid=%s", $booking_data);
 				$booking = $wpdb->get_row($sql, ARRAY_A);
 			}
@@ -172,15 +174,19 @@ class EM_Booking extends EM_Object{
 			2 => __('Rejected','events-manager'),
 			3 => __('Cancelled','events-manager'),
 			4 => __('Awaiting Online Payment','events-manager'),
-			5 => __('Awaiting Payment','events-manager')
+			5 => __('Awaiting Payment','events-manager'),
+			6 => __('Waitlist','events-manager'),
+			7 => __('Waitlist Approved','events-manager'),
+			8 => __('Waitlist Expired','events-manager'),
 		);
-		$this->compat_keys(); //depricating in 6.0
+		$this->compat_keys(); //deprecating in 6.0
 		//do some legacy checking here for bookings made prior to 5.4, due to how taxes are calculated
 		$this->get_tax_rate();
 		if( !empty($this->legacy_tax_rate) ){
 			//reset booking_price, it'll be recalculated later (if you're using this property directly, don't use $this->get_price())
 	    	$this->booking_price = $this->booking_taxes = null;
 		}
+		// allow others to intervene
 		do_action('em_booking', $this, $booking_data);
 	}
 
@@ -345,7 +351,7 @@ class EM_Booking extends EM_Object{
 	}
 	
 	/**
-	 * Update a specific key value in the booking meta data, or create one if it doesn't exist.
+	 * Update a specific key value in the booking meta data, or create one if it doesn't exist. If set to null it'll remove that value
 	 * @param $meta_key
 	 * @param $meta_value
 	 * @return bool
@@ -354,9 +360,31 @@ class EM_Booking extends EM_Object{
 	public function update_meta( $meta_key, $meta_value ){
 		global $wpdb;
 		if( !$this->booking_id ) return false;
-		$this->booking_meta[$meta_key] = $meta_value;
+		if( $meta_value === null ) {
+			unset($this->booking_meta[$meta_key]);
+		}else{
+			$this->booking_meta[$meta_key] = $meta_value;
+		}
 		$booking_meta = serialize($this->booking_meta);
-		$result = $wpdb->update( EM_BOOKINGS_TABLE, array('booking_meta' => $booking_meta), array('booking_id' => $this->booking_id) );
+		$wpdb->update( EM_BOOKINGS_TABLE, array('booking_meta' => $booking_meta), array('booking_id' => $this->booking_id) );
+		// add to new meta table if not exists
+		$result = $wpdb->delete( EM_BOOKINGS_META_TABLE, array('booking_id' => $this->booking_id, 'meta_key' => $meta_key) );
+		// if null, then we already deleted it and skip this
+		if( $meta_value !== null ) {
+			if( is_array($meta_value) ){
+				// we go down one level of array
+				$meta_insert = array();
+				foreach( $meta_value as $kk => $vv ){
+					if( is_array($vv) ) $vv = serialize($vv);
+					$meta_insert[] = $wpdb->prepare('(%d, %s, %s)', $this->booking_id, '_'.$meta_key.'_'.$kk, $vv);
+				}
+				// delete previous values so we insert new ones
+				$result = $wpdb->query('INSERT INTO '. EM_BOOKINGS_META_TABLE .' (booking_id, meta_key, meta_value) VALUES '. implode(',', $meta_insert));
+			}else{
+				$result = $wpdb->insert( EM_BOOKINGS_META_TABLE, array('booking_id' => $this->booking_id, 'meta_key' => $meta_key, 'meta_value' => $meta_value));
+			}
+		}
+		// fire filter
 		return apply_filters('em_booking_update_meta', $result !== false, $meta_key, $meta_value, $this);
 	}
 	
@@ -391,6 +419,7 @@ class EM_Booking extends EM_Object{
 	 * @return boolean
 	 */
 	function get_post( $override_availability = false ){
+		if( EM_Bookings::$disable_restrictions ) $override_availability = true;
 		$this->tickets_bookings = new EM_Tickets_Bookings($this);
 		do_action('em_booking_get_post_pre',$this);
 		$result = array();
@@ -416,13 +445,15 @@ class EM_Booking extends EM_Object{
 	}
 	
 	function validate( $override_availability = false ){
+		do_action( 'em_booking_validate_pre', $this, $override_availability );
+		if( EM_Bookings::$disable_restrictions ) $override_availability = true;
 		//step 1, basic info
 		$basic = (empty($this->event_id) || is_numeric($this->event_id)) && (empty($this->person_id) || is_numeric($this->person_id));
 		if( !$basic ){
 			$this->add_error('Incomplete booking information provided.');
 		}
 		//give some errors in step 1
-		if( !is_numeric($this->booking_spaces) || $this->booking_spaces == 0 ){
+		if( !is_numeric($this->get_spaces()) || $this->booking_spaces == 0 ){
 			$this->add_error(get_option('dbem_booking_feedback_min_space'));
 		}
 		//step 2, tickets bookings info
@@ -447,6 +478,7 @@ class EM_Booking extends EM_Object{
 		    $result = false;
 		    $this->add_error( sprintf(get_option('dbem_booking_feedback_spaces_limit'), $this->get_event()->event_rsvp_spaces));			
 		}
+		do_action( 'em_booking_validate_after', $this, $override_availability );
 		return apply_filters('em_booking_validate', empty($this->errors), $this);
 	}
 	
@@ -969,12 +1001,12 @@ class EM_Booking extends EM_Object{
 				$this->add_error(sprintf(__('%s could not be deleted', 'events-manager'), __('Booking','events-manager')));
 			}
 		}
-		do_action('em_bookings_deleted', $result, array($this->booking_id), $this);
+		do_action('em_bookings_deleted', $result, array($this->booking_id), array($this->event_id));
 		return apply_filters('em_booking_delete',( $result !== false ), $this);
 	}
 	
 	function cancel($email = true){
-		if( $this->person->ID == get_current_user_id() ){
+		if( $this->get_person()->ID == get_current_user_id() ){
 			$this->manage_override = true; //normally, users can't manage a booking, only event owners, so we allow them to mod their booking status in this case only.
 		}
 		return $this->set_status(3, $email);
@@ -1109,9 +1141,27 @@ class EM_Booking extends EM_Object{
 	
 	function output($format, $target="html") {
 		do_action('em_booking_output_pre', $this, $format, $target);
-	 	preg_match_all("/(#@?_?[A-Za-z0-9]+)({([^}]+)})?/", $format, $placeholders);
-		foreach( $this->get_tickets() as $EM_Ticket){ /* @var $EM_Ticket EM_Ticket */ break; } //Get first ticket for single ticket placeholders
 		$output_string = $format;
+		for ($i = 0 ; $i < EM_CONDITIONAL_RECURSIONS; $i++){
+			preg_match_all('/\{([a-zA-Z0-9_\-,]+)\}(.+?)\{\/\1\}/s', $output_string, $conditionals);
+			if( count($conditionals[0]) > 0 ){
+				//Check if the language we want exists, if not we take the first language there
+				foreach($conditionals[1] as $key => $condition){
+					$show_condition = false;
+					$show_condition = apply_filters('em_booking_output_show_condition', $show_condition, $condition, $conditionals[0][$key], $this);
+					if($show_condition){
+						//calculate lengths to delete placeholders
+						$placeholder_length = strlen($condition)+2;
+						$replacement = substr($conditionals[0][$key], $placeholder_length, strlen($conditionals[0][$key])-($placeholder_length *2 +1));
+					}else{
+						$replacement = '';
+					}
+					$output_string = str_replace($conditionals[0][$key], apply_filters('em_booking_output_condition', $replacement, $condition, $conditionals[0][$key], $this), $output_string);
+				}
+			}
+		}
+		preg_match_all("/(#@?_?[A-Za-z0-9_]+)({([^}]+)})?/", $output_string, $placeholders);
+		foreach( $this->get_tickets() as $EM_Ticket){ /* @var $EM_Ticket EM_Ticket */ break; } //Get first ticket for single ticket placeholders
 		$replaces = array();
 		foreach($placeholders[1] as $key => $result) {
 			$replace = '';
@@ -1201,7 +1251,7 @@ class EM_Booking extends EM_Object{
 					}
 					break;
 				default:
-					$replace = $full_result;
+					$replace = $this->output_placeholder( $full_result, $placeholder_atts, $format, $target );
 					break;
 			}
 			$replaces[$full_result] = apply_filters('em_booking_output_placeholder', $replace, $this, $full_result, $target, $placeholder_atts);
@@ -1215,6 +1265,19 @@ class EM_Booking extends EM_Object{
 		$EM_Event = apply_filters('em_booking_output_event', $this->get_event(), $this); //allows us to override the booking event info if it belongs to a parent or translation
 		$output_string = $EM_Event->output($output_string, $target);
 		return apply_filters('em_booking_output', $output_string, $this, $format, $target);	
+	}
+	
+	/**
+	 * Function mainly aimed for overriding by extending classes, avoiding the need to use a filter instead.
+	 * @param string $full_result
+	 * @param array $placeholder_atts
+	 * @param string $format
+	 * @param string $target
+	 * @return string
+	 */
+	public function output_placeholder( $full_result, $placeholder_atts, $format, $target ){
+		// $placeholder = $placeholder_atts[0]; // this is the placeholder, no atts
+		return $full_result;
 	}
 	
 	/**

@@ -155,8 +155,8 @@ class EM_Tickets_Bookings extends EM_Object implements Iterator, Countable, Arra
 	 * @param EM_Ticket_Booking $EM_Ticket_Booking
 	 * @return bool
 	 */
-	function add( $EM_Ticket_Booking ){ //note, $override was a quick fix, not necessarily permanent, so don't depend on it just yet
-		if( !empty($EM_Ticket_Booking->ticket_id) ) {
+	function add( $EM_Ticket_Booking ){
+		if( $EM_Ticket_Booking instanceof EM_Ticket_Booking ) {
 			$this->get_ticket_bookings($EM_Ticket_Booking->ticket_id)->tickets_bookings[$EM_Ticket_Booking->ticket_uuid] = $EM_Ticket_Booking;
 			return true;
 		}

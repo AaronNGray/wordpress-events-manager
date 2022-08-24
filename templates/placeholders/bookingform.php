@@ -11,6 +11,8 @@
 
 /* @var $EM_Event EM_Event */   
 global $EM_Notices;
+// first hook before anything is checked
+do_action('em_booking_form_start', $EM_Event);
 //count tickets and available tickets
 $tickets_count = count($EM_Event->get_bookings()->get_tickets()->tickets);
 $available_tickets_count = count($EM_Event->get_bookings()->get_available_tickets());
@@ -32,16 +34,13 @@ if( !$is_open && !is_user_logged_in() && $EM_Event->get_bookings()->is_open(true
 		do_action('em_booking_form_top', $EM_Event);
 	?>
 	<?php if( is_object($EM_Booking) && !get_option('dbem_bookings_double') ): //Double bookings not allowed ?>
-		<p>
-			<?php echo get_option('dbem_bookings_form_msg_attending'); ?>
-			<a href="<?php echo em_get_my_bookings_url(); ?>"><?php echo get_option('dbem_bookings_form_msg_bookings_link'); ?></a>
-		</p>
+		<?php do_action('em_booking_form_status_already_booked', $EM_Event); ?>
 	<?php elseif( !$EM_Event->event_rsvp ): //bookings not enabled ?>
-		<p><?php echo get_option('dbem_bookings_form_msg_disabled'); ?></p>
-	<?php elseif( $EM_Event->get_bookings()->get_available_spaces() <= 0 ): ?>
-		<p><?php echo get_option('dbem_bookings_form_msg_full'); ?></p>
+		<?php do_action('em_booking_form_status_disabled', $EM_Event); ?>
+	<?php elseif( $EM_Event->get_bookings()->get_available_spaces() <= 0 && !EM_Bookings::$disable_restrictions ): ?>
+		<?php do_action('em_booking_form_status_full', $EM_Event); ?>
 	<?php elseif( !$is_open ): //event has started ?>
-		<p><?php echo get_option('dbem_bookings_form_msg_closed');  ?></p>
+		<?php do_action('em_booking_form_status_closed', $EM_Event); ?>
 	<?php else: ?>
 		<?php echo $EM_Notices; ?>	
 		<?php 
@@ -97,7 +96,7 @@ if( !$is_open && !is_user_logged_in() && $EM_Event->get_bookings()->is_open(true
 						<div class="em-booking-price-summary"></div>
 						<?php do_action('em_booking_form_after_pricing', $EM_Event); //do not delete ?>
 						<?php
-						/* This action pre-theme makeover in v6 was used for any form actions such as payment selection, etc. and had to remain here for backwards compatibility. We suggest using other actions/filters as this contextually does not make sense anymore */
+						/* This action pre-theme makeover in v6 was used for any form actions such as payment selection, etc. and had to remain here for backwards compatibility. This can stil be used, and will not be removed, although counter-intuitive as it's not right at the footer */
 						do_action('em_booking_form_footer', $EM_Event); //do not delete
 						?>
 						<div class="em-booking-buttons">

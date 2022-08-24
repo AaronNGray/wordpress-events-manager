@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Events Manager
-Version: 6.1.1
+Version: 6.1.1.1
 Plugin URI: http://wp-events-plugin.com
 Description: Event registration and booking management for WordPress. Recurring events, locations, webinars, google maps, rss, ical, booking registration and more!
 Author: Marcus Sykes
@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 // Setting constants
-define('EM_VERSION', '6.1.1'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
+define('EM_VERSION', '6.1.1.1'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
 define('EM_PRO_MIN_VERSION', '3.0'); //self expanatory
 define('EM_PRO_MIN_VERSION_CRITICAL', '3.0'); //self expanatory
 define('EM_DIR', dirname( __FILE__ )); //an absolute path to this directory
@@ -390,6 +390,9 @@ class EM_Scripts_and_Styles {
 			}
 			do_action('em_enqueue_admin_styles');
 			self::localize_script();
+			if( !empty($_REQUEST['page']) && $_REQUEST['page'] === 'events-manager-options' ){
+				wp_enqueue_code_editor( array( 'type' => 'text/html' ) );
+			}
 		}
 	}
 
@@ -918,6 +921,10 @@ class EM_Formats {
 	 * @var array array of previously loaded formats for faster reference. much like get_option does
 	 */
 	public static $loaded_formats = array();
+	/**
+	 * @var string Name of filter for other plugins to override, should be overriden also by extending class
+	 */
+	protected static $formats_filter = 'em_formats_filter';
 	
 	public static function init(){
 		add_action( 'events_manager_loaded', 'EM_Formats::add_filters');
@@ -925,14 +932,14 @@ class EM_Formats {
 	public static function add_filters( $get_all = false ){
 		//you can hook into this filter and activate the format options you want to override by supplying the wp option names in an array, just like in the database.
 		if( is_admin() && !empty($_REQUEST['page']) && $_REQUEST['page'] == 'events-manager-options' ) return; // exit on setting pages to avoid content wiping
-		$formats = apply_filters('em_formats_filter', static::get_default_formats($get_all));
+		$formats = apply_filters(static::$formats_filter, static::get_default_formats($get_all));
 		foreach( $formats as $format_name ){
 			add_filter('pre_option_'.$format_name, 'EM_Formats::'. $format_name, 1,1);
 		}
 	}
 	
 	public static function remove_filters( $get_all = false ){
-		$formats = apply_filters('em_formats_filter', static::get_default_formats($get_all));
+		$formats = apply_filters(static::$formats_filter, static::get_default_formats($get_all));
 		foreach( $formats as $format_name ){
 			remove_filter('pre_option_'.$format_name, 'EM_Formats::'. $format_name, 1);
 		}
@@ -950,7 +957,7 @@ class EM_Formats {
 		} // cached already
 		$value = empty($args) || !isset($args[0]) ? '' : $args[0];
 		$filename = preg_replace('/^dbem_/', '', $name);
-		$format = em_locate_template( 'formats/'.$filename.'.php' );
+		$format = static::locate_template('formats/'.$filename.'.php');
 		if( $format ){
 			ob_start();
 			include($format);
@@ -958,6 +965,10 @@ class EM_Formats {
 		}
 		static::$loaded_formats[$name] = $value;
 		return $value;
+	}
+	
+	public static function locate_template($template){
+		return em_locate_template( $template );
 	}
 	
 	/**

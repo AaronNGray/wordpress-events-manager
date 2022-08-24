@@ -525,6 +525,7 @@ class EM_Event extends EM_Object{
 			    $event_meta = $this->get_event_meta($search_by);
 			    if( !empty($event_meta['_event_location_type']) ) $this->event_location_type = $event_meta['_event_location_type']; //load this directly so we know further down whether this has an event location type to load
 				//Get custom fields and post meta
+				$other_event_attributes = apply_filters('em_event_load_postdata_other_attributes', array(), $this);
 				foreach($event_meta as $event_meta_key => $event_meta_val){
 					$field_name = substr($event_meta_key, 1);
 					if($event_meta_key[0] != '_'){
@@ -534,6 +535,8 @@ class EM_Event extends EM_Object{
 							$this->$field_name = $event_meta_val[0];
 						}elseif( in_array($field_name, array('event_owner_name','event_owner_anonymous','event_owner_email')) ){
 							$this->$field_name = $event_meta_val[0];
+						}elseif( in_array($field_name, $other_event_attributes) ){
+							$this->event_attributes[$field_name] = ( is_array($event_meta_val) ) ? $event_meta_val[0]:$event_meta_val;
 						}
 					}
 				}
@@ -3650,6 +3653,28 @@ if ( is_object($GLOBALS['wp_embed']) ){
 	add_filter( 'dbem_notes', array( $GLOBALS['wp_embed'], 'run_shortcode' ), 8 );
 	add_filter( 'dbem_notes', array( $GLOBALS['wp_embed'], 'autoembed' ), 8 );
 }
+
+// booking form notices, overridable to inject other content (e.g. waiting list)
+function em_booking_form_status_disabled(){
+	echo '<p>'. get_option('dbem_bookings_form_msg_disabled') .'</p>';
+}
+add_action('em_booking_form_status_disabled', 'em_booking_form_status_disabled');
+
+function em_booking_form_status_full(){
+	echo '<p>'. get_option('dbem_bookings_form_msg_full') .'</p>';
+}
+add_action('em_booking_form_status_full', 'em_booking_form_status_full');
+
+function em_booking_form_status_closed(){
+	echo '<p>'. get_option('dbem_bookings_form_msg_closed') .'</p>';
+}
+add_action('em_booking_form_status_closed', 'em_booking_form_status_closed');
+
+function em_booking_form_status_already_booked(){
+	echo get_option('dbem_bookings_form_msg_attending');
+	echo '<a href="'. em_get_my_bookings_url() .'">'. get_option('dbem_bookings_form_msg_bookings_link') .'</a>';
+}
+add_action('em_booking_form_status_already_booked', 'em_booking_form_status_already_booked');
 
 /**
  * This function replaces the default gallery shortcode, so it can check if this is a recurring event recurrence and pass on the parent post id as the default post. 
