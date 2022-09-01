@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Events Manager
-Version: 6.1.1.1
+Version: 6.1.1.2
 Plugin URI: http://wp-events-plugin.com
 Description: Event registration and booking management for WordPress. Recurring events, locations, webinars, google maps, rss, ical, booking registration and more!
 Author: Marcus Sykes
@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 // Setting constants
-define('EM_VERSION', '6.1.1.1'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
+define('EM_VERSION', '6.1.1.2'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
 define('EM_PRO_MIN_VERSION', '3.0'); //self expanatory
 define('EM_PRO_MIN_VERSION_CRITICAL', '3.0'); //self expanatory
 define('EM_DIR', dirname( __FILE__ )); //an absolute path to this directory
@@ -230,19 +230,8 @@ class EM_Scripts_and_Styles {
 	}
 	
 	public static function register(){
-		// localization detection
-		// register scripts
-		if( (defined('WP_DEBUG') && WP_DEBUG) || (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG) ) {
-			//wp_register_script('em-select2', plugins_url('includes/external/select2/js/select2.full.js', __FILE__), array('jquery'), EM_VERSION);
-			//wp_register_style('em-select2', plugins_url('includes/external/select2/css/select2.css', __FILE__), array('jquery'), EM_VERSION);
-			wp_register_script('em-selectize', plugins_url('includes/external/selectize/js/standalone/selectize.js', __FILE__), array('jquery'), EM_VERSION);
-			wp_register_style('em-selectize', plugins_url('includes/external/selectize/css/selectize.bootstrap5.css', __FILE__), array('jquery'), EM_VERSION);
-		}else{
-			//wp_register_script('em-select2', plugins_url('includes/external/select2/js/select2.full.min.js', __FILE__), array('jquery'), EM_VERSION);
-			//wp_register_style('em-select2', plugins_url('includes/external/select2/css/select2.min.css', __FILE__), array('jquery'), EM_VERSION);
-			wp_register_script('em-selectize', plugins_url('includes/external/selectize/js/standalone/selectize.js', __FILE__), array('jquery'), EM_VERSION);
-			wp_register_style('em-selectize', plugins_url('includes/external/selectize/css/selectize.bootstrap5.css', __FILE__), array('jquery'), EM_VERSION);
-		}
+		// register scripts - empty for now (removed em-select in favour of direct inclusion in events-manager.js)
+		do_action('em_scripts_and_styles_register');
 	}
 
 	/**
@@ -278,17 +267,11 @@ class EM_Scripts_and_Styles {
                 //events page only needs datepickers
                 $script_deps['jquery-ui-core'] = 'jquery-ui-core';
                 $script_deps['jquery-ui-datepicker'] = 'jquery-ui-datepicker';
-                if( get_option('dbem_search_form_geo') ){
-                	$script_deps['em-selectize'] = 'em-selectize';
-                }
             }
             if( (!empty($pages['edit-events']) && is_page($pages['edit-events'])) || get_option('dbem_js_limit_events_form') === '0' || in_array($obj_id, explode(',', get_option('dbem_js_limit_events_form'))) ){
                 //submit/edit event pages require
                 $script_deps['jquery-ui-core'] = 'jquery-ui-core';
                 $script_deps['jquery-ui-datepicker'] = 'jquery-ui-datepicker';
-	            if( !get_option('dbem_use_select_for_locations') ){
-					$script_deps['em-selectize'] = 'em-selectize';
-		        }
 			}
             if( (!empty($pages['edit-bookings']) && is_page($pages['edit-bookings'])) || get_option('dbem_js_limit_edit_bookings') === '0' || in_array($obj_id, explode(',', get_option('dbem_js_limit_edit_bookings'))) ){
                 //edit booking pages require a few more ui scripts
@@ -315,7 +298,6 @@ class EM_Scripts_and_Styles {
 	        	'jquery-ui-position'=>'jquery-ui-position',
 	        	'jquery-ui-sortable'=>'jquery-ui-sortable',
 	        	'jquery-ui-datepicker'=>'jquery-ui-datepicker',
-	        	'em-selectize'=>'em-selectize',
 	        	'jquery-ui-dialog'=>'jquery-ui-dialog'
             );
         }
@@ -382,7 +364,7 @@ class EM_Scripts_and_Styles {
 			static::register();
 			wp_enqueue_style( 'wp-color-picker' );
 			$min = !((defined('WP_DEBUG') && WP_DEBUG) || (defined('EM_DEBUG') && EM_DEBUG)) ? '.min':'';
-			wp_enqueue_script('events-manager', plugins_url('includes/js/events-manager'.$min.'.js',__FILE__), array('jquery', 'jquery-ui-core','jquery-ui-widget','jquery-ui-position','jquery-ui-sortable','jquery-ui-datepicker','em-selectize','jquery-ui-dialog','wp-color-picker'), EM_VERSION);
+			wp_enqueue_script('events-manager', plugins_url('includes/js/events-manager'.$min.'.js',__FILE__), array('jquery', 'jquery-ui-core','jquery-ui-widget','jquery-ui-position','jquery-ui-sortable','jquery-ui-datepicker','jquery-ui-dialog','wp-color-picker'), EM_VERSION);
 		    do_action('em_enqueue_admin_scripts');
 			wp_enqueue_style('events-manager-admin', plugins_url('includes/css/events-manager-admin'.$min.'.css',__FILE__), array(), EM_VERSION);
 			if( empty($_REQUEST['page']) || $_REQUEST['page'] != 'events-manager-bookings' ) {
@@ -410,7 +392,6 @@ class EM_Scripts_and_Styles {
 			'locale' => $locale_code,
 			'dateFormat' => 'yy-mm-dd', //get_option('dbem_date_format_js', 'yy-mm-dd'), // DEPRECATED (legacy jQuery UI datepicker) - prevents blank datepickers if no option set
 			'ui_css' => plugins_url('includes/css/jquery-ui/build.min.css', __FILE__),
-			'selectize_css' => plugins_url('includes/external/selectize/css/selectize.bootstrap5.min.css', __FILE__),
 			'show24hours' => get_option('dbem_time_24h'),
 			'is_ssl' => is_ssl(),
 			'autocomplete_limit' => apply_filters('em_locations_autocomplete_limit', 10),

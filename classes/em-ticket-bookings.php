@@ -134,9 +134,27 @@ class EM_Ticket_Bookings extends EM_Tickets_Bookings {
 			'ticket_id' => $this->ticket_id,
 			'booking_id' => $this->booking->booking_id
 		));
-		if( method_exists($EM_Ticket_Booking, $function) ){
+		// handle some functions that may cause problems if old scripts assume we're on a direct EM_Ticket_Booking
+		if( $function == 'get_price_with_taxes' ){
+			$price_with_taxes = 0;
+			foreach( $this->tickets_bookings as $EM_Ticket_Booking ){
+				$price_with_taxes += $EM_Ticket_Booking->get_price_with_taxes();
+			}
+			if( !empty($args[0]) ) $price_with_taxes = $this->format_price($price_with_taxes);
+			return $price_with_taxes;
+		}elseif( method_exists($EM_Ticket_Booking, $function) ){
 			return $EM_Ticket_Booking->$function( $args );
 		}
+	}
+	
+	/**
+	 * Return relevant fields that will be used for storage, excluding things such as event and ticket objects that should get reloaded
+	 * @return string[]
+	 */
+	public function __sleep(){
+		$array = parent::__sleep();
+		$array[] = 'ticket_id';
+		return apply_filters('em_ticket_bookings_sleep', $array, $this);
 	}
 	
 	/**

@@ -135,7 +135,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 15. Clean forms for submitting and managing events, as well as booking events for users.
 
 == Changelog ==
-= 6.1.1.1 (dev) =
+= 6.1.1.2 (dev) =
 * changed EM_Tickets, EM_Bookings and EM_Ticket so event object is stored as referece so get_event() all reference the same parent object,
 * changed em_bookings_ticket_exists hook for when tickets don't exist, $EM_Ticket is pssed as a blank EM_Ticket with the requested $ticket_id
 * removed erroneous em_boking_save action in em-actions.php before anything is actually saved
@@ -159,6 +159,20 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * added $status and $EM_Booking vars to em_booking_button class
 * added code editor features to formats admin section for larger text boxes
 * added em-notice alert box css
+* added cancellation policy allowing cancellation up to x hours before events begin
+* added event_attribute filters allowing for quicker/easier adding/saving custom attributes
+* fixed split booking by ticket exports not working since EM 6.1
+* fixed single ticket mode booking form not displaying as per settings
+* added retroactive fix of calendar templates using old HTML structure (lack of ID in em-calendar enclosing element)
+* enabled text input for datepickers
+* moved loading of selectize CSS and JS directly into events-manager files instead of separate loading
+* fixed has_location_venue conditional displaying for non-physical events
+* fixed critical error if registration data is duplicated in error in bookings_meta table
+* added fix for add to calendar button when used on themes forcing line breaks within content
+* tweaked normalize.css to prevent themes forcing select boxes to display:block (causing flatpickr year select to disappear out of view)
+* fixed issues with serialization/wakeup in sessions for booking objects using new atomic tickets structure (fixes issues with Pro Multiple Booking checkouts)
+* fixed upgrade failures due to emoji data in bookings,
+* fixed issues with older PHP code looping EM_Bookings_Tickets and getting pricing resulting in single-ticket pricing rather than grouped when calling get_price_with_taxes()
 
 = 6.1.1 =
 * tweaked installation SQL so it's MariaDB-compatible

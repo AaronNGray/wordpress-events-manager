@@ -88,6 +88,15 @@ class EM_Tickets_Bookings extends EM_Object implements Iterator, Countable, Arra
 		parent::__set( $prop, $val );
 	}
 	
+	/**
+	 * Return relevant fields that will be used for storage, excluding things such as event and ticket objects that should get reloaded
+	 * @return string[]
+	 */
+	public function __sleep(){
+		$array = array('tickets_bookings','tickets_bookings_loaded');
+		return apply_filters('em_tickets_bookings_sleep', $array, $this);
+	}
+	
 	public function get_post( $override_availability = false ){
 		if( !empty($_REQUEST['em_tickets']) ){
 			foreach( $_REQUEST['em_tickets'] as $ticket_id => $values){

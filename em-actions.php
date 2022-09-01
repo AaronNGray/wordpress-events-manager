@@ -361,22 +361,28 @@ function em_init_actions() {
 	  	}elseif ( $_REQUEST['action'] == 'booking_cancel') {
 	  		//Cancel Booking
 			em_verify_nonce('booking_cancel');
-	  		if( $EM_Booking->can_manage() || ($EM_Booking->person->ID == get_current_user_id() && get_option('dbem_bookings_user_cancellation')) ){
-				if( $EM_Booking->cancel() ){
-					$result = true;
-					if( !defined('DOING_AJAX') ){
-						if( $EM_Booking->person->ID == get_current_user_id() ){
-							$EM_Notices->add_confirm(get_option('dbem_booking_feedback_cancelled'), true );	
-						}else{
-							$EM_Notices->add_confirm( $EM_Booking->feedback_message, true );
-						}
-						wp_safe_redirect( $_SERVER['HTTP_REFERER'] );
-						exit();
-					}
-				}else{
+	  		if( $EM_Booking->can_manage() || $EM_Booking->person->ID == get_current_user_id() ){
+				if( !$EM_Booking->can_cancel() ){ // admins also cannot cancel their own bookings this way, only via admin ui
 					$result = false;
-					$EM_Notices->add_error( $EM_Booking->get_errors() );
-					$feedback = $EM_Booking->feedback_message;
+					$feedback = esc_html__('Cancellations are not permitted for this booking.', 'events-manager');
+					$EM_Notices->add_error( $feedback );
+				}else{
+					if( $EM_Booking->cancel() ){
+						$result = true;
+						if( !defined('DOING_AJAX') ){
+							if( $EM_Booking->person->ID == get_current_user_id() ){
+								$EM_Notices->add_confirm(get_option('dbem_booking_feedback_cancelled'), true );
+							}else{
+								$EM_Notices->add_confirm( $EM_Booking->feedback_message, true );
+							}
+							wp_safe_redirect( $_SERVER['HTTP_REFERER'] );
+							exit();
+						}
+					}else{
+						$result = false;
+						$EM_Notices->add_error( $EM_Booking->get_errors() );
+						$feedback = $EM_Booking->feedback_message;
+					}
 				}
 			}else{
 				$EM_Notices->add_error( __('You must log in to cancel your booking.', 'events-manager') );
@@ -679,9 +685,11 @@ function em_init_actions() {
 			foreach( $EM_Bookings->bookings as $EM_Booking ) { /* @var EM_Booking $EM_Booking */
 				//Display all values
 				if( $show_tickets ){
-					foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking){ /* @var EM_Ticket_Booking $EM_Ticket_Booking */
-						$row = $EM_Bookings_Table->get_row_csv($EM_Ticket_Booking);
-						fputcsv($handle, $row, $delimiter);
+					foreach($EM_Booking->get_tickets_bookings() as $EM_Ticket_Bookings){ /* @var EM_Ticket_Bookings $EM_Ticket_Bookings */
+						foreach( $EM_Ticket_Bookings as $EM_Ticket_Booking ) {
+							$row = $EM_Bookings_Table->get_row_csv($EM_Ticket_Booking);
+							fputcsv($handle, $row, $delimiter);
+						}
 					}
 				}else{
 					$row = $EM_Bookings_Table->get_row_csv($EM_Booking);

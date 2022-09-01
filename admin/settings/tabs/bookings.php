@@ -1,23 +1,43 @@
 <?php if( !function_exists('current_user_can') || !current_user_can('manage_options') ) return; ?>
 <!-- BOOKING OPTIONS -->
-<div class="em-menu-bookings em-menu-group"  <?php if( !defined('EM_SETTINGS_TABS') || !EM_SETTINGS_TABS) : ?>style="display:none;"<?php endif; ?>>	
+<div class="em-menu-bookings em-menu-group"  <?php if( !defined('EM_SETTINGS_TABS') || !EM_SETTINGS_TABS) : ?>style="display:none;"<?php endif; ?>>
 	
+	<?php do_action('em_options_page_bookings_general_before'); ?>
 	<div  class="postbox " id="em-opt-bookings-general" >
 	<div class="handlediv" title="<?php __('Click to toggle', 'events-manager'); ?>"><br /></div><h3><span><?php echo sprintf(__( '%s Options', 'events-manager'),__('General','events-manager')); ?> </span></h3>
 	<div class="inside">
 		<table class='form-table'> 
-			<?php 
+			<?php
+			do_action('em_options_page_bookings_general_top');
 			em_options_radio_binary ( __( 'Allow guest bookings?', 'events-manager'), 'dbem_bookings_anonymous', __( 'If enabled, guest visitors can supply an email address and a user account will automatically be created for them along with their booking. They will be also be able to log back in with that newly created account.', 'events-manager') );
 			em_options_radio_binary ( __( 'Approval Required?', 'events-manager'), 'dbem_bookings_approval', __( 'Bookings will not be confirmed until the event administrator approves it.', 'events-manager').' '.__( 'This setting is not applicable when using payment gateways, see individual gateways for approval settings.', 'events-manager'));
 			em_options_radio_binary ( __( 'Reserved unconfirmed spaces?', 'events-manager'), 'dbem_bookings_approval_reserved', __( 'By default, event spaces become unavailable once there are enough CONFIRMED bookings. To reserve spaces even if unapproved, choose yes.', 'events-manager') );
-			em_options_radio_binary ( __( 'Can users cancel their booking?', 'events-manager'), 'dbem_bookings_user_cancellation', __( 'If enabled, users can cancel their bookings themselves from their bookings page.', 'events-manager') );
 			em_options_radio_binary ( __( 'Allow overbooking when approving?', 'events-manager'), 'dbem_bookings_approval_overbooking', __( 'If you get a lot of pending bookings and you decide to allow more bookings than spaces allow, setting this to yes will allow you to override the event space limit when manually approving.', 'events-manager') );
 			em_options_radio_binary ( __( 'Allow double bookings?', 'events-manager'), 'dbem_bookings_double', __( 'If enabled, users can book an event more than once.', 'events-manager') );
+			do_action('em_options_page_bookings_cancellations_before');
+			?>
+			<tr class="em-header"><td colspan='2'><h4><?php echo sprintf(__( '%s Options', 'events-manager'),__('Cancellation','events-manager')); ?></h4></td></tr>
+			<?php
+			em_options_radio_binary ( __( 'Can users cancel their booking?', 'events-manager'), 'dbem_bookings_user_cancellation', __( 'If enabled, users can cancel their bookings themselves from their bookings page.', 'events-manager'), '', '#dbem_bookings_user_cancellation_time_row' );
+			$cancellation_hours_desc = __( 'Enter the number of hours before an event starts for when users can cancel a booking. Leave blank for the start time of the event.', 'events-manager');
+			$cancellation_hours_desc_2 = __('%s are also accepted, for example %s equals 1 month and 12 hours before the event starts.', 'events-manager');
+			$cancellation_hours_desc .= ' '. sprintf($cancellation_hours_desc_2, '<a href="https://www.php.net/manual/en/dateinterval.construct.php" target="_blank">'.esc_html_x('PHP date intevals', 'Refer to PHP docs for translation.', 'em-pro').'</a>', '<code>P1MT12H</code>');
+			if( (!defined('EM_DIASBLE_EMP_HINTS') || EM_DIASBLE_EMP_HINTS) && (!defined('EMP_VERSION') || version_compare('3.0.3', get_option('em_pro_version'), '>') ) ){
+				$pro_notice = sprintf(__('Need event-specific cancellation settings or support for hours after an event started? This is included in our %s.', 'events-manager'), '<a href="https://wp-events-plugin.com/features/">'.esc_html__('Pro Add-On', 'events-manager') . '</a>');
+				$cancellation_hours_desc .= '<br>'. $pro_notice;
+			}elseif( defined('EMP_VERSION') && version_compare('3.0.3', get_option('em_pro_version'), '<=') ){
+				$pro_notice = esc_html__('Add a negative number or minus sign to the start of the date interval to allow cancellations after events have started.', 'events-manager');
+				$cancellation_hours_desc .= ' ' . $pro_notice;
+			}
+			em_options_input_text ( __( 'How long before an event can users cancel?', 'events-manager'), 'dbem_bookings_user_cancellation_time',  $cancellation_hours_desc);
+			do_action('em_options_page_bookings_cancellations_after');
+			do_action('em_options_page_bookings_general_bottom');
 			echo $save_button; 
 			?>
 		</table>
 	</div> <!-- . inside -->
 	</div> <!-- .postbox -->
+	<?php do_action('em_options_page_bookings_general_after'); ?>
 	
 	<div  class="postbox " id="em-opt-pricing-options" >
 	<div class="handlediv" title="<?php __('Click to toggle', 'events-manager'); ?>"><br /></div><h3><span><?php echo sprintf(__( '%s Options', 'events-manager'),__('Pricing','events-manager')); ?> </span></h3>

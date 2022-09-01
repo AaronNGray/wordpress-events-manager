@@ -62,8 +62,14 @@ if( !$is_open && !is_user_logged_in() && $EM_Event->get_bookings()->is_open(true
 					if( $show_tickets && ($can_book || get_option('dbem_bookings_tickets_show_loggedout')) ){ //show if more than 1 ticket, or if in forced ticket list view mode
 						do_action('em_booking_form_before_tickets', $EM_Event); //do not delete
 						//Show multiple tickets form to user, or single ticket list if settings enable this
-						//If logged out, can be allowed to see this in settings witout the register form 
-						em_locate_template('forms/bookingform/tickets-list.php',true, array('EM_Event'=>$EM_Event));
+						
+						if ( $available_tickets_count == 1 && !get_option('dbem_bookings_tickets_single_form')) {
+							$EM_Ticket = $EM_Event->get_bookings()->get_available_tickets()->get_first();
+							em_locate_template('forms/bookingform/ticket-single.php', true, array('EM_Event' => $EM_Event, 'EM_Ticket' => $EM_Ticket));
+						} else {
+							//If logged out, can be allowed to see this in settings witout the register form
+							em_locate_template('forms/bookingform/tickets-list.php', true, array('EM_Event' => $EM_Event));
+						}
 						do_action('em_booking_form_after_tickets', $EM_Event); //do not delete
 						$show_tickets = false;
 					}

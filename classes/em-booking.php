@@ -240,10 +240,14 @@ class EM_Booking extends EM_Object{
 	 * Repopulate the ticket bookings with this object and its event reference.
 	 */
 	public function __wakeup(){
-		foreach($this->get_tickets_bookings() as $EM_Ticket_Bookings){
-			$EM_Ticket_Bookings->booking = $this;
-			foreach( $EM_Ticket_Bookings as $EM_Ticket_Booking ){
-				$EM_Ticket_Booking->booking = $this;
+		// we need to do this here because the __wakeup function bubbles up from the innermost class
+		foreach( $this->get_tickets_bookings() as $EM_Tickets_Bookings ){
+			$EM_Tickets_Bookings->booking = $this;
+			foreach( $EM_Tickets_Bookings as $EM_Ticket_Bookings ){
+				$EM_Ticket_Bookings->booking = $this;
+				foreach( $EM_Tickets_Bookings as $EM_Ticket_Booking ){
+					$EM_Ticket_Booking->booking = $this;
+				}
 			}
 		}
 	}
@@ -854,11 +858,14 @@ class EM_Booking extends EM_Object{
 			$this->person->user_email = ( !empty($this->booking_meta['registration']['user_email']) ) ? $this->booking_meta['registration']['user_email']:$this->person->user_email;
 			//if a full name is given, overwrite the first/last name values IF they are also not defined
 			if( !empty($this->booking_meta['registration']['user_name']) ){
+				if( is_array($this->booking_meta['registration']['user_name']) ){
+					$this->booking_meta['registration']['user_name'] = reset($this->booking_meta['registration']['user_name']); // prevent fatal errors further down, this is still a problem though
+				}
 				if( !empty($this->booking_meta['registration']['first_name']) ){
-					//first name is defined, so we remove it from full name in case we need the rest for surname
-					$last_name = trim(str_replace($this->booking_meta['registration']['first_name'], '', $this->booking_meta['registration']['user_name']));
 					//if last name isn't defined, provide the rest of the name minus the first name we just removed
 					if( empty($this->booking_meta['registration']['last_name']) ){
+						//first name is defined, so we remove it from full name in case we need the rest for surname
+						$last_name = trim(str_replace($this->booking_meta['registration']['first_name'], '', $this->booking_meta['registration']['user_name']));
 						$this->booking_meta['registration']['last_name'] = $last_name;
 					}
 				}else{
@@ -1075,6 +1082,27 @@ class EM_Booking extends EM_Object{
 			$result =  apply_filters('em_booking_set_status', false, $this);
 		}
 		return $result;
+	}
+	
+	public function can_cancel(){
+		if( get_option('dbem_bookings_user_cancellation') ){
+			$cancellation_time = get_option('dbem_bookings_user_cancellation_time');
+			$can_cancel = $this->get_event()->start()->getTimestamp() > time(); // previously default was rsvp end
+			if( !empty($cancellation_time) && $cancellation_time > 0 ){
+				$EM_DateTime = $this->get_event()->start()->copy()->sub('PT'.$cancellation_time.'H');
+				$can_cancel = time() < $EM_DateTime->getTimestamp();
+			}elseif( static::is_dateinterval_string($cancellation_time) && $cancellation_time[0] !== '-' ){
+				$EM_DateTime = $this->get_event()->start()->copy()->sub($cancellation_time);
+				$can_cancel = time() < $EM_DateTime->getTimestamp();
+			}
+		}else{
+			$can_cancel = false;
+		}
+		return apply_filters('em_booking_can_cancel', $can_cancel, $this);
+	}
+	
+	public static function is_dateinterval_string( $string ){
+		return preg_match('/^\-?P(([0-9]+[YMDW])+)?(T(([0-9]+[YMDW])+))?/', $string);
 	}
 	
 	/**

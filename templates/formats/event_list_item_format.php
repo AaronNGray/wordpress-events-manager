@@ -43,16 +43,16 @@
 			{/has_event_location}
 			{has_category}
 			<div class="em-item-meta-line em-item-taxonomy em-event-categories">
-				<span class="em-icon-tag em-icon"></span>
-				#_EVENTCATEGORIES
+				<span class="em-icon-category em-icon"></span>
+				<div>#_EVENTCATEGORIES</div>
 			</div>
 			{/has_category}
-			{has_tags}
+			{has_tag}
 			<div class="em-item-meta-line em-item-taxonomy em-event-tags">
 				<span class="em-icon-tag em-icon"></span>
-				#_EVENTTAGS
+				<div>#_EVENTTAGS</div>
 			</div>
-			{/has_tags}
+			{/has_tag}
 		</div>
 		<div class="em-item-desc">
 			#_EVENTEXCERPT{25}

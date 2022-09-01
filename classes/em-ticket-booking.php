@@ -96,7 +96,7 @@ class EM_Ticket_Booking extends EM_Object{
 	 * @return string[]
 	 */
 	function __sleep(){
-		return array( 'ticket_booking_id', 'ticket_uuid', 'booking_id','ticket_id','ticket_booking_price','ticket_booking_spaces' );
+		return array( 'ticket_booking_id', 'ticket_uuid', 'booking_id','ticket_id','ticket_booking_price','ticket_booking_spaces', 'meta' );
 	}
 	
 	public function get_post(){

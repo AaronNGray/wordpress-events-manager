@@ -71,7 +71,7 @@
 				{has_category}
 				<div class="em-item-meta-line em-item-taxonomy em-event-categories">
 					<span class="em-icon-category em-icon"></span>
-					#_EVENTCATEGORIES
+					<div>#_EVENTCATEGORIES</div>
 				</div>
 				{/has_category}
 				{has_tag}

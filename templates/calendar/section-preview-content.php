@@ -8,7 +8,7 @@
 	<?php if( $args['calendar_preview_mode'] === 'tooltips' ): ?>
 		<?php $tooltip_template_file = em_locate_template('calendar/preview-event-tooltip.php', false); ?>
 		<?php foreach( $events as $EM_Event ) : ?>
-			<div class="em-cal-event-content em-event em-item" data-event-id="<?php echo esc_attr($EM_Event->event_id); ?>" data-parent="em-cal-events-content-<?php echo esc_attr($args['id']); ?>">
+			<div class="em-cal-event-content em em-event em-item" data-event-id="<?php echo esc_attr($EM_Event->event_id); ?>" data-parent="em-cal-events-content-<?php echo esc_attr($args['id']); ?>">
 				<?php include($tooltip_template_file); ?>
 			</div>
 		<?php endforeach; ?>

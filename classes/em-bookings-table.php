@@ -518,7 +518,7 @@ class EM_Bookings_Table{
 		/* @var $EM_Ticket_Booking EM_Ticket_Booking */
 		/* @var $EM_Booking EM_Booking */
 		if( $format === true ) $format = 'csv'; //backwards compatibility, previously $format was $csv which was a boolean 
-		if( get_class($object) == 'EM_Ticket_Booking' ){
+		if( $object instanceof EM_Ticket_Booking ){
 			$EM_Ticket_Booking = $object;
 			$EM_Ticket = $EM_Ticket_Booking->get_ticket();
 			$EM_Booking = $EM_Ticket_Booking->get_booking();

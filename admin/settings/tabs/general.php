@@ -207,7 +207,8 @@
 	        <?php echo $save_button; ?>
 		</table>
 	</div> <!-- . inside --> 
-	</div> <!-- .postbox --> 
+	</div> <!-- .postbox -->
+	<?php do_action('em_options_page_event_submission_after'); ?>
 
 	<?php do_action('em_options_page_footer'); ?>
 	

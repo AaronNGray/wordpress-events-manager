@@ -675,6 +675,7 @@ function em_add_options() {
 		'dbem_bookings_approval_overbooking' => 0, //overbooking possible when approving?
 		'dbem_bookings_double'=>0,//double bookings or more, users can't double book by default
 		'dbem_bookings_user_cancellation' => 1, //can users cancel their booking?
+		'dbem_bookings_user_cancellation_time' => '', //can users cancel their booking?
 		'dbem_bookings_currency' => 'USD',
 		'dbem_bookings_currency_decimal_point' => $decimal_point,
 		'dbem_bookings_currency_thousands_sep' => $thousands_sep,
@@ -1289,9 +1290,17 @@ function em_upgrade_current_installation(){
 							foreach( $v as $kk => $vv ){
 								$kk = $prefix . $kk;
 								if( is_array($vv) ) $vv = serialize($vv);
+								// handle emojis - copied check from wpdb
+								if ( (function_exists( 'mb_check_encoding' ) && !mb_check_encoding( $vv, 'ASCII' )) || preg_match( '/[^\x00-\x7F]/', $vv ) ) {
+									$vv = wp_encode_emoji($vv);
+								}
 								$booking_meta_split[] = $wpdb->prepare("({$booking['booking_id']}, %s, %s)", $kk, $vv);
 							}
 						}else{
+							// handle emojis - copied check from wpdb
+							if ( (function_exists( 'mb_check_encoding' ) && !mb_check_encoding( $vv, 'ASCII' )) || preg_match( '/[^\x00-\x7F]/', $vv ) ) {
+								$vv = wp_encode_emoji($vv);
+							}
 							$booking_meta_split[] = $wpdb->prepare("({$booking['booking_id']}, %s, %s)", $k, $v);
 						}
 					}
@@ -1305,6 +1314,7 @@ function em_upgrade_current_installation(){
 			// now add the batch
 			$result = $wpdb->query('INSERT INTO '. EM_BOOKINGS_META_TABLE . ' (booking_id, meta_key, meta_value) VALUES '. implode(',', $booking_meta_split) );
 			if( $result === false ){
+				echo "<pre>".print_r($wpdb, true). "</pre>"; die();
 				$message = "<strong>Events Manager is trying to update your database, but the following error occured whilst copying booking meta to the new ".EM_BOOKINGS_META_TABLE." table:</strong>";
 				$message .= '</p><p>'.'<code>'. $wpdb->last_error .'</code>';
 				$message .= '</p><p>This may likely need some sort of intervention, please get in touch with our support for more advice, we are sorry for the inconveneince.';
@@ -1316,6 +1326,7 @@ function em_upgrade_current_installation(){
 			} else {
 				$result = $wpdb->query('UPDATE '. EM_BOOKINGS_TABLE . ' SET booking_meta_migrated=1 WHERE booking_id IN ('. implode(',', $migrated_bookings).')');
 				if( $result === false ){
+					echo "<pre>".print_r($wpdb, true). "</pre>"; die();
 					$message = "<strong>Events Manager is trying to update your database, but the following error occured whilst migrating to the new ".EM_BOOKINGS_META_TABLE." table:</strong>";
 					$message .= '</p><p>'.'<code>'. $wpdb->last_error .'</code>';
 					$message .= '</p><p>This may likely need some sort of intervention, please get in touch with our support for more advice, we are sorry for the inconveneince.';

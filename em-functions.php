@@ -813,9 +813,12 @@ function em_checkbox_items($name, $array, $saved_values, $horizontal = true) {
 }
 function em_options_input_text($title, $name, $description ='', $default='', $resetable = false) {
     $translate = EM_ML::is_option_translatable($name);
-    if( preg_match('/^(.+)\[(.+)?\]$/', $name, $matches) ){
+    if( preg_match('/^([^\[]+)\[([^\]]+)?\]$/', $name, $matches) ){
     	$value = EM_Options::get($matches[2], $default, $matches[1]);
-    }else{
+    }elseif( preg_match('/^([^\[]+)\[([^\]]+)\]\[([^\]]+)?\]$/', $name, $matches) ){
+		$value_array = EM_Options::get($matches[2], array(), $matches[1]);
+		$value = isset($value_array[$matches[3]]) ? $value_array[$matches[3]]:$default;
+	}else{
         $value = get_option($name, $default);
     }
 	?>

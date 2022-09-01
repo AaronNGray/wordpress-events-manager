@@ -773,8 +773,8 @@ class EM_Event extends EM_Object{
 		}
 		
 		//Sort out event attributes - note that custom post meta now also gets inserted here automatically (and is overwritten by these attributes)
+		global $allowedtags;
 		if(get_option('dbem_attributes_enabled')){
-			global $allowedtags;
 			if( !is_array($this->event_attributes) ){ $this->event_attributes = array(); }
 			$event_available_attributes = !empty($event_available_attributes) ? $event_available_attributes : em_get_attributes(); //we use this in locations, no need to repeat if needed
 			if( !empty($_POST['em_attributes']) && is_array($_POST['em_attributes']) ){
@@ -792,6 +792,13 @@ class EM_Event extends EM_Object{
 						}
 					}
 				}
+			}
+		}
+		// get other event attributes, we may want to
+		$other_event_attributes = apply_filters('em_event_get_post_meta_other_attributes', array(), $this);
+		foreach( $other_event_attributes as $event_attribute ){
+			if( isset($_POST[$event_attribute]) ){
+				$this->event_attributes[$event_attribute] = wp_unslash(wp_kses($_POST[$event_attribute], $allowedtags));
 			}
 		}
 		
@@ -1163,6 +1170,15 @@ class EM_Event extends EM_Object{
 					}else{
 						delete_post_meta($this->post_id, $event_attribute_key);
 					}
+				}
+			}
+			// save other event attributes, we may want to
+			$other_event_attributes = apply_filters('em_event_save_post_meta_other_attributes', array(), $this);
+			foreach( $other_event_attributes as $key ){
+				if( isset($this->event_attributes[$key]) ) {
+					update_post_meta( $this->post_id, '_'.$key, $this->event_attributes[$key]);
+				}else{
+					delete_post_meta( $this->post_id, '_'.$key);
 				}
 			}
 			//update timestamps, dates and times
@@ -2033,7 +2049,7 @@ class EM_Event extends EM_Object{
 						$show_condition = ( $this->has_location() && $this->get_location()->location_status ) || $this->has_event_location();
 					}elseif ($condition == 'has_location_venue'){
 						//does this event have a valid physical location?
-						$show_condition = ( $this->has_location() && $this->get_location()->location_status ) || $this->has_event_location();
+						$show_condition = ( $this->has_location() && $this->get_location()->location_status ) || $this->has_location();
 					}elseif ($condition == 'no_location_venue'){
 						//does this event NOT have a valid physical location?
 						$show_condition = !$this->has_location();
@@ -2720,16 +2736,13 @@ class EM_Event extends EM_Object{
 						$replace = '<a href="'.esc_url($replace).'" target="_blank">Outlook Live</a>';
 					}
 					break;
-					// dt = 2022-07-20T15:15:00+00:00 to 2022-07-21T15:45:00+00:00
-					//https://outlook.live.com/calendar/0/deeplink/compose?allday=false&body=post_content&location=location_name&path=/calendar/action/compose&rru=addevent&startdt=start_date&enddt=end_date&subject=event_name
-					// startdt = 2022-07-20  &  enddt = 2022-07-19 (-1 day)
-					//https://outlook.live.com/calendar/0/deeplink/compose?allday=allday_value&body=post_content&location=location_name&path=/calendar/action/compose&rru=addevent&startdt=start_date&enddt=end_date&subject=event_name
 				//Event location (not physical location)
 				case '#_EVENTADDTOCALENDAR':
 					ob_start();
+					$rand_id = rand();
 					?>
-					<button type="button" class="em-event-add-to-calendar em-tooltip-ddm em-clickable input" data-button-width="match" data-tooltip-class="em-add-to-calendar-tooltip"><span class="em-icon em-icon-calendar"></span> <?php esc_html_e('Add To Calendar', 'events-manager'); ?></button>
-					<div class="em-tooltip-ddm-content em-event-add-to-calendar-content">
+					<button type="button" class="em-event-add-to-calendar em-tooltip-ddm em-clickable input" data-button-width="match" data-tooltip-class="em-add-to-calendar-tooltip" data-content="em-event-add-to-colendar-content-<?php echo $rand_id; ?>"><span class="em-icon em-icon-calendar"></span> <?php esc_html_e('Add To Calendar', 'events-manager'); ?></button>
+					<div class="em-tooltip-ddm-content em-event-add-to-calendar-content" id="em-event-add-to-colendar-content-<?php echo $rand_id; ?>">
 						<a class="em-a2c-download" href="<?php echo esc_url($this->get_ical_url()); ?>" target="_blank"><?php echo sprintf(esc_html__('Download %s', 'events-manager'), 'ICS'); ?></a>
 						<a class="em-a2c-google" href="<?php echo esc_url($this->output('#_EVENTGCALURL')); ?>" target="_blank"><?php esc_html_e('Google Calendar', 'events-manager'); ?></a>
 						<a class="em-a2c-apple" href="<?php echo esc_url(str_replace(array('http://','https://'), 'webcal://', $this->get_ical_url())); ?>" target="_blank">iCalendar</a>
