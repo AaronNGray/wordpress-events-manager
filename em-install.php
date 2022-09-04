@@ -279,7 +279,6 @@ function em_create_bookings_table() {
  		booking_tax_rate decimal(7,4) NULL DEFAULT NULL,
  		booking_taxes decimal(14,4) NULL DEFAULT NULL,
 		booking_meta LONGTEXT NULL,
-		booking_meta_migrated INT(1) NULL,
 		PRIMARY KEY  (booking_id)
 		) DEFAULT CHARSET=utf8 ;";
 	require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
@@ -1272,7 +1271,35 @@ function em_upgrade_current_installation(){
 			$results = $wpdb->get_results( $query, ARRAY_A );
 		}
 	}
-	if( $current_version != '' && version_compare($current_version, '6.1', '<') ){
+	// some users experienced issues with the following updates, so we'll do a check for the booking_meta_migrated field and see if everything went through...
+	$cols = $wpdb->get_row('SELECT * FROM '. EM_BOOKINGS_TABLE . ' LIMIT 1', ARRAY_A);
+	if( is_array($cols) && array_key_exists('booking_meta_migrated', $cols) ) {
+		$query = 'SELECT count(*) FROM ' . EM_BOOKINGS_TABLE . " WHERE booking_meta_migrated IS NULL";
+		$migrated_count = $wpdb->get_var($query);
+		if ($migrated_count !== null && $migrated_count > 0) {
+			// we didn't fully migrate, so we need to go back and re-migrate the missing data
+			$current_version = '6.1';
+			update_option('dbem_version', $current_version);
+			if( get_option('em_pro_version') ){
+				update_option('em_pro_version', '2.9999'); // retrigger EM Pro after as well
+			}
+		}
+	}
+	
+	if( $current_version != '' && version_compare($current_version, '6.1.0.1', '<') ){
+		$cols = $wpdb->get_row('SELECT * FROM '. EM_BOOKINGS_TABLE . ' LIMIT 1', ARRAY_A);
+		if( is_array($cols) && !array_key_exists('booking_meta_migrated', $cols) ) {
+			$result = $wpdb->query('ALTER TABLE ' . EM_BOOKINGS_TABLE . ' ADD `booking_meta_migrated` INT(1) NULL');
+			if( $result === false ){
+				$message = "<strong>Events Manager is trying to update your database, but the following error occured whilst trying to create a new field in the ".EM_BOOKINGS_TABLE." table:</strong>";
+				$message .= '</p><p>'.'<code>'. $wpdb->last_error .'</code>';
+				$message .= '</p><p>This may likely need some sort of intervention, please get in touch with our support for more advice, we are sorry for the inconveneince.';
+				$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'v6.1-booking-atomic-meta-error', 'who' => 'admin', 'where' => 'all', 'message' => $message, 'what'=>'warning' ));
+				EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
+				global $em_do_not_finalize_upgrade;
+				$em_do_not_finalize_upgrade = true;
+			}
+		}
 		// atomic booking meta! for 6.1
 		// let's go through every booking and split it all up
 		$query = 'SELECT booking_id, booking_meta FROM '. EM_BOOKINGS_TABLE ." WHERE booking_meta_migrated IS NULL";
@@ -1298,8 +1325,8 @@ function em_upgrade_current_installation(){
 							}
 						}else{
 							// handle emojis - copied check from wpdb
-							if ( (function_exists( 'mb_check_encoding' ) && !mb_check_encoding( $vv, 'ASCII' )) || preg_match( '/[^\x00-\x7F]/', $vv ) ) {
-								$vv = wp_encode_emoji($vv);
+							if ( (function_exists( 'mb_check_encoding' ) && !mb_check_encoding( $v, 'ASCII' )) || preg_match( '/[^\x00-\x7F]/', $v ) ) {
+								$v = wp_encode_emoji($v);
 							}
 							$booking_meta_split[] = $wpdb->prepare("({$booking['booking_id']}, %s, %s)", $k, $v);
 						}
@@ -1314,7 +1341,6 @@ function em_upgrade_current_installation(){
 			// now add the batch
 			$result = $wpdb->query('INSERT INTO '. EM_BOOKINGS_META_TABLE . ' (booking_id, meta_key, meta_value) VALUES '. implode(',', $booking_meta_split) );
 			if( $result === false ){
-				echo "<pre>".print_r($wpdb, true). "</pre>"; die();
 				$message = "<strong>Events Manager is trying to update your database, but the following error occured whilst copying booking meta to the new ".EM_BOOKINGS_META_TABLE." table:</strong>";
 				$message .= '</p><p>'.'<code>'. $wpdb->last_error .'</code>';
 				$message .= '</p><p>This may likely need some sort of intervention, please get in touch with our support for more advice, we are sorry for the inconveneince.';
@@ -1326,7 +1352,6 @@ function em_upgrade_current_installation(){
 			} else {
 				$result = $wpdb->query('UPDATE '. EM_BOOKINGS_TABLE . ' SET booking_meta_migrated=1 WHERE booking_id IN ('. implode(',', $migrated_bookings).')');
 				if( $result === false ){
-					echo "<pre>".print_r($wpdb, true). "</pre>"; die();
 					$message = "<strong>Events Manager is trying to update your database, but the following error occured whilst migrating to the new ".EM_BOOKINGS_META_TABLE." table:</strong>";
 					$message .= '</p><p>'.'<code>'. $wpdb->last_error .'</code>';
 					$message .= '</p><p>This may likely need some sort of intervention, please get in touch with our support for more advice, we are sorry for the inconveneince.';
@@ -1340,6 +1365,7 @@ function em_upgrade_current_installation(){
 				}
 			}
 		}
+		$wpdb->query('ALTER TABLE '. EM_BOOKINGS_TABLE . ' DROP `booking_meta_migrated`'); // flag done
 		EM_Admin_Notices::remove('v6.1-booking-atomic-meta-error', is_multisite());
 		EM_Admin_Notices::remove('v6.1-atomic-error', is_multisite());
 	}
@@ -1361,22 +1387,26 @@ function em_upgrade_current_installation(){
 			// we have a problem...
 			$em_do_not_finalize_upgrade = true;
 			// first see if there's even a problem
-			$create_result = $wpdb->query('CREATE TABLE wp_em_bookings_meta_copy LIKE ' . EM_BOOKINGS_META_TABLE);
+			$table_copy = 'wp_em_bookings_meta_copy';
+			$create_result = $wpdb->query('CREATE TABLE '.$table_copy.' LIKE ' . EM_BOOKINGS_META_TABLE);
+			if ($create_result === false) {
+				// try once more in case mid-dev updates were attempted between EM v6.1.1.2 and v6.1.2
+				$table_copy = $table_copy . '_2';
+				$create_result = $wpdb->query('CREATE TABLE '.$table_copy.' LIKE ' . EM_BOOKINGS_META_TABLE);
+			}
 			if ($create_result !== false) {
 				// copy all the data to the duplicate table
-				$copy_result = $wpdb->query('INSERT INTO wp_em_bookings_meta_copy SELECT * FROM ' . EM_BOOKINGS_META_TABLE);
+				$copy_result = $wpdb->query('INSERT INTO '.$table_copy.' SELECT * FROM ' . EM_BOOKINGS_META_TABLE);
 				if ($copy_result) {
 					// verify the number of rows match the original table
 					$original_count = $wpdb->get_var('SELECT count(*) FROM ' . EM_BOOKINGS_META_TABLE);
-					$copy_count = $wpdb->get_var('SELECT count(*) FROM wp_em_bookings_meta_copy');
+					$copy_count = $wpdb->get_var('SELECT count(*) FROM '.$table_copy.'');
 					if ( $copy_count !== null && $original_count !== null && $copy_count === $original_count) {
 						$deletion_result = $wpdb->query('DELETE t1 ' . $sql_part);
 						if( $deletion_result !== false ){
 							$em_do_not_finalize_upgrade = false;
 							// all done! just warn the user about the deletion and the copied table, just in case
-							$message = sprintf(esc_html__('You have successfully updated to Events Manager %s', 'events-manager'), '6.1.2');
-							$message2 = '</p><p>'. 'We noticed some duplicate entries in the %1$s table of your database, which may be the result of a previous update gone wrong. We have made a copy of that table to %2$s and then proceeded to delete the duplicate data from %1$s. Whilst we have taken every precaution, if you feel there is any missing data you have the backup table that can be restored.';
-							$message2 = sprintf($message2, '<code>'. EM_BOOKINGS_META_TABLE .'</code>', '<code>wp_em_bookings_meta_copy</code>');
+							$message = sprintf('You have successfully updated and migrated to Events Manager %s', EM_VERSION);
 							EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.1.2-duplicate-update', 'who' => 'admin', 'where' => 'settings', 'message' => $message.$message2 )), is_multisite());
 							EM_Admin_Notices::remove('v6.1.2-update-error');
 						}else{
@@ -1400,7 +1430,7 @@ function em_upgrade_current_installation(){
 			$message = 'There was an error upgrading your database. We could not check the integrity of <code>'.EM_BOOKINGS_META_TABLE.'</code> to ensure updates were successful. Please contact Events Manager Pro support for further assistance.';
 			EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.1.2-update-error', 'who' => 'admin', 'where' => 'settings', 'message' => $message )), is_multisite());
 		}else{
-			$message = sprintf(esc_html__('You have successfully updated to Events Manager %s', 'events-manager'), '6.1.2');
+			$message = sprintf(esc_html__('You have successfully updated to Events Manager %s', 'events-manager'), EM_VERSION);
 			EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.1.2-update', 'who' => 'admin', 'where' => 'settings', 'message' => $message )), is_multisite());
 		}
 	}

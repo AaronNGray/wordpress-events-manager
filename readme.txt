@@ -135,7 +135,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 15. Clean forms for submitting and managing events, as well as booking events for users.
 
 == Changelog ==
-= 6.1.1.5 (dev) =
+= 6.1.1.6 (dev) =
 * changed EM_Tickets, EM_Bookings and EM_Ticket so event object is stored as referece so get_event() all reference the same parent object,
 * changed em_bookings_ticket_exists hook for when tickets don't exist, $EM_Ticket is pssed as a blank EM_Ticket with the requested $ticket_id
 * removed erroneous em_boking_save action in em-actions.php before anything is actually saved
@@ -186,6 +186,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * fixed incorrect label id for single ticket mode spaces select
 * fixed booking data duplication issues when saving personal data in booking admin
 * added backwards-compatible measure to support PHP 8.1 and return type requirements in DateTime and DateTimeZone by including duplicate file with return types which are loaded only with 8.1 and greater
+* added update retrigger if previous update is detected to not have gone through fully
 
 = 6.1.1 =
 * tweaked installation SQL so it's MariaDB-compatible
