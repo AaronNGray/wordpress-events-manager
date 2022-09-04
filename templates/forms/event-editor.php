@@ -18,14 +18,19 @@ if( is_object($EM_Event) && !$EM_Event->can_manage('edit_events','edit_others_ev
 }
 $required = apply_filters('em_required_html','<i>*</i>');
 
-echo $EM_Notices;
-//Success notice
-if( !empty($_REQUEST['success']) ){
-	if(!get_option('dbem_events_form_reshow')) return false;
-}
 $id = rand(); // not related to searches, so we'll just add an ID for good practice
 ?>
 <div class="<?php em_template_classes('view-container'); ?>" id="em-view-<?php echo $id; ?>" data-view="event">
+	<?php
+		echo $EM_Notices;
+		//Success notice
+		if( !empty($_REQUEST['success']) ){
+			if(!get_option('dbem_events_form_reshow')){
+				echo '</div>'; // close the div and exit if we're not showing the form again
+				return false;
+			}
+		}
+	?>
 	<form enctype='multipart/form-data' id="event-form-<?php echo $id; ?>" class="<?php em_template_classes('event-editor'); ?> <?php if( $EM_Event->is_recurring() ) echo 'em-event-admin-recurring' ?>"
 	      method="post" action="<?php echo esc_url(add_query_arg(array('success'=>null, 'action'=>null))); ?>" data-view-id="<?php echo $id; ?>">
 		<?php do_action('em_front_event_form_header', $EM_Event); ?>
@@ -122,20 +127,20 @@ $id = rand(); // not related to searches, so we'll just add an ID for good pract
 		</section>
 		
 		<?php do_action('em_front_event_form_footer', $EM_Event); ?>
-	</div>
-	<section class="event-form-submit <?php echo $template; ?>">
-		<p class="input submit">
-		    <?php if( empty($EM_Event->event_id) ): ?>
-		    <input type='submit' class='button-primary' value='<?php echo esc_attr(sprintf( __('Submit %s','events-manager'), __('Event','events-manager') )); ?>' >
-		    <?php else: ?>
-		    <input type='submit' class='button-primary' value='<?php echo esc_attr(sprintf( __('Update %s','events-manager'), __('Event','events-manager') )); ?>' >
-		    <?php endif; ?>
-		</p>
-		<input type="hidden" name="event_id" value="<?php echo $EM_Event->event_id; ?>" >
-		<input type="hidden" name="_wpnonce" value="<?php echo wp_create_nonce('wpnonce_event_save'); ?>" >
-		<input type="hidden" name="action" value="event_save" >
-		<?php if( !empty($_REQUEST['redirect_to']) ): ?>
-		<input type="hidden" name="redirect_to" value="<?php echo esc_attr($_REQUEST['redirect_to']); ?>" >
-		<?php endif; ?>
-	</section>
+		
+		<section class="event-form-submit <?php echo $template; ?>">
+			<p class="input submit">
+			    <?php if( empty($EM_Event->event_id) ): ?>
+			    <input type='submit' class='button-primary' value='<?php echo esc_attr(sprintf( __('Submit %s','events-manager'), __('Event','events-manager') )); ?>' >
+			    <?php else: ?>
+			    <input type='submit' class='button-primary' value='<?php echo esc_attr(sprintf( __('Update %s','events-manager'), __('Event','events-manager') )); ?>' >
+			    <?php endif; ?>
+			</p>
+			<input type="hidden" name="event_id" value="<?php echo $EM_Event->event_id; ?>" >
+			<input type="hidden" name="_wpnonce" value="<?php echo wp_create_nonce('wpnonce_event_save'); ?>" >
+			<input type="hidden" name="action" value="event_save" >
+			<?php if( !empty($_REQUEST['redirect_to']) ): ?>
+			<input type="hidden" name="redirect_to" value="<?php echo esc_attr($_REQUEST['redirect_to']); ?>" >
+			<?php endif; ?>
+		</section>
 </form>

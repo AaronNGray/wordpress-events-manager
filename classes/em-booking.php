@@ -372,7 +372,17 @@ class EM_Booking extends EM_Object{
 		$booking_meta = serialize($this->booking_meta);
 		$wpdb->update( EM_BOOKINGS_TABLE, array('booking_meta' => $booking_meta), array('booking_id' => $this->booking_id) );
 		// add to new meta table if not exists
-		$result = $wpdb->delete( EM_BOOKINGS_META_TABLE, array('booking_id' => $this->booking_id, 'meta_key' => $meta_key) );
+		if( is_array($meta_value) ){
+			// delete split array values by getting the generated keys as we would further down and deleting them first
+			$meta_delete_keys = array();
+			foreach( $meta_value as $kk => $vv ){
+				$meta_delete_keys[] = "'". $wpdb->_real_escape('_'.$meta_key.'_'.$kk) . "'";
+			}
+			// delete previous values so we insert new ones
+			$result = $wpdb->query( $wpdb->prepare('DELETE FROM '. EM_BOOKINGS_META_TABLE .' WHERE booking_id=%d AND meta_key IN ('. implode(',', $meta_delete_keys) .')', $this->booking_id) );
+		}else{
+			$result = $wpdb->delete( EM_BOOKINGS_META_TABLE, array('booking_id' => $this->booking_id, 'meta_key' => $meta_key) );
+		}
 		// if null, then we already deleted it and skip this
 		if( $meta_value !== null ) {
 			if( is_array($meta_value) ){

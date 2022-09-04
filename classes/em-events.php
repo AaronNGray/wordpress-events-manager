@@ -482,7 +482,7 @@ $limit $offset";
 		}elseif( $args['no_results_msg'] !== false ){
 			echo !empty($args['no_results_msg']) ? $args['no_results_msg'] : get_option('dbem_no_events_message');
 		}
-		return apply_filters('em_events_output_grouped', ob_get_clean(), $events, $args);
+		return apply_filters('em_events_output_grouped', ob_get_clean(), $EM_Events, $args);
 	}
 	
 	public static function get_pagination_links($args, $count, $search_action = 'search_events', $default_args = array()){

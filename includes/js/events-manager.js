@@ -2119,7 +2119,7 @@ jQuery(document).ready( function($){
 		}
 	});
 
-    $(document).on('click', '.em-view-container .em-pagination a.page-numbers', function(e){
+    $(document).on('click', '.em-view-container .em-ajax.em-pagination a.page-numbers', function(e){
         var a = $(this);
         var data = a.closest('.em-pagination').attr('data-em-ajax');
         var view = a.closest('.em-view-container');

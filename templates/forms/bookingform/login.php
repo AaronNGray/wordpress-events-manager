@@ -9,7 +9,7 @@
 	</div>
 	<div class="em-login-content">
 		<p><?php esc_html_e('Log in if you already have an account with us.','events-manager'); ?></p>
-		<form class="em-form em-login-form" action="<?php echo site_url('wp-login.php', 'login_post'); ?>" method="post">
+		<form class="em-form em-login-form" action="<?php echo home_url('wp-login.php', 'login_post'); ?>" method="post">
 		    <p>
 				<label><?php esc_html_e( 'Username','events-manager') ?></label>
 				<input type="text" name="log" class="input" value="">

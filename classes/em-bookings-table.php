@@ -518,12 +518,15 @@ class EM_Bookings_Table{
 		/* @var $EM_Ticket_Booking EM_Ticket_Booking */
 		/* @var $EM_Booking EM_Booking */
 		if( $format === true ) $format = 'csv'; //backwards compatibility, previously $format was $csv which was a boolean 
-		if( $object instanceof EM_Ticket_Booking ){
+		if( $object instanceof EM_Ticket_Booking || $object instanceof EM_Ticket_Bookings ){
 			$EM_Ticket_Booking = $object;
 			$EM_Ticket = $EM_Ticket_Booking->get_ticket();
 			$EM_Booking = $EM_Ticket_Booking->get_booking();
-		}else{
+		}elseif( $object instanceof EM_Booking ){
 			$EM_Booking = $object;
+		}else{
+			// unrecognized $object, return empty padded array
+			return array_pad( array(), count($this->cols), '' );
 		}
 		$cols = array();
 		foreach($this->cols as $col){

@@ -7,7 +7,7 @@
 	<p class="em-timezone">
 		<label for="event-timezone-<?php echo $id; ?>"><?php esc_html_e('Timezone', 'events-manager'); ?></label>
 		<select id="event-timezone-<?php echo $id; ?>" name="event_timezone" class="em-selectize">
-			<?php echo wp_timezone_choice( $EM_Event->get_timezone()->getName(), get_user_locale() ); ?>
+			<?php echo wp_timezone_choice( $EM_Event->get_timezone()->getValue(), get_user_locale() ); ?>
 		</select>
 	</p>
 <?php endif; ?>

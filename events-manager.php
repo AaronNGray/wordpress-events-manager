@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 // Setting constants
-define('EM_VERSION', '6.1.1.2'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
+define('EM_VERSION', '6.1.1.5'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
 define('EM_PRO_MIN_VERSION', '3.0'); //self expanatory
 define('EM_PRO_MIN_VERSION_CRITICAL', '3.0'); //self expanatory
 define('EM_DIR', dirname( __FILE__ )); //an absolute path to this directory
@@ -68,8 +68,13 @@ function dbem_debug_mode(){
 include('classes/em-exception.php');
 include('classes/em-options.php');
 include('classes/em-object.php');
-include('classes/em-datetime.php');
-include('classes/em-datetimezone.php');
+if( version_compare(PHP_VERSION, '8.1', '>=') ) {
+	include('classes/em-datetime.8.1.php');
+	include('classes/em-datetimezone.8.1.php');
+}else{
+	include('classes/em-datetime.php');
+	include('classes/em-datetimezone.php');
+}
 include('classes/em-taxonomy-term.php');
 include('classes/em-taxonomy-terms.php');
 include('classes/em-taxonomy-frontend.php');

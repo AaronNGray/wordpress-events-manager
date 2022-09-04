@@ -10,8 +10,9 @@ if(!function_exists('em_paginate')){ //overridable e.g. in you mu-plugins folder
  * @param array $data If supplied and EM_USE_DATA_ATTS is true/defined, this set of data will be stripped from the URL and added as a data-em-ajax attribute containing data AJAX can use
  * @return string
  */
-function em_paginate($link, $total, $limit, $page=1, $data=array()){
+function em_paginate($link, $total, $limit, $page=1, $data=array(), $ajax = null){
 	if($limit > 0){
+		$ajax = $ajax === null ? EM_AJAX : $ajax;
 		$pagesToShow = defined('EM_PAGES_TO_SHOW') ? EM_PAGES_TO_SHOW : 11;
 		$centered = defined('EM_PAGINATION_CENTERED') ? EM_PAGINATION_CENTERED : true;
 		$url_parts = explode('?', $link);
@@ -95,8 +96,10 @@ function em_paginate($link, $total, $limit, $page=1, $data=array()){
 		//Add the forward and last buttons
 		    $string .= ($page < $maxPages) ? ' <a class="next page-numbers" href="'.str_replace($placeholder,$page+1,$link).'" title="'.($page+1).'">&gt;</a> ' :' ' ;
 		    $string .= ($i-1 < $maxPages) ? ' <a class="next last page-numbers" href="'.str_replace($placeholder,$maxPages,$link).'" title="'.$maxPages.'">&gt;&gt;</a> ' : ' ';
+		// add ajax flag
+			$ajax_class = $ajax ? 'em-ajax':'';
 		//Return the string
-		    return apply_filters('em_paginate', '<div class="em-pagination" '.$data_atts.'>'.$string.'</div>');
+		    return apply_filters('em_paginate', '<div class="em-pagination '.$ajax_class.'" '.$data_atts.'>'.$string.'</div>');
 	}
 }
 }

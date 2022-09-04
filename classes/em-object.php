@@ -1086,7 +1086,7 @@ class EM_Object {
 		//$default_args are values that can be added to the querystring for use in searching events in pagination either in searches or ajax pagination
 		if( !empty($_REQUEST['action']) && $_REQUEST['action'] == $search_action && empty($default_args) ){
 			//due to late static binding issues in PHP, this'll always return EM_Object::get_default_search so this is a fall-back
-			$default_args = self::get_default_search();
+			$default_args = static::get_default_search();
 		}
 		//go through default arguments (if defined) and build a list of unique non-default arguments that should go into the querystring
 		$unique_args = array(); //this is the set of unique arguments we'll add to the querystring
@@ -1116,7 +1116,7 @@ class EM_Object {
 		//finally, glue the url with querystring and pass onto pagination function
 		$page_link_template = em_add_get_params($page_url, $pag_args, false); //don't html encode, so em_paginate does its thing;
 		if( empty($args['ajax']) || defined('DOING_AJAX') ) $unique_args = array(); //don't use data method if ajax is disabled or if we're already in an ajax request (SERP irrelevenat)
-		$return = apply_filters('em_object_get_pagination_links', em_paginate( $page_link_template, $count, $limit, $page, $unique_args ), $page_link_template, $count, $limit, $page);
+		$return = apply_filters('em_object_get_pagination_links', em_paginate( $page_link_template, $count, $limit, $page, $unique_args, !empty($args['ajax']) ), $page_link_template, $count, $limit, $page);
 		//if PHP is 5.3 or later, you can specifically filter by class e.g. em_events_output_pagination - this replaces the old filter originally located in the actual child classes
 		if( function_exists('get_called_class') ){
 			$return = apply_filters(strtolower(get_called_class()).'_output_pagination', $return, $page_link_template, $count, $limit, $page);

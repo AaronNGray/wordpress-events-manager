@@ -1346,6 +1346,64 @@ function em_upgrade_current_installation(){
 	if( $current_version != '' && version_compare($current_version, '6.1.1', '<') ){
 		EM_Admin_Notices::remove('v6.1-atomic-error', is_multisite());
 	}
+	
+	
+	if( version_compare($current_version, '6.1.1.4', '<') ){
+		global $em_do_not_finalize_upgrade;
+		// we're going to fix a potential duplicate data issue that emerged in a recent update, cause unknown, fix know as below...ç
+		$sql_part = '
+				 FROM '. EM_BOOKINGS_META_TABLE .' AS t1
+				INNER JOIN '. EM_BOOKINGS_META_TABLE .' AS t2
+				WHERE t1.meta_id > t2.meta_id AND t2.booking_id = t1.booking_id AND t2.meta_key = t1.meta_key AND t2.meta_value = t1.meta_value
+			';
+		$duplicate_check = $wpdb->query('SELECT * '.$sql_part);
+		if( $duplicate_check !== false && $wpdb->num_rows > 0 ) {
+			// we have a problem...
+			$em_do_not_finalize_upgrade = true;
+			// first see if there's even a problem
+			$create_result = $wpdb->query('CREATE TABLE wp_em_bookings_meta_copy LIKE ' . EM_BOOKINGS_META_TABLE);
+			if ($create_result !== false) {
+				// copy all the data to the duplicate table
+				$copy_result = $wpdb->query('INSERT INTO wp_em_bookings_meta_copy SELECT * FROM ' . EM_BOOKINGS_META_TABLE);
+				if ($copy_result) {
+					// verify the number of rows match the original table
+					$original_count = $wpdb->get_var('SELECT count(*) FROM ' . EM_BOOKINGS_META_TABLE);
+					$copy_count = $wpdb->get_var('SELECT count(*) FROM wp_em_bookings_meta_copy');
+					if ( $copy_count !== null && $original_count !== null && $copy_count === $original_count) {
+						$deletion_result = $wpdb->query('DELETE t1 ' . $sql_part);
+						if( $deletion_result !== false ){
+							$em_do_not_finalize_upgrade = false;
+							// all done! just warn the user about the deletion and the copied table, just in case
+							$message = sprintf(esc_html__('You have successfully updated to Events Manager %s', 'events-manager'), '6.1.2');
+							$message2 = '</p><p>'. 'We noticed some duplicate entries in the %1$s table of your database, which may be the result of a previous update gone wrong. We have made a copy of that table to %2$s and then proceeded to delete the duplicate data from %1$s. Whilst we have taken every precaution, if you feel there is any missing data you have the backup table that can be restored.';
+							$message2 = sprintf($message2, '<code>'. EM_BOOKINGS_META_TABLE .'</code>', '<code>wp_em_bookings_meta_copy</code>');
+							EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.1.2-duplicate-update', 'who' => 'admin', 'where' => 'settings', 'message' => $message.$message2 )), is_multisite());
+							EM_Admin_Notices::remove('v6.1.2-update-error');
+						}else{
+							$message = 'There was an error upgrading your database. We could not delete redundant data from <code>'.EM_BOOKINGS_META_TABLE.'</code> for the Events Manager v6.1.2 upgrade. Please contact Events Manager Pro support for further assistance and provide this entire error. MySQL error: <code>'. $wpdb->last_error .'</code>';
+							EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.1.2-update-error', 'who' => 'admin', 'where' => 'settings', 'message' => $message )), is_multisite());
+						}
+					}else{
+						$message = 'There was an error upgrading your database. We could not copy backup data from <code>'.EM_BOOKINGS_META_TABLE.'</code> for the Events Manager v6.1.2 upgrade, origin/destination quantities do not match and we will not proceed. Please contact Events Manager Pro support for further assistance and provide this entire error.';
+						EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.1.2-update-error', 'who' => 'admin', 'where' => 'settings', 'message' => $message )), is_multisite());
+					}
+				}else{
+					$message = 'There was an error upgrading your database. We could not copy backup data from <code>'.EM_BOOKINGS_META_TABLE.'</code> for the Events Manager v6.1.2 upgrade. Please contact Events Manager Pro support for further assistance and provide this entire error. MySQL error: <code>'. $wpdb->last_error .'</code>';
+					EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.1.2-update-error', 'who' => 'admin', 'where' => 'settings', 'message' => $message )), is_multisite());
+				}
+			}else{
+				$message = 'There was an error upgrading your database. We could not create a table copy of <code>'.EM_BOOKINGS_META_TABLE.'</code> for the Events Manager v6.1.2 upgrade. Please contact Events Manager Pro support for further assistance and provide this entire error. MySQL error: <code>'. $wpdb->last_error .'</code>';
+				EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.1.2-update-error', 'who' => 'admin', 'where' => 'settings', 'message' => $message )), is_multisite());
+			}
+		}elseif( $duplicate_check === false ){
+			$em_do_not_finalize_upgrade = true;
+			$message = 'There was an error upgrading your database. We could not check the integrity of <code>'.EM_BOOKINGS_META_TABLE.'</code> to ensure updates were successful. Please contact Events Manager Pro support for further assistance.';
+			EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.1.2-update-error', 'who' => 'admin', 'where' => 'settings', 'message' => $message )), is_multisite());
+		}else{
+			$message = sprintf(esc_html__('You have successfully updated to Events Manager %s', 'events-manager'), '6.1.2');
+			EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.1.2-update', 'who' => 'admin', 'where' => 'settings', 'message' => $message )), is_multisite());
+		}
+	}
 }
 
 function em_set_mass_caps( $roles, $caps ){

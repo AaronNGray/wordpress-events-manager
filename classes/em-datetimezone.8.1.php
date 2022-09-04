@@ -1,4 +1,5 @@
 <?php
+// THIS IS A DUPLICATE OF em-datetimezone.php but with return types which otherwise cause warnings in PHP 8.1. Sadly, since we need to account for earlier versions of PHP for min WP installs (5.3 as of writing), return types aren't implemented until late PHP 7, so best solution for now is to include this if 8.1 or later.
 /**
  * Extends the native DateTimeZone object by allowing for UTC manual offsets as supported by WordPress, along with eash creation of a DateTimeZone object with the blog's timezone.
  * @since 5.8.2
@@ -61,7 +62,7 @@ class EM_DateTimeZone extends DateTimeZone {
 	 * {@inheritDoc}
 	 * @see DateTimeZone::getName()
 	 */
-	public function getName(){
+	public function getName() : string {
 		if( $this->isUTC() ){
 			return 'UTC'.parent::getName();
 		}
@@ -99,7 +100,7 @@ class EM_DateTimeZone extends DateTimeZone {
 	 * {@inheritDoc}
 	 * @see DateTimeZone::getTransitions()
 	 */
-	public function getTransitions( $timestamp_begin = null, $timestamp_end = null ){
+	public function getTransitions( $timestamp_begin = null, $timestamp_end = null ) : array|false {
 		if( $this->utc_offset !== false ){
 			return array();
 		}

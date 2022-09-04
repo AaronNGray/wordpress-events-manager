@@ -497,7 +497,7 @@ function em_init_actions() {
 			    global $wpdb;
 				if( //save just the booking meta, avoid extra unneccesary hooks and things to go wrong
 					$EM_Booking->is_no_user() && $EM_Booking->get_person_post() && 
-			    	$wpdb->update(EM_BOOKINGS_TABLE, array('booking_meta'=> serialize($EM_Booking->booking_meta)), array('booking_id'=>$EM_Booking->booking_id)) !== false
+			    	$EM_Booking->update_meta('registration', $EM_Booking->booking_meta['registration'])
 				){
 					$EM_Notices->add_confirm( $EM_Booking->feedback_message, true );
 					$redirect = !empty($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : em_wp_get_referer();
@@ -686,10 +686,9 @@ function em_init_actions() {
 				//Display all values
 				if( $show_tickets ){
 					foreach($EM_Booking->get_tickets_bookings() as $EM_Ticket_Bookings){ /* @var EM_Ticket_Bookings $EM_Ticket_Bookings */
-						foreach( $EM_Ticket_Bookings as $EM_Ticket_Booking ) {
-							$row = $EM_Bookings_Table->get_row_csv($EM_Ticket_Booking);
-							fputcsv($handle, $row, $delimiter);
-						}
+						// since we're splitting by ticket type, we don't need individual EM_Ticket_Booking objects, but the wrapper object
+						$row = $EM_Bookings_Table->get_row_csv($EM_Ticket_Bookings);
+						fputcsv($handle, $row, $delimiter);
 					}
 				}else{
 					$row = $EM_Bookings_Table->get_row_csv($EM_Booking);

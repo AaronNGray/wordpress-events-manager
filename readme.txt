@@ -135,7 +135,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 15. Clean forms for submitting and managing events, as well as booking events for users.
 
 == Changelog ==
-= 6.1.1.2 (dev) =
+= 6.1.1.5 (dev) =
 * changed EM_Tickets, EM_Bookings and EM_Ticket so event object is stored as referece so get_event() all reference the same parent object,
 * changed em_bookings_ticket_exists hook for when tickets don't exist, $EM_Ticket is pssed as a blank EM_Ticket with the requested $ticket_id
 * removed erroneous em_boking_save action in em-actions.php before anything is actually saved
@@ -173,6 +173,19 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * fixed issues with serialization/wakeup in sessions for booking objects using new atomic tickets structure (fixes issues with Pro Multiple Booking checkouts)
 * fixed upgrade failures due to emoji data in bookings,
 * fixed issues with older PHP code looping EM_Bookings_Tickets and getting pricing resulting in single-ticket pricing rather than grouped when calling get_price_with_taxes()
+* fixed taxonomy event list pagination issues as well as forced AJAX on non-ajax pagination
+* fixed formatting typo displaying PHP code rather than translated output
+* fixed modal y-axis overflow for advanced search,
+* tweaked modal hidden mode to prevent click/touch blocking
+* fixed duplicate rows output in CSV split by ticket type
+* fixed templates/forms/event-editor.php to show notices within container so styling is inherited
+* added duplicate data removal script for updates that somehow duplicated data within the wp_em_bookings table
+* fixed PHP warning when no events in grouped listing - changed em_events_output_grouped so first argument returns all events from EM_Events::get(), use em_events_output_grouped_events_dates for split-by-dates array
+* fixed login form redirect issues in MultiSite where site_url is different from home_url
+* fixed timezone UTC offsets with minutes not saving properly
+* fixed incorrect label id for single ticket mode spaces select
+* fixed booking data duplication issues when saving personal data in booking admin
+* added backwards-compatible measure to support PHP 8.1 and return type requirements in DateTime and DateTimeZone by including duplicate file with return types which are loaded only with 8.1 and greater
 
 = 6.1.1 =
 * tweaked installation SQL so it's MariaDB-compatible

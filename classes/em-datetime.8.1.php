@@ -1,4 +1,5 @@
 <?php
+// THIS IS A DUPLICATE OF em-datetime.php but with return types which otherwise cause warnings in PHP 8.1. Sadly, since we need to account for earlier versions of PHP for min WP installs (5.3 as of writing), return types aren't implemented until late PHP 7, so best solution for now is to include this if 8.1 or later.
 /**
  * Extends DateTime allowing supplied timezone to be a string, which can also be a UTC offset.
  * Also prevents an exception being thrown. Some additional shortcuts added so less coding is required for regular tasks.
@@ -66,7 +67,7 @@ class EM_DateTime extends DateTime {
 	 * {@inheritDoc}
 	 * @see DateTime::format()
 	 */
-	public function format( $format = 'Y-m-d H:i:s'){
+	public function format( $format = 'Y-m-d H:i:s') : string {
 		if( !$this->valid && ($format == 'Y-m-d' || $format == em_get_date_format())) return '';
 		if( $format !== 'Y-m-d H:i:s' ) $format = $this->formatTimezones($format); // format UTC timezones
 		return parent::format($format);
@@ -150,7 +151,7 @@ class EM_DateTime extends DateTime {
 	 * @see DateTime::setTimestamp()
 	 * @return EM_DateTime
 	 */
-	public function setTimestamp( $timestamp ){
+	public function setTimestamp( $timestamp ) : EM_DateTime {
 		$return = parent::setTimestamp( $timestamp );
 		$this->valid = $return !== false;
 		return $this;
@@ -163,7 +164,7 @@ class EM_DateTime extends DateTime {
 	 * @see DateTime::setTimezone()
 	 * @return EM_DateTime Returns object for chaining.
 	 */
-	public function setTimezone( $timezone = false ){
+	public function setTimezone( $timezone = false ) : EM_DateTime {
 		if( $timezone == $this->getTimezone()->getName() ) return $this;
 		$timezone = EM_DateTimeZone::create($timezone);
 		$return = parent::setTimezone($timezone);
@@ -178,7 +179,7 @@ class EM_DateTime extends DateTime {
 	 * {@inheritDoc}
 	 * @see DateTime::setTime()
 	 */
-	public function setTime( $hour, $minute, $second = NULL, $microseconds = NULL ){
+	public function setTime( $hour, $minute, $second = NULL, $microseconds = NULL ) : EM_DateTime {
 		$return = parent::setTime( (int) $hour, (int) $minute, (int) $second );
 		$this->valid = $return !== false;
 		return $this;
@@ -189,7 +190,7 @@ class EM_DateTime extends DateTime {
 	 * {@inheritDoc}
 	 * @see DateTime::setDate()
 	 */
-	public function setDate( $year, $month, $day ){
+	public function setDate( $year, $month, $day ) : EM_DateTime {
 		$return = parent::setDate( $year, $month, $day );
 		$this->valid = $return !== false;
 		return $this;
@@ -200,7 +201,7 @@ class EM_DateTime extends DateTime {
 	 * {@inheritDoc}
 	 * @see DateTime::setISODate()
 	 */
-	public function setISODate( $year, $week, $day = NULL ){
+	public function setISODate( $year, $week, $day = NULL ) : EM_DateTime {
 		$return = parent::setISODate( $year, $week, $day );
 		$this->valid = $return !== false;
 		return $this;
@@ -211,7 +212,7 @@ class EM_DateTime extends DateTime {
 	 * {@inheritDoc}
 	 * @see DateTime::modify()
 	 */
-	public function modify( $modify ){
+	public function modify( $modify ) : EM_DateTime {
 		$result = parent::modify($modify);
 		$this->valid = $result !== false;
 		return $this;
@@ -225,7 +226,7 @@ class EM_DateTime extends DateTime {
 	 * @return EM_DateTime Returns object for chaining.
 	 * @throws Exception
 	 */
-	public function add( $DateInterval ){
+	public function add( $DateInterval ) : EM_DateTime {
 		if( is_object($DateInterval) ){
 			$result = parent::add($DateInterval);
 		}else{
@@ -243,7 +244,7 @@ class EM_DateTime extends DateTime {
 	 * @return EM_DateTime
 	 * @throws Exception
 	 */
-	public function sub( $DateInterval ){
+	public function sub( $DateInterval ) : EM_DateTime {
 		if( is_object($DateInterval) ){
 			$result = parent::sub($DateInterval);
 		}else{
@@ -280,7 +281,7 @@ class EM_DateTime extends DateTime {
 	 * @see DateTime::getTimezone()
 	 * @return EM_DateTimeZone
 	 */
-	public function getTimezone(){
+	public function getTimezone() : EM_DateTimeZone {
 		return new EM_DateTimeZone($this->timezone_name);
 	}
 	
@@ -326,13 +327,13 @@ class EM_DateTime extends DateTime {
 	/**
 	 * Extends the DateTime::createFromFormat() function by setting the timezone to the default blog timezone if none is provided.
 	 * @param string $format
-	 * @param string $time
+	 * @param string $datetime
 	 * @param string|EM_DateTimeZone $timezone
 	 * @return false|EM_DateTime
 	 */
-	public static function createFromFormat( $format, $time, $timezone = null ){
+	public static function createFromFormat( $format, $datetime, $timezone = null ) : false|EM_DateTime {
 		$timezone = EM_DateTimeZone::create($timezone);
-		$DateTime = parent::createFromFormat($format, $time, $timezone);
+		$DateTime = parent::createFromFormat($format, $datetime, $timezone);
 		if( $DateTime === false ) return false;
 		return new EM_DateTime($DateTime->format('Y-m-d H:i:s'), $timezone);
 	}
