@@ -139,6 +139,14 @@ jQuery(document).ready( function($){
 				el = $(el);
 				el.attr('name', el.attr('name').replace('em_tickets[0]','em_tickets['+rowNo+']'));
 			});
+			// sort out until datepicker ids
+			let start_datepicker = slot.find('.ticket-dates-from-normal').first();
+			if( start_datepicker.attr('data-until-id') ){
+				let until_id = start_datepicker.attr('data-until-id').replace('-0', '-'+ rowNo);
+				start_datepicker.attr('data-until-id', until_id);
+				slot.find('.ticket-dates-to-normal').attr('id', start_datepicker.attr('data-until-id'));
+
+			}
 			//show ticket and switch to editor
 			slot.show().find('.ticket-actions-edit').trigger('click');
 			//refresh datepicker and values
@@ -1054,12 +1062,18 @@ function em_setup_datepicker(wrap){
 						inputs[1].setAttribute('value', dateFormat(selectedDates[1]));
 					}else if( instance.config.mode === 'single' && instance.input.classList.contains('em-date-input-start') && wrapper.hasClass('em-datepicker-until') ){
 						// set min-date of other datepicker
-						let fp = wrapper.find('.em-date-input-end')[0]._flatpickr;
-						if( fp.selectedDates[0] === undefined || fp.selectedDates[0] < selectedDates[0] ){
+						let fp;
+						if( wrapper.attr('data-until-id') ){
+							let fp_input = jQuery('#' + wrapper.attr('data-until-id') + ' .em-date-input-end');
+							fp = fp_input[0]._flatpickr;
+						}else {
+							fp = wrapper.find('.em-date-input-end')[0]._flatpickr;
+						}
+						if( fp.selectedDates[0] !== undefined || fp.selectedDates[0] < selectedDates[0] ){
 							fp.setDate(selectedDates[0]);
+							inputs[0].setAttribute('value', dateFormat(fp.selectedDates[0]));
 						}
 						fp.set('minDate', selectedDates[0]);
-						inputs[0].setAttribute('value', dateFormat(fp.selectedDates[0]));
 					}
 				}
 				inputs.trigger('change');
@@ -1099,17 +1113,25 @@ function em_setup_datepicker(wrap){
 			}
 			if( datePickerDiv.attr('data-separator') ) options.locale.rangeSeparator = datePickerDiv.attr('data-separator');
 			if( datePickerDiv.attr('data-format') ) options.altFormat = datePickerDiv.attr('data-format');
-			let fp = datePickerDiv.find('.em-date-input');
-			fp.attr('type', 'text').flatpickr(options);
+			let FPs = datePickerDiv.find('.em-date-input');
+			FPs.attr('type', 'text').flatpickr(options);
 			// add values
 			let inputs = datePickerDiv.find('.em-datepicker-data input');
 			inputs.attr('type', 'hidden'); // hide so not tabbable
 			if( datePickerDiv.hasClass('em-datepicker-until') ){
-				if( inputs[0].value ){
-					fp.filter('.em-date-input-start')[0]._flatpickr.setDate(inputs[0].value, false, 'Y-m-d');
+				let start_fp, end_fp;
+				if( datePickerDiv.attr('data-until-id') ){
+					end_fp = jQuery('#' + datePickerDiv.attr('data-until-id') + ' .em-date-input-end')[0]._flatpickr;
+				}else{
+					end_fp = FPs.filter('.em-date-input-end')[0]._flatpickr;
+					if( inputs[1] && inputs[1].value ) {
+						end_fp.setDate(inputs[1].value, false, 'Y-m-d');
+					}
 				}
-				if( inputs[1].value ){
-					fp.filter('.em-date-input-start')[1]._flatpickr.setDate(inputs[1].value, false, 'Y-m-d');
+				if( inputs[0] && inputs[0].value ){
+					start_fp = FPs.filter('.em-date-input-start')[0]._flatpickr;
+					start_fp.setDate(inputs[0].value, false, 'Y-m-d');
+					end_fp.set('minDate', inputs[0].value);
 				}
 			}else{
 				let dates = [];
@@ -1118,7 +1140,7 @@ function em_setup_datepicker(wrap){
 						dates.push(input.value);
 					}
 				});
-				fp[0]._flatpickr.setDate(dates, false, 'Y-m-d');
+				FPs[0]._flatpickr.setDate(dates, false, 'Y-m-d');
 			}
 		});
 		// fire trigger
@@ -2531,9 +2553,9 @@ jQuery(document).ready( function($){
 		'small' : 600,
 		'large' : false,
 	}
-	const events_ro = EM_ResizeObserver( breakpoints, $('.em-events-list').toArray() );
+	const events_ro = EM_ResizeObserver( breakpoints, $('.em-list').toArray() );
 	$(document).on('em_page_loaded em_view_loaded', function( e, view ){
-		let new_elements = view.find('.em-events-list').each( function(){
+		let new_elements = view.find('.em-list').each( function(){
 			events_ro.observe( this );
 		});
 	});

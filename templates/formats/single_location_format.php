@@ -28,7 +28,7 @@
 				{no_events}
 				<div class="em-item-meta-line em-location-no-events">
 					<span class="em-icon-calendar em-icon"></span>
-					<div><?php esc_html_e('No upcoming events', 'events-manager'); ?></p></div>
+					<div><?php esc_html_e('No upcoming events', 'events-manager'); ?></div>
 				</div>
 				{/no_events}
 			</section>

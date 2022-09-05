@@ -78,7 +78,7 @@ if( !$is_open && !is_user_logged_in() && $EM_Event->get_bookings()->is_open(true
 					<?php do_action('em_booking_form_before_registration_info', $EM_Event); //do not delete ?>
 					<h3 class="em-booking-section-title"><?php esc_html_e('Registration Information', 'events-manager'); ?></h3>
 					<div class="em-booking-form-details em-booking-section">
-						<?php if( !is_user_logged_in() ): ?>
+						<?php if( !is_user_logged_in() && get_option('dbem_bookings_login_form') ): ?>
 						<div class="em-login-trigger">
 							<?php echo sprintf(esc_html__('Do you already have an account with us? %s','events-manager'), '<a href="#">'. esc_html__('Sign In', 'events-manager') .'</a>'); ?>
 						</div>

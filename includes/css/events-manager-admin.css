@@ -12,6 +12,7 @@
   /* Time Picker */
   /* Flatpickr */
   /*! Tippy.js v6.3.7 - https://unpkg.com/tippy.js@6.3.7/themes/light-border.css */
+  /* selectize bootstrap5 theme */
   --button-icon-padding: 10px !important;
 }
 .wp-admin .event-form-when > * {
@@ -42,11 +43,20 @@
   width: 100% !important;
   max-width: 500px !important;
 }
+.wp-admin .event-form-when .em-event-dates.em-datepicker-until .em-datepicker-until-fields {
+  display: grid;
+  grid-template-columns: minmax(100px, 150px) min-content minmax(100px, 150px);
+  grid-column-gap: 8px;
+  justify-items: center;
+  align-items: center;
+  margin-bottom: 15px;
+}
+.wp-admin .event-form-when .em-event-dates.em-datepicker-until .em-datepicker-until-fields > * {
+  margin-bottom: 0 !important;
+  width: 100%;
+}
 .wp-admin .event-form-when .event-form-recurrence-when > * {
   margin-bottom: 20px;
-}
-.wp-admin .em-datepicker .em-date-input {
-  background-color: inherit !important;
 }
 .wp-admin .em-ticket-bookings {
   margin: 0 20px 20px;
@@ -1887,6 +1897,400 @@
   width: 16px;
   height: 6px;
 }
+@keyframes lds-dual-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.wp-admin .selectize-control.plugin-drag_drop.multi > .selectize-input.dragging {
+  overflow: visible;
+}
+.wp-admin .selectize-control.plugin-drag_drop.multi > .selectize-input > div.ui-sortable-placeholder {
+  visibility: visible !important;
+  background: #f2f2f2 !important;
+  background: rgba(0, 0, 0, 0.06) !important;
+  border: 0 !important;
+  box-shadow: inset 0 0 12px 4px #fff;
+}
+.wp-admin .selectize-control.plugin-drag_drop .ui-sortable-placeholder::after {
+  content: "!";
+  visibility: hidden;
+}
+.wp-admin .selectize-control.plugin-drag_drop .ui-sortable-helper {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+.wp-admin .selectize-control .dropdown-header {
+  position: relative;
+  padding: 6px 0.75rem;
+  border-bottom: 1px solid #d0d0d0;
+  background: #f8f8f8;
+  border-radius: 0.25rem 0.25rem 0 0;
+}
+.wp-admin .selectize-control .dropdown-header-close {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  color: #343a40;
+  opacity: 0.4;
+  margin-top: -12px;
+  line-height: 20px;
+  font-size: 20px !important;
+}
+.wp-admin .selectize-control .dropdown-header-close:hover {
+  color: #000;
+}
+.wp-admin .selectize-dropdown.plugin-optgroup_columns .selectize-dropdown-content {
+  display: flex;
+}
+.wp-admin .selectize-dropdown.plugin-optgroup_columns .optgroup {
+  border-right: 1px solid #f2f2f2;
+  border-top: 0 none;
+  flex-grow: 1;
+  flex-basis: 0;
+  min-width: 0;
+}
+.wp-admin .selectize-dropdown.plugin-optgroup_columns .optgroup:last-child {
+  border-right: 0 none;
+}
+.wp-admin .selectize-dropdown.plugin-optgroup_columns .optgroup:before {
+  display: none;
+}
+.wp-admin .selectize-dropdown.plugin-optgroup_columns .optgroup-header {
+  border-top: 0 none;
+}
+.wp-admin .selectize-control.plugin-remove_button .item {
+  display: inline-flex;
+  align-items: center;
+  padding-right: 0 !important;
+}
+.wp-admin .selectize-control.plugin-remove_button .item .remove {
+  color: inherit;
+  text-decoration: none;
+  vertical-align: middle;
+  display: inline-block;
+  padding: 1px 5px;
+  border-left: 1px solid #dee2e6;
+  border-radius: 0 2px 2px 0;
+  box-sizing: border-box;
+  margin-left: 5px;
+}
+.wp-admin .selectize-control.plugin-remove_button .item .remove:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+.wp-admin .selectize-control.plugin-remove_button .item.active .remove {
+  border-left-color: transparent;
+}
+.wp-admin .selectize-control.plugin-remove_button .disabled .item .remove:hover {
+  background: 0 0;
+}
+.wp-admin .selectize-control.plugin-remove_button .disabled .item .remove {
+  border-left-color: #fff;
+}
+.wp-admin .selectize-control.plugin-remove_button .remove-single {
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-size: 23px;
+}
+.wp-admin .selectize-control {
+  position: relative;
+}
+.wp-admin .selectize-dropdown, .wp-admin .selectize-input, .wp-admin .selectize-input input {
+  color: #343a40;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1.5;
+  font-smoothing: inherit;
+}
+.wp-admin .selectize-input {
+  cursor: text;
+  border: 1px solid #ced4da;
+  padding: 0.375rem 0.75rem;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  box-shadow: none;
+  border-radius: 0.25rem;
+}
+.wp-admin .selectize-control.single .selectize-input.input-active, .wp-admin .selectize-input {
+  background: #fff;
+  display: inline-block;
+}
+.wp-admin .selectize-control.multi .selectize-input.has-items {
+  padding: calc(0.375rem - 1px - 0px) 0.75rem calc(0.375rem - 1px - 3px - 0px);
+}
+.wp-admin .selectize-input.full {
+  background-color: #fff;
+}
+.wp-admin .selectize-input.disabled, .wp-admin .selectize-input.disabled * {
+  cursor: default !important;
+}
+.wp-admin .selectize-input.focus {
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+.wp-admin .selectize-input > * {
+  vertical-align: baseline;
+  display: inline-block;
+  zoom: 1;
+}
+.wp-admin .selectize-control.multi .selectize-input > div {
+  cursor: pointer;
+  margin: 0 3px 3px 0;
+  padding: 1px 5px;
+  background: #efefef;
+  color: #343a40;
+  border: 0 solid #dee2e6;
+  border-radius: calc(0.25rem - 1px);
+}
+.wp-admin .selectize-control.multi .selectize-input > div.active {
+  background: #0d6efd;
+  color: #fff;
+  border: 0 solid transparent;
+}
+.wp-admin .selectize-control.multi .selectize-input.disabled > div, .wp-admin .selectize-control.multi .selectize-input.disabled > div.active {
+  color: #878787;
+  background: #fff;
+  border: 0 solid #fff;
+}
+.wp-admin .selectize-input > input {
+  display: inline-block !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  text-indent: 0 !important;
+  border: 0 !important;
+  background: 0 0 !important;
+  line-height: inherit !important;
+  user-select: auto !important;
+  box-shadow: none !important;
+}
+.wp-admin .selectize-input > input::-ms-clear {
+  display: none;
+}
+.wp-admin .selectize-input > input:focus {
+  outline: 0 !important;
+}
+.wp-admin .selectize-input > input[placeholder] {
+  box-sizing: initial;
+}
+.wp-admin .selectize-input.has-items > input {
+  margin: 0 !important;
+}
+.wp-admin .selectize-input::after {
+  content: " ";
+  display: block;
+  clear: left;
+}
+.wp-admin .selectize-input.dropdown-active::before {
+  content: " ";
+  position: absolute;
+  background: #fff;
+  height: 1px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+.wp-admin .selectize-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  border: 1px solid #d0d0d0;
+  border-top: 0 none;
+  box-sizing: border-box;
+}
+.wp-admin .selectize-dropdown [data-selectable] {
+  cursor: pointer;
+  overflow: hidden;
+}
+.wp-admin .selectize-dropdown [data-selectable] .highlight {
+  background: rgba(255, 237, 40, 0.4);
+  border-radius: 1px;
+}
+.wp-admin .selectize-dropdown .create, .wp-admin .selectize-dropdown .no-results, .wp-admin .selectize-dropdown .optgroup-header, .wp-admin .selectize-dropdown .option {
+  padding: 3px 0.75rem;
+}
+.wp-admin .selectize-dropdown .option, .wp-admin .selectize-dropdown [data-disabled], .wp-admin .selectize-dropdown [data-disabled] [data-selectable].option {
+  cursor: inherit;
+  opacity: 0.5;
+}
+.wp-admin .selectize-dropdown [data-selectable].option {
+  opacity: 1;
+  cursor: pointer;
+}
+.wp-admin .selectize-dropdown .optgroup:first-child .optgroup-header {
+  border-top: 0 none;
+}
+.wp-admin .selectize-dropdown .optgroup-header {
+  color: #6c757d;
+  background: #fff;
+  cursor: default;
+}
+.wp-admin .selectize-dropdown .active {
+  background-color: #e9ecef;
+  color: #1e2125;
+}
+.wp-admin .selectize-dropdown .active.create {
+  color: #1e2125;
+}
+.wp-admin .selectize-dropdown .create {
+  color: rgba(52, 58, 64, 0.5);
+}
+.wp-admin .selectize-dropdown-content {
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 200px;
+  overflow-scrolling: touch;
+}
+.wp-admin .selectize-dropdown .spinner {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  margin: 3px 0.75rem;
+}
+.wp-admin .selectize-dropdown .spinner:after {
+  content: " ";
+  display: block;
+  width: 24px;
+  height: 24px;
+  margin: 3px;
+  border-radius: 50%;
+  border: 5px solid #d0d0d0;
+  border-color: #d0d0d0 transparent;
+  animation: lds-dual-ring 1.2s linear infinite;
+}
+.wp-admin .selectize-control.single .selectize-input, .wp-admin .selectize-control.single .selectize-input input {
+  cursor: pointer;
+}
+.wp-admin .selectize-control.single .selectize-input.input-active, .wp-admin .selectize-control.single .selectize-input.input-active input {
+  cursor: text;
+}
+.wp-admin .selectize-control.single .selectize-input:after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 50%;
+  right: calc(0.75rem + 5px);
+  margin-top: -3px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 5px 5px 0;
+  border-color: #343a40 transparent transparent;
+}
+.wp-admin .selectize-control.single .selectize-input.dropdown-active:after {
+  margin-top: -4px;
+  border-width: 0 5px 5px;
+  border-color: transparent transparent #343a40;
+}
+.wp-admin .selectize-control.rtl {
+  text-align: right;
+}
+.wp-admin .selectize-control.rtl.single .selectize-input:after {
+  left: calc(0.75rem + 5px);
+  right: auto;
+}
+.wp-admin .selectize-control.rtl .selectize-input > input {
+  margin: 0 4px 0 -2px !important;
+}
+.wp-admin .selectize-control .selectize-input.disabled {
+  opacity: 0.5;
+  background-color: #fff;
+}
+.wp-admin .selectize-dropdown, .wp-admin .selectize-dropdown.form-control {
+  height: auto;
+  padding: 0;
+  margin: 2px 0 0;
+  z-index: 1000;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 0.25rem;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+}
+.wp-admin .selectize-dropdown .optgroup-header {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.wp-admin .selectize-dropdown .optgroup:first-child:before {
+  display: none;
+}
+.wp-admin .selectize-dropdown .optgroup:before {
+  content: " ";
+  display: block;
+  height: 0;
+  margin: 0.5rem 0;
+  overflow: hidden;
+  border-top: 1px solid rgba(0, 0, 0, 0.15);
+  margin-left: -0.75rem;
+  margin-right: -0.75rem;
+}
+.wp-admin .selectize-dropdown .create {
+  padding-left: 0.75rem;
+}
+.wp-admin .selectize-dropdown-content {
+  padding: 5px 0;
+}
+.wp-admin .selectize-dropdown-emptyoptionlabel {
+  text-align: center;
+}
+.wp-admin .selectize-input {
+  min-height: calc(1.5em + 0.75rem + 2px);
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .wp-admin .selectize-input {
+    transition: none;
+  }
+}
+.wp-admin .selectize-input.dropdown-active {
+  border-radius: 0.25rem;
+}
+.wp-admin .selectize-input.dropdown-active::before {
+  display: none;
+}
+.wp-admin .selectize-input.focus {
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+.wp-admin .is-invalid .selectize-input {
+  border-color: #dc3545;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+}
+.wp-admin .is-invalid .selectize-input:focus {
+  border-color: #bd2130;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #eb8c95;
+}
+.wp-admin .selectize-control.form-control-sm .selectize-input.has-items {
+  min-height: calc(1.5em + 0.5rem + 2px) !important;
+  height: calc(1.5em + 0.5rem + 2px);
+  padding: 0.25rem 0.5rem !important;
+  font-size: 0.875rem;
+  line-height: 1.25;
+}
+.wp-admin .selectize-control.multi .selectize-input.has-items {
+  height: auto;
+  padding-left: calc(0.75rem - 5px);
+  padding-right: calc(0.75rem - 5px);
+}
+.wp-admin .form-control.selectize-control {
+  padding: 0;
+  height: auto;
+  border: 0;
+  background: 0 0;
+  box-shadow: none;
+  border-radius: 0;
+}
+.wp-admin .input-group .selectize-input {
+  overflow: unset;
+  border-radius: 0 0.25rem 0.25rem 0;
+}
 .wp-admin {
   --button-icon-padding: 20px;
 }
@@ -2021,6 +2425,9 @@
 }
 .wp-admin .dbem_advanced_formatting_modes_row th, .wp-admin .dbem_advanced_formatting_modes_row td {
   color: #c45500;
+}
+.wp-admin .em-menu-formats textarea {
+  height: 313px;
 }
 .wp-admin #em-opt-advanced-formatting .inside {
   display: grid;

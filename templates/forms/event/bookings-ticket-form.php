@@ -39,7 +39,7 @@ $col_count = absint($col_count); //now we know it's a number
 				<label title="<?php esc_attr_e('Add a start or end date (or both) to impose time constraints on ticket availability. Leave either blank for no upper/lower limit.','events-manager'); ?>">
 					<?php esc_html_e('Available from','events-manager') ?>
 				</label>
-				<div class="ticket-dates-from-normal em-datepicker">
+				<div class="ticket-dates-from-normal em-datepicker em-datepicker-until" data-until-id="em-ticket-dates-until-<?php echo $col_count; ?>">
 					<input type="hidden" class="em-date-input em-date-input-start">
 					<span class="em-datepicker-data">
 						<input type="date" name="em_tickets[<?php echo $col_count; ?>][ticket_start]" value="<?php echo ( !empty($EM_Ticket->ticket_start) ) ? $EM_Ticket->start()->format("Y-m-d"):''; ?>" />
@@ -60,8 +60,8 @@ $col_count = absint($col_count); //now we know it's a number
 				<label title="<?php esc_attr_e('Add a start or end date (or both) to impose time constraints on ticket availability. Leave either blank for no upper/lower limit.','events-manager'); ?>">
 					<?php esc_html_e('Available until','events-manager') ?>
 				</label>
-				<div class="ticket-dates-to-normal em-datepicker">
-					<input type="hidden" class="em-date-input em-date-input-start">
+				<div class="ticket-dates-to-normal em-datepicker" id="em-ticket-dates-until-<?php echo $col_count; ?>">
+					<input type="hidden" class="em-date-input em-date-input-end">
 					<span class="em-datepicker-data">
 						<input type="date" name="em_tickets[<?php echo $col_count; ?>][ticket_end]" value="<?php echo ( !empty($EM_Ticket->ticket_end) ) ? $EM_Ticket->end()->format("Y-m-d"):''; ?>" />
 					</span>

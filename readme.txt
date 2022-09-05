@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 6.0.1
-Stable tag: 6.1.1
+Stable tag: 6.1.2
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
@@ -135,7 +135,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 15. Clean forms for submitting and managing events, as well as booking events for users.
 
 == Changelog ==
-= 6.1.1.6 (dev) =
+= 6.1.2 =
 * changed EM_Tickets, EM_Bookings and EM_Ticket so event object is stored as referece so get_event() all reference the same parent object,
 * changed em_bookings_ticket_exists hook for when tickets don't exist, $EM_Ticket is pssed as a blank EM_Ticket with the requested $ticket_id
 * removed erroneous em_boking_save action in em-actions.php before anything is actually saved
@@ -187,6 +187,13 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * fixed booking data duplication issues when saving personal data in booking admin
 * added backwards-compatible measure to support PHP 8.1 and return type requirements in DateTime and DateTimeZone by including duplicate file with return types which are loaded only with 8.1 and greater
 * added update retrigger if previous update is detected to not have gone through fully
+* fixed login text still showing even if disable login form option set to yes in settings
+* added option to use double-date datepicker for event dates
+* tweaked event date range so that ticket start/end datepickers are linked
+* fixed issue where dates for new event form default to 1970 before creation
+* fixed mobile responsive issues with taxonmy and location lists
+* fixed location placeholders not working when location and event not published yet
+* fixed/removed errant closing p tag in single location default HTML
 
 = 6.1.1 =
 * tweaked installation SQL so it's MariaDB-compatible

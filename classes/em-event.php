@@ -2795,7 +2795,7 @@ class EM_Event extends EM_Object{
 		}
 		//Now do dependent objects
 		if( get_option('dbem_locations_enabled') ){
-			if( !empty($this->location_id) && $this->get_location()->location_status ){
+			if( !empty($this->location_id) && ($this->get_location()->location_status || $this->get_location()->location_status === $this->event_status) ){
 				$event_string = $this->get_location()->output($event_string, $target);
 			}else{
 				$EM_Location = new EM_Location();

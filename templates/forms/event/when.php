@@ -4,7 +4,11 @@ $required = apply_filters('em_required_html','<i>*</i>');
 $id = rand();
 ?>
 <div class="em event-form-when input" id="em-form-when">
-	<?php include( em_locate_template('forms/event/when/dates.php') ); ?>
+	<?php if( get_option('dbem_dates_range_double_inputs', false) ): ?>
+		<?php include( em_locate_template('forms/event/when/dates-separate.php') ); ?>
+	<?php else: ?>
+		<?php include( em_locate_template('forms/event/when/dates.php') ); ?>
+	<?php endif; ?>
 	<?php include( em_locate_template('forms/event/when/times.php') ); ?>
 	<?php include( em_locate_template('forms/event/when/timezone.php') ); ?>
 	<span id='event-date-explanation'>

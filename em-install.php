@@ -430,6 +430,7 @@ function em_add_options() {
 		'dbem_date_format_js' => 'dd/mm/yy',
 		'dbem_datepicker_format' => 'Y-m-d',
 		'dbem_dates_separator' => ' - ',
+		'dbem_dates_range_double_inputs' => 0,
 		'dbem_times_separator' => ' - ',
 		//defaults
 		'dbem_default_category'=>0,
@@ -1201,6 +1202,7 @@ function em_upgrade_current_installation(){
 		update_option('dbem_css_theme_font_family', 1);
 		update_option('dbem_css_theme_font_size', 1);
 		update_option('dbem_css_theme_line_height', 1);
+		update_option('dbem_dates_range_double_inputs', 1);
 	}
 	if( $current_version != '' && version_compare($current_version, '6.0.1.2', '<') ){
 		function v6012_sql_check_error( $result, $query, $table ){

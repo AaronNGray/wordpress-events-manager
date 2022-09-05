@@ -3222,11 +3222,20 @@
   width: 100% !important;
   max-width: 500px !important;
 }
+.em.em-event-editor .input .event-form-when .em-event-dates.em-datepicker-until .em-datepicker-until-fields {
+  display: grid;
+  grid-template-columns: minmax(100px, 150px) min-content minmax(100px, 150px);
+  grid-column-gap: 8px;
+  justify-items: center;
+  align-items: center;
+  margin-bottom: 15px;
+}
+.em.em-event-editor .input .event-form-when .em-event-dates.em-datepicker-until .em-datepicker-until-fields > * {
+  margin-bottom: 0 !important;
+  width: 100%;
+}
 .em.em-event-editor .input .event-form-when .event-form-recurrence-when > * {
   margin-bottom: 20px;
-}
-.em.em-event-editor .input .em-datepicker .em-date-input {
-  background-color: inherit !important;
 }
 .em.em-event-editor .em-ticket-form .em-ticket-form-main > div, .em.em-event-editor .em-ticket-form .em-ticket-form-advanced > div {
   margin-bottom: 10px;

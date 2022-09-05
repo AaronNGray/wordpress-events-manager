@@ -32,6 +32,19 @@
 			width: 100% !important;
 			max-width: 500px !important;
 		}
+		&.em-datepicker-until .em-datepicker-until-fields {
+			display: grid;
+			grid-template-columns: minmax(100px, 150px) min-content minmax(100px, 150px);
+			grid-column-gap: 8px;
+			justify-items: center;
+			align-items: center;
+			margin-bottom:15px; // inherited from input margin bottom
+
+			> * {
+				margin-bottom: 0 !important;
+				width:100%;
+			}
+		}
 	}
 
 	.event-form-recurrence-when {
@@ -39,7 +52,4 @@
 			margin-bottom: 20px;
 		}
 	}
-}
-.em-datepicker .em-date-input {
-	background-color: inherit !important;
 }
