@@ -1056,24 +1056,31 @@ function em_setup_datepicker(wrap){
 				if( selectedDates.length === 0 ){
 					inputs.attr('value', '');
 				}else{
-					inputs[0].setAttribute('value', dateFormat(selectedDates[0]));
 					if( instance.config.mode === 'range' && selectedDates[1] !== undefined ) {
 						// deal with end date
+						inputs[0].setAttribute('value', dateFormat(selectedDates[0]));
 						inputs[1].setAttribute('value', dateFormat(selectedDates[1]));
-					}else if( instance.config.mode === 'single' && instance.input.classList.contains('em-date-input-start') && wrapper.hasClass('em-datepicker-until') ){
-						// set min-date of other datepicker
-						let fp;
-						if( wrapper.attr('data-until-id') ){
-							let fp_input = jQuery('#' + wrapper.attr('data-until-id') + ' .em-date-input-end');
-							fp = fp_input[0]._flatpickr;
-						}else {
-							fp = wrapper.find('.em-date-input-end')[0]._flatpickr;
+					}else if( instance.config.mode === 'single' && wrapper.hasClass('em-datepicker-until') ){
+						if( instance.input.classList.contains('em-date-input-start') ){
+							inputs[0].setAttribute('value', dateFormat(selectedDates[0]));
+							// set min-date of other datepicker
+							let fp;
+							if( wrapper.attr('data-until-id') ){
+								let fp_input = jQuery('#' + wrapper.attr('data-until-id') + ' .em-date-input-end');
+								fp = fp_input[0]._flatpickr;
+							}else {
+								fp = wrapper.find('.em-date-input-end')[0]._flatpickr;
+							}
+							if( fp.selectedDates[0] !== undefined && fp.selectedDates[0] < selectedDates[0] ){
+								fp.setDate(selectedDates[0], false);
+								inputs[1].setAttribute('value', dateFormat(fp.selectedDates[0]));
+							}
+							fp.set('minDate', selectedDates[0]);
+						}else{
+							inputs[1].setAttribute('value', dateFormat(selectedDates[0]));
 						}
-						if( fp.selectedDates[0] !== undefined || fp.selectedDates[0] < selectedDates[0] ){
-							fp.setDate(selectedDates[0]);
-							inputs[0].setAttribute('value', dateFormat(fp.selectedDates[0]));
-						}
-						fp.set('minDate', selectedDates[0]);
+					}else{
+						inputs[0].setAttribute('value', dateFormat(selectedDates[0]));
 					}
 				}
 				inputs.trigger('change');
@@ -1107,7 +1114,7 @@ function em_setup_datepicker(wrap){
 			if( isRange && 'onClose' in options ){
 				options.onClose = function( selectedDates, dateStr, instance ){
 					if(selectedDates.length === 1){ // deal with single date choice and clicking out
-						instance.setDate([selectedDates[0],selectedDates[0]]);
+						instance.setDate([selectedDates[0],selectedDates[0]], true);
 					}
 				}
 			}
