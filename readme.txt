@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 6.0.1
-Stable tag: 6.1.2
+Stable tag: 6.1.2.1
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
