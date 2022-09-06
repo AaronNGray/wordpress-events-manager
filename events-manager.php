@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Events Manager
-Version: 6.1.2
+Version: 6.1.2.1
 Plugin URI: http://wp-events-plugin.com
 Description: Event registration and booking management for WordPress. Recurring events, locations, webinars, google maps, rss, ical, booking registration and more!
 Author: Marcus Sykes
@@ -69,8 +69,8 @@ include('classes/em-exception.php');
 include('classes/em-options.php');
 include('classes/em-object.php');
 if( version_compare(PHP_VERSION, '8.1', '>=') ) {
-	include('classes/em-datetime.8.1.php');
 	include('classes/em-datetimezone.8.1.php');
+	include('classes/em-datetime.8.1.php');
 }else{
 	include('classes/em-datetime.php');
 	include('classes/em-datetimezone.php');
