@@ -2132,6 +2132,12 @@ class EM_Event extends EM_Object{
 					}elseif ($condition == 'is_current'){
 						//if event is currently happening
 						$show_condition = $this->start()->getTimestamp() <= time() && $this->end()->getTimestamp() >= time();
+					}elseif ($condition == 'is_recurring'){
+						//if event is a recurring event
+						$show_condition = $this->is_recurring();
+					}elseif ($condition == 'not_recurring'){
+						//if event is not a recurring event
+						$show_condition = !$this->is_recurring();
 					}elseif ($condition == 'is_recurrence'){
 						//if event is a recurrence
 						$show_condition = $this->is_recurrence();

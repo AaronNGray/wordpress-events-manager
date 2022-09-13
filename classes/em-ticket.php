@@ -352,28 +352,37 @@ class EM_Ticket extends EM_Object{
 		return apply_filters('em_ticket_validate', count($this->errors) == 0, $this );
 	}
 	
-	function is_available($ignore_member_restrictions = false, $ignore_guest_restrictions = false, $ignore_spaces = false ){
-		if( EM_Bookings::$disable_restrictions ) return apply_filters('em_ticket_is_available', true, $this, true, true, true); // complete short-circuit, but overriding functions should beware of the $disable_restrictions flag!
-		if( isset($this->is_available) && !$ignore_member_restrictions && !$ignore_guest_restrictions && !$ignore_spaces ) return apply_filters('em_ticket_is_available',  $this->is_available, $this, false, false, false); //save extra queries if doing a standard check
+	/**
+	 * @param bool $ignore_member_restrictions  Makes a member-restricted ticket available to any user or guest
+	 * @param bool $ignore_guest_restrictions   Makes a guest-restricted ticket available to any user or guest
+	 * @param bool $ignore_spaces               Ignores space availability
+	 * @param false|WP_User $user               The user to check ticket availability against. Accepts a user object or false for a guest. By default current logged in user (or guest) is used.
+	 * @return mixed|null
+	 */
+	function is_available( $ignore_member_restrictions = false, $ignore_guest_restrictions = false, $ignore_spaces = false, $user = null ){
+		if( EM_Bookings::$disable_restrictions ) return apply_filters('em_ticket_is_available', true, $this, true, true, true, null); // complete short-circuit, but overriding functions should beware of the $disable_restrictions flag!
+		if( isset($this->is_available) && !$ignore_member_restrictions && !$ignore_guest_restrictions && !$ignore_spaces && $user === null ) return apply_filters('em_ticket_is_available',  $this->is_available, $this, false, false, false, null); //save extra queries if doing a standard check
 		$is_available = false;
+		if( $user === null ){
+			$user = is_user_logged_in() ? wp_get_current_user() : false;
+		}
 		$EM_Event = $this->get_event();
 		$available_spaces = $this->get_available_spaces();
 		$condition_1 = empty($this->ticket_start) || $this->start()->getTimestamp() <= time();
 		$condition_2 = empty($this->ticket_end) || $this->end()->getTimestamp() >= time();
 		$condition_3 = $EM_Event->rsvp_end()->getTimestamp() > time(); //either defined ending rsvp time, or start datetime is used here
-		$condition_4 = !$this->ticket_members || is_user_logged_in() || $ignore_member_restrictions;
+		$condition_4 = !$this->ticket_members || $user !== false || $ignore_member_restrictions;
 		$condition_5 = true;
 		if( !$ignore_member_restrictions && $this->ticket_members && !empty($this->ticket_members_roles) ){
 			//check if user has the right role to use this ticket
 			$condition_5 = false;
-			if( is_user_logged_in() ){
-				$user = wp_get_current_user();
+			if( $user !== false ){
 				if( count(array_intersect($user->roles, $this->ticket_members_roles)) > 0 ){
 					$condition_5 = true;
 				}
 			}
 		}
-		$condition_6 = !$this->ticket_guests || !is_user_logged_in() || $ignore_guest_restrictions;
+		$condition_6 = !$this->ticket_guests || $user === false || $ignore_guest_restrictions;
 		if( $condition_1 && $condition_2 && $condition_3 && $condition_4 && $condition_5 && $condition_6  ){
 			//Time Constraints met, now quantities
 			if( $available_spaces > 0 && ($available_spaces >= $this->ticket_min || empty($this->ticket_min)) ){
@@ -385,7 +394,7 @@ class EM_Ticket extends EM_Object{
 		if( !$ignore_member_restrictions && !$ignore_guest_restrictions && !$ignore_spaces ){ //$this->is_available is only stored for the viewing user
 			$this->is_available = $is_available;
 		}
-		return apply_filters('em_ticket_is_available', $is_available, $this, $ignore_guest_restrictions, $ignore_member_restrictions, $ignore_spaces);
+		return apply_filters('em_ticket_is_available', $is_available, $this, $ignore_guest_restrictions, $ignore_member_restrictions, $ignore_spaces, $user);
 	}
 	
 	/**
@@ -410,18 +419,15 @@ class EM_Ticket extends EM_Object{
 				$user = new WP_User($user_type);
 			} /*  @var WP_User $user */
 			if( $this->ticket_members && !empty($this->ticket_members_roles) ) {
-				if (count(array_intersect($user->roles, $this->ticket_members_roles)) > 0) {
-					return true;
-				}
+				// return whether roles coincide with current user roles
+				return count(array_intersect($user->roles, $this->ticket_members_roles)) > 0;
 			}
-			// otherwise check if limited to guests
+			// otherwise check if limited to guests, if not it doesn't matter whether it's general user logged-in limit or no limit
 			return !$this->ticket_guests;
 		}elseif( is_string($user_type) ){
 			// user role
 			if( $this->ticket_members && !empty($this->ticket_members_roles) ) {
-				if ( in_array($user_type, $this->ticket_members_roles) ){
-					return true;
-				}
+				return in_array($user_type, $this->ticket_members_roles);
 			}
 			// otherwise check if limited to guests
 			return !$this->ticket_guests;
@@ -430,7 +436,7 @@ class EM_Ticket extends EM_Object{
 	}
 	
 	/**
-	 * Returns whether or not this ticket should be displayed based on availability and other ticket properties and general settings
+	 * Returns whether this ticket should be displayed based on availability and other ticket properties and general settings
 	 * @param bool $ignore_member_restrictions
 	 * @param bool $ignore_guest_restrictions
 	 * @return boolean

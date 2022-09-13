@@ -6,7 +6,7 @@ $days_names = em_get_days_names();
 ?>
 <div class="em-recurrence-pattern em-recurring-text">
 	<?php _e ( 'This event repeats', 'events-manager'); ?>
-	<select class="em-recurrence-frequency inline" name="recurrence_freq" id="recurrence-frequency<?php echo $id; ?>">
+	<select class="em-recurrence-frequency inline" name="recurrence_freq" id="recurrence-frequency-<?php echo $id; ?>">
 		<?php
 		$freq_options = array ("daily" => __ ( 'Daily', 'events-manager'), "weekly" => __ ( 'Weekly', 'events-manager'), "monthly" => __ ( 'Monthly', 'events-manager'), 'yearly' => __('Yearly','events-manager') );
 		em_option_items ( $freq_options, $EM_Event->recurrence_freq );

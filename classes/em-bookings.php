@@ -835,25 +835,30 @@ class EM_Bookings extends EM_Object implements Iterator{
 
 	//Iterator Implementation - if we iterate this object, we automatically invoke the load() function first
 	//and load up all bookings to go through from the database.
+	#[\ReturnTypeWillChange]
     public function rewind(){
     	$this->load();
         reset($this->bookings);
-    }  
+    }
+	#[\ReturnTypeWillChange]
     public function current(){
     	$this->load();
         $var = current($this->bookings);
         return $var;
-    }  
+    }
+	#[\ReturnTypeWillChange]
     public function key(){
     	$this->load();
         $var = key($this->bookings);
         return $var;
-    }  
+    }
+	#[\ReturnTypeWillChange]
     public function next(){
     	$this->load();
         $var = next($this->bookings);
         return $var;
-    }  
+    }
+	#[\ReturnTypeWillChange]
     public function valid(){
     	$this->load();
         $key = key($this->bookings);

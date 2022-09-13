@@ -62,6 +62,7 @@ class EM_DateTime extends DateTime {
 		}
 	}
 	
+	#[\ReturnTypeWillChange]
 	/**
 	 * {@inheritDoc}
 	 * @see DateTime::format()
@@ -144,6 +145,7 @@ class EM_DateTime extends DateTime {
 		return $this;
 	}
 	
+	#[\ReturnTypeWillChange]
 	/**
 	 * Sets timestamp and returns EM_DateTime object in all cases, but $this->valid will be set to false if unsuccessful
 	 * @param int $timestamp
@@ -156,6 +158,7 @@ class EM_DateTime extends DateTime {
 		return $this;
 	}
 	
+	#[\ReturnTypeWillChange]
 	/**
 	 * Extends DateTime functionality by accepting a false or string value for a timezone. If set to false, default WP timezone will be used.
 	 * Returns EM_DateTime object in all cases, but $this->valid will be set to false if unsuccessful
@@ -169,10 +172,11 @@ class EM_DateTime extends DateTime {
 		$return = parent::setTimezone($timezone);
 		$this->timezone_name = $timezone->getName();
 		$this->timezone_utc = $timezone->utc_offset !== false;
-		$this->valid = $return !== false;
+		$this->valid = $this->valid && $return !== false; // only ever valid if previously valid
 		return $this;
 	}
 	
+	#[\ReturnTypeWillChange]
 	/**
 	 * Sets time along and returns EM_DateTime object in all cases, but $this->valid will be set to false if unsuccessful
 	 * {@inheritDoc}
@@ -184,6 +188,7 @@ class EM_DateTime extends DateTime {
 		return $this;
 	}
 	
+	#[\ReturnTypeWillChange]
 	/**
 	 * Sets date along and returns EM_DateTime object in all cases, but $this->valid will be set to false if unsuccessful
 	 * {@inheritDoc}
@@ -195,6 +200,7 @@ class EM_DateTime extends DateTime {
 		return $this;
 	}
 	
+	#[\ReturnTypeWillChange]
 	/**
 	 * Returns EM_DateTime object in all cases, but $this->valid will be set to false if unsuccessful
 	 * {@inheritDoc}
@@ -206,6 +212,7 @@ class EM_DateTime extends DateTime {
 		return $this;
 	}
 	
+	#[\ReturnTypeWillChange]
 	/**
 	 * Returns EM_DateTime object in all cases, but $this->valid will be set to false if unsuccessful
 	 * {@inheritDoc}
@@ -217,6 +224,7 @@ class EM_DateTime extends DateTime {
 		return $this;
 	}
 	
+	#[\ReturnTypeWillChange]
 	/**
 	 * Extends DateTime function to allow string representation of argument passed to create a new DateInterval object.
 	 * Returns EM_DateTime object in all cases, but $this->valid will be set to false if unsuccessful
@@ -235,6 +243,7 @@ class EM_DateTime extends DateTime {
 		return $this;
 	}
 	
+	#[\ReturnTypeWillChange]
 	/**
 	 * Extends DateTime function to allow string representation of argument passed to create a new DateInterval object.
 	 * Returns EM_DateTime object in all cases, but $this->valid will be set to false if unsuccessful
@@ -275,6 +284,7 @@ class EM_DateTime extends DateTime {
 		return $this->getOffset() + $this->getTimestamp() - $server_offset;
 	}
 	
+	#[\ReturnTypeWillChange]
 	/**
 	 * Returns an EM_DateTimeZone object instead of the default DateTimeZone object.
 	 * @see DateTime::getTimezone()
@@ -323,6 +333,7 @@ class EM_DateTime extends DateTime {
 		return $return;
 	}
 	
+	#[\ReturnTypeWillChange]
 	/**
 	 * Extends the DateTime::createFromFormat() function by setting the timezone to the default blog timezone if none is provided.
 	 * @param string $format

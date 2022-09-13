@@ -329,6 +329,7 @@ class EM_Tickets_Bookings extends EM_Object implements Iterator, Countable, Arra
 
 	//Iterator Implementation
 	
+	#[\ReturnTypeWillChange]
 	/**
 	 * @return void
 	 */
@@ -337,30 +338,35 @@ class EM_Tickets_Bookings extends EM_Object implements Iterator, Countable, Arra
         reset($this->tickets_bookings);
     }
 	
+	#[\ReturnTypeWillChange]
 	/**
 	 * @return EM_Ticket_Bookings
 	 */
     public function current(){
         return current($this->tickets_bookings);
     }
+	#[\ReturnTypeWillChange]
 	/**
 	 * @return int Ticket ID
 	 */
     public function key(){
         return key($this->tickets_bookings);
     }
+	#[\ReturnTypeWillChange]
 	/**
 	 * @return EM_Ticket_Bookings
 	 */
 	public function next(){
         return next($this->tickets_bookings);
     }
+	#[\ReturnTypeWillChange]
 	public function valid(){
         $key = key($this->tickets_bookings);
         return ($key !== NULL && $key !== FALSE);
     }
     //Countable Implementation
 	
+	#[\ReturnTypeWillChange]
 	/**
 	 * @return int
 	 */
@@ -369,6 +375,7 @@ class EM_Tickets_Bookings extends EM_Object implements Iterator, Countable, Arra
     }
 	
 	// ArrayAccess Implementation
+	#[\ReturnTypeWillChange]
 	/**
 	 * @param $offset
 	 * @param $value
@@ -381,6 +388,7 @@ class EM_Tickets_Bookings extends EM_Object implements Iterator, Countable, Arra
 			$this->tickets_bookings[$offset] = $value;
 		}
 	}
+	#[\ReturnTypeWillChange]
 	/**
 	 * @param $offset
 	 * @return bool
@@ -388,6 +396,7 @@ class EM_Tickets_Bookings extends EM_Object implements Iterator, Countable, Arra
 	public function offsetExists($offset) {
 		return isset($this->tickets_bookings[$offset]);
 	}
+	#[\ReturnTypeWillChange]
 	/**
 	 * @param $offset
 	 * @return void
@@ -395,6 +404,7 @@ class EM_Tickets_Bookings extends EM_Object implements Iterator, Countable, Arra
 	public function offsetUnset($offset) {
 		unset($this->tickets_bookings[$offset]);
 	}
+	#[\ReturnTypeWillChange]
 	/**
 	 * @param $offset
 	 * @return EM_Ticket_Bookings|null
@@ -402,7 +412,6 @@ class EM_Tickets_Bookings extends EM_Object implements Iterator, Countable, Arra
 	public function offsetGet($offset) {
 		return isset($this->tickets_bookings[$offset]) ? $this->tickets_bookings[$offset] : null;
 	}
-	
 	
 	public function __debugInfo(){
 		$object = clone($this);

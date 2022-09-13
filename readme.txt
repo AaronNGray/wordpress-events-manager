@@ -135,6 +135,17 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 15. Clean forms for submitting and managing events, as well as booking events for users.
 
 == Changelog ==
+= 6.1.2.1 (dev) =
+* fixed datepicker range JS issues
+* added ability to override email formats (currently only upon installation for event approval email template)
+* added is_recurring and not_recurring conditional event placeholders
+* added option to include or exclude tags/categories listed in the search filter options, this is available in settings page and as tags_/categories_include or tags_/categories_exclude for shortcode
+* fixed potential errors in EM_Ticiket->is_available_to() and changed how EM_Ticket->is_availble() can check availability against a supplied user.
+* fixed EM_Ticket_Bookings->validate() so availability of tickets are validated against user booking belongs to rather than current user (fixes permission issues in manual bookings)
+* fixed datetime issues when an invalid date is stored and setTimezone is invoked, creating a 1970 date rather than blank value
+* added #[\ReturnTypeWillChange] to relevant functions to supress PHP 8.1 deprecated messages
+* removed datetimezone and datetime php8.1 alt files in favour of above supression method for now
+
 = 6.1.2.1 =
 * fixed php 8.1 fatal error
 

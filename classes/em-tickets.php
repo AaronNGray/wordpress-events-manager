@@ -289,33 +289,39 @@ class EM_Tickets extends EM_Object implements Iterator, Countable {
 	}
 	
 	//Iterator Implementation
+	#[\ReturnTypeWillChange]
     public function rewind(){
         reset($this->tickets);
     }
+	#[\ReturnTypeWillChange]
 	/**
 	 * @return EM_Ticket
 	 */
     public function current(){
         $var = current($this->tickets);
         return $var;
-    }  
+    }
+	#[\ReturnTypeWillChange]
     public function key(){
         $var = key($this->tickets);
         return $var;
     }
+	#[\ReturnTypeWillChange]
 	/**
 	 * @return EM_Ticket
 	 */
     public function next(){
         $var = next($this->tickets);
         return $var;
-    }  
+    }
+	#[\ReturnTypeWillChange]
     public function valid(){
         $key = key($this->tickets);
         $var = ($key !== NULL && $key !== FALSE);
         return $var;
     }
     //Countable Implementation
+	#[\ReturnTypeWillChange]
     public function count(){
     	return count($this->tickets);
     }

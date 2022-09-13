@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Events Manager
-Version: 6.1.2.1
+Version: 6.1.2.2
 Plugin URI: http://wp-events-plugin.com
 Description: Event registration and booking management for WordPress. Recurring events, locations, webinars, google maps, rss, ical, booking registration and more!
 Author: Marcus Sykes
@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 // Setting constants
-define('EM_VERSION', '6.1.2'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
+define('EM_VERSION', '6.1.2.2'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
 define('EM_PRO_MIN_VERSION', '3.0'); //self expanatory
 define('EM_PRO_MIN_VERSION_CRITICAL', '3.0'); //self expanatory
 define('EM_DIR', dirname( __FILE__ )); //an absolute path to this directory
@@ -68,13 +68,8 @@ function dbem_debug_mode(){
 include('classes/em-exception.php');
 include('classes/em-options.php');
 include('classes/em-object.php');
-if( version_compare(PHP_VERSION, '8.1', '>=') ) {
-	include('classes/em-datetimezone.8.1.php');
-	include('classes/em-datetime.8.1.php');
-}else{
-	include('classes/em-datetime.php');
-	include('classes/em-datetimezone.php');
-}
+include('classes/em-datetimezone.php');
+include('classes/em-datetime.php');
 include('classes/em-taxonomy-term.php');
 include('classes/em-taxonomy-terms.php');
 include('classes/em-taxonomy-frontend.php');
@@ -809,6 +804,7 @@ function em_get_template_components_classes( $component ){
 			$show_theme_class = get_option('dbem_css_rsvpadmin');
 			break;
 		case 'event-editor':
+			array_unshift($component_classes, 'em-event-admin-editor'); // backwards compat
 		case 'location-editor':
 		case 'locations-admin':
 		case 'events-admin':
@@ -955,6 +951,20 @@ class EM_Formats {
 	
 	public static function locate_template($template){
 		return em_locate_template( $template );
+	}
+	
+	public static function get_email_format( $format_name ){
+		$format_name = preg_replace('/^dbem_/', '', $format_name);
+		if( !preg_match('/\.php$/', $format_name) ){
+			$format_name .= '.php';
+		}
+		$template =  em_locate_template('emails/formats/'.$format_name);
+		if( $template ) {
+			ob_start();
+			include($template);
+			return ob_get_clean();
+		}
+		return '';
 	}
 	
 	/**

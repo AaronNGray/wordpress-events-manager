@@ -195,6 +195,8 @@
 			em_options_input_text ( __( 'Label', 'events-manager'), 'dbem_search_form_category_label', __('Appears as the label for this search option.','events-manager') );
 			em_options_input_text ( __( 'Search Filter Label', 'events-manager'), 'dbem_search_form_categories_placeholder', __('Appears on the text search filter above the categories list.','events-manager') );
 			em_options_input_text ( __( 'Categories dropdown label', 'events-manager'), 'dbem_search_form_categories_label', __('Appears as the first default search option.','events-manager') );
+			em_options_input_text ( sprintf(__( 'Include %s', 'events-manager'), __('Categories', 'events-manager')), 'dbem_search_form_categories_include', sprintf(__('Include only these %1$s IDs, for multiple values separate by commas such as %2$s.','events-manager'), __('Category', 'events-manager'), '<code>123,124,125</code>') );
+			em_options_input_text ( sprintf(__( 'Exclude %s', 'events-manager'), __('Categories', 'events-manager')), 'dbem_search_form_categories_exclude', sprintf(__('Include only these %1$s IDs, for multiple values separate by commas such as %2$s.','events-manager'), __('Category', 'events-manager'), '<code>123,124,125</code>').' '.esc_html__('If inclusion rules are entered above, this setting is ignored.', 'events-manager') );
 			?>
 			<tr class="em-subheader"><td colspan="2"><h5><?php esc_html_e( 'Tags', 'events-manager'); ?></h5></td></tr>
 			<?php
@@ -202,6 +204,8 @@
 			em_options_input_text ( __( 'Label', 'events-manager'), 'dbem_search_form_tag_label', __('Appears as the label for this search option.','events-manager') );
 			em_options_input_text ( __( 'Search Filter Label', 'events-manager'), 'dbem_search_form_tags_placeholder', __('Appears on the text search filter above the tags list.','events-manager') );
 			em_options_input_text ( __( 'Tags dropdown label', 'events-manager'), 'dbem_search_form_tags_label', __('Appears as the first default search option.','events-manager') );
+			em_options_input_text ( sprintf(__( 'Include %s', 'events-manager'), __('Tags')), 'dbem_search_form_tags_include', sprintf(__('Include only these %1$s IDs, for multiple values separate by commas such as %2$s.','events-manager'), __('Tag', 'events-manager'), '<code>123,124,125</code>') );
+			em_options_input_text ( sprintf(__( 'Exclude %s', 'events-manager'), __('Tags')), 'dbem_search_form_tags_exclude', sprintf(__('Include only these %1$s IDs, for multiple values separate by commas such as %2$s.','events-manager'), __('Tag', 'events-manager'), '<code>123,124,125</code>').' '.esc_html__('If inclusion rules are entered above, this setting is ignored.', 'events-manager') );
 			?>
 			<tr class="em-subheader"><td colspan="2"><h5><?php esc_html_e( 'Geolocation Search', 'events-manager'); ?></h5></td></tr>
 			<?php

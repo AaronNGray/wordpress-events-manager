@@ -1,4 +1,19 @@
 jQuery(document).ready( function($){
+
+	// backcompat changes 6.x to 5.x
+	if( $('#recurrence-frequency') ){
+		$('#recurrence-frequency').addClass('em-recurrence-frequency');
+		$('.event-form-when .interval-desc').each( function(){
+			this.classList.add(this.id);
+		});
+		$('.event-form-when .alternate-selector').each( function(){
+			this.classList.add('em-' + this.id);
+		});
+		$('#recurrence-interval').addClass('em-recurrence-interval');
+	}
+	$('#em-wrapper').addClass('em');
+
+
 	var load_ui_css = false; //load jquery ui css?
 	/* Time Entry */
 	$('#start-time').each(function(i, el){
@@ -579,6 +594,9 @@ jQuery(document).ready( function($){
 		}
 	}); 
 
+
+	// recurrence stuff
+	// recurrency descriptor
 	function updateIntervalDescriptor () {
 		$(".interval-desc").hide();
 		var number = "-plural";
@@ -624,8 +642,8 @@ jQuery(document).ready( function($){
 	}).trigger('change');
 	
 	//Finally, add autocomplete here
-	if( jQuery( "div.em-location-data input#location-name" ).length > 0 ){
-		$("div.em-location-data input#location-name").selectize({
+	if( jQuery( 'div.em-location-data [name="location_name"]' ).length > 0 ){
+		$('div.em-location-data [name="location_name"]').selectize({
 			plugins: ["restore_on_backspace"],
 			valueField: "id",
 			labelField: "label",
@@ -2573,7 +2591,7 @@ jQuery(document).ready( function($){
 		'medium' : 900,
 		'large' : false,
 	}
-	const event_ro = EM_ResizeObserver( breakpoints, $('.em-event-single').toArray() );
+	const event_ro = EM_ResizeObserver( breakpoints, $('.em-item-single').toArray() );
 	$(document).on('em_view_loaded', function( e, view ){
 		let new_elements = view.find('.em-event-single').each( function(){
 			event_ro.observe( this );

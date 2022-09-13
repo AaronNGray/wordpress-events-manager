@@ -393,7 +393,7 @@ function em_add_options() {
 	$respondent_email_pending_body_localizable = __("Dear #_BOOKINGNAME, <br/>You have requested #_BOOKINGSPACES space/spaces for #_EVENTNAME.<br/>When : #_EVENTDATES @ #_EVENTTIMES<br/>Where : #_LOCATIONNAME - #_LOCATIONFULLLINE<br/>Your booking is currently pending approval by our administrators. Once approved you will receive an automatic confirmation.<br/>Yours faithfully,<br/>#_CONTACTNAME",'events-manager').$email_footer;
 	$respondent_email_rejected_body_localizable = __("Dear #_BOOKINGNAME, <br/>Your requested booking for #_BOOKINGSPACES spaces at #_EVENTNAME on #_EVENTDATES has been rejected.<br/>Yours faithfully,<br/>#_CONTACTNAME",'events-manager').$email_footer;
 	$respondent_email_cancelled_body_localizable = __("Dear #_BOOKINGNAME, <br/>Your requested booking for #_BOOKINGSPACES spaces at #_EVENTNAME on #_EVENTDATES has been cancelled.<br/>Yours faithfully,<br/>#_CONTACTNAME",'events-manager').$email_footer;
-	$event_approved_email_body = __("Dear #_CONTACTNAME, <br/>Your event #_EVENTNAME on #_EVENTDATES has been approved.<br/>You can view your event here: #_EVENTURL",'events-manager').$email_footer;
+	$event_approved_email_body = EM_Formats::get_email_format('dbem_event_approved_email_body') .$email_footer;
 	$event_submitted_email_body = __("A new event has been submitted by #_CONTACTNAME.<br/>Name : #_EVENTNAME <br/>Date : #_EVENTDATES <br/>Time : #_EVENTTIMES <br/>Please visit #_EDITEVENTURL to review this event for approval.",'events-manager').$email_footer;
 	$event_submitted_email_body = str_replace('#_EDITEVENTURL', admin_url().'post.php?action=edit&post=#_EVENTPOSTID', $event_submitted_email_body);
 	$event_published_email_body = __("A new event has been published by #_CONTACTNAME.<br/>Name : #_EVENTNAME <br/>Date : #_EVENTDATES <br/>Time : #_EVENTTIMES <br/>Edit this event - #_EDITEVENTURL <br/> View this event - #_EVENTURL",'events-manager').$email_footer;
@@ -462,10 +462,14 @@ function em_add_options() {
 		'dbem_search_form_categories_label' => __('All Categories','events-manager'),
 		'dbem_search_form_category_label' => __('Categories','events-manager'),
 		'dbem_search_form_categories_placeholder' => sprintf(__( 'Search %s...', 'events-manager'),__('Categories','events-manager')),
+		'dbem_search_form_categories_include' => '',
+		'dbem_search_form_categories_exclude' => '',
 		'dbem_search_form_tags' => 1,
 		'dbem_search_form_tags_label' => __('All Tags','events-manager'),
 		'dbem_search_form_tag_label' => __('Tags','events-manager'),
 		'dbem_search_form_tags_placeholder' => sprintf(__( 'Search %s...', 'events-manager'),__('Tags','events-manager')),
+		'dbem_search_form_tags_include' => '',
+		'dbem_search_form_tags_exclude' => '',
 		'dbem_search_form_countries' => 1,
 		'dbem_search_form_default_country' => get_option('dbem_location_default_country',''),
 		'dbem_search_form_countries_label' => __('All Countries','events-manager'),

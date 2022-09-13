@@ -628,12 +628,16 @@ function em_get_search_form_defaults($base_args = array(), $context = 'events') 
 	$search_args['category_label'] = get_option('dbem_search_form_category_label'); //field label
 	$search_args['categories_label'] = get_option('dbem_search_form_categories_label'); //select default
 	$search_args['categories_placeholder'] = get_option('dbem_search_form_categories_placeholder'); // advanced search placeholder
+	$search_args['categories_include'] = get_option('dbem_search_form_categories_include'); // include/exclude filters of categories to show
+	$search_args['categories_exclude'] = get_option('dbem_search_form_categories_exclude'); // include/exclude filters of categories to hide
 	// tags
 	$search_args['tag'] = 0; //default search term
 	$search_args['search_tags'] = get_option('dbem_search_form_tags');
 	$search_args['tag_label'] = get_option('dbem_search_form_tag_label'); //field label
 	$search_args['tags_label'] = get_option('dbem_search_form_tags_label'); //select default
 	$search_args['tags_placeholder'] = get_option('dbem_search_form_tags_placeholder'); // advanced search placeholder
+	$search_args['tags_include'] = get_option('dbem_search_form_tags_include'); // include/exclude filters of tags to show
+	$search_args['tags_exclude'] = get_option('dbem_search_form_tags_exclude'); // include/exclude filters of tags to hide
 	//countries
 	$search_args['search_countries'] = get_option('dbem_search_form_countries');
 	$search_args['country'] = $search_args['search_countries'] ? get_option('dbem_search_form_default_country') : ''; //default country

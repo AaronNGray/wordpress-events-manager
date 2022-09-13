@@ -57,6 +57,7 @@ class EM_DateTimeZone extends DateTimeZone {
 		return $timezone;
 	}
 	
+	#[\ReturnTypeWillChange]
 	/**
 	 * {@inheritDoc}
 	 * @see DateTimeZone::getName()
@@ -94,12 +95,14 @@ class EM_DateTimeZone extends DateTimeZone {
 		return $this->getName();
 	}
 	
+	#[\ReturnTypeWillChange]
 	/**
 	 * If the timezone has a manual UTC offset, then an empty array of transitions is returned.
 	 * {@inheritDoc}
 	 * @see DateTimeZone::getTransitions()
 	 */
-	public function getTransitions( $timestamp_begin = null, $timestamp_end = null ){
+	public function getTransitions( $timestamp_begin = 0, $timestamp_end = 0 ){
+		if( $timestamp_end === 0 ) $timestamp_end = time() * YEAR_IN_SECONDS;
 		if( $this->utc_offset !== false ){
 			return array();
 		}
