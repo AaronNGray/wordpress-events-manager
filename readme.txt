@@ -135,7 +135,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 15. Clean forms for submitting and managing events, as well as booking events for users.
 
 == Changelog ==
-= 6.1.2.1 (dev) =
+= 6.1.2.3 (dev) =
 * fixed datepicker range JS issues
 * added ability to override email formats (currently only upon installation for event approval email template)
 * added is_recurring and not_recurring conditional event placeholders
@@ -145,6 +145,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * fixed datetime issues when an invalid date is stored and setTimezone is invoked, creating a 1970 date rather than blank value
 * added #[\ReturnTypeWillChange] to relevant functions to supress PHP 8.1 deprecated messages
 * removed datetimezone and datetime php8.1 alt files in favour of above supression method for now
+* (in-dev) fixed issues in 6.1.2.3 dev version related to add/edit recurring events JS errors
 
 = 6.1.2.1 =
 * fixed php 8.1 fatal error

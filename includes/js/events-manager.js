@@ -1,7 +1,7 @@
 jQuery(document).ready( function($){
 
 	// backcompat changes 6.x to 5.x
-	if( $('#recurrence-frequency') ){
+	if( $('#recurrence-frequency').length > 0  ){
 		$('#recurrence-frequency').addClass('em-recurrence-frequency');
 		$('.event-form-when .interval-desc').each( function(){
 			this.classList.add(this.id);
