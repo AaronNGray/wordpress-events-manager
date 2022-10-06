@@ -22,9 +22,10 @@ class EM_Mailer {
 	 * @param $body
 	 * @param $receiver
 	 * @param $attachments
+	 * @param $args
 	 * @return boolean
 	 */
-	public function send($subject="no title",$body="No message specified", $receiver='', $attachments = array() ) {
+	public function send($subject="no title",$body="No message specified", $receiver='', $attachments = array(), $args = array() ) {
 		//TODO add an EM_Error global object, for this sort of error reporting. (@marcus like StatusNotice)
 		$subject = html_entity_decode(wp_kses_data($subject)); //decode entities, but run kses first just in case users use placeholders containing html
 		if( is_array($receiver) ){
@@ -49,6 +50,17 @@ class EM_Mailer {
 			$headers[] = get_option('dbem_mail_sender_name') ? 'Reply-To: '.get_option('dbem_mail_sender_name').' <'.$from.'>':'From: '.$from;
 			if( get_option('dbem_smtp_html') ){ //create filter to change content type to html in wp_mail
 				add_filter('wp_mail_content_type','EM_Mailer::return_texthtml');
+			}
+			if( !empty($args) ){
+				if( !empty($args['reply-to']) && is_email($args['reply-to']) ){
+					array_pop($headers); // remove Reply-To
+					$name = !empty($args['reply-to-name']) ? filter_var($args['reply-to-name'], FILTER_SANITIZE_STRING) : false;
+					if( $name ){
+						$headers[] = 'Reply-To: '.$name.' <'.$args['reply-to'].'>';
+					}else{
+						$headers[] = 'Reply-To: '. $args['reply-to'];
+					}
+				}
 			}
 			//prep attachments for WP Mail, which only accept a path
 			self::$attachments = $attachments;
@@ -111,6 +123,17 @@ class EM_Mailer {
 					}
 				}else{
 					$mail->addAddress($receiver);
+				}
+				// extra args
+				if( !empty($args) ){
+					if( !empty($args['reply-to']) && is_email($args['reply-to']) ){
+						$name = !empty($args['reply-to-name']) ? filter_var($args['reply-to-name'], FILTER_SANITIZE_STRING) : false;
+						if( $name ){
+							$mail->addReplyTo($args['reply-to'], $name);
+						}else{
+							$mail->addReplyTo($args['reply-to']);
+						}
+					}
 				}
 				do_action('em_mailer', $mail); //$mail will still be modified
 				

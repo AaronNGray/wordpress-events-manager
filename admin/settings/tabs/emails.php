@@ -17,6 +17,9 @@
 			do_action('em_options_page_booking_email_templates_options_subtop');
 			?>
 			<tr class="em-header"><td colspan='2'><h4><?php _e('Event Admin/Owner Emails', 'events-manager'); ?></h4></td></tr>
+			<?php
+			em_options_radio_binary ( __( 'Add Reply-To event owner?', 'events-manager'), 'dbem_bookings_replyto_owner_admins', __( "If enabled replies to these automated emails will, by default, be sent to the email of the event owner.",'events-manager') );
+			?>
 			<tbody class="em-subsection">
 			<tr class="em-subheader"><td colspan='2'>
 				<h5><?php _e('Confirmed booking email','events-manager') ?></h5>
@@ -52,6 +55,9 @@
 			?>
 			</tbody>
 			<tr class="em-header"><td colspan='2'><h4><?php _e('Booked User Emails', 'events-manager'); ?></h4></td></tr>
+			<?php
+			em_options_radio_binary ( __( 'Add Reply-To event owner?', 'events-manager'), 'dbem_bookings_replyto_owner', __( "If enabled replies to these automated emails will, by default, be sent to the email of the event owner.",'events-manager') );
+			?>
 			<tbody class="em-subsection">
 			<tr class="em-subheader"><td colspan='2'>
 				<h5><?php _e('Confirmed booking email','events-manager') ?></h5>

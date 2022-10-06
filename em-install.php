@@ -691,6 +691,9 @@ function em_add_options() {
 			'dbem_bookings_login_form' => 1, //show login form on booking area
 			'dbem_bookings_anonymous' => 1,
 			'dbem_bookings_form_max' => 20,
+			'dbem_bookings_header_tickets' => esc_html__('Tickets', 'events-manager'),
+			'dbem_bookings_header_reg_info' => esc_html__('Registration Information', 'events-manager'),
+			'dbem_bookings_header_payment' => esc_html__('Payment and Confirmation', 'events-manager'),
 			//Messages
 			'dbem_bookings_form_msg_disabled' => __('Online bookings are not available for this event.','events-manager'),
 			'dbem_bookings_form_msg_closed' => __('Bookings are closed for this event.','events-manager'),
@@ -727,6 +730,8 @@ function em_add_options() {
 			//Emails
 			'dbem_bookings_notify_admin' => 0,
 			'dbem_bookings_contact_email' => 1,
+			'dbem_bookings_replyto_owner_admins' => 0,
+			'dbem_bookings_replyto_owner' => 0,
 			'dbem_bookings_contact_email_pending_subject' => __("Booking Pending",'events-manager'),
 			'dbem_bookings_contact_email_pending_body' => str_replace("<br/>", "\n\r", $contact_person_emails['pending']),
 			'dbem_bookings_contact_email_confirmed_subject' => __('Booking Confirmed','events-manager'),

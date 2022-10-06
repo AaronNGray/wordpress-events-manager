@@ -1348,8 +1348,15 @@ class EM_Booking extends EM_Object{
 				if( !empty($msg['user']['attachments']) && is_array($msg['user']['attachments']) ){
 					$attachments = $msg['user']['attachments'];
 				}
+				//add extra args
+				$args = array();
+				if( get_option('dbem_bookings_replyto_owner') && $this->get_event()->get_contact()->user_email ){
+					$args['reply-to'] = $this->get_event()->get_contact()->user_email;
+					$args['reply-to-name'] = $this->get_event()->get_contact()->display_name;
+				}
+				$args = apply_filters('em_booking_email_user_args', $args, array('email_admin'=> $email_admin, 'force_resend' => $force_resend, 'email_attendee' => $email_attendee, 'msg' => $msg ), $this);
 				//Send to the person booking
-				if( !$this->email_send( $msg['user']['subject'], $msg['user']['body'], $this->get_person()->user_email, $attachments) ){
+				if( !$this->email_send( $msg['user']['subject'], $msg['user']['body'], $this->get_person()->user_email, $attachments, $args) ){
 					$result = false;
 				}else{
 					$this->mails_sent++;
@@ -1366,6 +1373,13 @@ class EM_Booking extends EM_Object{
 				    $admin_emails[] = $EM_Event->get_contact()->user_email;
 				}
 				foreach($admin_emails as $key => $email){ if( !is_email($email) ) unset($admin_emails[$key]); } //remove bad emails
+				//add extra args
+				$args = array();
+				if( get_option('dbem_bookings_replyto_owner_admins') && $this->get_event()->get_contact()->user_email ){
+					$args['reply-to'] = $this->get_event()->get_contact()->user_email;
+					$args['reply-to-name'] = $this->get_event()->get_contact()->display_name;
+				}
+				$args = apply_filters('em_booking_email_admin_args', $args, array('email_admin'=> $email_admin, 'force_resend' => $force_resend, 'email_attendee' => $email_attendee, 'msg' => $msg ), $this);
 				//proceed to email admins if need be
 				if( !empty($admin_emails) ){
 					//Only gets sent if this is a pending booking, unless approvals are disabled.
@@ -1376,7 +1390,7 @@ class EM_Booking extends EM_Object{
 						$attachments = $msg['admin']['attachments'];
 					}
 					//email admins
-						if( !$this->email_send( $msg['admin']['subject'], $msg['admin']['body'], $admin_emails, $attachments) && current_user_can('manage_options') ){
+						if( !$this->email_send( $msg['admin']['subject'], $msg['admin']['body'], $admin_emails, $attachments, $args) && current_user_can('manage_options') ){
 							$this->errors[] = __('Confirmation email could not be sent to admin. Registrant should have gotten their email (only admin see this warning).','events-manager');
 							$result = false;
 						}else{

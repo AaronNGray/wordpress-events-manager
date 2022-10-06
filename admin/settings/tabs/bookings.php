@@ -117,6 +117,14 @@
 			<?php
 			em_options_radio_binary ( __( 'Display login form?', 'events-manager'), 'dbem_bookings_login_form', __( 'Choose whether or not to display a login form in the booking form area to remind your members to log in before booking.', 'events-manager') );
 			em_options_input_text ( __( 'Submit button text', 'events-manager'), 'dbem_bookings_submit_button', sprintf(__( 'The text used by the submit button. To use an image instead, enter the full url starting with %s or %s.', 'events-manager'), '<code>http://</code>','<code>https://</code>') );
+			?>
+			<tr class="em-header"><td colspan='2'><h4><?php esc_html_e('Booking form section headers','events-manager') ?></h4></td></tr>
+			<tr><td colspan='2'><?php echo esc_html__('These headings appear above sections of the booking form. Leave blank for no heading.','events-manager'); ?></td></tr>
+			<?php
+			em_options_input_text ( esc_html__('Tickets', 'events-manager'), 'dbem_bookings_header_tickets' );
+			em_options_input_text ( esc_html__('Registration Information', 'events-manager'), 'dbem_bookings_header_reg_info' );
+			em_options_input_text ( esc_html__('Payment and Confirmation', 'events-manager'), 'dbem_bookings_header_payment' );
+			
 			do_action('em_options_booking_form_options');
 			echo $save_button;
 			?>

@@ -56,8 +56,10 @@ if( !$is_open && !is_user_logged_in() && $EM_Event->get_bookings()->is_open(true
 			 	<input type='hidden' name='action' value='booking_add'/>
 			 	<input type='hidden' name='event_id' value='<?php echo $EM_Event->get_bookings()->event_id; ?>'/>
 			 	<input type='hidden' name='_wpnonce' value='<?php echo wp_create_nonce('booking_add'); ?>'/>
-			 	<h3 class="em-booking-section-title"><?php esc_html_e('Tickets', 'events-manager'); ?></h3>
-				<?php 
+				<?php if( get_option('dbem_bookings_header_tickets') ): ?>
+			 	<h3 class="em-booking-section-title"><?php echo esc_html(get_option('dbem_bookings_header_tickets')); ?></h3>
+				<?php endif; ?>
+				<?php
 					// Tickets Form
 					if( $show_tickets && ($can_book || get_option('dbem_bookings_tickets_show_loggedout')) ){ //show if more than 1 ticket, or if in forced ticket list view mode
 						do_action('em_booking_form_before_tickets', $EM_Event); //do not delete
@@ -76,7 +78,9 @@ if( !$is_open && !is_user_logged_in() && $EM_Event->get_bookings()->is_open(true
 				?>
 				<?php if( $can_book ): ?>
 					<?php do_action('em_booking_form_before_registration_info', $EM_Event); //do not delete ?>
-					<h3 class="em-booking-section-title"><?php esc_html_e('Registration Information', 'events-manager'); ?></h3>
+					<?php if( get_option('dbem_bookings_header_reg_info') ): ?>
+						<h3 class="em-booking-section-title"><?php echo get_option('dbem_bookings_header_reg_info'); ?></h3>
+					<?php endif; ?>
 					<div class="em-booking-form-details em-booking-section">
 						<?php if( !is_user_logged_in() && get_option('dbem_bookings_login_form') ): ?>
 						<div class="em-login-trigger">

@@ -10,7 +10,8 @@
  */
 function em_content($page_content) {
 	global $post, $EM_Event, $EM_Location, $EM_Notices;
-	if( empty($post) || empty($post->ID) ) return $page_content; //fix for any other plugins calling the_content outside the loop
+	$in_the_loop = !(defined('EM_CHECK_THE_LOOP') && EM_CHECK_THE_LOOP) || in_the_loop(); // check if we're in the loop... since this may break some themes, we're introducing it as a constant for themes that cause issues vs. breaking themes that already work.
+	if( empty($post) || empty($post->ID) || !$in_the_loop ) return $page_content; //fix for any other plugins calling the_content outside the loop
 	$events_page_id = get_option ( 'dbem_events_page' );
 	$locations_page_id = get_option( 'dbem_locations_page' );
 	$categories_page_id = get_option( 'dbem_categories_page' );

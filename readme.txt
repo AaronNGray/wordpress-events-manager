@@ -135,7 +135,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 15. Clean forms for submitting and managing events, as well as booking events for users.
 
 == Changelog ==
-= 6.1.2.3 (dev) =
+= 6.1.2.4 (dev) =
 * fixed datepicker range JS issues
 * added ability to override email formats (currently only upon installation for event approval email template)
 * added is_recurring and not_recurring conditional event placeholders
@@ -146,6 +146,13 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * added #[\ReturnTypeWillChange] to relevant functions to supress PHP 8.1 deprecated messages
 * removed datetimezone and datetime php8.1 alt files in favour of above supression method for now
 * (in-dev) fixed issues in 6.1.2.3 dev version related to add/edit recurring events JS errors
+* changed booking form headers so they're handled by settings page and can be disabled with blank values
+* added option to add Reply-To event owner for booking emails,
+* added em_booking_email_admin_args filter enabling extra mail args to be added,
+* added $args array param for EM_Mailer::send() so that future enhancements like reply-to can be supplied
+* tweaked heading sizes of booking form headings so they are slightly smaller,
+* fixed template loading of templates/calendar/calendar.php in calendar-full.php and calendar-small.php templates so they are dynamic and overridable
+* added EM_CHECK_THE_LOOP constant to add an additional in_the_loop() check for themes/plugins that mey use em_content outside the loop
 
 = 6.1.2.1 =
 * fixed php 8.1 fatal error
