@@ -1185,16 +1185,14 @@ class EM_Booking extends EM_Object{
 			if( count($conditionals[0]) > 0 ){
 				//Check if the language we want exists, if not we take the first language there
 				foreach($conditionals[1] as $key => $condition){
-					$show_condition = false;
-					$show_condition = apply_filters('em_booking_output_show_condition', $show_condition, $condition, $conditionals[0][$key], $this);
-					if($show_condition){
+					$show_condition = apply_filters('em_booking_output_show_condition', false, array('format' => $format, 'target' => $target, 'condition' => $condition, 'conditionals' => $conditionals, 'key' => $key), $this );
+					// run conditionals, but don't erase unrecognized replacements, leave that to EM_Event->output()
+					if( $show_condition ){
 						//calculate lengths to delete placeholders
 						$placeholder_length = strlen($condition)+2;
 						$replacement = substr($conditionals[0][$key], $placeholder_length, strlen($conditionals[0][$key])-($placeholder_length *2 +1));
-					}else{
-						$replacement = '';
+						$output_string = str_replace($conditionals[0][$key], apply_filters('em_booking_output_condition', $replacement, $condition, $conditionals[0][$key], $this), $output_string);
 					}
-					$output_string = str_replace($conditionals[0][$key], apply_filters('em_booking_output_condition', $replacement, $condition, $conditionals[0][$key], $this), $output_string);
 				}
 			}
 		}

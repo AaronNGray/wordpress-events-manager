@@ -135,7 +135,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 15. Clean forms for submitting and managing events, as well as booking events for users.
 
 == Changelog ==
-= 6.1.2.4 (dev) =
+= 6.1.2.5 (dev) =
 * fixed datepicker range JS issues
 * added ability to override email formats (currently only upon installation for event approval email template)
 * added is_recurring and not_recurring conditional event placeholders
@@ -153,6 +153,10 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * tweaked heading sizes of booking form headings so they are slightly smaller,
 * fixed template loading of templates/calendar/calendar.php in calendar-full.php and calendar-small.php templates so they are dynamic and overridable
 * added EM_CHECK_THE_LOOP constant to add an additional in_the_loop() check for themes/plugins that mey use em_content outside the loop
+* fixed booking conditional placeholder wiping out event conditional placeholders
+* changed em_booking_output_condition filter so it's only fired when a matching conditional is found for EM_Booking,
+* added em_booking_output_show_condition filter to help determine whether to show a condition
+* fixed search results coming back with incorrect styling layout when in responsive/mobile mode
 
 = 6.1.2.1 =
 * fixed php 8.1 fatal error

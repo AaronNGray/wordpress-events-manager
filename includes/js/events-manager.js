@@ -2579,7 +2579,7 @@ jQuery(document).ready( function($){
 		'large' : false,
 	}
 	const events_ro = EM_ResizeObserver( breakpoints, $('.em-list').toArray() );
-	$(document).on('em_page_loaded em_view_loaded', function( e, view ){
+	$(document).on('em_page_loaded em_view_loaded_list em_view_loaded_list-grouped', function( e, view ){
 		let new_elements = view.find('.em-list').each( function(){
 			events_ro.observe( this );
 		});
