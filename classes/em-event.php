@@ -3596,6 +3596,83 @@ class EM_Event extends EM_Object{
 		}
 		return apply_filters('em_event_can_manage', parent::can_manage($owner_capability, $admin_capability, $user_to_check), $this, $owner_capability, $admin_capability, $user_to_check);
 	}
+	
+	/**
+	 * Outputs a JSON-encodable associative array of data to output to REST or other remote operations
+	 * @return array
+	 */
+	function to_api(){
+		$event = array (
+			'name' => $this->event_name,
+			'id' => $this->event_id,
+			'post_id' => $this->post_id,
+			'parent' => $this->event_parent,
+			'owner' => $this->event_owner, // overwritten further down
+			'blog_id' => $this->blog_id,
+			'group_id' => $this->group_id,
+			'slug' => $this->event_slug,
+			'status' => $this->event_private,
+			'content' => $this->post_content,
+			'bookings' => array (
+				'end_date' => '$this->event_rsvp_date',
+				'end_time' => '$this->event_rsvp_time',
+				'rsvp_spaces' => '$this->event_rsvp_spaces',
+				'spaces' => $this->event_spaces,
+			),
+			'when' => array(
+				'all_day' => $this->event_all_day,
+				'start' => $this->event_start,
+				'start_date' => $this->event_start_date,
+				'start_time' => $this->event_start_time,
+				'end' => $this->event_end,
+				'end_date' => $this->event_end_date,
+				'end_time' => $this->event_end_time,
+				'timezone' => $this->event_timezone,
+			),
+			'location' => false,
+			'recurrence' => false,
+			'language' => $this->event_language,
+			'translation' => $this->event_translation,
+		);
+		if( $this->event_owner ){
+			// anonymous
+			$event['owner'] = array(
+				'guest' => true,
+				'email' => $this->get_contact()->user_email,
+				'name' => $this->get_contact()->get_name(),
+			);
+		}else{
+			// user
+			$event['owner'] = array(
+				'guest' => false,
+				'email' => $this->get_contact()->user_email,
+				'name' => $this->get_contact()->get_name(),
+			);
+		}
+		if( $this->recurrence_id ){
+			$event['recurrence_id'] = $this->recurrence_id;
+		}
+		if( $this->recurrence ){
+			$event['recurrence'] = array (
+				'interval' => $this->recurrence_interval,
+				'freq' => $this->recurrence_freq,
+				'days' => $this->recurrence_days,
+				'byday' => $this->recurrence_byday,
+				'byweekno' => $this->recurrence_byweekno,
+				'rsvp_days' => $this->recurrence_rsvp_days,
+			);
+		}
+		if( $this->location_type ){
+			$event['location_type'] = $this->event_location_type;
+			if( $this->has_location() ) {
+				$EM_Location = $this->get_location();
+				$event['location'] = $EM_Location->to_api();
+			}elseif( $this->has_event_location() ){
+				$event['location'] = $this->get_event_location()->to_api();
+			}
+		}
+		return $event;
+	}
 }
 
 //TODO placeholder targets filtering could be streamlined better

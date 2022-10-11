@@ -205,6 +205,12 @@ class Event_Location {
 	public function get_ical_location(){
 		return false;
 	}
+	
+	public function to_api(){
+		return array_merge( $this->data, array(
+			'type' => static::$type,
+		));
+	}
 }
 
 //include default Event Locations

@@ -5,7 +5,7 @@
  * @property EM_Booking[] $bookings
  * @property EM_Event $event
  */
-class EM_Bookings extends EM_Object implements Iterator{
+class EM_Bookings extends EM_Object implements Iterator, ArrayAccess {
 	
 	/**
 	 * Array of EM_Booking objects for a specific event
@@ -865,5 +865,44 @@ class EM_Bookings extends EM_Object implements Iterator{
         $var = ($key !== NULL && $key !== FALSE);
         return $var;
     }
+	
+	// ArrayAccess Implementation
+	#[\ReturnTypeWillChange]
+	/**
+	 * @param $offset
+	 * @param $value
+	 * @return void
+	 */
+	public function offsetSet($offset, $value) {
+		if (is_null($offset)) {
+			$this->bookings[] = $value;
+		} else {
+			$this->bookings[$offset] = $value;
+		}
+	}
+	#[\ReturnTypeWillChange]
+	/**
+	 * @param $offset
+	 * @return bool
+	 */
+	public function offsetExists($offset) {
+		return isset($this->bookings[$offset]);
+	}
+	#[\ReturnTypeWillChange]
+	/**
+	 * @param $offset
+	 * @return void
+	 */
+	public function offsetUnset($offset) {
+		unset($this->bookings[$offset]);
+	}
+	#[\ReturnTypeWillChange]
+	/**
+	 * @param $offset
+	 * @return EM_Ticket_Bookings|null
+	 */
+	public function offsetGet($offset) {
+		return isset($this->bookings[$offset]) ? $this->bookings[$offset] : null;
+	}
 }
 ?>

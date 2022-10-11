@@ -1170,4 +1170,32 @@ class EM_Location extends EM_Object {
 		$url = add_query_arg( $args, "https://www.google.com/maps/embed/v1/place");
 		return apply_filters('em_location_get_google_maps_embed_url', $url, $this);
 	}
+	
+	public function to_api(){
+		return array (
+			'name' => $this->location_name,
+			'id' => $this->location_id,
+			'parent' => $this->location_parent,
+			'post_id' => $this->post_id,
+			'blog_id' => $this->blog_id,
+			'owner' => $this->location_owner,
+			'status' => $this->location_status,
+			'slug' => $this->location_slug,
+			'content' => $this->post_content,
+			'geo' => array(
+				'latitude' => $this->location_latitude,
+				'longitude' => $this->location_longitude,
+			),
+			'address' => array(
+				'address' => $this->location_address,
+				'town' => $this->location_town,
+				'region' => $this->location_region,
+				'state' => $this->location_state,
+				'postcode' => $this->location_postcode,
+				'country' => $this->location_country,
+			),
+			'language' => $this->location_language,
+			'translation' => $this->location_translation,
+		);
+	}
 }

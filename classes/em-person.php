@@ -123,5 +123,19 @@ class EM_Person extends WP_User{
 		$name = !empty($full_name) ? $full_name : $this->display_name;
 		return apply_filters('em_person_get_name', $name, $this);
 	}
+	
+	function to_api(){
+		$person = array(
+			'id' => $this->ID, // maybe hide this depending on permissions
+			'name' => $this->get_name(),
+			'name_first' => $this->first_name,
+			'name_last' => $this->last_name,
+			'email' => $this->user_email,
+			'phone' => $this->phone,
+			'guest' => $this->ID > 0, // whether person is registered or not
+		);
+		$person = array_merge( $person, $this->custom_user_fields );
+		return apply_filters('em_person_to_api', $person);
+	}
 }
 ?>

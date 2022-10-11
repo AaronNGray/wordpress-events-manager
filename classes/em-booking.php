@@ -1073,16 +1073,18 @@ class EM_Booking extends EM_Object{
 		if($result !== false){
 			$this->feedback_message = sprintf(__('Booking %s.','events-manager'), $action_string);
 			$result = apply_filters('em_booking_set_status', $result, $this); // run the filter before emails go out, in case others need to hook in first
-			if( $result && $email && $this->previous_status != $this->booking_status ){ //email if status has changed
+			if( $result && $this->previous_status != $this->booking_status ){ //email if status has changed
 				do_action('em_booking_status_changed', $this, array('status' => $status, 'email' => $email, 'ignore_spaces' => $ignore_spaces)); // method params passed as array
-				if( $this->email() ){
-				    if( $this->mails_sent > 0 ){
-				        $this->feedback_message .= " ".__('Email Sent.','events-manager');
-				    }
-				}else{
-					//extra errors may be logged by email() in EM_Object
-					$this->feedback_message .= ' <span style="color:red">'.__('ERROR : Email Not Sent.','events-manager').'</span>';
-					$this->add_error(__('ERROR : Email Not Sent.','events-manager'));
+				if( $email ){
+					if( $this->email() ){
+					    if( $this->mails_sent > 0 ){
+					        $this->feedback_message .= " ".__('Email Sent.','events-manager');
+					    }
+					}else{
+						//extra errors may be logged by email() in EM_Object
+						$this->feedback_message .= ' <span style="color:red">'.__('ERROR : Email Not Sent.','events-manager').'</span>';
+						$this->add_error(__('ERROR : Email Not Sent.','events-manager'));
+					}
 				}
 			}
 		}else{
@@ -1489,6 +1491,45 @@ class EM_Booking extends EM_Object{
 			$booking = array_merge($booking, $person);
 		}
 		return $booking;
+	}
+	
+	function to_api( $args = array('event' => true), $version = 'v1' ){
+		$booking = array (
+			'id' => $this->booking_id,
+			'event_id' => $this->event_id,
+			'uuid' => $this->booking_uuid,
+			'person_id' => $this->person_id,
+			'status' => $this->booking_status,
+			'spaces' => $this->booking_spaces,
+			'price' => $this->get_price(),
+			'tax_rate' => $this->get_tax_rate(true), // returned as decimal/percen
+			'taxes' => $this->booking_taxes,
+			'comment' => $this->booking_comment,
+			'meta' => $this->booking_meta,
+			'tickets' => array(),
+		);
+		// add tickets
+		foreach ( $this->get_tickets_bookings() as $EM_Ticket_Bookings ){
+			$booking['tickets'][$EM_Ticket_Bookings->ticket_id] = array(
+				'name' => $EM_Ticket_Bookings->get_ticket()->ticket_name,
+				'description' => $EM_Ticket_Bookings->get_ticket()->ticket_name,
+				'spaces' => $EM_Ticket_Bookings->get_spaces(),
+				'price' => $EM_Ticket_Bookings->get_price(),
+				'attendees' => array(),
+			);
+			foreach ( $EM_Ticket_Bookings as $EM_Ticket_Booking ){
+				$booking['tickets'][$EM_Ticket_Bookings->ticket_id]['attendees'][] = array(
+					'uuid' => $EM_Ticket_Booking->ticket_uuid,
+					'price' => $EM_Ticket_Booking->ticket_booking_price,
+					'meta' => $EM_Ticket_Booking->meta,
+				);
+			}
+		}
+		// if event data should be sent
+		if( !empty($args['event']) ) {
+			$booking['event'] = $this->get_event()->to_api();
+		}
+		return apply_filters('em_booking_to_api', $booking, array(), $this);
 	}
 }
 ?>
