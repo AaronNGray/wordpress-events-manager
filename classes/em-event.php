@@ -3662,14 +3662,12 @@ class EM_Event extends EM_Object{
 				'rsvp_days' => $this->recurrence_rsvp_days,
 			);
 		}
-		if( $this->location_type ){
+		if( $this->has_location() ) {
+			$EM_Location = $this->get_location();
+			$event['location'] = $EM_Location->to_api();
+		}elseif( $this->has_event_location() ){
 			$event['location_type'] = $this->event_location_type;
-			if( $this->has_location() ) {
-				$EM_Location = $this->get_location();
-				$event['location'] = $EM_Location->to_api();
-			}elseif( $this->has_event_location() ){
-				$event['location'] = $this->get_event_location()->to_api();
-			}
+			$event['location'] = $this->get_event_location()->to_api();
 		}
 		return $event;
 	}

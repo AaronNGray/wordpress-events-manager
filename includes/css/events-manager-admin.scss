@@ -13,6 +13,7 @@
 	@import 'partials/tooltips';
 	@import 'partials/libraries';
 	@import 'partials/buttons';
+	@import 'partials/selectize';
 
 	--button-icon-padding : 10px !important;
 
@@ -36,6 +37,19 @@
 		.hidden {
 			display:none;
 			visibility: hidden;
+		}
+	}
+
+	/* Selectize-specific stuff */
+	.selectize-control {
+		&.em-selectize:not(.always-open), &.em-selectize-autocomplete:not(.always-open) {
+			.selectize-input {
+				min-height: calc(1.5em + 0.75rem + 2px) !important;
+				border: 1px solid #8c8f94 !important; // match WP Admin select boxes
+				&.focus {
+					border: 1px solid #8c8f94 !important;
+				}
+			}
 		}
 	}
 }

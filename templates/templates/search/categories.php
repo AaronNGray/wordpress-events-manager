@@ -30,7 +30,6 @@
 		    'show_option_none' => $args['categories_label'],
 		    'option_none_value'=> 0,
 			'walker'=> $walker,
-			'exclude' => '150,151',
 		));
 		echo walk_category_dropdown_tree($categories, 0, $args_em);
 		?>

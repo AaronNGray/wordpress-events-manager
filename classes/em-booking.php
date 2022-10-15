@@ -1507,6 +1507,7 @@ class EM_Booking extends EM_Object{
 			'comment' => $this->booking_comment,
 			'meta' => $this->booking_meta,
 			'tickets' => array(),
+			'datetime' => $this->booking_date,
 		);
 		// add tickets
 		foreach ( $this->get_tickets_bookings() as $EM_Ticket_Bookings ){
@@ -1528,6 +1529,15 @@ class EM_Booking extends EM_Object{
 		// if event data should be sent
 		if( !empty($args['event']) ) {
 			$booking['event'] = $this->get_event()->to_api();
+		}
+		// user
+		$booking['person'] = array(
+			'guest' => false,
+			'email' => $this->get_person()->user_email,
+			'name' => $this->get_person()->get_name(),
+		);
+		if( $this->get_person()->phone ){
+			$booking['person']['phone'] = $this->get_person()->phone;
 		}
 		return apply_filters('em_booking_to_api', $booking, array(), $this);
 	}

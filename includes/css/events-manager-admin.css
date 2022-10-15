@@ -14,6 +14,7 @@
   /*! Tippy.js v6.3.7 - https://unpkg.com/tippy.js@6.3.7/themes/light-border.css */
   /* selectize bootstrap5 theme */
   --button-icon-padding: 10px !important;
+  /* Selectize-specific stuff */
 }
 .wp-admin .event-form-when > * {
   margin-bottom: 15px !important;
@@ -2336,6 +2337,130 @@
   display: none;
   visibility: hidden;
 }
+.wp-admin .selectize-control.em-selectize:not(.always-open) input[type=text], .wp-admin .selectize-control.em-selectize:not(.always-open) input[type=text]:focus, .wp-admin .selectize-control.em-selectize:not(.always-open) input[type=text]:focus, .wp-admin .selectize-control.em-selectize-autocomplete:not(.always-open) input[type=text], .wp-admin .selectize-control.em-selectize-autocomplete:not(.always-open) input[type=text]:focus, .wp-admin .selectize-control.em-selectize-autocomplete:not(.always-open) input[type=text]:focus {
+  width: auto !important;
+  border: 0 !important;
+  outline: 0 !important;
+  height: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+}
+.wp-admin .selectize-control.em-selectize:not(.always-open) .selectize-input, .wp-admin .selectize-control.em-selectize-autocomplete:not(.always-open) .selectize-input {
+  border-radius: 4px !important;
+  width: 100% !important;
+  min-height: 38px !important;
+  padding: 6px 30px 6px 10px !important;
+  /* The 6px vertically centers text on FF, ignored by Webkit */
+}
+.wp-admin .selectize-control.em-selectize:not(.always-open) .selectize-input.focus, .wp-admin .selectize-control.em-selectize-autocomplete:not(.always-open) .selectize-input.focus {
+  border: 1px solid var(--accent-color) !important;
+  box-shadow: none !important;
+}
+.wp-admin .selectize-control.em-selectize:not(.always-open) .selectize-input:after, .wp-admin .selectize-control.em-selectize-autocomplete:not(.always-open) .selectize-input:after {
+  display: inline-flex !important;
+  content: "";
+  position: absolute;
+  border: 0 !important;
+  background-image: var(--icon-chevron-down);
+  background-size: 16px 16px;
+  height: 16px;
+  width: 16px;
+  margin-top: calc( 16px/2 * -1 );
+  right: 8px;
+  top: 50%;
+}
+.wp-admin .selectize-control.em-selectize:not(.always-open) .selectize-input.dropdown-active:after, .wp-admin .selectize-control.em-selectize-autocomplete:not(.always-open) .selectize-input.dropdown-active:after {
+  margin-top: -8px;
+  transform: rotate(180deg);
+}
+.wp-admin .selectize-control.em-selectize:not(.always-open) .selectize-input:not(.has-items) input[type=text], .wp-admin .selectize-control.em-selectize-autocomplete:not(.always-open) .selectize-input:not(.has-items) input[type=text] {
+  width: calc(100% - 40px) !important;
+}
+.wp-admin .selectize-control.em-selectize:not(.always-open).selectize-control, .wp-admin .selectize-control.em-selectize-autocomplete:not(.always-open).selectize-control {
+  margin-bottom: 15px !important;
+}
+.wp-admin .selectize-control.em-selectize.multi.plugin-remove_button .item, .wp-admin .selectize-control.em-selectize-autocomplete.multi.plugin-remove_button .item {
+  background: #dff4fd;
+  border: 1px solid #97dbf9;
+  color: #0095c3;
+  padding-left: 8px;
+}
+.wp-admin .selectize-control.em-selectize.multi.plugin-remove_button .item a.remove, .wp-admin .selectize-control.em-selectize-autocomplete.multi.plugin-remove_button .item a.remove {
+  color: inherit !important;
+  background-color: inherit !important;
+}
+.wp-admin .selectize-control.em-selectize-autocomplete .selectize-input:after {
+  display: none !important;
+}
+.wp-admin .selectize-control.em-selectize-autocomplete.loading .selectize-input:after {
+  display: inline-flex !important;
+  content: "";
+  position: absolute;
+  border: 0 !important;
+  background-image: var(--icon-spinner);
+  background-size: 26px 26px;
+  height: 26px;
+  width: 26px;
+  margin-top: calc( 26px/2 * -1 );
+  right: 8px;
+  top: 50%;
+}
+.wp-admin .selectize-control.em-selectize-autocomplete .selectize-dropdown-content > div {
+  padding: 3px 0.75rem;
+}
+.wp-admin .selectize-control.em-selectize.always-open .selectize-input {
+  border: 0 !important;
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+.wp-admin .selectize-control.em-selectize.always-open .selectize-input.focus {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.wp-admin .selectize-control.em-selectize.always-open .selectize-input input[type=text] {
+  background: var(--icon-magnifying-glass) 8px 50% no-repeat !important;
+  background-size: 18px !important;
+  padding-left: 36px !important;
+  margin: 10px 0 0 !important;
+  opacity: 1 !important;
+  position: static !important;
+}
+.wp-admin .selectize-control.em-selectize.always-open .selectize-input input[type=text]:focus {
+  border: 1px solid #cdcdcd !important;
+}
+.wp-admin .selectize-control.em-selectize.always-open .selectize-dropdown {
+  display: block !important;
+  visibility: visible !important;
+  position: static !important;
+  width: 100% !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  margin-bottom: 0 !important;
+}
+.wp-admin .selectize-control.em-selectize.always-open .selectize-dropdown .selectize-dropdown-content {
+  overflow-y: visible;
+  overflow-x: visible;
+  max-height: none;
+}
+.wp-admin .selectize-control.em-selectize.checkboxes .selectize-dropdown div.option > span:first-child {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  margin: -4px 5px 0 0;
+  vertical-align: middle;
+}
+.wp-admin .selectize-control.em-selectize.checkboxes .selectize-dropdown div.option.selected {
+  color: #0095c3;
+}
+.wp-admin .selectize-control.em-selectize.checkboxes .selectize-dropdown div.option.selected > span:first-child {
+  background: var(--icon-checkmark) 50% 50% white no-repeat;
+  background-size: 12px 12px;
+}
 .wp-admin button.input.em-tooltip-ddm {
   background-position: calc(100% - 5px) 50% !important;
   padding-right: 25px !important;
@@ -2355,6 +2480,13 @@
 .wp-admin .em .hidden {
   display: none;
   visibility: hidden;
+}
+.wp-admin .selectize-control.em-selectize:not(.always-open) .selectize-input, .wp-admin .selectize-control.em-selectize-autocomplete:not(.always-open) .selectize-input {
+  min-height: calc(1.5em + 0.75rem + 2px) !important;
+  border: 1px solid #8c8f94 !important;
+}
+.wp-admin .selectize-control.em-selectize:not(.always-open) .selectize-input.focus, .wp-admin .selectize-control.em-selectize-autocomplete:not(.always-open) .selectize-input.focus {
+  border: 1px solid #8c8f94 !important;
 }
 
 .event-form-recurrence fieldset.inline {

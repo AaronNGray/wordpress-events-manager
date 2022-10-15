@@ -2302,8 +2302,8 @@
 .em .selectize-control.em-selectize:not(.always-open) .selectize-input, .em .selectize-control.em-selectize-autocomplete:not(.always-open) .selectize-input {
   border-radius: 4px !important;
   width: 100% !important;
-  height: 38px !important;
-  padding: 6px 10px !important;
+  min-height: 38px !important;
+  padding: 6px 30px 6px 10px !important;
   /* The 6px vertically centers text on FF, ignored by Webkit */
 }
 .em .selectize-control.em-selectize:not(.always-open) .selectize-input.focus, .em .selectize-control.em-selectize-autocomplete:not(.always-open) .selectize-input.focus {
@@ -2326,6 +2326,9 @@
 .em .selectize-control.em-selectize:not(.always-open) .selectize-input.dropdown-active:after, .em .selectize-control.em-selectize-autocomplete:not(.always-open) .selectize-input.dropdown-active:after {
   margin-top: -8px;
   transform: rotate(180deg);
+}
+.em .selectize-control.em-selectize:not(.always-open) .selectize-input:not(.has-items) input[type=text], .em .selectize-control.em-selectize-autocomplete:not(.always-open) .selectize-input:not(.has-items) input[type=text] {
+  width: calc(100% - 40px) !important;
 }
 .em .selectize-control.em-selectize:not(.always-open).selectize-control, .em .selectize-control.em-selectize-autocomplete:not(.always-open).selectize-control {
   margin-bottom: 15px !important;

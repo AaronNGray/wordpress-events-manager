@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 6.0.1
-Stable tag: 6.1.2.1
+Stable tag: 6.1.3
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
@@ -80,6 +80,14 @@ We have a premium [Pro add-on for Events Manager](http://eventsmanagerpro.com/go
 * QR Scanning
  * Manage bookings on your phone
  * Check In/Out users
+* Automation (NEW!) - ultimate flexibility in automation!
+ * Triggers:
+  * X time before/after events start
+  * When a booking status changes
+  * When a booking was booked x time ago
+ * Actions
+  * Send Webhook (Zapier, MS Automation and many other services)
+  * Send Email
 * Coupon Codes
 * Custom booking email per event and gateway
 * Faster support via private Pro forums
@@ -135,7 +143,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 15. Clean forms for submitting and managing events, as well as booking events for users.
 
 == Changelog ==
-= 6.1.2.6 (dev) =
+= 6.1.3 =
 * fixed datepicker range JS issues
 * added ability to override email formats (currently only upon installation for event approval email template)
 * added is_recurring and not_recurring conditional event placeholders
@@ -158,6 +166,8 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * added em_booking_output_show_condition filter to help determine whether to show a condition
 * fixed search results coming back with incorrect styling layout when in responsive/mobile mode
 * added output methods for APIs via array for JSON for main objects (events, locations, bookings)
+* removed erroneous testing data for filtering categories search option (ids 150 and 151)
+* fixed some display issues for selectize particularly in the dashboard area
 
 = 6.1.2.1 =
 * fixed php 8.1 fatal error
