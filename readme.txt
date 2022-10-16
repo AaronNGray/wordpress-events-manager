@@ -80,6 +80,7 @@ We have a premium [Pro add-on for Events Manager](http://eventsmanagerpro.com/go
 * QR Scanning
  * Manage bookings on your phone
  * Check In/Out users
+* Waitlists
 * Automation (NEW!) - ultimate flexibility in automation!
  * Triggers:
   * X time before/after events start
