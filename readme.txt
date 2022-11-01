@@ -1,10 +1,10 @@
 === Events Manager ===
-Contributors: netweblogic, nutsmuggler
-Donate link: http://wp-events-plugin.com
+Contributors: msykes, pxlite, nutsmuggler, netweblogic
+Donate link: https://wp-events-plugin.com
 Tags: bookings, calendar, tickets, events, buddypress, event management, google maps, maps, locations, registration, zoom
 Text Domain: events-manager
 Requires at least: 5.2
-Tested up to: 6.0.1
+Tested up to: 6.1
 Stable tag: 6.1.3
 Requires PHP: 5.3
 
@@ -19,6 +19,8 @@ Events Manager is a full-featured event registration plugin for WordPress based 
 * [Demo](http://demo.wp-events-plugin.com/)
 * [Documentation](http://wp-events-plugin.com/documentation/)
 * [Tutorials](http://wp-events-plugin.com/tutorials/)
+
+*LIMITED-TIME OFFER - * [Pro prices are going up soon](https://wp-events-plugin.com/upcoming-price-increase-2022/), *for the first time* since 2012! [Go Pro Now](https://eventsmanagerpro.com/gopro/) and lock in your plan price.
 
 = Main Features =
 
