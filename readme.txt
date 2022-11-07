@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 6.1
-Stable tag: 6.1.3
+Stable tag: 6.1.4
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
@@ -20,7 +20,7 @@ Events Manager is a full-featured event registration plugin for WordPress based 
 * [Documentation](http://wp-events-plugin.com/documentation/)
 * [Tutorials](http://wp-events-plugin.com/tutorials/)
 
-**LIMITED-TIME OFFER** - [Pro prices are going up soon](https://wp-events-plugin.com/upcoming-price-increase-2022/), *for the first time* since 2012! **[Go Pro Now](https://eventsmanagerpro.com/gopro/)** and lock in your plan price.
+**LIMITED-TIME OFFER** - [Pro prices are going up this week](https://wp-events-plugin.com/upcoming-price-increase-2022/), *for the first time* since 2010! **[Go Pro Now](https://eventsmanagerpro.com/gopro/)** and lock in your plan price.
 
 = Main Features =
 
@@ -146,6 +146,16 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 15. Clean forms for submitting and managing events, as well as booking events for users.
 
 == Changelog ==
+= 6.1.4 =
+* added modal admin messages
+* fixed issue where booking button tries to book first ticket irrespective of availability and results in an error
+* fixed JS issues presented with internlinked date-range pickers when a value is present
+* fixed aesthetic issues for event location editing section when only one location type is permitted
+* fixed login URL issues
+* added em_login_footer action
+* fixed JS bug with calendars displayed in other languages and advanced search disabled
+* fixed calendar advanced search modal not showing if general settings disables advanced searches on search forms
+
 = 6.1.3 =
 * fixed datepicker range JS issues
 * added ability to override email formats (currently only upon installation for event approval email template)

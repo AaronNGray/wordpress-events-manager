@@ -1140,7 +1140,11 @@ function em_setup_datepicker(wrap){
 			if( datePickerDiv.attr('data-format') ) options.altFormat = datePickerDiv.attr('data-format');
 			let FPs = datePickerDiv.find('.em-date-input');
 			FPs.attr('type', 'text').flatpickr(options);
-			// add values
+		});
+		// add values to elements, done once all datepickers instantiated so we don't get errors with date range els in separate divs
+		datePickerDivs.each( function(i,datePickerDiv) {
+			datePickerDiv = jQuery(datePickerDiv);
+			let FPs = datePickerDiv.find('.em-date-input');
 			let inputs = datePickerDiv.find('.em-datepicker-data input');
 			inputs.attr('type', 'hidden'); // hide so not tabbable
 			if( datePickerDiv.hasClass('em-datepicker-until') ){
@@ -2321,13 +2325,17 @@ jQuery(document).ready( function($){
 			let url = em_ajaxify(el.attr('href'));
 			const calendar_id = calendar.attr('id').replace('em-calendar-', '');
 			const custom_data = $('form#em-view-custom-data-calendar-'+ calendar_id);
-			let form_data = []
+			let form_data = new FormData();
 			if( custom_data.length > 0 ){
 				form_data = new FormData(custom_data[0]);
 				let url_params = new URL(url, window.location.origin).searchParams;
 				for (const [key, value] of url_params.entries()) {
 					form_data.set(key, value);
 				}
+			}
+			// check advanced trigger
+			if( calendar.hasClass('with-advanced') ){
+				form_data.set('has_advanced_trigger', 1);
 			}
 			$.ajax({
 				url: url,
@@ -2391,6 +2399,11 @@ jQuery(document).ready( function($){
 				if( calendar.data('scope') === 'future' ){
 					minDate = new Date();
 					minDate.setMonth(minDate.getMonth()-1);
+				}
+				// locale
+				if( 'locale' in EM.datepicker ){
+					flatpickr.localize(flatpickr.l10ns[EM.datepicker.locale]);
+					flatpickr.l10ns.default.firstDayOfWeek = EM.firstDay;
 				}
 				monthpicker.flatpickr({
 					appendTo : monthpicker_wrapper[0],

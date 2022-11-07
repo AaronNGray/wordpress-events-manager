@@ -46,7 +46,7 @@ foreach( EM_Event_Locations\Event_Locations::get_types() as $event_location_type
 	<?php endif; ?>
 </div>
 <?php if( EM_Locations::is_enabled() ): ?>
-<div id="em-location-data" class="em-location-data em-location-where em-location-type em-location-type-place <?php if( count($location_types) == 1 ) echo 'em-location-type-single';  em_template_classes('event-editor'); if( get_option( 'dbem_gmap_is_active' ) ) echo ' has-map'; ?>">
+<div id="em-location-data" class="em-location-data em-location-where em-location-type em-location-type-place <?php if( count($location_types) == 1 ) echo 'em-location-type-single ';  em_template_classes('event-editor'); if( get_option( 'dbem_gmap_is_active' ) ) echo ' has-map'; ?>">
 	<div id="location_coordinates" style='display: none;'>
 		<input id='location-latitude' name='location_latitude' type='text' value='<?php echo esc_attr($EM_Event->get_location()->location_latitude); ?>' size='15' >
 		<input id='location-longitude' name='location_longitude' type='text' value='<?php echo esc_attr($EM_Event->get_location()->location_longitude); ?>' size='15' >

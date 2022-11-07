@@ -154,6 +154,10 @@
 		width: 100%;
 		flex: 1 1 450px;
 	}
+	.em-location-map-container, div.em-location-data .em-location-map-404, div.em-location-data .em-location-map-content {
+		max-width: 800px;
+		aspect-ratio: 3/2;
+	}
 	.em-location-data-maps-tip {
 		width : 100%;
 		flex: 0 0 100%;

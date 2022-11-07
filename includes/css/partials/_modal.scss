@@ -133,6 +133,19 @@
 			margin: 0;
 			padding: 20px 15px;
 			overflow-y: auto !important;
+
+			&.has-image {
+				display: grid;
+				grid-template-columns: auto minmax(80px, 150px);
+				grid-gap: 40px;
+
+				> div.image {
+					text-align: center;
+					img {
+						width: 100%;
+					}
+				}
+			}
 		}
 
 		footer {
@@ -271,6 +284,16 @@
 					}
 				}
 			}
+		}
+	}
+
+	&.em-admin-modal {
+		--font-size:15px;
+		--line-height:20px;
+		.em-modal-content p {
+			font-size: var(--font-size) !important;
+			line-height: var(--line-height) !important;
+			text-align: justify;
 		}
 	}
 }

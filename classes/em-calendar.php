@@ -420,6 +420,9 @@ class EM_Calendar extends EM_Object {
 		// do we output a search form first?
 		if( !empty($args['has_search']) ){
 			$args['search_scope'] = false;
+			$args['show_advanced'] = true;
+			$args['advanced_mode'] = 'modal';
+			$args['advanced_hidden'] = true;
 			em_locate_template('templates/events-search.php', true, array('args' => $args));
 		}
 		// re-assign classes (clean-up search assignments)

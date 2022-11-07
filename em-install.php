@@ -1385,7 +1385,7 @@ function em_upgrade_current_installation(){
 	}
 	
 	
-	if( version_compare($current_version, '6.1.1.4', '<') ){
+	if( $current_version != '' && version_compare($current_version, '6.1.1.4', '<') ){
 		global $em_do_not_finalize_upgrade;
 		// we're going to fix a potential duplicate data issue that emerged in a recent update, cause unknown, fix know as below...ç
 		$sql_part = '
@@ -1444,6 +1444,18 @@ function em_upgrade_current_installation(){
 			$message = sprintf(esc_html__('You have successfully updated to Events Manager %s', 'events-manager'), EM_VERSION);
 			EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.1.2-update', 'who' => 'admin', 'where' => 'settings', 'message' => $message )), is_multisite());
 		}
+	}
+	
+	// add review popup
+	if( version_compare($current_version, '6.1.4', '<') ){
+		// disable the modal so it's not shown again
+		$data = is_multisite() ? get_site_option('dbem_data', array()) : get_option('dbem_data', array());
+		if( empty($data['admin-modals']) ) $data['admin-modals'] = array();
+		if( time() < 1668067200 ) {
+			$data['admin-modals']['promo-popup'] = true;
+		}
+		$data['admin-modals']['review-nudge'] = time() + (DAY_IN_SECONDS * 14);
+		is_multisite() ? update_site_option('dbem_data', $data) : update_option('dbem_data', $data);
 	}
 }
 
