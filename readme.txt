@@ -20,8 +20,6 @@ Events Manager is a full-featured event registration plugin for WordPress based 
 * [Documentation](http://wp-events-plugin.com/documentation/)
 * [Tutorials](http://wp-events-plugin.com/tutorials/)
 
-**LIMITED-TIME OFFER** - [Pro prices are going up this week](https://wp-events-plugin.com/upcoming-price-increase-2022/), *for the first time* since 2010! **[Go Pro Now](https://eventsmanagerpro.com/gopro/)** and lock in your plan price.
-
 = Main Features =
 
 * Beautiful calendars, search pages, lists and booking forms to enhance your site events.
