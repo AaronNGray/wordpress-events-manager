@@ -7,15 +7,15 @@ Selectize.define('click2deselect', function(options) {
 		// add additional handler
 		self.$dropdown.on('click', '[data-selectable]', function(e) {
 			let value = this.getAttribute('data-value');
-			if( this.classList.contains('checked') ) {
-				this.classList.remove('checked');
+			if( this.classList.contains('selected') ) {
 				self.removeItem(value);
 				self.refreshItems();
 				self.refreshOptions();
-			}else{
-				this.classList.add('checked');
 			}
 			return false;
+		});
+		self.on('item_remove', function (value) {
+			self.getOption(value).removeClass('selected')
 		});
 	}
 });

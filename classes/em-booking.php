@@ -992,7 +992,12 @@ class EM_Booking extends EM_Object{
 	 */
 	function get_status(){
 		$status = ($this->booking_status == 0 && !get_option('dbem_bookings_approval') ) ? 1:$this->booking_status;
-		return apply_filters('em_booking_get_status', $this->status_array[$status], $this);
+		if( $this->booking_status === false && isset($this->previous_status) ) {
+			$status_text = __('Deleted', 'events-manager');
+		}else{
+			$status_text = $this->status_array[ $status ];
+		}
+		return apply_filters('em_booking_get_status', $status_text, $this);
 	}
 	
 	/**

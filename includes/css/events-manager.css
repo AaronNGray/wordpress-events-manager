@@ -37,6 +37,7 @@
   For other event list and single event display CSS, see the _items.scss file
    */
   /* Booking Form */
+  /* Bookings Table (originally from events-manager.css) */
   /** The Triggers - Search and other parts triggering search **/
   /* General Styles */
   /* Search Results & Event Views */
@@ -935,6 +936,10 @@
   --icon-logo-outlook: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%230072c6' d='M19.484 7.937v5.477l1.916 1.205a.489.489 0 0 0 .21 0l8.238-5.554a1.174 1.174 0 0 0-.959-1.128Z'/%3E%3Cpath fill='%230072c6' d='m19.484 15.457 1.747 1.2a.522.522 0 0 0 .543 0c-.3.181 8.073-5.378 8.073-5.378v10.066a1.408 1.408 0 0 1-1.49 1.555h-8.874v-7.443ZM10.44 12.932a1.609 1.609 0 0 0-1.42.838 4.131 4.131 0 0 0-.526 2.218A4.05 4.05 0 0 0 9.02 18.2a1.6 1.6 0 0 0 2.771.022 4.014 4.014 0 0 0 .515-2.2 4.369 4.369 0 0 0-.5-2.281 1.536 1.536 0 0 0-1.366-.809Z'/%3E%3Cpath fill='%230072c6' d='M2.153 5.155v21.427L18.453 30V2Zm10.908 14.336a3.231 3.231 0 0 1-2.7 1.361 3.19 3.19 0 0 1-2.64-1.318A5.459 5.459 0 0 1 6.706 16.1a5.868 5.868 0 0 1 1.036-3.616 3.267 3.267 0 0 1 2.744-1.384 3.116 3.116 0 0 1 2.61 1.321 5.639 5.639 0 0 1 1 3.484 5.763 5.763 0 0 1-1.035 3.586Z'/%3E%3C/svg%3E");
   --icon-download: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' xml:space='preserve' viewBox='0 0 479 479' fill='%23555'%3E%3Cpath d='M158.4 196.8c-5.3 5.3-5.3 13.8 0 19.1l71.6 71.6c2.6 2.6 6.1 4 9.5 4s6.9-1.3 9.5-4l71.6-71.6c5.3-5.3 5.3-13.8 0-19.1s-13.8-5.3-19.1 0L253 245.3V13.5C253 6 247 0 239.5 0S226 6 226 13.5v231.8l-48.5-48.5c-5.3-5.3-13.9-5.3-19.1 0z'/%3E%3Cpath d='m460.2 307.4-47-170c-1.1-3.9-3.8-7-7.4-8.7l-1.3-.6c-1.8-.8-3.7-1.2-5.6-1.2h-84.7c-7.5 0-13.5 6-13.5 13.5s6 13.5 13.5 13.5h75.6l39.7 143.8h-105c-7.5 0-13.5 6-13.5 13.5v12.2c0 17.9-14.5 32.4-32.4 32.4h-82.4c-17.9 0-32.4-14.5-32.4-32.4v-12.2c0-7.5-6-13.5-13.5-13.5H49.4l39.9-144.1h75.6c7.5 0 13.5-6 13.5-13.5s-6-13.5-13.5-13.5H80.1c-1.9 0-3.8.4-5.6 1.2l-1.3.6c-3.6 1.7-6.4 4.8-7.4 8.7l-47 170c-.3 1.2-.5 2.4-.5 3.6v70.9c0 53.7 43.7 97.4 97.4 97.4h247.6c53.7 0 97.4-43.7 97.4-97.4V311c0-1.3-.1-2.5-.5-3.6zm-26.5 74.2c0 38.8-31.6 70.4-70.4 70.4H115.7c-38.8 0-70.4-31.6-70.4-70.4v-56.9H137c.7 32.1 27.1 58 59.4 58h82.4c32.3 0 58.7-25.9 59.4-58h95.7v56.9h-.2z'/%3E%3C/svg%3E");
   --icon-spinner: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' display='block' preserveAspectRatio='xMidYMid' style='margin:auto;background:0 0' viewBox='0 0 100 100'%3E%3Crect width='7' height='21' x='46.5' y='7.5' fill='%2385a2b6' rx='0' ry='0'%3E%3Canimate attributeName='opacity' begin='-0.9166666666666666s' dur='1s' keyTimes='0;1' repeatCount='indefinite' values='1;0'/%3E%3C/rect%3E%3Crect width='7' height='21' x='46.5' y='7.5' fill='%2385a2b6' rx='0' ry='0' transform='rotate(30 50 50)'%3E%3Canimate attributeName='opacity' begin='-0.8333333333333334s' dur='1s' keyTimes='0;1' repeatCount='indefinite' values='1;0'/%3E%3C/rect%3E%3Crect width='7' height='21' x='46.5' y='7.5' fill='%2385a2b6' rx='0' ry='0' transform='rotate(60 50 50)'%3E%3Canimate attributeName='opacity' begin='-0.75s' dur='1s' keyTimes='0;1' repeatCount='indefinite' values='1;0'/%3E%3C/rect%3E%3Crect width='7' height='21' x='46.5' y='7.5' fill='%2385a2b6' rx='0' ry='0' transform='rotate(90 50 50)'%3E%3Canimate attributeName='opacity' begin='-0.6666666666666666s' dur='1s' keyTimes='0;1' repeatCount='indefinite' values='1;0'/%3E%3C/rect%3E%3Crect width='7' height='21' x='46.5' y='7.5' fill='%2385a2b6' rx='0' ry='0' transform='rotate(120 50 50)'%3E%3Canimate attributeName='opacity' begin='-0.5833333333333334s' dur='1s' keyTimes='0;1' repeatCount='indefinite' values='1;0'/%3E%3C/rect%3E%3Crect width='7' height='21' x='46.5' y='7.5' fill='%2385a2b6' rx='0' ry='0' transform='rotate(150 50 50)'%3E%3Canimate attributeName='opacity' begin='-0.5s' dur='1s' keyTimes='0;1' repeatCount='indefinite' values='1;0'/%3E%3C/rect%3E%3Crect width='7' height='21' x='46.5' y='7.5' fill='%2385a2b6' rx='0' ry='0' transform='rotate(180 50 50)'%3E%3Canimate attributeName='opacity' begin='-0.4166666666666667s' dur='1s' keyTimes='0;1' repeatCount='indefinite' values='1;0'/%3E%3C/rect%3E%3Crect width='7' height='21' x='46.5' y='7.5' fill='%2385a2b6' rx='0' ry='0' transform='rotate(210 50 50)'%3E%3Canimate attributeName='opacity' begin='-0.3333333333333333s' dur='1s' keyTimes='0;1' repeatCount='indefinite' values='1;0'/%3E%3C/rect%3E%3Crect width='7' height='21' x='46.5' y='7.5' fill='%2385a2b6' rx='0' ry='0' transform='rotate(240 50 50)'%3E%3Canimate attributeName='opacity' begin='-0.25s' dur='1s' keyTimes='0;1' repeatCount='indefinite' values='1;0'/%3E%3C/rect%3E%3Crect width='7' height='21' x='46.5' y='7.5' fill='%2385a2b6' rx='0' ry='0' transform='rotate(270 50 50)'%3E%3Canimate attributeName='opacity' begin='-0.16666666666666666s' dur='1s' keyTimes='0;1' repeatCount='indefinite' values='1;0'/%3E%3C/rect%3E%3Crect width='7' height='21' x='46.5' y='7.5' fill='%2385a2b6' rx='0' ry='0' transform='rotate(300 50 50)'%3E%3Canimate attributeName='opacity' begin='-0.08333333333333333s' dur='1s' keyTimes='0;1' repeatCount='indefinite' values='1;0'/%3E%3C/rect%3E%3Crect width='7' height='21' x='46.5' y='7.5' fill='%2385a2b6' rx='0' ry='0' transform='rotate(330 50 50)'%3E%3Canimate attributeName='opacity' begin='0s' dur='1s' keyTimes='0;1' repeatCount='indefinite' values='1;0'/%3E%3C/rect%3E%3C/svg%3E");
+  --icon-info: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' xml:space='preserve' viewBox='0 0 64 64' fill='%23555'%3E%3Cpath d='M38.5351982 47.6064987H34.455101V28.4473c0-.5527-.4473-1-1-1h-4.5204945c-.5523071 0-1 .4473-1 1s.4476929 1 1 1h3.5204945v18.1591988h-5.1216011c-.5522003 0-1 .4472008-1 1 0 .5527.4477997 1 1 1h11.2016983c.5527 0 1-.4473 1-1 0-.5527993-.4472999-1.0000001-1-1.0000001z'/%3E%3Ccircle cx='32' cy='18' r='3'/%3E%3Cpath d='M32 0C14.3269005 0 0 14.3268995 0 32s14.3268995 32 32 32 32-14.3269005 32-32S49.6730995 0 32 0zm0 62C15.457901 62 2 48.542099 2 32 2 15.4580002 15.4578991 2 32 2s30 13.4580002 30 30c0 16.542099-13.457901 30-30 30z'/%3E%3C/svg%3E");
+  --icon-updated: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' xml:space='preserve' viewBox='0 0 51.809 51.809' fill='%23555'%3E%3Cpath d='M48.881 24.904c-.552 0-1 .447-1 1 0 12.131-9.869 22-22 22-8.611 0-16.304-4.944-19.919-12.677l5.193 2.312c.504.228 1.096-.001 1.32-.507.225-.504-.002-1.095-.507-1.319l-7.309-3.254c-.506-.229-1.095.002-1.32.507L.085 40.275c-.225.504.002 1.095.507 1.319.132.06.271.087.406.087.383 0 .748-.221.914-.594l2.235-5.02c3.941 8.44 12.335 13.837 21.732 13.837 13.233 0 24-10.767 24-24 .002-.552-.446-1-.998-1zM51.215 10.173c-.506-.227-1.096.002-1.32.507l-2.266 5.09C43.694 7.307 35.306 1.904 25.881 1.904c-13.233 0-24 10.767-24 24 0 .553.448 1 1 1s1-.447 1-1c0-12.131 9.869-22 22-22 8.599 0 16.259 4.906 19.887 12.6l-5.116-2.277c-.505-.229-1.096.002-1.32.507-.225.504.002 1.095.507 1.319l7.309 3.254c.132.06.271.087.406.087.383 0 .748-.221.914-.594l3.254-7.309c.224-.503-.003-1.094-.507-1.318z'/%3E%3C/svg%3E");
+  --icon-trash: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23555'%3E%3Cpath fill-rule='evenodd' d='M16 1.75V3h5.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H8V1.75C8 .784 8.784 0 9.75 0h4.5C15.216 0 16 .784 16 1.75zm-6.5 0a.25.25 0 0 1 .25-.25h4.5a.25.25 0 0 1 .25.25V3h-5V1.75z'/%3E%3Cpath d='M4.997 6.178a.75.75 0 1 0-1.493.144L4.916 20.92a1.75 1.75 0 0 0 1.742 1.58h10.684a1.75 1.75 0 0 0 1.742-1.581l1.413-14.597a.75.75 0 0 0-1.494-.144l-1.412 14.596a.25.25 0 0 1-.249.226H6.658a.25.25 0 0 1-.249-.226L4.997 6.178z'/%3E%3Cpath d='M9.206 7.501a.75.75 0 0 1 .793.705l.5 8.5A.75.75 0 1 1 9 16.794l-.5-8.5a.75.75 0 0 1 .705-.793zm6.293.793A.75.75 0 1 0 14 8.206l-.5 8.5a.75.75 0 0 0 1.498.088l.5-8.5z'/%3E%3C/svg%3E");
+  --icon-edit: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' xml:space='preserve' viewBox='0 0 512 512' fill='%23777'%3E%3Cpath d='M498.125 92.38 419.62 13.874c-18.496-18.497-48.436-18.5-66.935 0-13.167 13.169-302.639 302.642-308.16 308.161-2.182 2.182-3.725 4.918-4.46 7.915L.502 491.068c-3.036 12.368 8.186 23.44 20.431 20.432 8.361-2.053 153.718-37.747 161.117-39.564 2.996-.735 5.734-2.278 7.915-4.46l308.161-308.161c18.496-18.497 18.501-48.436-.001-66.935zM39.957 472.043l1.612-6.562 4.951 4.951-6.563 1.611zm44.917-11.029-33.887-33.887 14.736-60.009 79.16 79.16-60.009 14.736zm93.148-29.367-97.668-97.668L332.559 81.773l97.668 97.668-252.205 252.206zM474.24 135.429l-19.508 19.507-97.667-97.668 19.507-19.507c5.294-5.293 13.867-5.298 19.163 0l78.506 78.507c5.295 5.295 5.295 13.864-.001 19.161z'/%3E%3C/svg%3E");
   --icon-calendar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' xml:space='preserve' viewBox='0 0 512 512' fill='%23555'%3E%3Cpath d='M472 60h-8V44c0-13.234-10.766-24-24-24s-24 10.766-24 24v16H96V44c0-13.234-10.766-24-24-24S48 30.766 48 44v16h-8C17.944 60 0 77.944 0 100v352c0 22.056 17.944 40 40 40h432c22.056 0 40-17.944 40-40V100c0-22.056-17.944-40-40-40zm-40-16c0-4.411 3.589-8 8-8s8 3.589 8 8v23.981c0 .007-.001.013-.001.019s.001.013.001.019V92c0 4.411-3.589 8-8 8s-8-3.589-8-8V44zM72 36c4.411 0 8 3.589 8 8v48c0 4.411-3.589 8-8 8s-8-3.589-8-8V44c0-4.411 3.589-8 8-8zm400 440H40c-13.234 0-24-10.766-24-24V148h384c4.418 0 8-3.582 8-8s-3.582-8-8-8H16v-32c0-13.234 10.766-24 24-24h8v16c0 13.234 10.766 24 24 24s24-10.766 24-24V76h320v16c0 13.234 10.766 24 24 24s24-10.766 24-24V76h8c13.234 0 24 10.766 24 24v32h-16c-4.418 0-8 3.582-8 8s3.582 8 8 8h16v304c0 13.234-10.766 24-24 24z'/%3E%3Cpath d='M448 132h-16c-4.418 0-8 3.582-8 8s3.582 8 8 8h16c4.418 0 8-3.582 8-8s-3.582-8-8-8z'/%3E%3Cg stroke='null'%3E%3Crect width='30' height='15' x='206' y='222' rx='8'/%3E%3Crect width='30' height='15' x='277' y='222' rx='8'/%3E%3Crect width='30' height='15' x='346' y='222' rx='8'/%3E%3Crect width='30' height='15' x='416' y='222' rx='8'/%3E%3Crect width='30' height='15' x='66' y='302' rx='8'/%3E%3Crect width='30' height='15' x='136' y='302' rx='8'/%3E%3Crect width='30' height='15' x='206' y='302' rx='8'/%3E%3Crect width='30' height='15' x='276' y='302' rx='8'/%3E%3Crect width='30' height='15' x='346' y='302' rx='8'/%3E%3Crect width='30' height='15' x='416' y='302' rx='8'/%3E%3Crect width='30' height='15' x='66' y='392' rx='8'/%3E%3Crect width='30' height='15' x='136' y='392' rx='8'/%3E%3Crect width='30' height='15' x='206' y='392' rx='8'/%3E%3Crect width='30' height='15' x='276' y='392' rx='8'/%3E%3Crect width='30' height='15' x='346' y='392' rx='8'/%3E%3C/g%3E%3C/svg%3E");
   --icon-calendar-empty: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' xml:space='preserve' viewBox='0 0 512 512' fill='%23555'%3E%3Cg stroke='null'%3E%3Cpath d='M472 47.37289h-8V30.42374c0-14.01907-10.766-25.42373-24-25.42373s-24 11.40466-24 25.42373v16.94915H96V30.42374C96 16.40467 85.234 5.00001 72 5.00001S48 16.40467 48 30.42374v16.94915h-8c-22.056 0-40 19.00847-40 42.37288v372.88136c0 23.36441 17.944 42.37288 40 42.37288h432c22.056 0 40-19.00847 40-42.37288V89.74577c0-23.36441-17.944-42.37288-40-42.37288zm-40-16.94915c0-4.67267 3.589-8.47458 8-8.47458s8 3.80191 8 8.47458v25.4036c0 .00742-.001.01377-.001.02013s.001.01377.001.02013v25.4036c0 4.67267-3.589 8.47458-8 8.47458s-8-3.80191-8-8.47458V30.42374zM72 21.94916c4.411 0 8 3.80191 8 8.47458V81.2712c0 4.67267-3.589 8.47458-8 8.47458s-8-3.80191-8-8.47458V30.42374c0-4.67267 3.589-8.47458 8-8.47458zm400 466.10169H40c-13.234 0-24-11.40466-24-25.42373v-322.0339h384c4.418 0 8-3.79449 8-8.47458s-3.582-8.47458-8-8.47458H16V89.74575c0-14.01907 10.766-25.42373 24-25.42373h8v16.94915c0 14.01907 10.766 25.42373 24 25.42373s24-11.40466 24-25.42373V64.32202h320v16.94915c0 14.01907 10.766 25.42373 24 25.42373s24-11.40466 24-25.42373V64.32202h8c13.234 0 24 11.40466 24 25.42373v33.89831h-16c-4.418 0-8 3.79449-8 8.47458s3.582 8.47458 8 8.47458h16v322.0339c0 14.01907-10.766 25.42373-24 25.42373z'/%3E%3Cpath d='M448 123.64407h-16c-4.418 0-8 3.79449-8 8.47458s3.582 8.47458 8 8.47458h16c4.418 0 8-3.79449 8-8.47458s-3.582-8.47458-8-8.47458z'/%3E%3C/g%3E%3C/svg%3E");
   --icon-list-grouped: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' xml:space='preserve' viewBox='0 0 64 64' fill='%23555'%3E%3Cpath stroke='null' d='M1.52092 5.89552h60.86722c.84042 0 1.52107-.4472 1.52107-.9995 0-.5522-.68065-.9995-1.52107-.9995H1.52092C.68065 3.89652 0 4.34382 0 4.89602c0 .5523.68065.9995 1.52092.9995z'/%3E%3Cpath d='M62.98405 19.62524h-40c-.5522 0-.9995.4473-.9995.9995 0 .5523.4473.9995.9995.9995h40c.5523 0 .9996-.4472.9996-.9995 0-.5522-.4473-.9995-.9996-.9995z'/%3E%3Cpath stroke='null' d='M10.00888 13.67918c-3.87581 0-7.02924 3.15984-7.02924 7.04356 0 3.88384 3.15342 7.0437 7.02924 7.0437 3.87592 0 7.02934-3.15986 7.02934-7.0437 0-3.88372-3.15342-7.04356-7.02934-7.04356zm0 11.80281c-2.61911 0-4.74945-2.13465-4.74945-4.75925 0-2.62448 2.13034-4.75913 4.74945-4.75913 2.61925 0 4.74956 2.13465 4.74956 4.75913 0 2.62459-2.1303 4.75925-4.74956 4.75925zM1.52092 37.42953h60.86722c.84043 0 1.52108-.4472 1.52108-.9995 0-.5522-.68065-.9995-1.52108-.9995H1.52092c-.84027 0-1.52092.4473-1.52092.9995 0 .5523.68065.9995 1.52092.9995z'/%3E%3Cpath d='M62.98405 51.15925h-40c-.5522 0-.9995.4473-.9995.9995 0 .5523.4473.9995.9995.9995h40c.5523 0 .9996-.4472.9996-.9995 0-.5522-.4473-.9995-.9996-.9995z'/%3E%3Cpath stroke='null' d='M10.00888 45.21319c-3.87582 0-7.02924 3.15984-7.02924 7.04356 0 3.88384 3.15342 7.0437 7.02924 7.0437 3.87592 0 7.02934-3.15986 7.02934-7.0437 0-3.88372-3.15342-7.04356-7.02934-7.04356zm0 11.80281c-2.61912 0-4.74945-2.13465-4.74945-4.75925 0-2.62447 2.13033-4.75913 4.74945-4.75913 2.61925 0 4.74955 2.13466 4.74955 4.75913 0 2.6246-2.1303 4.75925-4.74955 4.75925z'/%3E%3C/svg%3E");
@@ -981,6 +986,9 @@
   background-repeat: no-repeat;
   background-size: 20px;
 }
+.em .em-icon:focus {
+  box-shadow: none;
+}
 .em .em-icon.em-icon-logo-office365 {
   background-image: var(--icon-logo-office365);
 }
@@ -995,6 +1003,18 @@
 }
 .em .em-icon.em-icon-download {
   background-image: var(--icon-download);
+}
+.em .em-icon.em-icon-info {
+  background-image: var(--icon-info);
+}
+.em .em-icon.em-icon-updated {
+  background-image: var(--icon-updated);
+}
+.em .em-icon.em-icon-trash {
+  background-image: var(--icon-trash);
+}
+.em .em-icon.em-icon-edit {
+  background-image: var(--icon-edit);
 }
 .em .em-icon.em-icon-spinner {
   background-image: var(--icon-spinner);
@@ -1270,14 +1290,13 @@
 }
 .em.em-calendar .em-cal-body {
   --grid-auto-rows: auto;
+  grid-auto-rows: var(--grid-auto-rows);
   border-bottom: var(--date-box-border);
   background-color: var(--calendar-background);
-  grid-template-rows: 1fr;
-  grid-auto-rows: var(--grid-auto-rows);
   /*
   --- Display Option Flags ---
   */
-  /* Display date cells with even height */
+  /* Display date cells with even height, taking the highest cell as the minimum height */
   /* Event Items in Pill Form */
 }
 .em.em-calendar .em-cal-body .em-cal-day {
@@ -1341,9 +1360,6 @@
 .em.em-calendar .em-cal-body.even-height {
   grid-template-rows: 1fr;
   grid-auto-rows: 1fr;
-}
-.em.em-calendar .em-cal-body.even-aspect .em-cal-day {
-  aspect-ratio: 1/1;
 }
 .em.em-calendar .em-cal-body.event-style-pill .em-cal-event {
   text-align: left;
@@ -3367,6 +3383,621 @@
   display: none;
   visibility: hidden;
 }
+.em .em_obj {
+  position: relative;
+}
+.em .em-bookings-table .em-bookings-table-trigger {
+  float: left;
+  display: block;
+  margin: 2px 8px 0 0;
+  width: 24px;
+  height: 24px;
+  background-size: 24px;
+}
+.em .em-bookings-table .em-bookings-table-trigger:first-child {
+  margin-left: 5px;
+}
+.em .em-bookings-table .tablenav .actions input, .em .em-bookings-table .tablenav .actions select {
+  float: left;
+  margin-right: 6px;
+  max-width: 12.5rem;
+}
+.em .em-bookings-table .tablenav .actions input:first-child, .em .em-bookings-table .tablenav .actions select:first-child {
+  margin-left: 10px;
+}
+.em .em-bookings-table.frontend .bulkactions {
+  display: none;
+}
+.em .em-bookings-table.frontend .tablenav .alignleft {
+  float: left;
+  margin-right: 10px;
+}
+.em .em-bookings-table .table-wrap {
+  margin-top: 5px;
+  clear: both;
+}
+.em .em-bookings-table .table-wrap thead .check-column {
+  padding: 0 0 0 3px;
+}
+.em .em-bookings-table .table-wrap tr {
+  transition: opacity 800ms ease-out;
+}
+.em .em-bookings-table .table-wrap tr.faded-out {
+  opacity: 0;
+}
+.em .em-bookings-table .table-wrap .check-column {
+  width: 5.5rem;
+  padding: 10px 0 10px 3px;
+}
+.em .em-bookings-table .table-wrap .check-column button {
+  font-family: "Arial", sans-serif !important;
+  transform: rotate(-90deg) !important;
+  border: 0 !important;
+  background: none !important;
+  width: 22px !important;
+  height: 16px !important;
+  font-size: 16px !important;
+  line-height: 3px !important;
+  font-weight: bold !important;
+  color: #aaa !important;
+  padding: 0 3px !important;
+  cursor: pointer !important;
+}
+.em .em-bookings-table .table-wrap .check-column button:active, .em .em-bookings-table .table-wrap .check-column button:focus {
+  border: none !important;
+  box-shadow: none !important;
+}
+.em .em-bookings-table .table-wrap tr.loading {
+  pointer-events: none;
+  cursor: not-allowed;
+}
+.em .em-bookings-table .table-wrap tr.loading td:not(.check-column) {
+  opacity: 0.5;
+}
+.em .em-bookings-table .table-wrap tr.loading .check-column input {
+  opacity: 0.3;
+}
+.em .em-bookings-table .table-wrap tr.loading .check-column button {
+  background: var(--icon-spinner) 3px 0 no-repeat;
+  background-size: 16px;
+  text-indent: -99999px;
+  overflow: hidden;
+}
+.em .em-bookings-table .table-wrap .em-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 5px;
+  background-size: 18px;
+}
+.em .em-bookings-table .table-wrap .em-icon.em-icon-updated {
+  background: green;
+  -webkit-mask-image: var(--icon-updated);
+  mask-image: var(--icon-updated);
+}
+.em .em-bookings-table .table-wrap .em-icon.em-icon-cross-circle {
+  background: red;
+  -webkit-mask-image: var(--icon-cross-circle);
+  mask-image: var(--icon-cross-circle);
+}
+.em .em-bookings-table .table-wrap .em-icon.em-icon-trash {
+  background: red;
+  -webkit-mask-image: var(--icon-trash);
+  mask-image: var(--icon-trash);
+}
+.em .em-bookings-table.size-small .em-table-row-responsive-meta {
+  display: block;
+  visibility: visible;
+}
+.em .em-bookings-table-cols {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 20px;
+}
+.em .em-bookings-table-cols p {
+  margin-bottom: 15px !important;
+}
+.em .em-bookings-table-cols .em-bookings-cols-selected .item {
+  width: 100%;
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row-reverse;
+  align-items: center;
+  cursor: pointer;
+  margin: 0 0 8px 0;
+  padding: 5px 0 5px 8px;
+  border-radius: calc(0.25rem - 1px);
+  background: #dff4fd;
+  border: 1px solid #97dbf9;
+  color: #0095c3;
+}
+.em .em-bookings-table-cols .em-bookings-cols-selected .item > span {
+  flex: 1 1 auto;
+}
+.em .em-bookings-table-cols .em-bookings-cols-selected .item .remove {
+  flex: 0 0 auto;
+  color: inherit !important;
+  background-color: inherit !important;
+  text-decoration: none;
+  vertical-align: middle;
+  display: inline-block;
+  padding: 0;
+  border: none;
+  box-sizing: border-box;
+  margin-right: 10px;
+}
+.em .em-bookings-table-cols .em-bookings-cols-select .selectize-input.items .item {
+  display: none !important;
+}
+.em .em-bookings-table-cols .em-bookings-cols-select .selectize-input.items input {
+  margin-top: 0 !important;
+}
+.em .em-bookings-table-cols .em-bookings-cols-select .selectize-dropdown .optgroup:before {
+  display: none;
+}
+.em .em-bookings-table-cols .em-bookings-cols-select .selectize-dropdown .optgroup-header {
+  display: block;
+  width: 95%;
+  padding: 0 0 6px;
+  margin: 10px auto 6px;
+  border-bottom: 1px solid #ddd;
+}
+.em .em-bookings-table-cols .em-bookings-cols-select .selectize-dropdown .optgroup:first-child .optgroup-header {
+  margin-top: 5px;
+}
+.em .em-booking-table.size-small {
+  /* WP List Table Options & Filters */
+  /* Pagination */
+  /* WP List Table Adjustments: General */
+  /* Checkboxes need to show */
+  /* Special cases */
+  /* Comment author hidden via Screen Options */
+  /* Show comment bubble as text instead */
+  /* Make row actions more easy to select on mobile */
+  /* Quick Edit and Bulk Edit */
+  /* Updates */
+  /* Links */
+  /* List tables that don't toggle rows */
+  /* Plugin/Theme Management */
+  /* Plugin description hidden via Screen Options */
+  /* mimic the checkbox th */
+  /* Add New plugins page */
+}
+.em .em-booking-table.size-small .tablenav {
+  height: auto;
+}
+.em .em-booking-table.size-small .tablenav.top {
+  margin: 20px 0 5px;
+}
+.em .em-booking-table.size-small .tablenav.bottom {
+  position: relative;
+  margin-top: 15px;
+}
+.em .em-booking-table.size-small .tablenav br {
+  display: none;
+}
+.em .em-booking-table.size-small .tablenav br.clear {
+  display: block;
+}
+.em .em-booking-table.size-small .tablenav.top .actions,
+.em .em-booking-table.size-small .tablenav .view-switch {
+  display: none;
+}
+.em .em-booking-table.size-small .view-switch a {
+  width: 36px;
+  height: 36px;
+  line-height: 2.53846153;
+}
+.em .em-booking-table.size-small .tablenav.top .displaying-num {
+  display: none;
+}
+.em .em-booking-table.size-small .tablenav.bottom .displaying-num {
+  position: absolute;
+  left: 0;
+  top: 11px;
+  margin: 0;
+  font-size: 14px;
+}
+.em .em-booking-table.size-small .tablenav .tablenav-pages {
+  width: 100%;
+  text-align: center;
+  margin: 0 0 25px;
+}
+.em .em-booking-table.size-small .tablenav.bottom .tablenav-pages {
+  margin-top: 25px;
+}
+.em .em-booking-table.size-small .tablenav.top .tablenav-pages.one-page {
+  display: none;
+}
+.em .em-booking-table.size-small .tablenav.bottom .tablenav-pages.one-page {
+  margin-top: 15px;
+  height: 0;
+}
+.em .em-booking-table.size-small .tablenav-pages .pagination-links {
+  font-size: 16px;
+}
+.em .em-booking-table.size-small .tablenav .tablenav-pages .button,
+.em .em-booking-table.size-small .tablenav .tablenav-pages .tablenav-pages-navspan {
+  min-width: 44px;
+  padding: 12px 8px;
+  font-size: 18px;
+  line-height: 1;
+}
+.em .em-booking-table.size-small .tablenav-pages .pagination-links .current-page {
+  min-width: 44px;
+  padding: 12px 6px;
+  font-size: 16px;
+  line-height: 1.125;
+}
+.em .em-booking-table.size-small .form-wrap > p {
+  display: none;
+}
+.em .em-booking-table.size-small .wp-list-table th.column-primary ~ th,
+.em .em-booking-table.size-small .wp-list-table tr:not(.inline-edit-row):not(.no-items) td.column-primary ~ td:not(.check-column) {
+  display: none;
+}
+.em .em-booking-table.size-small .wp-list-table thead th.column-primary {
+  width: 100%;
+}
+.em .em-booking-table.size-small .wp-list-table tr th.check-column {
+  display: table-cell;
+}
+.em .em-booking-table.size-small .wp-list-table .check-column {
+  width: 2.5em;
+}
+.em .em-booking-table.size-small .wp-list-table .column-primary .toggle-row {
+  display: block;
+}
+.em .em-booking-table.size-small .wp-list-table tr:not(.inline-edit-row):not(.no-items) td:not(.check-column) {
+  position: relative;
+  clear: both;
+  width: auto !important;
+  /* needs to override some columns that are more specifically targeted */
+}
+.em .em-booking-table.size-small .wp-list-table td.column-primary {
+  padding-left: 50px;
+  /* space for toggle button */
+}
+.em .em-booking-table.size-small .wp-list-table tr:not(.inline-edit-row):not(.no-items) td.column-primary ~ td:not(.check-column) {
+  padding: 3px 35% 3px 8px;
+}
+.em .em-booking-table.size-small .wp-list-table tr:not(.inline-edit-row):not(.no-items) td:not(.column-primary)::before {
+  position: absolute;
+  right: 10px;
+  /* match padding of regular table cell */
+  display: block;
+  overflow: hidden;
+  width: 32%;
+  /* leave a little space for a gutter */
+  content: attr(data-colname);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.em .em-booking-table.size-small .wp-list-table .is-expanded td:not(.hidden) {
+  display: block !important;
+  overflow: hidden;
+  /* clearfix */
+}
+.em .em-booking-table.size-small .widefat .num,
+.em .em-booking-table.size-small .column-posts {
+  text-align: right;
+}
+.em .em-booking-table.size-small #comments-form .fixed .column-author,
+.em .em-booking-table.size-small #commentsdiv .fixed .column-author {
+  display: none !important;
+}
+.em .em-booking-table.size-small .fixed .column-comment .comment-author {
+  display: block;
+}
+.em .em-booking-table.size-small .fixed .column-author.hidden ~ .column-comment .comment-author {
+  display: none;
+}
+.em .em-booking-table.size-small #the-comment-list .is-expanded td {
+  box-shadow: none;
+}
+.em .em-booking-table.size-small #the-comment-list .is-expanded td:last-child {
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+.em .em-booking-table.size-small .post-com-count .screen-reader-text {
+  position: static;
+  -webkit-clip-path: none;
+  clip-path: none;
+  width: auto;
+  height: auto;
+  margin: 0;
+}
+.em .em-booking-table.size-small .column-response .post-com-count-no-comments:after,
+.em .em-booking-table.size-small .column-response .post-com-count-approved:after,
+.em .em-booking-table.size-small .column-comments .post-com-count-no-comments:after,
+.em .em-booking-table.size-small .column-comments .post-com-count-approved:after {
+  content: none;
+}
+.em .em-booking-table.size-small .column-response .post-com-count [aria-hidden=true],
+.em .em-booking-table.size-small .column-comments .post-com-count [aria-hidden=true] {
+  display: none;
+}
+.em .em-booking-table.size-small .column-response .post-com-count-wrapper,
+.em .em-booking-table.size-small .column-comments .post-com-count-wrapper {
+  white-space: normal;
+}
+.em .em-booking-table.size-small .column-response .post-com-count-wrapper > a,
+.em .em-booking-table.size-small .column-comments .post-com-count-wrapper > a {
+  display: block;
+}
+.em .em-booking-table.size-small .column-response .post-com-count-no-comments,
+.em .em-booking-table.size-small .column-response .post-com-count-approved,
+.em .em-booking-table.size-small .column-comments .post-com-count-no-comments,
+.em .em-booking-table.size-small .column-comments .post-com-count-approved {
+  margin-top: 0;
+  margin-left: 0.5em;
+}
+.em .em-booking-table.size-small .column-response .post-com-count-pending,
+.em .em-booking-table.size-small .column-comments .post-com-count-pending {
+  position: static;
+  height: auto;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  color: #b32d2e;
+  font-size: inherit;
+  line-height: inherit;
+  text-align: right;
+}
+.em .em-booking-table.size-small .column-response .post-com-count-pending:hover,
+.em .em-booking-table.size-small .column-comments .post-com-count-pending:hover {
+  color: #d63638;
+}
+.em .em-booking-table.size-small .widefat thead td.check-column,
+.em .em-booking-table.size-small .widefat tfoot td.check-column {
+  padding-top: 10px;
+}
+.em .em-booking-table.size-small .row-actions {
+  margin-right: -8px;
+  margin-left: -8px;
+  padding-top: 4px;
+}
+.em .em-booking-table.size-small body:not(.plugins-php) .row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: transparent;
+}
+.em .em-booking-table.size-small .row-actions span a,
+.em .em-booking-table.size-small .row-actions span .button-link {
+  display: inline-block;
+  padding: 4px 8px;
+  line-height: 1.5;
+}
+.em .em-booking-table.size-small .row-actions span.approve:before,
+.em .em-booking-table.size-small .row-actions span.unapprove:before {
+  content: "| ";
+}
+.em .em-booking-table.size-small #wpbody-content .quick-edit-row-post .inline-edit-col-left,
+.em .em-booking-table.size-small #wpbody-content .quick-edit-row-post .inline-edit-col-right,
+.em .em-booking-table.size-small #wpbody-content .inline-edit-row-post .inline-edit-col-center,
+.em .em-booking-table.size-small #wpbody-content .quick-edit-row-page .inline-edit-col-left,
+.em .em-booking-table.size-small #wpbody-content .quick-edit-row-page .inline-edit-col-right,
+.em .em-booking-table.size-small #wpbody-content .bulk-edit-row-post .inline-edit-col-right,
+.em .em-booking-table.size-small #wpbody-content .bulk-edit-row .inline-edit-col-left,
+.em .em-booking-table.size-small #wpbody-content .bulk-edit-row-page .inline-edit-col-right,
+.em .em-booking-table.size-small #wpbody-content .bulk-edit-row .inline-edit-col-bottom {
+  float: none;
+  width: 100%;
+  padding: 0;
+}
+.em .em-booking-table.size-small #the-list .inline-edit-row .inline-edit-legend,
+.em .em-booking-table.size-small .inline-edit-row span.title {
+  font-size: 16px;
+}
+.em .em-booking-table.size-small .inline-edit-row p.howto {
+  font-size: 14px;
+}
+.em .em-booking-table.size-small #wpbody-content .inline-edit-row-page .inline-edit-col-right {
+  margin-top: 0;
+}
+.em .em-booking-table.size-small #wpbody-content .quick-edit-row fieldset .inline-edit-col label,
+.em .em-booking-table.size-small #wpbody-content .quick-edit-row fieldset .inline-edit-group label,
+.em .em-booking-table.size-small #wpbody-content .bulk-edit-row fieldset .inline-edit-col label,
+.em .em-booking-table.size-small #wpbody-content .bulk-edit-row fieldset .inline-edit-group label {
+  max-width: none;
+  float: none;
+  margin-bottom: 5px;
+}
+.em .em-booking-table.size-small #wpbody .bulk-edit-row fieldset select {
+  display: block;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+.em .em-booking-table.size-small .inline-edit-row fieldset input[name=jj],
+.em .em-booking-table.size-small .inline-edit-row fieldset input[name=hh],
+.em .em-booking-table.size-small .inline-edit-row fieldset input[name=mn],
+.em .em-booking-table.size-small .inline-edit-row fieldset input[name=aa] {
+  font-size: 16px;
+  line-height: 2;
+  padding: 3px 4px;
+}
+.em .em-booking-table.size-small #bulk-titles .ntdelbutton,
+.em .em-booking-table.size-small #bulk-titles .ntdeltitle,
+.em .em-booking-table.size-small .inline-edit-row fieldset ul.cat-checklist label {
+  padding: 6px 0;
+  font-size: 16px;
+  line-height: 28px;
+}
+.em .em-booking-table.size-small #bulk-titles .ntdelitem {
+  padding-right: 37px;
+}
+.em .em-booking-table.size-small #bulk-titles .ntdelbutton {
+  width: 40px;
+  height: 40px;
+  margin: 0 -40px 0 0;
+  overflow: hidden;
+}
+.em .em-booking-table.size-small #bulk-titles .ntdelbutton:before {
+  font-size: 20px;
+  line-height: 28px;
+}
+.em .em-booking-table.size-small .inline-edit-row fieldset label span.title,
+.em .em-booking-table.size-small .inline-edit-row fieldset.inline-edit-date legend {
+  float: none;
+}
+.em .em-booking-table.size-small .inline-edit-row fieldset .inline-edit-col label.inline-edit-tags {
+  padding: 0;
+}
+.em .em-booking-table.size-small .inline-edit-row fieldset label span.input-text-wrap,
+.em .em-booking-table.size-small .inline-edit-row fieldset .timestamp-wrap {
+  margin-right: 0;
+}
+.em .em-booking-table.size-small .inline-edit-row .inline-edit-or {
+  margin: 0 0 0 6px;
+}
+.em .em-booking-table.size-small #edithead .inside,
+.em .em-booking-table.size-small #commentsdiv #edithead .inside {
+  float: none;
+  text-align: right;
+  padding: 3px 5px;
+}
+.em .em-booking-table.size-small #commentsdiv #edithead .inside input,
+.em .em-booking-table.size-small #edithead .inside input {
+  width: 100%;
+}
+.em .em-booking-table.size-small #edithead label {
+  display: block;
+}
+.em .em-booking-table.size-small #wpbody-content .updates-table .plugin-title {
+  width: auto;
+  white-space: normal;
+}
+.em .em-booking-table.size-small .link-manager-php #posts-filter {
+  margin-top: 25px;
+}
+.em .em-booking-table.size-small .link-manager-php .tablenav.bottom {
+  overflow: hidden;
+}
+.em .em-booking-table.size-small .comments-box .toggle-row,
+.em .em-booking-table.size-small .wp-list-table.plugins .toggle-row {
+  display: none;
+}
+.em .em-booking-table.size-small #wpbody-content .wp-list-table.plugins td {
+  display: block;
+  width: auto;
+  padding: 10px 9px;
+  /* reset from other list tables that have a label at this width */
+}
+.em .em-booking-table.size-small #wpbody-content .wp-list-table.plugins .desc.hidden {
+  display: none;
+}
+.em .em-booking-table.size-small #wpbody-content .wp-list-table.plugins .column-description {
+  padding-top: 2px;
+}
+.em .em-booking-table.size-small #wpbody-content .wp-list-table.plugins .plugin-title,
+.em .em-booking-table.size-small #wpbody-content .wp-list-table.plugins .theme-title {
+  padding-left: 12px;
+  white-space: normal;
+}
+.em .em-booking-table.size-small .wp-list-table.plugins .plugin-title,
+.em .em-booking-table.size-small .wp-list-table.plugins .theme-title {
+  padding-top: 13px;
+  padding-bottom: 4px;
+}
+.em .em-booking-table.size-small .plugins #the-list tr > td:not(:last-child),
+.em .em-booking-table.size-small .plugins #the-list .update th,
+.em .em-booking-table.size-small .plugins #the-list .update td,
+.em .em-booking-table.size-small .wp-list-table.plugins #the-list .theme-title {
+  box-shadow: none;
+  border-top: none;
+}
+.em .em-booking-table.size-small .plugins #the-list tr td {
+  border-top: none;
+}
+.em .em-booking-table.size-small .plugins tbody {
+  padding: 1px 0 0;
+}
+.em .em-booking-table.size-small .plugins tr.active + tr.inactive th.check-column,
+.em .em-booking-table.size-small .plugins tr.active + tr.inactive td.column-description,
+.em .em-booking-table.size-small .plugins .plugin-update-tr:before {
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+.em .em-booking-table.size-small .plugins tr.active + tr.inactive th.check-column,
+.em .em-booking-table.size-small .plugins tr.active + tr.inactive td {
+  border-top: none;
+}
+.em .em-booking-table.size-small .plugins .plugin-update-tr:before {
+  content: "";
+  display: table-cell;
+}
+.em .em-booking-table.size-small .plugins #the-list .plugin-update-tr .plugin-update {
+  border-right: none;
+}
+.em .em-booking-table.size-small .plugin-update-tr .update-message {
+  margin-right: 0;
+}
+.em .em-booking-table.size-small .plugins .active.update + .plugin-update-tr:before,
+.em .em-booking-table.size-small .plugins .active.updated + .plugin-update-tr:before {
+  background-color: #f0f6fc;
+  border-right: 4px solid #72aee6;
+}
+.em .em-booking-table.size-small .plugins .plugin-update-tr .update-message {
+  margin-right: 0;
+}
+.em .em-booking-table.size-small .wp-list-table.plugins .plugin-title strong,
+.em .em-booking-table.size-small .wp-list-table.plugins .theme-title strong {
+  font-size: 1.4em;
+  line-height: 1.5;
+}
+.em .em-booking-table.size-small .plugins tbody th.check-column {
+  padding: 8px 5px 0 0;
+}
+.em .em-booking-table.size-small .plugins thead td.check-column,
+.em .em-booking-table.size-small .plugins tfoot td.check-column,
+.em .em-booking-table.size-small .plugins .inactive th.check-column {
+  padding-right: 9px;
+}
+.em .em-booking-table.size-small table.plugin-install .column-name,
+.em .em-booking-table.size-small table.plugin-install .column-version,
+.em .em-booking-table.size-small table.plugin-install .column-rating,
+.em .em-booking-table.size-small table.plugin-install .column-description {
+  display: block;
+  width: auto;
+}
+.em .em-booking-table.size-small table.plugin-install th.column-name,
+.em .em-booking-table.size-small table.plugin-install th.column-version,
+.em .em-booking-table.size-small table.plugin-install th.column-rating,
+.em .em-booking-table.size-small table.plugin-install th.column-description {
+  display: none;
+}
+.em .em-booking-table.size-small table.plugin-install td.column-name strong {
+  font-size: 1.4em;
+  line-height: 1.6em;
+}
+.em .em-booking-table.size-small table.plugin-install #the-list td {
+  box-shadow: none;
+}
+.em .em-booking-table.size-small table.plugin-install #the-list tr {
+  display: block;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+.em .em-booking-table.size-small .plugin-card {
+  margin-right: 0;
+  margin-left: 0;
+  width: 100%;
+}
+.em .em-booking-table.size-small table.media .column-title .has-media-icon ~ .row-actions {
+  margin-right: 0;
+  clear: both;
+}
+@media only screen and (max-width: 800px) {
+  .em .em-bookings-cols-selected .item {
+    display: block;
+  }
+}
+@media only screen and (max-width: 380px) {
+  .em .em-bookings-cols-selected .item {
+    display: block;
+  }
+}
 .em button.em-clickable {
   cursor: pointer !important;
   justify-self: start !important;
@@ -4122,73 +4753,6 @@ table.em-form-fields td, table.em-form-fields th {
 
 table.em-form-fields th {
   padding: 0px 20px 5px 0px;
-}
-
-/* Bookings Table */
-.em_obj {
-  position: relative;
-}
-
-.em_obj .table-wrap {
-  clear: left;
-  padding-top: 5px;
-}
-
-.em-bookings-table .em-bookings-table-export, .em-bookings-table .em-bookings-table-settings {
-  float: left;
-  display: block;
-  margin: 2px 5px;
-  width: 25px;
-  height: 25px;
-}
-
-.em-bookings-table .em-bookings-table-export {
-  background: url(../images/csv.png) 0px 0px no-repeat;
-}
-
-.em-bookings-table .em-bookings-table-settings {
-  background: url(../images/settings.png) 0px 0px no-repeat;
-}
-
-/* Settings & Export */
-#em-bookings-table-export, #em-bookings-table-settings {
-  width: 500px;
-  height: 75%;
-}
-
-#em-bookings-table-export form, #em-bookings-table-settings form {
-  height: 100%;
-  overflow: auto;
-}
-
-/* Sorting */
-.em-bookings-table-overlay ul.em-bookings-cols-sortable {
-  list-style-type: none;
-  margin: 0;
-  padding: 0 0 10px;
-  float: left;
-  margin-right: 10px;
-}
-
-.em-bookings-table-overlay ul.em-bookings-cols-sortable li {
-  margin: 0 5px 5px 5px;
-  padding: 3px 8px;
-  font-size: 12px;
-  width: 120px;
-  font-weight: normal;
-  cursor: move;
-}
-
-.em-bookings-table-overlay ul.em-bookings-cols-sortable li.ui-state-default {
-  color: #999;
-}
-
-#em-bookings-export-cols-inactive, #em-bookings-cols-inactive {
-  width: 300px;
-}
-
-#em-bookings-export-cols-inactive li, #em-bookings-cols-inactive li {
-  float: left;
 }
 
 /* Single Booking Edit View */

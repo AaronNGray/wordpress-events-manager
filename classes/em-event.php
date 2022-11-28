@@ -2177,29 +2177,37 @@ class EM_Event extends EM_Object{
 						}
 					}elseif ( $condition == 'has_category' ||  $condition == 'no_category' ){
 						//event is in this category
-						$terms = get_the_terms( $this->post_id, EM_TAXONOMY_CATEGORY);
-						$show_condition = $condition == 'has_category' ? !empty($terms) : empty($terms);
+						if( get_option('dbem_categories_enabled') ) {
+							$terms = get_the_terms($this->post_id, EM_TAXONOMY_CATEGORY);
+							$show_condition = $condition == 'has_category' ? !empty($terms) : empty($terms);
+						}else{
+							$show_condition = $condition !== 'has_category'; // no categories
+						}
 					}elseif ( preg_match('/^has_category_([a-zA-Z0-9_\-,]+)$/', $condition, $category_match)){
-					    //event is in this category
-						$show_condition = has_term(explode(',', $category_match[1]), EM_TAXONOMY_CATEGORY, $this->post_id);
+						//event is in this category
+						$show_condition = get_option('dbem_categories_enabled') && has_term(explode(',', $category_match[1]), EM_TAXONOMY_CATEGORY, $this->post_id);
 					}elseif ( preg_match('/^no_category_([a-zA-Z0-9_\-,]+)$/', $condition, $category_match)){
 					    //event is NOT in this category
-						$show_condition = !has_term(explode(',', $category_match[1]), EM_TAXONOMY_CATEGORY, $this->post_id);
+						$show_condition = !get_option('dbem_categories_enabled') || !has_term(explode(',', $category_match[1]), EM_TAXONOMY_CATEGORY, $this->post_id);
 					}elseif ( $condition == 'has_tag' ||  $condition == 'no_tag' ){
 						//event is in this category
-						$terms = get_the_terms( $this->post_id, EM_TAXONOMY_TAG);
-						$show_condition = $condition == 'has_tag' ? !empty($terms) : empty($terms);
+						if( get_option('dbem_tags_enabled') ) {
+							$terms = get_the_terms( $this->post_id, EM_TAXONOMY_TAG);
+							$show_condition = $condition == 'has_tag' ? !empty($terms) : empty($terms);
+						} else {
+							$show_condition = $condition !== 'has_tag'; // no tags
+						}
 					}elseif ( $condition == 'has_taxonomy' ||  $condition == 'no_taxonomy' ){
 						//event is in this category
-						$cats = get_the_terms( $this->post_id, EM_TAXONOMY_CATEGORY);
-						$tax = get_the_terms( $this->post_id, EM_TAXONOMY_TAG);
+						$cats = get_option('dbem_categories_enabled') ? get_the_terms( $this->post_id, EM_TAXONOMY_CATEGORY) : array();
+						$tax = get_option('dbem_tags_enabled') ? get_the_terms( $this->post_id, EM_TAXONOMY_TAG) : array();
 						$show_condition = $condition == 'has_taxonomy' ? !empty($tax) || !empty($cats) : empty($tax) && empty($cats);
 					}elseif ( preg_match('/^has_tag_([a-zA-Z0-9_\-,]+)$/', $condition, $tag_match)){
-					    //event has this tag
-						$show_condition = has_term(explode(',', $tag_match[1]), EM_TAXONOMY_TAG, $this->post_id);
+						//event has this tag
+						$show_condition = get_option('dbem_tags_enabled') && has_term(explode(',', $tag_match[1]), EM_TAXONOMY_TAG, $this->post_id);
 					}elseif ( preg_match('/^no_tag_([a-zA-Z0-9_\-,]+)$/', $condition, $tag_match)){
 					   //event doesn't have this tag
-						$show_condition = !has_term(explode(',', $tag_match[1]), EM_TAXONOMY_TAG, $this->post_id);
+						$show_condition = !get_option('dbem_tags_enabled') || !has_term(explode(',', $tag_match[1]), EM_TAXONOMY_TAG, $this->post_id);
 					}elseif ( preg_match('/^has_att_([a-zA-Z0-9_\-,]+)$/', $condition, $att_match)){
 						//event has a specific custom field
 						$show_condition = !empty($this->event_attributes[$att_match[1]]) || !empty($this->event_attributes[str_replace('_', ' ', $att_match[1])]);
@@ -2394,6 +2402,11 @@ class EM_Event extends EM_Object{
 				case '#_EVENTDATES':
 					//get format of time to show
 					$replace = $this->output_dates();
+					break;
+				case '#_EVENTSTARTDATE':
+					//get format of time to show
+					if( empty($date_format) ) $date_format = ( get_option('dbem_date_format') ) ? get_option('dbem_date_format'):get_option('date_format');
+					$replace = $replace = $this->start()->i18n($date_format);
 					break;
 				case '#_EVENTDATES_SITE':
 					//get format of time to show but use timezone of site rather than event

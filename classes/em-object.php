@@ -1461,6 +1461,17 @@ class EM_Object {
 	}
 	
 	/**
+	 * Outputs array as JSON format as per EM_Object::json_encode()
+	 * @param $array
+	 *
+	 * @return void
+	 * @see EM_Object::json_encode()
+	 */
+	public static function json_encode_e($array){
+		echo static::json_encode($array);
+	}
+	
+	/**
 	 * Compatible json encoder function for PHP4
 	 * @param array $array
 	 * @return string

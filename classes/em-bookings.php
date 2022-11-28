@@ -633,10 +633,8 @@ class EM_Bookings extends EM_Object implements Iterator, ArrayAccess {
 		$where = ( count($conditions) > 0 ) ? " WHERE " . implode ( " AND ", $conditions ):'';
 		
 		//Get ordering instructions
-		$EM_Booking = new EM_Booking();
-		$accepted_fields = $EM_Booking->get_fields(true);
-		$accepted_fields['date'] = 'booking_date';
-		$orderby = self::build_sql_orderby($args, $accepted_fields);
+		$accepted_fields = self::get_sql_accepted_fields();
+		$orderby = self::build_sql_orderby($args, $accepted_fields['orderby']);
 		//Now, build orderby sql
 		$orderby_sql = ( count($orderby) > 0 ) ? 'ORDER BY '. implode(', ', $orderby) : 'ORDER BY booking_date';
 		//Selectors
@@ -647,11 +645,68 @@ class EM_Bookings extends EM_Object implements Iterator, ArrayAccess {
 		}else{
 			$selectors = '*';
 		}
+		
+		//check if we need to join a location table for this search, which is necessary if any location-specific are supplied, or if certain arguments such as orderby contain location fields
+		$optional_joins = array();
+		$required_joins = array();
+		foreach( $accepted_fields['tables'] as $table_name => $table_data ){
+			$join_table = false;
+			if( $table_name == EM_EVENTS_TABLE ) $join_table = true; // temporary whilst we work out some kinks with metadata
+			if( in_array($table_name, $required_joins) ){
+				$join_table = true;
+			}
+			foreach( $table_data['args'] as $arg ) {
+				$ignore_arg_values = array();
+				if( isset($table_data['ignore_args'][$arg]) ){
+					$ignore_arg_values = is_array($table_data['ignore_args'][$arg]) ? $table_data['ignore_args'][$arg] : array($table_data['ignore_args'][$arg]);
+				}
+				if ( !empty($args[$arg]) && !in_array($args[$arg], $ignore_arg_values) ) {
+					$join_table = true;
+				}elseif( !empty($table_data['empty_args'][$arg]) && isset($args[$arg]) ) {
+					// it could either be an array of 'legit' empty values vs any empty value meaning this table-specific arg isn't used, therefore no join needed
+					if( is_array($table_data['empty_args'][$arg]) ){
+						$join_table = in_array($args[$arg], $table_data['empty_args'][$arg]);
+					}elseif( $args[$arg] !== $table_data['empty_args'][$arg] ){
+						$join_table = true;
+					}
+				}
+				unset($ignore_arg_values);
+			}
+			//check ordering and grouping arguments for precense of location fields requiring a join
+			if( !$join_table ){
+				foreach( array('groupby', 'orderby', 'groupby_orderby') as $arg ){
+					if( !is_array($args[$arg]) ) continue; //ignore this argument if set to false
+					//we assume all these arguments are now array thanks to self::get_search_defaults() cleaning it up
+					foreach( $args[$arg] as $field_name ){
+						if( !empty($accepted_fields['tables'][$table_name]['fields']) && in_array($field_name, $accepted_fields['tables'][$table_name]['fields']) ){
+							$join_table = true;
+							break; //we join, no need to keep searching
+						}elseif( !empty($table_data['orderby_extras'][$field_name]) ){
+							// account for meta joins, which requires a cheeky condition insertion here instead
+							$optional_joins[$table_name] = $wpdb->prepare($table_data['join'], $table_data['orderby_extras'][$field_name]);
+							$join_table = true;
+							break; //we join, no need to keep searching
+						}
+					}
+				}
+			}
+			if( $join_table ){
+				// check if there's any other required joins
+				if( !empty($table_data['requires']) ) {
+					$required_joins[] = $table_data['requires'];
+				}
+				if( empty($optional_joins[$table_name]) ) {
+					$optional_joins[ $table_name ] = $table_data['join'];
+				}
+			}
+		}
+		//plugins can override this optional joining behaviour here in case they add custom WHERE conditions or something like that
+		$optional_joins = apply_filters('em_bookings_get_optional_joins', array_reverse($optional_joins), $args, $accepted_fields);
+		
 		//Create the SQL statement and execute
 		$sql = apply_filters('em_bookings_get_sql',"
-			SELECT $selectors FROM $bookings_table 
-			LEFT JOIN $events_table ON {$events_table}.event_id={$bookings_table}.event_id 
-			LEFT JOIN $locations_table ON {$locations_table}.location_id={$events_table}.location_id
+			SELECT $selectors FROM $bookings_table
+			". implode("\r\n", $optional_joins)."
 			$where
 			$orderby_sql
 			$limit $offset
@@ -738,10 +793,147 @@ class EM_Bookings extends EM_Object implements Iterator, ArrayAccess {
 		return ( defined('EM_FORCE_REGISTRATION') || self::$force_registration );
 	}
 	
+	public static function get_sql_accepted_fields(){
+		$EM_Booking = new EM_Booking();
+		$EM_Event = new EM_Event();
+		$EM_Location = (new EM_Location())->get_fields(true);
+		$accepted_fields = array(
+			'tables' => array(
+				/* WIP - Meta will work like this to allow re-ordring by custom data, paused temporarily to sort out inconcsistencies with stored data in WP Users vs. meta for guests
+				// see event table key for docs on each array item
+				EM_TICKETS_BOOKINGS_META_TABLE => array(
+					'args' => array(),
+					'join' => "LEFT JOIN ".EM_TICKETS_BOOKINGS_META_TABLE." ON ".EM_TICKETS_BOOKINGS_META_TABLE.".ticket_booking_id=".EM_TICKETS_BOOKINGS_TABLE.".ticket_booking_id",
+					'requires' => EM_TICKETS_BOOKINGS_TABLE,
+					// see booking meta, could add custom attendee data the same way
+				),
+				EM_TICKETS_TABLE => array(
+					'args' => array('ticket_id'),
+					'join' => "LEFT JOIN ".EM_TICKETS_TABLE." ON ".EM_TICKETS_TABLE.".event_id=".EM_EVENTS_TABLE.".event_id",
+					'requires' => EM_TICKETS_BOOKINGS_TABLE,
+					'fields' => (new EM_Ticket())->get_fields(true),
+				),
+				EM_TICKETS_BOOKINGS_TABLE => array(
+					'args' => array(),
+					'join' => "LEFT JOIN ".EM_TICKETS_BOOKINGS_TABLE." ON ". EM_BOOKINGS_TABLE.".booking_id=".EM_BOOKINGS_META_TABLE.".booking_id",
+					'fields' => (new EM_Ticket_Booking())->get_fields(true),
+				),
+				EM_BOOKINGS_META_TABLE => array(
+					'args' => array(),
+					'join' => "LEFT JOIN ".EM_BOOKINGS_META_TABLE." ON ".EM_BOOKINGS_TABLE.".booking_id=".EM_BOOKINGS_META_TABLE.".booking_id AND meta_key=%s",
+					'fields' => array(
+						'user_name' => 'meta_value',
+						'user_email' => 'meta_value',
+					),
+					'orderby_extras' => array(
+						'user_name' => '_registration_user_name',
+						'user_email' => '_registration_user_email',
+					),
+				),
+				/**/
+				EM_LOCATIONS_TABLE => array(
+					'args' => array('town', 'state', 'country', 'region', 'near', 'geo', 'search', 'location_status'), // if we have these we need to join
+					'join' => "LEFT JOIN ".EM_LOCATIONS_TABLE." ON ".EM_LOCATIONS_TABLE.".location_id=".EM_EVENTS_TABLE.".location_id",
+					'requires' => EM_EVENTS_TABLE,
+					'fields' => (new EM_Location())->get_fields(true),
+				),
+				EM_EVENTS_TABLE => array(
+					// accepted args that would require events table to be joined
+					'args' => array('scope', 'timezone', 'status', 'recurring', 'private', 'private_only', 'post_id', 'mode', 'has_location', 'no_location', 'event_location_type', 'has_event_location', 'category', 'tag', 'event_status','recurrence', 'recurrences', 'month', 'year', 'owner', 'language'),
+					// any args that may have a specific empty value that still means it's 'set', could also be an array of empty value types
+					'empty_args' => array('status' => false ),
+					// any args here that match the value or that within the array of values will be considered as ignored, for example scope 'all' doesn't actually require any SQL conditions
+					'ignore_args' => array('scope' => 'all'),
+					// the JOIN SQL required to join this table
+					'join' => "LEFT JOIN ".EM_EVENTS_TABLE." ON ".EM_BOOKINGS_TABLE.".event_id=".EM_EVENTS_TABLE.".event_id",
+					// field names with shortcut field name as key
+					'fields' => (new EM_Event())->get_fields(true),
+					// name of table (or array of tables) this join would also require, if joining based on a dependent table that links it to bookings
+					'requires' => null,
+				),
+			),
+			'prefixes' => array(
+				EM_EVENTS_TABLE => 'event',
+				EM_LOCATIONS_TABLE => 'location',
+				EM_TICKETS_TABLE => 'ticket',
+				EM_BOOKINGS_META_TABLE => 'booking_meta',
+				EM_TICKETS_BOOKINGS_TABLE => 'ticket_booking',
+				EM_TICKETS_BOOKINGS_META_TABLE => 'ticket_booking_meta',
+			),
+			'orderby' => array_combine(array_keys($EM_Booking->fields), array_keys($EM_Booking->fields)), // maps field names to absolute DB field names
+		);
+		$accepted_fields['orderby']['booking_date'] = 'booking_date'; // not covered in fields array
+		// reserved field names that the main object here has right to, other tables use full or prefix with type to map orderby fields
+		$reserved_field_names = array(
+			'spaces', 'post_id', 'blog_id', 'post_content', 'content', 'slug', 'name', 'owner', 'status', 'private', 'language', 'parent', 'translation', 'attributes', 'date_created', 'date_modified',
+		);
+		// go through each table and add to accepted fields. Go in reverse as preference is from least to greatest (for joining dependences optimally)
+		foreach( $accepted_fields['tables'] as $table_name => $table_data ){
+			if( !empty($table_data['fields']) ){
+				foreach( $table_data['fields'] as $field_key => $field_name ){
+					if( in_array($field_key, $reserved_field_names) || !empty($accepted_fields['orderby'][$field_name]) ){
+						$prefix = $accepted_fields['prefixes'][$table_name];
+						$field_name_unique = in_array($field_name, $reserved_field_names) ? $prefix . '_' . $field_name : $field_name;
+						$accepted_fields['orderby'][$field_name_unique] = $table_name.'.'.$field_name;
+					}else{
+						if( !empty($table_data['orderby_extras'][$field_key]) ){
+							// special meta table, so we map the key even though it's not a real field
+							if( empty($accepted_fields['orderby'][$field_key]) ){
+								// duplicates will just be ignored, at this point overriders should be more specific
+								$accepted_fields['orderby'][$field_key] = $table_name.'.'.$field_name;
+							}
+						}else{
+							$accepted_fields['orderby'][$field_name] = $table_name.'.'.$field_name;
+						}
+					}
+				}
+			}
+		}
+		return $accepted_fields;
+		$event_fields = $EM_Event->get_fields(true);
+		$location_fields = $EM_Location->get_fields(true); //will contain location-specific fields, not ambiguous ones
+		// location fields will clash, so they may need special treatment
+		foreach( $location_fields as $field_key => $field_name ){
+			if( in_array($field_name, $event_fields) ){
+				// event takes priority
+				unset($location_fields[$field_key]);
+			}
+			if( empty($event_fields[$field_name]) ){ // map it in entire long-handed name
+				$location_fields[$field_name] = $field_name;
+			}else{
+				$location_fields['location_'.$field_name] = EM_LOCATIONS_TABLE.'.'.$field_name;
+			}
+		}
+		$accepted_fields['tables'] = array(
+			EM_BOOKINGS_TABLE => $EM_Booking->get_fields(true),
+			EM_EVENTS_TABLE => $event_fields,
+			EM_LOCATIONS_TABLE => $location_fields,
+		);
+		$accepted_fields['orderby']['date'] = 'booking_date';
+		if( get_option('dbem_locations_enabled') ){
+			$accepted_fields = array_merge($location_fields, $event_fields, $accepted_fields);
+		}else{
+			//if locations disabled then we don't accept location-specific fields
+			$accepted_fields = array_merge($event_fields, $accepted_fields);
+		}
+	}
+	
+	public static function build_sql_groupby_orderby( $args, $accepted_fields, $default_order = 'ASC' ) {
+		return parent::build_sql_groupby_orderby( $args, $accepted_fields, $default_order ); // TODO: Change the autogenerated stub
+	}
+	
+	/* Overrides EM_Object method to apply a filter to result
+	 * @see wp-content/plugins/events-manager/classes/EM_Object#build_sql_orderby()
+	 */
+	public static function build_sql_orderby( $args, $accepted_fields, $default_order = 'ASC' ){
+		return apply_filters( 'em_bookings_build_sql_orderby', parent::build_sql_orderby($args, $accepted_fields, get_option('dbem_bookings_default_order','booking_date')), $args, $accepted_fields, $default_order );
+	}
+	
 	/* Overrides EM_Object method to apply a filter to result
 	 * @see wp-content/plugins/events-manager/classes/EM_Object#build_sql_conditions()
 	 */
 	public static function build_sql_conditions( $args = array() ){
+		global $wpdb;
 		$conditions = apply_filters( 'em_bookings_build_sql_conditions', parent::build_sql_conditions($args), $args );
 		if( is_numeric($args['status']) ){
 			$conditions['status'] = 'booking_status='.$args['status'];
@@ -761,22 +953,20 @@ class EM_Bookings extends EM_Object implements Iterator, ArrayAccess {
 			}
 		}
 		if( empty($conditions['event']) && $args['event'] === false ){
-		    $conditions['event'] = EM_BOOKINGS_TABLE.'.event_id != 0';
+			$conditions['event'] = EM_BOOKINGS_TABLE.'.event_id != 0';
+		}
+		if( !empty($args['search']) ){
+			$conditions['search'] = $wpdb->prepare(EM_BOOKINGS_TABLE.'.person_id IN (SELECT user_id FROM '.$wpdb->usermeta ." WHERE meta_value LIKE %s)", '%'.$args['search'].'%');
+			$conditions['search'] .= ' OR ' . $wpdb->prepare(EM_BOOKINGS_TABLE.'.booking_id IN (SELECT booking_id FROM '.EM_BOOKINGS_META_TABLE." WHERE meta_value LIKE %s)", '%'.$args['search'].'%');
+			$conditions['search'] = '('.$conditions['search'].')';
 		}
 		if( is_numeric($args['ticket_id']) ){
-		    $EM_Ticket = new EM_Ticket($args['ticket_id']);
-		    if( $EM_Ticket->can_manage() ){
+			$EM_Ticket = new EM_Ticket($args['ticket_id']);
+			if( $EM_Ticket->can_manage() ){
 				$conditions['ticket'] = EM_BOOKINGS_TABLE.'.booking_id IN (SELECT booking_id FROM '.EM_TICKETS_BOOKINGS_TABLE." WHERE ticket_id='{$args['ticket_id']}')";
-		    }
+			}
 		}
 		return apply_filters('em_bookings_build_sql_conditions', $conditions, $args);
-	}
-	
-	/* Overrides EM_Object method to apply a filter to result
-	 * @see wp-content/plugins/events-manager/classes/EM_Object#build_sql_orderby()
-	 */
-	public static function build_sql_orderby( $args, $accepted_fields, $default_order = 'ASC' ){
-		return apply_filters( 'em_bookings_build_sql_orderby', parent::build_sql_orderby($args, $accepted_fields, get_option('dbem_bookings_default_order','booking_date')), $args, $accepted_fields, $default_order );
 	}
 	
 	/* 
@@ -801,23 +991,23 @@ class EM_Bookings extends EM_Object implements Iterator, ArrayAccess {
 			$defaults = array_merge($defaults, $array_or_defaults);
 		}
 		//clean up array value
-		if( !empty($args['array']) ){
+		if( !empty($array['array']) ){
 			$EM_Booking = new EM_Booking();
-			if( is_array($args['array']) ){
+			if( is_array($array['array']) ){
 				$clean_arg = array();
-				foreach( $args['array'] as $k => $field ){
+				foreach( $array['array'] as $k => $field ){
 					if( array_key_exists($field, $EM_Booking->fields) ){
 						$clean_arg[] = $field;
 					}
 				}
-				$args['array'] = !empty($clean_arg) ? $clean_arg : true; //if invalid args given, just return all fields
-			}elseif( is_string($args['array']) && array_key_exists($args['array'], $EM_Booking->fields) ){
-				$args['array'] = array($args['array']);
+				$array['array'] = !empty($clean_arg) ? $clean_arg : true; //if invalid args given, just return all fields
+			}elseif( is_string($array['array']) && array_key_exists($array['array'], $EM_Booking->fields) ){
+				$array['array'] = array($array['array']);
 			}else{
-				$args['array'] = true;
+				$array['array'] = true;
 			}
 		}else{
-			$args['array'] = false;
+			$array['array'] = false;
 		}
 		//figure out default owning permissions
 		if( !current_user_can('edit_others_events') ){

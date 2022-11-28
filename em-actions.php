@@ -655,7 +655,7 @@ function em_init_actions() {
 		}
 	}
 	//Export CSV - WIP
-	if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'export_bookings_csv' && wp_verify_nonce($_REQUEST['_wpnonce'], 'export_bookings_csv')){
+	if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'export_bookings_csv' && wp_verify_nonce($_REQUEST['_emnonce'], 'export_bookings_csv')){
 		if( !empty($_REQUEST['event_id']) ){
 			$EM_Event = em_get_event( absint($_REQUEST['event_id']) );
 		}
@@ -721,12 +721,36 @@ add_action('init','em_init_actions',11);
  * Handles AJAX Bookings admin table filtering, view changes and pagination
  */
 function em_ajax_bookings_table(){
-    check_admin_referer('em_bookings_table');
-	$EM_Bookings_Table = new EM_Bookings_Table();
-	$EM_Bookings_Table->output_table();
+	if( !empty($_REQUEST['_emnonce']) && check_admin_referer('em_bookings_table', '_emnonce') ){
+		$EM_Bookings_Table = new EM_Bookings_Table();
+		$EM_Bookings_Table->display();
+	}else{
+		check_admin_referer('em_bookings_table');
+		$EM_Bookings_Table = new EM_Bookings_Table();
+		$EM_Bookings_Table->output_table();
+	}
 	exit();
 }
 add_action('wp_ajax_em_bookings_table','em_ajax_bookings_table');
+
+function em_ajax_bookings_table_row(){
+	if( !empty($_REQUEST['_emnonce']) && check_admin_referer('em_bookings_table', '_emnonce') && !empty($_REQUEST['row_action']) ){
+		$allowed_actions = array('bookings_approve'=>'approve','bookings_reject'=>'reject','bookings_unapprove'=>'unapprove', 'bookings_delete'=>'delete');
+		$EM_Booking = ( !empty($_REQUEST['booking_id']) ) ? em_get_booking($_REQUEST['booking_id']) : em_get_booking();
+		if( array_key_exists($_REQUEST['row_action'], $allowed_actions) && $EM_Booking->can_manage('manage_bookings','manage_others_bookings') ){
+			//Event Admin only actions
+			$action = $allowed_actions[$_REQUEST['row_action']];
+			$result = $EM_Booking->$action();
+			if( !$result ){
+				$EM_Booking->feedback_message = '<span style="color:red">'.$EM_Booking->feedback_message.'</span>';
+			}
+			$EM_Bookings_Table = new EM_Bookings_Table();
+			$EM_Bookings_Table->single_row( $EM_Booking );
+			die();
+		}
+	}
+}
+add_action('wp_ajax_em_bookings_table_row','em_ajax_bookings_table_row');
 
 /**
  * Handles AJAX Searching and Pagination for events, locations, tags and categories

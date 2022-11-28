@@ -14,6 +14,15 @@
 	@import 'partials/libraries';
 	@import 'partials/buttons';
 	@import 'partials/selectize';
+	.em {
+		* {
+			box-sizing: border-box;
+		}
+		@import "assets/pixelbones.vars";
+		@import "assets/pixelbones";
+		@import 'partials/modal';
+		@import "partials/list-tables";
+	}
 
 	--button-icon-padding : 10px !important;
 

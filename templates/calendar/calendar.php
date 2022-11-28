@@ -32,3 +32,18 @@ $events = array(); // used in two templates
 	include($preview_section_template);
 	?>
 </div>
+<?php
+/*
+	The following is a quick resize for calenadars that force an event aspect quickly avoiding as much jank as possible. This is still redone via resizeObserver in events-manager.js but it takes longer
+	Sizing with grids present issues if using aspect-ratio and grid-auto-rows: 1fr. This is the most reliable way to do it with minimum heights, otherwise we experience overflow with high calendar date cells (many events on one date)
+*/
+?>
+<script>
+	{
+		let el = document.getElementById('em-calendar-<?php echo $id ?>').querySelector('.em-cal-body');
+		let width = el.firstElementChild.getBoundingClientRect().width;
+		if (width > 0) {
+			el.style.setProperty('--grid-auto-rows', 'minmax(' + width + 'px, auto)');
+		}
+	}
+</script>

@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Events Manager
-Version: 6.1.4
+Version: 6.1.5
 Plugin URI: https://wp-events-plugin.com
 Description: Event registration and booking management for WordPress. Recurring events, locations, webinars, google maps, rss, ical, booking registration and more!
 Author: Pixelite
@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 // Setting constants
-define('EM_VERSION', '6.1.4'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
+define('EM_VERSION', '6.1.5'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
 define('EM_PRO_MIN_VERSION', '3.0'); //self expanatory
 define('EM_PRO_MIN_VERSION_CRITICAL', '3.0'); //self expanatory
 define('EM_DIR', dirname( __FILE__ )); //an absolute path to this directory
@@ -92,6 +92,7 @@ if( get_option('dbem_locations_enabled') ){
 }
 include("widgets/em-calendar.php");
 //Classes
+include('classes/em-list-table.php');
 include('classes/em-booking.php');
 include('classes/em-bookings.php');
 include("classes/em-bookings-table.php") ;
@@ -318,7 +319,14 @@ class EM_Scripts_and_Styles {
 			self::localize_script();
     		do_action('em_enqueue_scripts');
         }
-        
+		// list tables dependencies
+		$style_deps = array();
+		/*
+		if( (!empty($pages['edit-bookings']) && is_page($pages['edit-bookings'])) || get_option('dbem_js_limit_edit_bookings') === '0' || in_array($obj_id, explode(',', get_option('dbem_js_limit_edit_bookings'))) ){
+			$script_deps[] = 'list-tables';
+			$style_deps[] = 'list-tables';
+		}
+		*/
 		//Now decide on showing the CSS file
 		$min = !((defined('WP_DEBUG') && WP_DEBUG) || (defined('EM_DEBUG') && EM_DEBUG)) ? '.min':'';
 		if( get_option('dbem_css_limit') ){
@@ -331,11 +339,11 @@ class EM_Scripts_and_Styles {
 				$exclude = true;
 			}
 			if( !empty($include) && empty($exclude) ){
-			    wp_enqueue_style('events-manager', plugins_url('includes/css/events-manager'.$min.'.css',__FILE__), array(), EM_VERSION); //main css
+			    wp_enqueue_style('events-manager', plugins_url('includes/css/events-manager'.$min.'.css',__FILE__), $style_deps, EM_VERSION); //main css
 	    		do_action('em_enqueue_styles');
 			}
 		}else{
-			wp_enqueue_style('events-manager', plugins_url('includes/css/events-manager'.$min.'.css',__FILE__), array(), EM_VERSION); //main css
+			wp_enqueue_style('events-manager', plugins_url('includes/css/events-manager'.$min.'.css',__FILE__), $style_deps, EM_VERSION); //main css
 	    	do_action('em_enqueue_styles');
 		}
 	}
@@ -367,7 +375,7 @@ class EM_Scripts_and_Styles {
 			wp_enqueue_script('events-manager', plugins_url('includes/js/events-manager'.$min.'.js',__FILE__), array('jquery', 'jquery-ui-core','jquery-ui-widget','jquery-ui-position','jquery-ui-sortable','jquery-ui-datepicker','jquery-ui-dialog','wp-color-picker'), EM_VERSION);
 		    do_action('em_enqueue_admin_scripts');
 			wp_enqueue_style('events-manager-admin', plugins_url('includes/css/events-manager-admin'.$min.'.css',__FILE__), array(), EM_VERSION);
-			if( empty($_REQUEST['page']) || $_REQUEST['page'] != 'events-manager-bookings' ) {
+			if( empty($_REQUEST['page']) ) {
 				wp_enqueue_style('events-manager', plugins_url('includes/css/events-manager' . $min . '.css', __FILE__), array(), EM_VERSION); //main css
 			}
 			do_action('em_enqueue_admin_styles');
@@ -748,6 +756,7 @@ function em_locate_template( $template_name, $load=false, $the_args = array() ) 
 function em_get_template_components_classes( $component ){
 	$component_classes = array('em-' . $component);
 	$show_theme_class = 1;
+	$show_theme_class_admin = 1;
 	switch( $component ){
 		// Calendar
 		case 'calendar':
@@ -802,6 +811,7 @@ function em_get_template_components_classes( $component ){
 		// Admin Areas
 		case 'bookings-admin':
 			$show_theme_class = get_option('dbem_css_rsvpadmin');
+			$show_theme_class_admin = 0;
 			break;
 		case 'event-editor':
 			array_unshift($component_classes, 'em-event-admin-editor'); // backwards compat
@@ -818,7 +828,7 @@ function em_get_template_components_classes( $component ){
 			$show_theme_class = get_option('dbem_css_myrsvp'); // we don't need pixelbones
 			break;
 	}
-	return array('classes' => $component_classes, 'use_theme' => absint($show_theme_class) );
+	return array('classes' => $component_classes, 'use_theme' => absint($show_theme_class), 'use_theme_admin' => $show_theme_class_admin );
 }
 
 /**
@@ -838,7 +848,7 @@ function em_get_template_classes($component, $subcomponents = array(), $just_sub
 		$component_data = em_get_template_components_classes($component);
 	}else{
 		// we assume here that we're looking here for subcomponent classes, nothing more
-		$component_data = array('classes' => array(), 'use_theme' => 0);
+		$component_data = array('classes' => array(), 'use_theme' => 0, 'use_theme_admin' => 0);
 	}
 	// get additional components
 	$subcomponent_classes = $subcomponents_data = array();
@@ -855,11 +865,14 @@ function em_get_template_classes($component, $subcomponents = array(), $just_sub
 	$base_classes = array();
 	$theme = 'pixelbones';
 	if( is_admin() && (!defined('EM_DOING_AJAX') || !EM_DOING_AJAX) ){
-		$base_classes = array('em', $theme);
+		$base_classes = array('em');
+		if( !empty($component_data['use_theme_admin']) ){
+			$base_classes[] = $theme;
+		}
 	}elseif( get_option('dbem_css') ) {
 		if( $component_data['use_theme'] ){
 			$base_classes[] = 'em'; // our base class
-			if( $component_data['use_theme'] !== 2 && get_option('dbem_css_theme') ) {
+			if( $component_data['use_theme'] !== 2 && get_option('dbem_css_theme') && !is_admin() ) {
 				$base_classes[] = $theme;
 			} // if greater than 1 then it won't include pixelbones
 		}

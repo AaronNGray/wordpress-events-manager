@@ -315,23 +315,11 @@ class EM_Admin_Modals {
 	
 	public static function admin_enqueue_scripts(){
 		if( !current_user_can('update_plugins') ) return;
-		// show promotion
+		// show modal
 		$data = is_multisite() ? get_site_option('dbem_data') : get_option('dbem_data');
 		if( !empty($data['admin-modals']) ){
 			$show_plugin_pages = !empty($_REQUEST['post_type']) && in_array($_REQUEST['post_type'], array(EM_POST_TYPE_EVENT, EM_POST_TYPE_LOCATION, 'event-recurring'));
 			$show_network_admin = is_network_admin() && !empty($_REQUEST['page']) && preg_match('/^events\-manager\-/', $_REQUEST['page']);
-			$pro_license_active = defined('EMP_VERSION');
-			if( $pro_license_active ){
-				$key = get_option('dbem_pro_api_key');
-				$pro_license_active = !(empty($key['until']) || $key['until'] < 1668240000);
-			}
-			if( time() < 1668067200 && !empty($data['admin-modals']['promo-popup']) && !$pro_license_active) {
-				if( $data['admin-modals']['promo-popup'] == 1 || ($data['admin-modals']['promo-popup'] == 2 && ($show_plugin_pages || $show_network_admin) ) ) {
-					// enqueue script and load popup action
-					if( !wp_script_is('events-manager-admin') ) EM_Scripts_and_Styles::admin_enqueue(true);
-					add_filter('admin_footer', 'EM_Admin_Modals::promo_popup');
-				}
-			}
 			// show review nudge
 			if( !empty($data['admin-modals']['review-nudge']) && $data['admin-modals']['review-nudge'] < time() ) {
 				if( $show_plugin_pages || $show_network_admin ) {
@@ -371,41 +359,6 @@ class EM_Admin_Modals {
 							Leave a Review
 							<img src="<?php echo EM_DIR_URI . '/includes/images/five-stars.svg'; ?>" style="max-height:10px; width:50px; margin-left:5px;">
 						</a>
-					</div>
-				</footer>
-			</div><!-- modal -->
-		</div>
-		<?php
-		static::output_js();
-	}
-	
-	public static function promo_popup(){
-		// check admin data and see if show data is still enabled
-		?>
-		<div class="em pixelbones em-modal <?php em_template_classes('search', 'search-advanced'); ?> em-admin-modal" id="em-promo-popup" data-nonce="<?php echo wp_create_nonce('em-promo-popup'); ?>">
-			<div class="em-modal-popup">
-				<header>
-					<a class="em-close-modal dismiss-modal" href="#"></a><!-- close modal -->
-					<div class="em-modal-title">Events Manager - Prices going up this week!</div>
-				</header>
-				<div class="em-modal-content has-image" style="--font-size:16px;">
-					<div>
-						<p>Pardon the interruption.... we'd like to make sure you're aware of an important announcement about our prices of the <a href="https://eventsmanagerpro.com/?utm_source=events-manager&utm_medium=plugin-popup&utm_campaign=plugins" target="_blank">Events Manager Pro</a> add-on.</p>
-						<p>On <strong><em>November 10th 2022</em></strong>, we'll be increasing our prices <em>for the first time ever</em> since we first released Pro in 2010.</p>
-						<p><strong>Any licenses purchased before the price change will lock in the current price for renewing your license, which is why we're letting you know now.</strong></p>
-						<p>We hope you're enjoying the plugin and if you're at all considering going Pro, you still have time to make the best of this limited opportunity!</p>
-						<p><a href="https://wp-events-plugin.com/upcoming-price-increase-2022/?utm_source=events-manager&utm_medium=plugin-popup&utm_campaign=plugins" target="_blank">View the full announement here.</a></p>
-					</div>
-					<div class="image">
-						<img src="<?php echo EM_DIR_URI . '/includes/images/events-manager.svg'; ?>">
-						<a href="https://eventsmanagerpro.com/gopro/?utm_source=events-manager&utm_medium=plugin-popup&utm_campaign=plugins" class="button button-primary input" target="_blank" style="margin:10px auto; --accent-color:#429543; --accent-color-hover:#429543;">Go Pro!</a>
-					</div>
-				</div><!-- content -->
-				<footer class="em-submit-section input">
-					<div>
-					</div>
-					<div>
-						<button class="button button-secondary dismiss-modal">Dismiss Notice</button>
 					</div>
 				</footer>
 			</div><!-- modal -->

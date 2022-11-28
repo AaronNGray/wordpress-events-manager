@@ -23,7 +23,7 @@ function em_bookings_page(){
 	//First any actions take priority
 	do_action('em_bookings_admin_page');
 	if( !empty($_REQUEST['_wpnonce']) ){ $_REQUEST['_wpnonce'] = $_GET['_wpnonce'] = $_POST['_wpnonce'] = esc_attr($_REQUEST['_wpnonce']); } //XSS fix just in case here too
-	if( !empty($_REQUEST['action']) && substr($_REQUEST['action'],0,7) != 'booking' ){ //actions not starting with booking_
+	if( !empty($_REQUEST['action']) && substr($_REQUEST['action'],0,7) != 'booking' && $_REQUEST['action'] !== 'em_bookings_table' ){ //actions not starting with booking_
 		?>
 		<div class="wrap em-bookings-admin-custom-<?php esc_attr($_REQUEST['action']); ?> <?php em_template_classes('bookings-admin'); ?>">
 			<div class="input">
@@ -62,8 +62,11 @@ function em_bookings_dashboard(){
 			<h2><?php esc_html_e('Recent Bookings','events-manager'); ?></h2>
 	  		<?php
 			$EM_Bookings_Table = new EM_Bookings_Table();
-			$EM_Bookings_Table->status = get_option('dbem_bookings_approval') ? 'needs-attention':'confirmed';
-			$EM_Bookings_Table->output();
+		    if( is_admin() ) {
+			    $EM_Bookings_Table->display();
+		    }else{
+			    $EM_Bookings_Table->output();
+		    }
 	  		?>
   		</div>
   		<br class="clear" />
@@ -136,7 +139,11 @@ function em_bookings_event(){
 			<?php
 			$EM_Bookings_Table = new EM_Bookings_Table();
 			$EM_Bookings_Table->status = 'all';
-			$EM_Bookings_Table->output();
+			if( is_admin() ) {
+				$EM_Bookings_Table->display();
+			}else{
+				$EM_Bookings_Table->output();
+			}
 	        ?>
 			<?php do_action('em_bookings_event_footer', $EM_Event); ?>
 		</div>
@@ -189,7 +196,11 @@ function em_bookings_ticket(){
 			<?php
 			$EM_Bookings_Table = new EM_Bookings_Table();
 			$EM_Bookings_Table->status = get_option('dbem_bookings_approval') ? 'needs-attention':'confirmed';
-			$EM_Bookings_Table->output();
+			if( is_admin() ) {
+				$EM_Bookings_Table->display();
+			}else{
+				$EM_Bookings_Table->output();
+			}
 	        ?>
 			<?php do_action('em_bookings_ticket_footer', $EM_Ticket); ?>
 		</div>
@@ -617,7 +628,11 @@ function em_bookings_person(){
 		$EM_Bookings_Table = new EM_Bookings_Table();
 		$EM_Bookings_Table->status = 'all';
 		$EM_Bookings_Table->scope = 'all';
-		$EM_Bookings_Table->output();
+		if( is_admin() ) {
+			$EM_Bookings_Table->display();
+		}else{
+			$EM_Bookings_Table->output();
+		}
   		?>
 		<?php do_action('em_bookings_person_footer', $EM_Person); ?>
 		</div>

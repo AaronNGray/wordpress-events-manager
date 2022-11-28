@@ -199,11 +199,10 @@
 	.em-cal-body {
 		--grid-auto-rows : auto;
 
+		grid-auto-rows: var(--grid-auto-rows); // we'll adjust this one depending on size of calendar via @media and CSS/JS class flags
+
 		border-bottom: var(--date-box-border);
 		background-color: var(--calendar-background);
-
-		grid-template-rows: 1fr;
-		grid-auto-rows: var(--grid-auto-rows); // we'll adjust this one depending on size of calendar via @media and CSS/JS class flags
 
 		.em-cal-day {
 			text-align: right;
@@ -281,13 +280,14 @@
 		--- Display Option Flags ---
 		*/
 
-		/* Display date cells with even height */
+		/* Display date cells with even height, taking the highest cell as the minimum height */
 		&.even-height {
 			grid-template-rows: 1fr;
 			grid-auto-rows: 1fr;
 		}
 		&.even-aspect .em-cal-day {
-			aspect-ratio: 1/1;
+			// previously used aspect-ratio, changed to use JS minmax sizing for grid-auto-rows, otherwise high cells will cause an overflow page widths
+			//aspect-ratio: 1/1;
 		}
 
 		/* Event Items in Pill Form */

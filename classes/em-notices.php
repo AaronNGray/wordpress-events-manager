@@ -48,6 +48,10 @@
         	}
         	return $redirect;
         }
+		
+		function display(){
+			echo $this;
+		}
         
         function __toString(){
             $string = false;
