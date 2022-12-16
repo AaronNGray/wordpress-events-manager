@@ -3627,9 +3627,9 @@ class EM_Event extends EM_Object{
 			'status' => $this->event_private,
 			'content' => $this->post_content,
 			'bookings' => array (
-				'end_date' => '$this->event_rsvp_date',
-				'end_time' => '$this->event_rsvp_time',
-				'rsvp_spaces' => '$this->event_rsvp_spaces',
+				'end_date' => $this->event_rsvp_date,
+				'end_time' => $this->event_rsvp_time,
+				'rsvp_spaces' => $this->event_rsvp_spaces,
 				'spaces' => $this->event_spaces,
 			),
 			'when' => array(

@@ -2,7 +2,7 @@
 /**
  * Performs actions on init. This works for both ajax and normal requests, the return results depends if an em_ajax flag is passed via POST or GET.
  */
-function em_init_actions() {
+function em_init_actions_start() {
 	global $wpdb,$EM_Notices,$EM_Event; 
 	if( defined('DOING_AJAX') && DOING_AJAX ) $_REQUEST['em_ajax'] = true;
 	
@@ -715,7 +715,19 @@ function em_init_actions() {
 		exit();
 	}
 }
-add_action('init','em_init_actions',11);
+
+/**
+ * New action to handle init of EM. It is now being fired in wp_loaded rather than init, the below will either queue up the em_init_actions_start() (previously the em_init_actions() function) if wp_loaded hasn't fired yet, or execute it if added later for whatever reason.
+ * @return void
+ */
+function em_init_actions(){
+	if( !did_action('wp_loaded') ){
+		add_action('wp_loaded', 'em_init_actions_start', 11);
+	}else{
+		em_init_actions_start();
+	}
+}
+add_action('init', 'em_init_actions', 11);
 
 /**
  * Handles AJAX Bookings admin table filtering, view changes and pagination

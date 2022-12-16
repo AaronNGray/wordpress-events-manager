@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 6.1
-Stable tag: 6.1.5
+Stable tag: 6.1.6
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
@@ -95,6 +95,18 @@ We have a premium [Pro add-on for Events Manager](http://eventsmanagerpro.com/go
 
 For more information or to go pro, [visit our plugin website](http://wp-events-plugin.com/features/).
 
+= Additional Plugin Integrations =
+
+Whilst there's many third party integrations with our own plugin, here's some we've integrated ourselves!
+
+* Included in Events Manager (automatic integration)
+ * [BuddyPress](https://wordpress.org/plugins/buddypress/)
+ * [WP FullCalendar](https://wordpress.org/plugins/wp-fullcalendar/)
+ * [Thrive Automator](https://wordpress.org/plugins/thrive-automator/)
+* Additional Add-Ons
+ * [Zoom](https://wordpress.org/plugins/events-manager-zoom/)
+ * [WPML Multilingual Sites](https://wordpress.org/plugins/events-manager-wpml/)
+
 == Installation ==
 
 Events Manager works like any standard Wordpress plugin, and requires little configuration to start managing events. If you get stuck, visit the our documentation and support forums.
@@ -144,6 +156,13 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 15. Clean forms for submitting and managing events, as well as booking events for users.
 
 == Changelog ==
+= 6.1.6 =
+* fixed bookings admin table pagination and action link issues
+* moved AJAX actions from init to wp_loaded
+* fixed potential em_booking_save filter bug still mailing emails if short-circuited with a false result,
+* added em_booking_added to EM_Booking::save() which should now be used for any new booking being added rather than em_booking_save or em_bookings_add
+* added Thrive Automator integration
+
 = 6.1.5 =
 * fixed calendar width display issues due to aspect ratios by shifting aspect min-height calculations into JS
 * added PHP echo functions EM_Notices::display() and EM_Object::json_encode_e()

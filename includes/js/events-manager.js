@@ -316,17 +316,50 @@ jQuery(document).ready( function($){
 		//Pagination link clicks
 		$(document).on('click', '.em-bookings-table .tablenav-pages a', function(){
 			var el = $(this);
-			var form = el.parents('.em-bookings-table form.bookings-filter');
+			var form = el.closest('.em-bookings-table form.bookings-filter');
 			//get page no from url, change page, submit form
 			var match = el.attr('href').match(/#[0-9]+/);
 			if( match != null && match.length > 0){
 				var pno = match[0].replace('#','');
 				form.find('input[name=pno]').val(pno);
 			}else{
-				form.find('input[name=pno]').val(1);
+				// new way
+				let url = new URL(el.attr('href'));
+				if( url.searchParams.has('paged') ){
+					form.find('input[name=pno]').val( url.searchParams.get('paged'));
+					form.find('input[name=paged]').val( url.searchParams.get('paged') );
+				}else{
+					form.find('input[name=pno]').val(1);
+					form.find('input[name=paged]').val(1);
+				}
 			}
 			form.trigger('submit');
 			return false;
+		});
+		$(document).on('change', '.em-bookings-table .tablenav-pages input[name=paged]', function(e){
+			var el = $(this);
+			var form = el.closest('.em-bookings-table form.bookings-filter');
+			var last = form.find('.tablenav-pages a.last-page');
+			if( last.length > 0 ){
+				// check val isn't more than last page
+				let url = new URL(last.attr('href'));
+				if( url.searchParams.has('paged') ){
+					let lastPage = parseInt(url.searchParams.get('paged'));
+					if( parseInt(this.value) > lastPage ){
+						this.value = lastPage;
+					}
+				}
+			}else{
+				// make sure it's less than current page, we're on last page already
+				let lastPage = form.find('input[name=pno]').val();
+				if( lastPage && parseInt(this.value) > parseInt(lastPage) ){
+					this.value = lastPage;
+					e.preventDefault();
+					return false;
+				}
+			}
+			form.find('input[name=pno]').val(this.value);
+			form.trigger('submit');
 		});
 
 		//Settings & Export Modal
@@ -497,7 +530,7 @@ jQuery(document).ready( function($){
 			}
 			let url = em_ajaxify( el.attr('href') );
 			let td = el.parents('td').first();
-			if( td.length > 0 && td.hasClass('actions') ){
+			if( td.length > 0 && (td.hasClass('column-actions') || td.hasClass('em-bt-col-actions')) ){
 				td.html(EM.txt_loading);
 				td.load( url );
 			}else{
@@ -1183,7 +1216,7 @@ function em_setup_datepicker(wrap){
 			dateFormat: "Y-m-d",
 			disableMoble : "true",
 			allowInput : true,
-			onChange : function( selectedDates, dateStr, instance ){
+			onChange : [function( selectedDates, dateStr, instance ){
 				let wrapper = jQuery(instance.input).closest('.em-datepicker');
 				let data_wrapper = wrapper.find('.em-datepicker-data');
 				let inputs = data_wrapper.find('input');
@@ -1229,7 +1262,7 @@ function em_setup_datepicker(wrap){
 				let current_date = data_wrapper.attr('date-value');
 				data_wrapper.attr('data-value', dateStr);
 				if( current_date === dateStr ) data_wrapper.trigger('change');
-			},
+			}],
 			onClose : function( selectedDates, dateStr, instance ){
 				// deal with single date choice and clicking out
 				if( instance.config.mode === 'range' && selectedDates[1] !== undefined ){
@@ -1251,14 +1284,21 @@ function em_setup_datepicker(wrap){
 			datePickerDiv = jQuery(datePickerDiv);
 			datePickerDiv.find('.em-datepicker-data').addClass('hidden');
 			let isRange = datePickerDiv.hasClass('em-datepicker-range');
-			let options = Object.assign({}, datepicker_options); // clone, mainly shallow concern for 'mode'
+			let altOptions = {};
+			if( datePickerDiv.attr('data-datepicker') ){
+				altOptions = JSON.parse(datePickerDiv.attr('data-datepicker'));
+				if( typeof altOptions !== 'object' ){
+					altOptions = {};
+				}
+			}
+			let options = Object.assign({}, datepicker_options, altOptions); // clone, mainly shallow concern for 'mode'
 			options.mode = isRange ? 'range' : 'single';
 			if( isRange && 'onClose' in options ){
-				options.onClose = function( selectedDates, dateStr, instance ){
+				options.onClose = [function( selectedDates, dateStr, instance ){
 					if(selectedDates.length === 1){ // deal with single date choice and clicking out
 						instance.setDate([selectedDates[0],selectedDates[0]], true);
 					}
-				}
+				}];
 			}
 			if( datePickerDiv.attr('data-separator') ) options.locale.rangeSeparator = datePickerDiv.attr('data-separator');
 			if( datePickerDiv.attr('data-format') ) options.altFormat = datePickerDiv.attr('data-format');
@@ -1297,7 +1337,7 @@ function em_setup_datepicker(wrap){
 			}
 		});
 		// fire trigger
-		jQuery(document).triggerHandler('em_flatpickr_loaded');
+		jQuery(document).triggerHandler('em_flatpickr_loaded', [wrap]);
 	}
 }
 function em_setup_timepicker(wrap){

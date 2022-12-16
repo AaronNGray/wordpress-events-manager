@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Events Manager
-Version: 6.1.5
+Version: 6.1.6
 Plugin URI: https://wp-events-plugin.com
 Description: Event registration and booking management for WordPress. Recurring events, locations, webinars, google maps, rss, ical, booking registration and more!
 Author: Pixelite
@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 // Setting constants
-define('EM_VERSION', '6.1.5'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
+define('EM_VERSION', '6.1.6'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
 define('EM_PRO_MIN_VERSION', '3.0'); //self expanatory
 define('EM_PRO_MIN_VERSION_CRITICAL', '3.0'); //self expanatory
 define('EM_DIR', dirname( __FILE__ )); //an absolute path to this directory
@@ -385,11 +385,20 @@ class EM_Scripts_and_Styles {
 			}
 		}
 	}
+	
+	/**
+	 * Returns an optional suffix to use in CSS/JS enqueueing, which is .min if in production mode
+	 *
+	 * @return string
+	 */
+	public static function min_suffix(){
+		return !((defined('WP_DEBUG') && WP_DEBUG) || (defined('EM_DEBUG') && EM_DEBUG)) ? '.min':'';
+	}
 
 	/**
 	 * Localize the script vars that require PHP intervention, removing the need for inline JS.
 	 */
-	public static function localize_script(){
+	public static function localize_script( $script = 'events-manager' ){
 		global $em_localized_js;
 		$locale_code = substr ( get_locale(), 0, 2 );
 		//Localize
@@ -492,7 +501,7 @@ class EM_Scripts_and_Styles {
 			);
 		}
 		$em_localized_js = apply_filters('em_wp_localize_script', $em_localized_js);
-		wp_localize_script('events-manager','EM', $em_localized_js);
+		wp_localize_script($script,'EM', $em_localized_js);
 	}
 }
 EM_Scripts_and_Styles::init();
@@ -546,6 +555,10 @@ function em_plugins_loaded(){
 	}
 	//bbPress
 	if( class_exists( 'bbPress' ) ) include('em-bbpress.php');
+	// other integrations
+	if( class_exists('\Thrive\Automator\Admin') ){
+		include('integrations/thrive-automator/events-manager-thrive-automator.php');
+	}
 }
 add_filter('plugins_loaded','em_plugins_loaded');
 

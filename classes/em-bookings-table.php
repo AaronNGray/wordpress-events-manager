@@ -89,6 +89,7 @@ class EM_Bookings_Table extends EM\List_Table {
 		}
 		$this->limit = ( !empty($_REQUEST['limit']) && is_numeric($_REQUEST['limit'])) ? $_REQUEST['limit'] : 20;//Default limit
 		$this->page = ( !empty($_REQUEST['pno']) && is_numeric($_REQUEST['pno']) ) ? $_REQUEST['pno']:1;
+		$_REQUEST['paged'] = $this->page;
 		$this->offset = ( $this->page > 1 ) ? ($this->page-1)*$this->limit : 0;
 		$this->scope = ( !empty($_REQUEST['scope']) && array_key_exists($_REQUEST ['scope'], em_get_scopes()) ) ? sanitize_text_field($_REQUEST['scope']):'future';
 		$this->status = get_option('dbem_bookings_approval') ? 'needs-attention':'confirmed';
@@ -565,14 +566,14 @@ class EM_Bookings_Table extends EM\List_Table {
 								if( $this->show_tickets ){
 									foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking){
 										$row = $this->get_row($EM_Ticket_Booking);
-										foreach( $row as $row_cell ){
-										?><td><?php echo $row_cell; ?></td><?php
+										foreach( $row as $key => $row_cell ){
+										?><td class="em-bt-col-<?php echo esc_attr($key); ?>"class="em-bt-col-<?php echo esc_attr($key); ?>"><?php echo $row_cell; ?></td><?php
 										}
 									}
 								}else{
 									$row = $this->get_row($EM_Booking);
-									foreach( $row as $row_cell ){
-									?><td><?php echo $row_cell; ?></td><?php
+									foreach( $row as $key => $row_cell ){
+									?><td class="em-bt-col-<?php echo esc_attr($key); ?>"><?php echo $row_cell; ?></td><?php
 									}
 								}
 								?>
@@ -729,7 +730,7 @@ class EM_Bookings_Table extends EM\List_Table {
 				$val = self::sanitize_spreadsheet_cell($val);
 			}
 			//add to cols
-			$cols[] = $val;
+			$cols[$col] = $val;
 		}
 		return $cols;
 	}

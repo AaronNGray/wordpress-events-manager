@@ -341,8 +341,17 @@ class EM_Booking extends EM_Object{
 			$this->compat_keys();
 			$return = apply_filters('em_booking_save', ( count($this->errors) == 0 ), $this, $update);
 			//Final Step: email if necessary after all the saving has been done
-			if ( count($this->errors) == 0  && $mail ) {
+			if ( $return  && $mail ) {
 				$this->email();
+			}
+			if( $return && empty($update) ){
+				/**
+				 * When a booking has been added to an event
+				 *
+				 * @param EM_Booking $this The EM_Booking object just added
+				 * @param boolean $mail If a mail would have been sent (if applicable)
+				 */
+				do_action('em_booking_added', $this, $mail);
 			}
 			return $return;
 		}else{
