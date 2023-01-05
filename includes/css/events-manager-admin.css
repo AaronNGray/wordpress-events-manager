@@ -2481,6 +2481,185 @@
   background: var(--icon-checkmark) 50% 50% white no-repeat;
   background-size: 12px 12px;
 }
+.wp-admin .em-chart.hidden-filters form {
+  display: none;
+}
+.wp-admin .em-chart.hidden-filters .option-triggers {
+  float: none;
+}
+.wp-admin .em-chart .em-chart-header {
+  display: grid;
+  grid-template-columns: auto max-content;
+  align-items: center;
+  margin: 10px 0;
+}
+.wp-admin .em-chart .em-chart-header .em-chart-title {
+  padding-left: 5px;
+  font-size: 16px;
+  font-weight: 500;
+}
+.wp-admin .em-chart .em-chart-header .option-triggers {
+  text-align: right;
+}
+.wp-admin .em-chart .em-chart-header .option-triggers .em-icon {
+  margin: 0 5px;
+}
+.wp-admin .em-chart form section.main-filters {
+  margin: 5px 5px 15px;
+  padding: 10px 0 15px;
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  border-top: 1px solid #dedede;
+  border-bottom: 1px solid #dedede;
+}
+.wp-admin .em-chart form section.main-filters > div:nth-child(2) {
+  margin: 0 15px;
+  padding: 0 15px;
+  border-left: 1px solid #dedede;
+  border-right: 1px solid #dedede;
+}
+.wp-admin .em-chart form section.main-filters > div > :not(:first-child) {
+  margin-top: 10px;
+}
+.wp-admin .em-chart form section.main-filters .dataset-1-metric {
+  display: grid;
+  grid-template-columns: max-content auto;
+  grid-gap: 5px;
+}
+.wp-admin .em-chart form section.main-filters select {
+  width: 100%;
+  max-width: none;
+}
+.wp-admin .em-chart form section.main-filters .em-datepicker {
+  display: none;
+}
+.wp-admin .em-chart form section.main-filters .em-datepicker input.em-date-input {
+  cursor: pointer;
+  margin: 10px 0 0 5px;
+  width: 100%;
+  border-radius: 0 !important;
+  padding-left: 30px !important;
+  background: var(--icon-calendar) 0px 50% no-repeat !important;
+  background-size: 20px !important;
+}
+.wp-admin .em-chart form section.main-filters .em-datepicker input.em-date-input, .wp-admin .em-chart form section.main-filters .em-datepicker input.em-date-input:focus, .wp-admin .em-chart form section.main-filters .em-datepicker input.em-date-input:active {
+  border: none !important;
+  box-shadow: none;
+}
+.wp-admin .em-chart form section.main-filters label {
+  display: block;
+}
+.wp-admin .em-chart form section.main-filters label span {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+.wp-admin .em-chart .em-chart-wrapper {
+  position: relative;
+  margin-top: 20px;
+}
+.wp-admin .em-chart .em-chart-wrapper canvas {
+  max-height: 400px;
+}
+.wp-admin .em-chart .em-chart-wrapper.loading canvas, .wp-admin .em-chart .em-chart-wrapper.loading .em-chart-stats {
+  opacity: 0.2;
+}
+.wp-admin .em-chart .em-chart-wrapper.loading .em-loading {
+  background-color: transparent;
+  filter: none;
+  opacity: 1;
+}
+.wp-admin .em-chart .em-chart-stats {
+  margin-top: 15px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+.wp-admin .em-chart .em-chart-stats > div {
+  border-left: 1px solid #dedede;
+  padding: 0 10px;
+  margin: 10px 0;
+  text-align: center;
+}
+.wp-admin .em-chart .em-chart-stats > div:first-child {
+  border-left: none;
+}
+.wp-admin .em-chart .em-chart-stats > div div {
+  margin-bottom: 8px;
+}
+.wp-admin .em-chart .em-chart-stats > div .title {
+  font-weight: bold;
+  font-size: 16px;
+}
+.wp-admin .em-chart .em-chart-stats > div .total {
+  font-size: 18px;
+}
+.wp-admin .em-chart .em-chart-stats > div .change span:first-child {
+  font-size: 20px;
+  color: #999;
+}
+.wp-admin .em-chart .em-chart-stats > div .change span:first-child.minus {
+  color: red;
+}
+.wp-admin .em-chart .em-chart-stats > div .change span:first-child.plus {
+  color: green;
+}
+.wp-admin .em-chart .em-chart-stats > div span.sub {
+  font-size: 14px;
+  color: #aaa;
+}
+.wp-admin .em-chart:not(.size-small) section.view-options {
+  text-align: left;
+  padding-top: 5px;
+  margin: 10px 5px 15px;
+}
+.wp-admin .em-chart:not(.size-small) section.view-options select {
+  line-height: 1;
+  min-height: 24px;
+  text-transform: lowercase;
+}
+.wp-admin .em-chart:not(.size-small) section.view-options label:first-child span:first-child {
+  text-transform: none;
+}
+.wp-admin .em-chart:not(.size-small) section.view-options span {
+  text-transform: lowercase;
+}
+.wp-admin .em-chart.size-large .em-chart-title {
+  text-align: center;
+}
+.wp-admin .em-chart.size-large section.main-filters {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+.wp-admin .em-chart.size-medium .em-chart-stats {
+  grid-template-columns: repeat(3, 1fr);
+}
+.wp-admin .em-chart.size-medium .em-chart-stats > div:nth-child(4) {
+  border-left: none;
+}
+.wp-admin .em-chart.size-small .option-triggers {
+  float: none;
+}
+.wp-admin .em-chart.size-small form section.main-filters {
+  display: block;
+}
+.wp-admin .em-chart.size-small form section.main-filters > div:nth-child(2) {
+  margin: 15px 0;
+  padding: 15px 0;
+  border: none;
+  border-top: 1px solid #dedede;
+  border-bottom: 1px solid #dedede;
+}
+.wp-admin .em-chart.size-small .em-chart-stats {
+  grid-template-columns: repeat(2, 1fr);
+}
+.wp-admin .em-chart.size-small .em-chart-stats > div:nth-child(2n+1) {
+  border-left: none;
+}
+.wp-admin .em-chart {
+  margin: 20px 0 40px;
+}
+.wp-admin #em_booking_stats .em-chart {
+  margin: 0;
+}
 .wp-admin .em {
   /*
   * PXL Bones v1
@@ -3505,6 +3684,16 @@
 .wp-admin .em.em-modal .em-modal-popup .em-modal-content.has-image > div.image img {
   width: 100%;
 }
+.wp-admin .em.em-modal .em-modal-popup .em-modal-content section header {
+  width: 100%;
+  font-size: 18px;
+  padding: 16px 0 14px;
+  margin: 0;
+  border-bottom: 1px solid #dedede;
+}
+.wp-admin .em.em-modal .em-modal-popup .em-modal-content section > div {
+  margin: 15px 0;
+}
 .wp-admin .em.em-modal .em-modal-popup footer {
   width: 100% !important;
   border-top: 1px solid #dedede !important;
@@ -3626,6 +3815,9 @@
 }
 .wp-admin .em .em-bookings-table .em-bookings-table-trigger:first-child {
   margin-left: 5px;
+}
+.wp-admin .em .em-bookings-table .tablenav {
+  margin-bottom: 12px;
 }
 .wp-admin .em .em-bookings-table .tablenav .actions input, .wp-admin .em .em-bookings-table .tablenav .actions select {
   float: left;
@@ -4340,6 +4532,19 @@
 }
 .wp-admin #em-opt-advanced-formatting .em-af-status .em-af-status-save {
   color: #c45500;
+}
+
+div.em-loading {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #FFFFFF url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='utf-8'%3F%3E%3Csvg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' style='margin: auto%3B background: none%3B display: block%3B shape-rendering: auto%3B' viewBox='0 0 100 100' preserveAspectRatio='xMidYMid'%3E%3Cg transform='rotate(0 50 50)'%3E%3Crect x='46.5' y='7.5' rx='0' ry='0' width='7' height='21' fill='%2385a2b6'%3E%3Canimate attributeName='opacity' values='1%3B0' keyTimes='0%3B1' dur='1s' begin='-0.9166666666666666s' repeatCount='indefinite'%3E%3C/animate%3E%3C/rect%3E%3C/g%3E%3Cg transform='rotate(30 50 50)'%3E%3Crect x='46.5' y='7.5' rx='0' ry='0' width='7' height='21' fill='%2385a2b6'%3E%3Canimate attributeName='opacity' values='1%3B0' keyTimes='0%3B1' dur='1s' begin='-0.8333333333333334s' repeatCount='indefinite'%3E%3C/animate%3E%3C/rect%3E%3C/g%3E%3Cg transform='rotate(60 50 50)'%3E%3Crect x='46.5' y='7.5' rx='0' ry='0' width='7' height='21' fill='%2385a2b6'%3E%3Canimate attributeName='opacity' values='1%3B0' keyTimes='0%3B1' dur='1s' begin='-0.75s' repeatCount='indefinite'%3E%3C/animate%3E%3C/rect%3E%3C/g%3E%3Cg transform='rotate(90 50 50)'%3E%3Crect x='46.5' y='7.5' rx='0' ry='0' width='7' height='21' fill='%2385a2b6'%3E%3Canimate attributeName='opacity' values='1%3B0' keyTimes='0%3B1' dur='1s' begin='-0.6666666666666666s' repeatCount='indefinite'%3E%3C/animate%3E%3C/rect%3E%3C/g%3E%3Cg transform='rotate(120 50 50)'%3E%3Crect x='46.5' y='7.5' rx='0' ry='0' width='7' height='21' fill='%2385a2b6'%3E%3Canimate attributeName='opacity' values='1%3B0' keyTimes='0%3B1' dur='1s' begin='-0.5833333333333334s' repeatCount='indefinite'%3E%3C/animate%3E%3C/rect%3E%3C/g%3E%3Cg transform='rotate(150 50 50)'%3E%3Crect x='46.5' y='7.5' rx='0' ry='0' width='7' height='21' fill='%2385a2b6'%3E%3Canimate attributeName='opacity' values='1%3B0' keyTimes='0%3B1' dur='1s' begin='-0.5s' repeatCount='indefinite'%3E%3C/animate%3E%3C/rect%3E%3C/g%3E%3Cg transform='rotate(180 50 50)'%3E%3Crect x='46.5' y='7.5' rx='0' ry='0' width='7' height='21' fill='%2385a2b6'%3E%3Canimate attributeName='opacity' values='1%3B0' keyTimes='0%3B1' dur='1s' begin='-0.4166666666666667s' repeatCount='indefinite'%3E%3C/animate%3E%3C/rect%3E%3C/g%3E%3Cg transform='rotate(210 50 50)'%3E%3Crect x='46.5' y='7.5' rx='0' ry='0' width='7' height='21' fill='%2385a2b6'%3E%3Canimate attributeName='opacity' values='1%3B0' keyTimes='0%3B1' dur='1s' begin='-0.3333333333333333s' repeatCount='indefinite'%3E%3C/animate%3E%3C/rect%3E%3C/g%3E%3Cg transform='rotate(240 50 50)'%3E%3Crect x='46.5' y='7.5' rx='0' ry='0' width='7' height='21' fill='%2385a2b6'%3E%3Canimate attributeName='opacity' values='1%3B0' keyTimes='0%3B1' dur='1s' begin='-0.25s' repeatCount='indefinite'%3E%3C/animate%3E%3C/rect%3E%3C/g%3E%3Cg transform='rotate(270 50 50)'%3E%3Crect x='46.5' y='7.5' rx='0' ry='0' width='7' height='21' fill='%2385a2b6'%3E%3Canimate attributeName='opacity' values='1%3B0' keyTimes='0%3B1' dur='1s' begin='-0.16666666666666666s' repeatCount='indefinite'%3E%3C/animate%3E%3C/rect%3E%3C/g%3E%3Cg transform='rotate(300 50 50)'%3E%3Crect x='46.5' y='7.5' rx='0' ry='0' width='7' height='21' fill='%2385a2b6'%3E%3Canimate attributeName='opacity' values='1%3B0' keyTimes='0%3B1' dur='1s' begin='-0.08333333333333333s' repeatCount='indefinite'%3E%3C/animate%3E%3C/rect%3E%3C/g%3E%3Cg transform='rotate(330 50 50)'%3E%3Crect x='46.5' y='7.5' rx='0' ry='0' width='7' height='21' fill='%2385a2b6'%3E%3Canimate attributeName='opacity' values='1%3B0' keyTimes='0%3B1' dur='1s' begin='0s' repeatCount='indefinite'%3E%3C/animate%3E%3C/rect%3E%3C/g%3E%3C!-- %5Bldio%5D generated by https://loading.io/ --%3E%3C/svg%3E") 50% 50% no-repeat;
+  left: 0;
+  top: 0;
+  opacity: 0.8;
+  filter: alpha(opacity=80);
+  z-index: 99998;
+  background-size: 100px;
 }
 
 /*# sourceMappingURL=events-manager-admin.css.map */

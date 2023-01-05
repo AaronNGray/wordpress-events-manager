@@ -761,6 +761,10 @@ function em_add_options() {
 			'dbem_bookings_tickets_single_form' => 0,
 			//My Bookings Page
 			'dbem_bookings_my_title_format' => __('My Bookings','events-manager'),
+			// stats
+			'dbem_booking_charts_wpdashboard' => true,
+			'dbem_booking_charts_dashboard' => true,
+			'dbem_booking_charts_event' => true,
 		//Flags
 		'dbem_hello_to_user' => 1,
 		//BP Settings

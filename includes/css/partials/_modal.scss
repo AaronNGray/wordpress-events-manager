@@ -30,7 +30,7 @@
 		&.active {
 			opacity: 1 !important;
 			visibility: visible !important;
-			backdrop-filter: blur(4px); // temporary - uncomment
+			backdrop-filter: blur(4px);
 			pointer-events: auto;
 			touch-action: auto;
 		}
@@ -144,6 +144,20 @@
 					img {
 						width: 100%;
 					}
+				}
+			}
+
+			// basic styling
+			section {
+				header {
+					width: 100%;
+					font-size: 18px;
+					padding: 16px 0 14px;
+					margin: 0;
+					border-bottom: 1px solid #dedede;
+				}
+				> div {
+					margin: 15px 0;
 				}
 			}
 		}

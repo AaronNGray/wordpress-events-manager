@@ -1818,6 +1818,16 @@
 .em.em-modal .em-modal-popup .em-modal-content.has-image > div.image img {
   width: 100%;
 }
+.em.em-modal .em-modal-popup .em-modal-content section header {
+  width: 100%;
+  font-size: 18px;
+  padding: 16px 0 14px;
+  margin: 0;
+  border-bottom: 1px solid #dedede;
+}
+.em.em-modal .em-modal-popup .em-modal-content section > div {
+  margin: 15px 0;
+}
 .em.em-modal .em-modal-popup footer {
   width: 100% !important;
   border-top: 1px solid #dedede !important;
@@ -2210,6 +2220,9 @@
 .em.em-modal.em-search-advanced .em-modal-content {
   overflow-y: auto;
   padding: 20px;
+  margin: 0;
+}
+.em.em-modal.em-search-advanced .em-modal-content section > div {
   margin: 0;
 }
 .em.em-modal.em-search-advanced footer {
@@ -3397,6 +3410,9 @@
 .em .em-bookings-table .em-bookings-table-trigger:first-child {
   margin-left: 5px;
 }
+.em .em-bookings-table .tablenav {
+  margin-bottom: 12px;
+}
 .em .em-bookings-table .tablenav .actions input, .em .em-bookings-table .tablenav .actions select {
   float: left;
   margin-right: 6px;
@@ -3997,6 +4013,185 @@
   .em .em-bookings-cols-selected .item {
     display: block;
   }
+}
+.em .em-chart.hidden-filters form {
+  display: none;
+}
+.em .em-chart.hidden-filters .option-triggers {
+  float: none;
+}
+.em .em-chart .em-chart-header {
+  display: grid;
+  grid-template-columns: auto max-content;
+  align-items: center;
+  margin: 10px 0;
+}
+.em .em-chart .em-chart-header .em-chart-title {
+  padding-left: 5px;
+  font-size: 16px;
+  font-weight: 500;
+}
+.em .em-chart .em-chart-header .option-triggers {
+  text-align: right;
+}
+.em .em-chart .em-chart-header .option-triggers .em-icon {
+  margin: 0 5px;
+}
+.em .em-chart form section.main-filters {
+  margin: 5px 5px 15px;
+  padding: 10px 0 15px;
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  border-top: 1px solid #dedede;
+  border-bottom: 1px solid #dedede;
+}
+.em .em-chart form section.main-filters > div:nth-child(2) {
+  margin: 0 15px;
+  padding: 0 15px;
+  border-left: 1px solid #dedede;
+  border-right: 1px solid #dedede;
+}
+.em .em-chart form section.main-filters > div > :not(:first-child) {
+  margin-top: 10px;
+}
+.em .em-chart form section.main-filters .dataset-1-metric {
+  display: grid;
+  grid-template-columns: max-content auto;
+  grid-gap: 5px;
+}
+.em .em-chart form section.main-filters select {
+  width: 100%;
+  max-width: none;
+}
+.em .em-chart form section.main-filters .em-datepicker {
+  display: none;
+}
+.em .em-chart form section.main-filters .em-datepicker input.em-date-input {
+  cursor: pointer;
+  margin: 10px 0 0 5px;
+  width: 100%;
+  border-radius: 0 !important;
+  padding-left: 30px !important;
+  background: var(--icon-calendar) 0px 50% no-repeat !important;
+  background-size: 20px !important;
+}
+.em .em-chart form section.main-filters .em-datepicker input.em-date-input, .em .em-chart form section.main-filters .em-datepicker input.em-date-input:focus, .em .em-chart form section.main-filters .em-datepicker input.em-date-input:active {
+  border: none !important;
+  box-shadow: none;
+}
+.em .em-chart form section.main-filters label {
+  display: block;
+}
+.em .em-chart form section.main-filters label span {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+.em .em-chart .em-chart-wrapper {
+  position: relative;
+  margin-top: 20px;
+}
+.em .em-chart .em-chart-wrapper canvas {
+  max-height: 400px;
+}
+.em .em-chart .em-chart-wrapper.loading canvas, .em .em-chart .em-chart-wrapper.loading .em-chart-stats {
+  opacity: 0.2;
+}
+.em .em-chart .em-chart-wrapper.loading .em-loading {
+  background-color: transparent;
+  filter: none;
+  opacity: 1;
+}
+.em .em-chart .em-chart-stats {
+  margin-top: 15px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+.em .em-chart .em-chart-stats > div {
+  border-left: 1px solid #dedede;
+  padding: 0 10px;
+  margin: 10px 0;
+  text-align: center;
+}
+.em .em-chart .em-chart-stats > div:first-child {
+  border-left: none;
+}
+.em .em-chart .em-chart-stats > div div {
+  margin-bottom: 8px;
+}
+.em .em-chart .em-chart-stats > div .title {
+  font-weight: bold;
+  font-size: 16px;
+}
+.em .em-chart .em-chart-stats > div .total {
+  font-size: 18px;
+}
+.em .em-chart .em-chart-stats > div .change span:first-child {
+  font-size: 20px;
+  color: #999;
+}
+.em .em-chart .em-chart-stats > div .change span:first-child.minus {
+  color: red;
+}
+.em .em-chart .em-chart-stats > div .change span:first-child.plus {
+  color: green;
+}
+.em .em-chart .em-chart-stats > div span.sub {
+  font-size: 14px;
+  color: #aaa;
+}
+.em .em-chart:not(.size-small) section.view-options {
+  text-align: left;
+  padding-top: 5px;
+  margin: 10px 5px 15px;
+}
+.em .em-chart:not(.size-small) section.view-options select {
+  line-height: 1;
+  min-height: 24px;
+  text-transform: lowercase;
+}
+.em .em-chart:not(.size-small) section.view-options label:first-child span:first-child {
+  text-transform: none;
+}
+.em .em-chart:not(.size-small) section.view-options span {
+  text-transform: lowercase;
+}
+.em .em-chart.size-large .em-chart-title {
+  text-align: center;
+}
+.em .em-chart.size-large section.main-filters {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+.em .em-chart.size-medium .em-chart-stats {
+  grid-template-columns: repeat(3, 1fr);
+}
+.em .em-chart.size-medium .em-chart-stats > div:nth-child(4) {
+  border-left: none;
+}
+.em .em-chart.size-small .option-triggers {
+  float: none;
+}
+.em .em-chart.size-small form section.main-filters {
+  display: block;
+}
+.em .em-chart.size-small form section.main-filters > div:nth-child(2) {
+  margin: 15px 0;
+  padding: 15px 0;
+  border: none;
+  border-top: 1px solid #dedede;
+  border-bottom: 1px solid #dedede;
+}
+.em .em-chart.size-small .em-chart-stats {
+  grid-template-columns: repeat(2, 1fr);
+}
+.em .em-chart.size-small .em-chart-stats > div:nth-child(2n+1) {
+  border-left: none;
+}
+.em .em-chart {
+  margin: 20px 0 40px;
+}
+.em #em_booking_stats .em-chart {
+  margin: 0;
 }
 .em button.em-clickable {
   cursor: pointer !important;

@@ -58,6 +58,13 @@ function em_bookings_dashboard(){
   		<h1><?php esc_html_e('Event Bookings Dashboard', 'events-manager'); ?></h1>
   		<?php else: echo $EM_Notices; ?>
   		<?php endif; ?>
+		<?php if( is_admin() && get_option('dbem_booking_charts_dashboard') ): ?>
+		<div class="em-bookings-stats">
+			<div class="inside">
+				<?php \EM\Admin\Dashboard::output('dashboard'); ?>
+			</div>
+		</div>
+		<?php endif; ?>
   		<div class="em-bookings-recent">
 			<h2><?php esc_html_e('Recent Bookings','events-manager'); ?></h2>
 	  		<?php
@@ -135,6 +142,13 @@ function em_bookings_event(){
 				<a class="row-title" href="<?php echo admin_url(); ?>post.php?action=edit&amp;post=<?php echo $EM_Event->get_location()->post_id ?>"><?php echo ($EM_Event->get_location()->location_name); ?></a>
 				<?php endif; ?>
 			</p>
+			<?php if( is_admin() && get_option('dbem_booking_charts_event') ): ?>
+				<div class="em-bookings-stats">
+					<div class="inside">
+						<?php \EM\Admin\Dashboard::output('event', $EM_Event->event_id); ?>
+					</div>
+				</div>
+			<?php endif; ?>
 			<h2><?php esc_html_e('Bookings','events-manager'); ?></h2>
 			<?php
 			$EM_Bookings_Table = new EM_Bookings_Table();

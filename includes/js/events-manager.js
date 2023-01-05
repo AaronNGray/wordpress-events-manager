@@ -985,6 +985,7 @@ function em_setup_tippy( container ){
 		content(reference) {
 			return reference.getAttribute('aria-label');
 		},
+		'touch' : ['hold', 300]
 	};
 	jQuery(document).trigger('em-tippy-vars',[tooltip_vars, container]);
 	tippy('.em-tooltip', tooltip_vars);
@@ -997,6 +998,7 @@ function em_setup_tippy( container ){
 		trigger : 'manual',
 		placement : 'bottom',
 		zIndex : 1000000,
+		touch : true,
 	};
 	jQuery(document).trigger('em-tippy-ddm-vars',[tippy_ddm_options, container]);
 	container.find('.em-tooltip-ddm').each( function(){

@@ -175,7 +175,21 @@
 		</table>
 	</div> <!-- . inside -->
 	</div> <!-- .postbox -->
-	
+
+	<div  class="postbox " id="em-opt-pricing-options" >
+		<div class="handlediv" title="<?php __('Click to toggle', 'events-manager'); ?>"><br /></div><h3><span><?php echo sprintf(__( '%s Options', 'events-manager'),__('Booking Chart','events-manager')); ?> </span></h3>
+		<div class="inside">
+			<table class='form-table'>
+				<?php
+				em_options_radio_binary ( __( 'Display on WP Dashboard', 'events-manager'), 'dbem_booking_charts_wpdashboard');
+				em_options_radio_binary ( __( 'Display on bookings dashboard', 'events-manager'), 'dbem_booking_charts_dashboard');
+				em_options_radio_binary ( __( 'Display on event bookings admin', 'events-manager'), 'dbem_booking_charts_event');
+				echo $save_button;
+				?>
+			</table>
+		</div> <!-- . inside -->
+	</div> <!-- .postbox -->
+
 	<?php do_action('em_options_page_footer_bookings'); ?>
 	
 </div> <!-- .em-menu-bookings -->

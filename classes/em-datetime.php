@@ -263,6 +263,23 @@ class EM_DateTime extends DateTime {
 	}
 	
 	/**
+	 * @return EM_DateTime
+	 * @throws Exception
+	 */
+	public function setStartOfWeek(){
+		$day = $this->format('w');
+		$start_of_week = get_option('start_of_week');
+		$offset = $day - $start_of_week;
+		if( $offset<0) {
+			$offset += 7;
+		}
+		if( $offset > 0 ) {
+			$this->sub( 'P' . $offset . 'D' );
+		}
+		return $this;
+	}
+	
+	/**
 	 * Easy chainable cloning function, useful for situations where you may want to manipulate the current date,
 	 * such as adding a month and getting the DATETIME string without changing the original value of this object.
 	 * @return EM_DateTime

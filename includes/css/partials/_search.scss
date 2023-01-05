@@ -321,6 +321,10 @@ button.em-clickable.em-search-advanced-trigger {
 		overflow-y: auto;
 		padding: 20px;
 		margin: 0;
+
+		section > div {
+			margin: 0;
+		}
 	}
 
 	footer {
