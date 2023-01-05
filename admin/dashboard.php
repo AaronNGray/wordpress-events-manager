@@ -444,7 +444,7 @@ class Dashboard {
 		// now go through scopes, get results and fill in data
 		foreach( $scopes as $stack => $scope ){
 			// prepare data sql
-			if( $args['range_type'] === 'all' ){
+			if( $args['range_type'] !== 'all' ){
 				$conditions['scope'] = $wpdb->prepare(' booking_date BETWEEN %s AND %s ', $scope['start']->getDateTime(), $scope['end']->getDateTime());
 			}
 			// prepare WHERE condition

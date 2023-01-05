@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 6.1
-Stable tag: 6.2
+Stable tag: 6.2.1
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
@@ -27,6 +27,7 @@ Events Manager is a full-featured event registration plugin for WordPress based 
 * Recurring and long (multi-day) event registration
 * Bookings Management (including approval/rejections, export CVS, and more!)
 * Multiple Tickets
+* *(New)* Fully-featured graph and statistics including bar/line/pie with comparison and stacking
 * MultiSite Support
 * Multiple Location Types
  * Physical Locations
@@ -144,18 +145,23 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 3. Beautiful event pages which can be completely customized via our settings page.
 4. Share your events to popular calendar clients.
 5. Display information about your location in widgets, blocks and shortcodes too.
-6. Easily skip to the future with our new calendar navigation and search filters.
-7. Easy-to-use search filters, whether on the phone or desktop.
-8. Search for events and locations within a search radius using Google geo searches.
-9. Intuitive search UI for your visitors.
-10. QUickly switch between search views.
-11. View your events on a Google Map, filter with searches.
-12. Multiple calendar styles, fully responsive according to the width of the calendar.
-13. Responsivve way for mini-calendar to intuitively show dates with many events within a quick glance.
-14. Responsive lists that adapt to the size of its containing content.
-15. Clean forms for submitting and managing events, as well as booking events for users.
+6. Full-featured statistics and insights into your ticket sales via multiple graph types, including comparison and stacking.
+7. Easily skip to the future with our new calendar navigation and search filters.
+8. Easy-to-use search filters, whether on the phone or desktop.
+9. Search for events and locations within a search radius using Google geo searches.
+10. Intuitive search UI for your visitors.
+11. QUickly switch between search views.
+12. View your events on a Google Map, filter with searches.
+13. Multiple calendar styles, fully responsive according to the width of the calendar.
+14. Responsivve way for mini-calendar to intuitively show dates with many events within a quick glance.
+15. Responsive lists that adapt to the size of its containing content.
+16. Clean forms for submitting and managing events, as well as booking events for users.
+17. Dashboard graph widget for quick review of your event bookings with tons of meaningful data views.
 
 == Changelog ==
+= 6.2.1 =
+* bugfix for graphs comparing time periods showing same period for both datasets
+
 = 6.2 =
 * added booking statistic charts to WP dashboard, bookings dashboard and event bookings manage view
 
