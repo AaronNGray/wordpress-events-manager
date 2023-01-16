@@ -1717,7 +1717,7 @@ let openModal = function( modal, onOpen = null ){
         modal.addClass('active').find('.em-modal-popup').addClass('active');
 		jQuery(document).triggerHandler('em_modal_open', [modal]);
 		if( typeof onOpen === 'function' ){
-			onOpen();
+			setTimeout( onOpen, 200); // timeout allows css transition
 		}
 	}, 100); // timeout allows css transition
 };
@@ -1764,12 +1764,13 @@ jQuery(document).ready( function($){
 		trigger : 'manual',
 		placement : 'bottom',
 		zIndex : 1000000,
+		touch: true,
 	};
 	$(document).trigger('em-search-views-trigger-vars',[views_ddm_options]);
 	let tooltip_vars = { theme : 'light-border', appendTo : 'parent', touch : false, };
 	$(document).trigger('em-tippy-vars',[tooltip_vars]);
 
-	// sync main search texts to advanced search search
+	// sync main search texts to advanced search
 	let search_forms = $('.em-search');
 	search_forms.each( function(){
 		/*
@@ -1877,7 +1878,6 @@ jQuery(document).ready( function($){
 			let views_tooltip = tippy(this.parentElement, tooltip_vars);
 			let views_content = this.parentElement.querySelector('.em-search-views-options');
 			let views_content_parent = views_content.parentElement;
-			let views_select = views_content.querySelector('select');
 			let tippy_content = document.createElement('div');
 			views_ddm_options.content = tippy_content;
 			let views_ddm = tippy(this, views_ddm_options);
@@ -1887,7 +1887,7 @@ jQuery(document).ready( function($){
 					tippy_content.append(views_content);
 				},
 				onShown(instance){ // keyboard support
-					views_select.focus();
+					views_content.querySelector('input:checked').focus();
 				},
 				onHidden(instance){
 					views_tooltip.enable();
@@ -1906,40 +1906,63 @@ jQuery(document).ready( function($){
 			this.addEventListener('click', tippy_listener);
 			this.addEventListener('keydown', tippy_listener);
 			this.firstElementChild.addEventListener('focus', function(e){
+				views_ddm.hide();
+				views_tooltip.enable();
 				views_tooltip.show();
 			});
 			this.firstElementChild.addEventListener('blur', function(){
 				views_tooltip.hide();
 			});
-			views_select.addEventListener('blur', function(){
+
+			search.on('focus blur', '.em-search-views-options input', function(){
+				if( document.activeElement === this ){
+					this.parentElement.classList.add('focused');
+				}else{
+					this.parentElement.classList.remove('focused');
+				}
+			});
+
+			search.on('keydown click', '.em-search-views-options input', function( e ){
+				// get relevant vars
+				if( e.type === 'keydown' && e.which !== 13 ){
+					if ( [37, 38, 39, 40].indexOf(e.which) !== -1 ) {
+						if (e.which === 38) {
+							if (this.parentElement.previousElementSibling) {
+								this.parentElement.previousElementSibling.focus();
+							}
+						} else if (e.which === 40) {
+							if (this.parentElement.nextElementSibling) {
+								this.parentElement.nextElementSibling.focus();
+							}
+						}
+						return false;
+					} else if ( e.which === 9 ) {
+						// focus out
+						views_ddm.hide();
+					}
+					return true;
+				}
+				this.checked = true;
+				let input = $(this);
+				// mark label selected
+				input.closest('fieldset').find('label').removeClass('checked');
+				input.parent().addClass('checked');
+				// get other reference elements we need
+				let views_wrapper = $(this).closest('.em-search-views');
+				let view_type = this.value;
+				let trigger = views_wrapper.children('.em-search-views-trigger');
+				let trigger_option = trigger.children('.em-search-view-option');
+				// change view, if different
+				if( view_type !== trigger_option.attr('data-view') ){
+					trigger_option.attr('data-view', this.value).text(this.parentElement.innerText);
+					// remove custom search vals from current view so it's not used into another view
+					$('#em-view-'+search_id).find('#em-view-custom-data-search-'+search_id).remove();
+					// trigger custom event in case form disabled due to no search vals
+					search_form.find('button[type="submit"]').focus();
+					search_form.trigger('forcesubmit');
+				}
 				views_ddm.hide();
 			});
-		});
-
-		search.on('keydown click', '.em-search-views select.em-search-views-options-list', function( e ){
-			// get relevant vars
-			if( e.type === 'keydown' && e.which !== 13 ) return true;
-			let select = $(this); // get the real one, not tippy
-			// force only one value selection, if they try more, get first one selected in list
-			if( select.val().length > 1 ){
-				// choose previously selected option
-				select.val([select.val().shift()]);
-			}
-			// get other reference elements we need
-			let option = select.find(':checked').first();
-			let views_wrapper = select.closest('.em-search-views');
-			let view_type = option.attr('value');
-			let trigger = views_wrapper.children('.em-search-views-trigger');
-			let trigger_option = trigger.children('.em-search-view-option');
-			// change view, if different
-			if( view_type !== trigger_option.attr('data-view') ){
-				trigger_option.attr('data-view', option.attr('value')).text(option.text());
-				// remove custom search vals from current view so it's not used into another view
-				$('#em-view-'+search_id).find('#em-view-custom-data-search-'+search_id).remove();
-				// trigger custom event in case form disabled due to no search vals
-				search_form.trigger('forcesubmit');
-			}
-			trigger[0]._tippy.hide();
 		});
 
 		// add trigger logic for advanced popup modal
@@ -1958,8 +1981,10 @@ jQuery(document).ready( function($){
 					form_wrapper.appendTo(search_advanced);
 					search_advanced.find('.em-modal-popup').appendTo(form_wrapper);
 					// open modal
-					this.blur();
+					let button = this;
 					openModal(search_advanced, function () {
+						// Do this instead
+						button.blur();
 						search_advanced.find('input.em-search-text').focus();
 					});
 				}
@@ -2281,7 +2306,7 @@ jQuery(document).ready( function($){
 				em_submit_legacy_search_form(form);
 			}else{
 				let view = $('#em-view-'+search_id);
-				let view_type = form.find('[name="view"]').val();
+				let view_type = form.find('[name="view"]:checked').val();
 				if( Array.isArray(view_type) ) view_type = view_type.shift();
 				// copy over custom view information, remove it further down
 				let custom_view_data = view.find('#em-view-custom-data-search-'+search_id).clone();
@@ -2292,8 +2317,10 @@ jQuery(document).ready( function($){
 				// add loading stuff
 				view.append('<div class="em-loading"></div>');
 				submit_buttons.each( function(){
-					this.setAttribute('data-button-text', this.innerHTML);
-					this.innerHTML = EM.txt_searching;
+					if( EM.txt_searching !== this.innerHTML ) {
+						this.setAttribute('data-button-text', this.innerHTML);
+						this.innerHTML = EM.txt_searching;
+					}
 				});
 				var vars = form.serialize();
 				$.ajax( EM.ajaxurl, {
@@ -2338,20 +2365,25 @@ jQuery(document).ready( function($){
 	});
 
     $(document).on('click', '.em-view-container .em-ajax.em-pagination a.page-numbers', function(e){
-        var a = $(this);
-        var data = a.closest('.em-pagination').attr('data-em-ajax');
-        var view = a.closest('.em-view-container');
-        var qvars = a.attr('href').split('?');
-        var vars = qvars[1];
-        //add data-em-ajax att if it exists
-        if( data != '' ){
-            vars = vars != '' ? vars+'&'+data : data;
-        }
+        let a = $(this);
+        let view = a.closest('.em-view-container');
+	    let href = a.attr('href');
+	    //add data-em-ajax att if it exists
+	    let data = a.closest('.em-pagination').attr('data-em-ajax');
+	    if( data ){
+		    href += '&' + data;
+	    }
+		// build querystring from url
+	    let url_params = new URL(href, window.location.origin).searchParams;
+		if( view.attr('data-view') ) {
+			url_params.set('view', view.attr('data-view'));
+		}
+		// start ajax
 	    view.append('<div class="loading" id="em-loading"></div>');
         $.ajax( EM.ajaxurl, {
             type : 'POST',
             dataType : 'html',
-            data : vars,
+            data : url_params.toString(),
             success : function(responseText) {
                 view = EM_View_Updater( view, responseText );
 				view.find('.em-pagination').each( function(){
@@ -2749,15 +2781,17 @@ let EM_ResizeObserver = function( breakpoints, elements ){
 	const ro = new ResizeObserver( function( entries ){
 		for (let entry of entries) {
 			let el = entry.target;
-			for (const [name, breakpoint] of Object.entries(breakpoints)) {
-				if ( el.offsetWidth <= breakpoint || breakpoint === false ){
-					for( let breakpoint_name of Object.keys(breakpoints) ){
-					    if( breakpoint_name !== name ) el.classList.remove('size-'+ breakpoint_name);
+			if( !el.classList.contains('size-fixed') ) {
+				for (const [name, breakpoint] of Object.entries(breakpoints)) {
+					if (el.offsetWidth <= breakpoint || breakpoint === false) {
+						for (let breakpoint_name of Object.keys(breakpoints)) {
+							if (breakpoint_name !== name) el.classList.remove('size-' + breakpoint_name);
+						}
+						el.classList.add('size-' + name);
+						break;
 					}
-					el.classList.add('size-'+ name);
-					break;
 				}
-			};
+			}
 		}
 	});
     elements.forEach( function( el ){
@@ -2776,10 +2810,18 @@ jQuery(document).ready( function($){
 		'large' : false,
 	}
 	const events_ro = EM_ResizeObserver( breakpoints, $('.em-list').toArray() );
-	$(document).on('em_page_loaded em_view_loaded_list em_view_loaded_list-grouped', function( e, view ){
+	$(document).on('em_page_loaded em_view_loaded_list em_view_loaded_list-grouped em_view_loaded_grid', function( e, view ){
 		let new_elements = view.find('.em-list').each( function(){
-			events_ro.observe( this );
+			if( !this.classList.contains('size-fixed') ){
+				events_ro.observe( this );
+			}
 		});
+	});
+
+	$(document).on('click', '.em-grid .em-item[data-href]', function(e){
+		if( e.target.type !== 'a' ){
+			window.location.href = this.getAttribute('data-href');
+		}
 	});
 
 	// Single event area
@@ -2791,7 +2833,9 @@ jQuery(document).ready( function($){
 	const event_ro = EM_ResizeObserver( breakpoints, $('.em-item-single').toArray() );
 	$(document).on('em_view_loaded', function( e, view ){
 		let new_elements = view.find('.em-event-single').each( function(){
-			event_ro.observe( this );
+			if( !this.classList.contains('size-fixed') ){
+				event_ro.observe( this );
+			}
 		});
 	});
 	// booking form area (WIP)

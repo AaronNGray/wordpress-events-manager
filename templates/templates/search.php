@@ -39,12 +39,15 @@ $id =  esc_attr($args['id']); // id of form for unique selections
 							<button type="button" class="em-search-view-option em-clickable em-search-view-type-<?php echo $args['view']; ?>" data-view="<?php echo esc_attr($args['view']); ?>"><?php echo esc_html($search_views[$args['view']]['name']); ?></button>
 						</div>
 						<div class="em-search-views-options input" id="em-search-views-options-<?php echo $id; ?>">
-							<select name="view" multiple="multiple" class="em-search-views-options-list" id="em-search-views-options-select-<?php echo $id; ?>" size="<?php echo count($args['views']); ?>">
+							<fieldset class="em-search-views-options-list" id="em-search-views-options-select-<?php echo $id; ?>">
+								<legend class="screen-reader-text"><?php esc_html_e('Search Results View Type','events-manager'); ?></legend>
 								<?php foreach( $args['views'] as $view ): $view_name = $search_views[$view]['name']; ?>
-									<option class="em-search-view-option em-search-view-type-<?php echo esc_attr($view); ?>" value="<?php echo esc_attr($view); ?>" data-view="<?php echo esc_attr($view); ?>"  <?php if( $view === $args['view'] ) echo 'selected'; ?>><?php echo esc_html($view_name); ?></option>
+									<label class="em-search-view-option em-search-view-type-<?php echo esc_attr($view); ?> <?php if( $view === $args['view'] ) echo 'checked'; ?>"  data-view="<?php echo esc_attr($view); ?>">
+										<input type="radio" name="view" class="em-search-view-option em-search-view-type-<?php echo esc_attr($view); ?>" value="<?php echo esc_attr($view); ?>"  <?php if( $view === $args['view'] ) echo 'checked'; ?>>
+										<?php echo esc_html($view_name); ?>
+									</label>
 								<?php endforeach; ?>
-							</select>
-							<label for id="em-search-views-options-select-<?php echo $id; ?>" class="screen-reader-text"><?php esc_html_e('Search Results View Type','events-manager'); ?></label>
+							</fieldset>
 						</div>
 					</div>
 				<?php else: ?>

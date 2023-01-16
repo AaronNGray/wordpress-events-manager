@@ -667,16 +667,20 @@ function em_get_search_form_defaults($base_args = array(), $context = 'events') 
 	
 	// disable certain things based on context, can be overriden by $base_args, not necessarily recommended
 	if( $context == 'locations' ){
-		$search_args['views'] = 'list, map';
-		$search_args['view'] = 'list';
+		$location_views = em_get_location_search_views();
+		$search_args['views'] = array_intersect(array_keys($location_views), get_option('dbem_search_form_views'));
+		$search_args['view'] = get_option('dbem_search_form_view');
+		if( empty($location_views[$search_args['view']]) ){
+			$search_args['view'] = key($location_views);
+		}
 		$search_args['search_categories'] = false;
 		$search_args['search_scope_main'] = false;
 		$search_args['search_scope'] = false;
 		$search_args['search_tags'] = false;
 	}else{
 		// default is events
-		$search_args['views'] = 'list, list-grouped, map, calendar';
-		$search_args['view'] = 'list';
+		$search_args['views'] = get_option('dbem_search_form_views');
+		$search_args['view'] = get_option('dbem_search_form_view');
 		// disable these non-event searches
 		$search_args['search_eventful_main'] = false;
 		$search_args['search_eventful'] = false;
@@ -773,20 +777,129 @@ function em_get_search_form_defaults($base_args = array(), $context = 'events') 
 
 function em_get_search_views(){
 	$search_views = array(
-		'calendar' => array(
-			'name' => __('Calendar', 'events-manager'),
-		),
-		'map' => array(
-			'name' => __('Map', 'events-manager'),
-		),
 		'list' => array(
 			'name' => __('List', 'events-manager'),
 		),
 		'list-grouped' => array(
 			'name' => __('Grouped Lists', 'events-manager'),
 		),
+		'grid' => array(
+			'name' => __('Grid', 'events-manager'),
+		),
+		'map' => array(
+			'name' => __('Map', 'events-manager'),
+		),
+		'calendar' => array(
+			'name' => __('Calendar', 'events-manager'),
+		),
 	);
 	return apply_filters('em_get_search_views', $search_views);
+}
+
+function em_output_events_view( $args, $view = null ){
+	if( $view === null ){
+		$view = empty($args['view']) ? get_option('dbem_search_form_view') : $args['view'];
+	}
+	switch( $view ){
+		case 'list-grouped':
+			if( empty($args['date_format']) ){
+				$args['date_format'] = get_option('dbem_event_list_groupby_format');
+			}
+			em_locate_template('templates/events-list-grouped.php', true, array('args'=>$args)); //if successful, this template overrides the settings and defaults, including search
+			break;
+		case 'list':
+			em_locate_template('templates/events-list.php', true, array('args'=>$args)); //if successful, this template overrides the settings and defaults, including search
+			break;
+		case 'grid':
+			// add default grid formats
+			if( empty($args['format']) ){
+				$args['format'] = get_option( 'dbem_event_grid_item_format' );
+			}
+			if( empty($args['format_header']) ){
+				$args['format_header'] = get_option('dbem_event_grid_format_header');
+			}
+			if( empty($args['format_footer']) ){
+				$args['format_footer'] = get_option('dbem_event_grid_format_footer');
+			}
+			em_locate_template('templates/events-grid.php', true, array('args'=>$args)); //if successful, this template overrides the settings and defaults, including search
+			break;
+		case 'map':
+			$args['width'] = '100%';
+			$args['height'] = 0;
+			echo em_get_events_map_shortcode( $args );
+			break;
+		case 'calendar':
+			$args['has_search'] = false; // prevent view and search getting output again
+			echo EM_Calendar::output( $args );
+			break;
+		default:
+			if( has_action('em_events_search_view_'.$view) ){
+				do_action('em_events_search_view_'.$view, $args);
+			}else{
+				// last resort we're showing a list
+				em_locate_template('templates/events-list.php', true, array('args'=>$args)); //if successful, this template overrides the settings and defaults, including search
+			}
+			break;
+	}
+}
+
+function em_get_location_search_views(){
+	$search_views = array(
+		'list' => array(
+			'name' => __('List', 'events-manager'),
+		),
+		'grid' => array(
+			'name' => __('Grid', 'events-manager'),
+		),
+		'map' => array(
+			'name' => __('Map', 'events-manager'),
+		),
+	);
+	return apply_filters('em_get_location_search_views', $search_views);
+}
+
+function em_output_locations_view( $args, $view = null ){
+	if( $view === null ){
+		$view = empty($args['view']) ? get_option('dbem_search_form_view') : $args['view'];
+		$location_views = em_get_location_search_views();
+		if( empty($location_views[$view]) ){
+			$args['view'] = key($location_views);
+			$view = $args['view'];
+		}
+	}
+	$args['limit'] = !empty($args['limit']) ? $args['limit'] : get_option('dbem_locations_default_limit');
+	switch( $view ){
+		case 'list':
+			em_locate_template('templates/locations-list.php', true, array('args'=>$args)); //if successful, this template overrides the settings and defaults, including search
+			break;
+		case 'grid':
+			// add default grid formats
+			if( empty($args['format']) ){
+				$args['format'] = get_option( 'dbem_location_grid_item_format' );
+			}
+			if( empty($args['format_header']) ){
+				$args['format_header'] = get_option('dbem_location_grid_format_header');
+			}
+			if( empty($args['format_footer']) ){
+				$args['format_footer'] = get_option('dbem_location_grid_format_footer');
+			}
+			em_locate_template('templates/locations-grid.php', true, array('args'=>$args)); //if successful, this template overrides the settings and defaults, including search
+			break;
+		case 'map':
+			$args['width'] = '100%';
+			$args['height'] = 0;
+			$args['limit'] = 0;
+			echo em_get_locations_map_shortcode( $args );
+			break;
+		default:
+			if( has_action('em_locations_search_view_'.$view) ){
+				do_action('em_locations_search_view_'.$view, $args);
+			}else{
+				// last resort we're showing a list
+				em_locate_template('templates/locations-list.php', true, array('args'=>$args)); //if successful, this template overrides the settings and defaults, including search
+			}
+			break;
+	}
 }
 
 /*

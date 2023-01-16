@@ -22,7 +22,7 @@ Events Manager is a full-featured event registration plugin for WordPress based 
 
 = Main Features =
 
-* Beautiful calendars, search pages, lists and booking forms to enhance your site events.
+* Beautiful calendars, search pages, lists, grids and booking forms to enhance your site events.
 * Easy event registration (single day with start/end times)
 * Recurring and long (multi-day) event registration
 * Bookings Management (including approval/rejections, export CVS, and more!)
@@ -159,6 +159,12 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 17. Dashboard graph widget for quick review of your event bookings with tons of meaningful data views.
 
 == Changelog ==
+= 6.3 =
+* fixed mobile display issue for selecting list views from search toolbar
+* added grid view for events and locations
+* tweaked code to run view logic through functions and filters making it easier to add new views
+* fixed pagination issues when in a different than default view
+
 = 6.2.1 =
 * bugfix for graphs comparing time periods showing same period for both datasets
 

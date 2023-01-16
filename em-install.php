@@ -441,6 +441,8 @@ function em_add_options() {
 		'dbem_events_default_limit' => 10,
 		//Event Search Options
 		'dbem_search_form_submit' => __('Search','events-manager'),
+		'dbem_search_form_views' => array('list', 'list-grouped', 'grid', 'map', 'calendar'),
+		'dbem_search_form_view' => 'list',
 		'dbem_search_form_advanced' => 1,
 		'dbem_search_form_advanced_hidden' => 1,
 		'dbem_search_form_advanced_show' => __('Show Advanced Search','events-manager'),
@@ -515,8 +517,12 @@ function em_add_options() {
 		'dbem_event_list_item_format_header' => EM_Formats::dbem_event_list_item_format_header(''),
 		'dbem_event_list_item_format' => EM_Formats::dbem_event_list_item_format(''),
 		'dbem_event_list_item_format_footer' => EM_Formats::dbem_event_list_item_format_footer(''),
-		'dbem_event_list_groupby' => 0,
-		'dbem_event_list_groupby_format' => '',
+		'dbem_event_grid_item_format_header' => EM_Formats::dbem_event_grid_item_format_header(''),
+		'dbem_event_grid_item_format' => EM_Formats::dbem_event_grid_item_format(''),
+		'dbem_event_grid_item_format_footer' => EM_Formats::dbem_event_grid_item_format_footer(''),
+		'dbem_event_grid_item_width' => '250',
+		'dbem_event_list_groupby' => 'monthly',
+		'dbem_event_list_groupby_format' => 'F Y',
 		'dbem_event_list_groupby_header_format' => '<h2>#s</h2>',
 		'dbem_display_calendar_in_events_page' => 0,
 		'dbem_single_event_format' => EM_Formats::dbem_single_event_format(''),
@@ -536,6 +542,10 @@ function em_add_options() {
 		'dbem_location_list_item_format_header' => EM_Formats::dbem_location_list_item_format_header(''),
 		'dbem_location_list_item_format' => EM_Formats::dbem_location_list_item_format(''),
 		'dbem_location_list_item_format_footer' => EM_Formats::dbem_location_list_item_format_footer(''),
+		'dbem_location_grid_item_format_header' => EM_Formats::dbem_location_grid_item_format_header(''),
+		'dbem_location_grid_item_format' => EM_Formats::dbem_location_grid_item_format(''),
+		'dbem_location_grid_item_format_footer' => EM_Formats::dbem_location_grid_item_format_footer(''),
+		'dbem_location_grid_item_width' => '250',
 		'dbem_location_page_title_format' => '#_LOCATIONNAME',
 		'dbem_single_location_format' => EM_Formats::dbem_single_location_format(''),
 	    'dbem_location_excerpt_format' => EM_Formats::dbem_location_excerpt_format(''),
@@ -1460,6 +1470,19 @@ function em_upgrade_current_installation(){
 		}
 		$data['admin-modals']['review-nudge'] = time() + (DAY_IN_SECONDS * 14);
 		is_multisite() ? update_site_option('dbem_data', $data) : update_option('dbem_data', $data);
+	}
+	
+	if( $current_version != '' && version_compare($current_version, '6.2.2', '<') ){
+		if( !get_option('dbem_css') ){
+			// prevent grids just to avoid styling snafus
+			update_option('dbem_search_form_views', array('list', 'list-grouped', 'map', 'calendar'));
+		}
+		// groups now are part of view settings for a list type
+		if( !get_option('dbem_event_list_groupby')){
+			update_option('dbem_event_list_groupby', 'monthly');
+		}else{
+			update_option('dbem_search_form_view', 'list-grouped');
+		}
 	}
 }
 

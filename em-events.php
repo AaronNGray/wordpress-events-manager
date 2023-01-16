@@ -55,7 +55,7 @@ function em_content($page_content) {
 						if( empty($args['scope']) ){
 						    $args['scope'] = get_option('dbem_events_page_scope');
 						}
-						$args['view'] = get_option('dbem_event_list_groupby') ? 'list-grouped':'list';
+						$args['view'] = get_option('dbem_search_form_view');
 						if( get_option('dbem_events_page_search_form') ){
 							//load the search form and pass on custom arguments (from settings page)
 							$args['has_view'] = true; // prevent search from generating its own view container
@@ -63,12 +63,7 @@ function em_content($page_content) {
 							em_locate_template('templates/events-search.php', true, array('args'=>$search_args));
 						}
 						$args['limit'] = !empty($args['limit']) ? $args['limit'] : get_option('dbem_events_default_limit');
-						if( $args['view'] == 'list-grouped' ){
-							$args['date_format'] = get_option('dbem_event_list_groupby_format');
-							em_locate_template('templates/events-list-grouped.php', true, array('args'=>$args));
-						}else{
-							em_locate_template('templates/events-list.php', true, array('args'=>$args));
-						}
+						em_output_events_view( $args );
 					}
 				}
 			}elseif( $post->ID == $locations_page_id && $locations_page_id != 0 ){
@@ -90,7 +85,7 @@ function em_content($page_content) {
 						//remove date and category
 						em_locate_template('templates/locations-search.php', true, array('args'=>$search_args));
 					}
-					em_locate_template('templates/locations-list.php',true, array('args'=>$args));
+					em_output_locations_view( $args );
 				}
 			}elseif( $post->ID == $categories_page_id && $categories_page_id != 0 ){
 				$args['limit'] = !empty($args['limit']) ? $args['limit'] : get_option('dbem_categories_default_limit');

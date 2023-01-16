@@ -70,17 +70,25 @@
 		 		<p><?php _e('These formats will be used on your events page. This will also be used if you do not provide specified formats in other event lists, like in shortcodes.','events-manager'); ?></p>
 		 	</td></tr>
 			<?php
-			$grouby_modes = array(0=>__('None','events-manager'), 'yearly'=>__('Yearly','events-manager'), 'monthly'=>__('Monthly','events-manager'), 'weekly'=>__('Weekly','events-manager'), 'daily'=>__('Daily','events-manager'));
-			em_options_select(__('Events page grouping','events-manager'), 'dbem_event_list_groupby', $grouby_modes, __('If you choose a group by mode, your events page will display events in groups of your chosen time range.','events-manager'));
-			em_options_input_text(__('Events page grouping header','events-manager'), 'dbem_event_list_groupby_header_format', __('Choose how to format your group headings.','events-manager').' '. sprintf(__('#s will be replaced by the date format below', 'events-manager'), 'http://codex.wordpress.org/Formatting_Date_and_Time'));
-			em_options_input_text(__('Events page grouping date format','events-manager'), 'dbem_event_list_groupby_format', __('Choose how to format your group heading dates. Leave blank for default.','events-manager').' '. sprintf(__('Date and Time formats follow the <a href="%s">WordPress time formatting conventions</a>', 'events-manager'), 'http://codex.wordpress.org/Formatting_Date_and_Time'));
 			em_options_input_text ( __( 'List events by date title', 'events-manager'), 'dbem_list_date_title', __( 'If viewing a page for events on a specific date, this is the title that would show up. To insert date values, use <a href="http://www.php.net/manual/en/function.date.php">PHP time format characters</a>  with a <code>#</code> symbol before them, i.e. <code>#m</code>, <code>#M</code>, <code>#j</code>, etc.<br/>', 'events-manager') );
 			if( EM_MS_GLOBAL && !get_option('dbem_ms_global_events_links') ){
 				em_options_input_text ( sprintf(__( 'Single %s title format', 'events-manager'),__('event','events-manager')), 'dbem_event_page_title_format', sprintf(__( 'The format of a single %s page title.', 'events-manager'),__('event','events-manager')).' '.__( 'This is only used when showing events from other blogs.', 'events-manager').$events_placeholder_tip );
 			}
 			?>
-
-		    <tr class="em-subheader"><td colspan="2"><h5><?php esc_html_e( 'Event List Formats', 'events-manager'); ?></h5></td></tr>
+		    <tr class="em-subheader">
+			    <td colspan="2">
+				    <h5><?php esc_html_e( 'Grouped Lists View', 'events-manager'); ?></h5>
+				    <p><?php esc_html_e('These options are the defaults applied to lists being showing in Grouped List view mode and can be overriden in individual lists using shortcodes, blocks, widgets etc.', 'events-manager'); ?></p>
+			    </td>
+		    </tr>
+		    <?php
+		    $grouby_modes = array('yearly'=>__('Yearly','events-manager'), 'monthly'=>__('Monthly','events-manager'), 'weekly'=>__('Weekly','events-manager'), 'daily'=>__('Daily','events-manager'));
+		    em_options_select(__('Grouped list default','events-manager'), 'dbem_event_list_groupby', $grouby_modes, __('If you choose a group by mode, your events page will display events in groups of your chosen time range.','events-manager'));
+		    em_options_input_text(__('Grouped list header','events-manager'), 'dbem_event_list_groupby_header_format', __('Choose how to format your group headings.','events-manager').' '. sprintf(__('#s will be replaced by the date format below', 'events-manager'), 'http://codex.wordpress.org/Formatting_Date_and_Time'));
+		    em_options_input_text(__('Grouped list format','events-manager'), 'dbem_event_list_groupby_format', __('Choose how to format your group heading dates. Leave blank for default.','events-manager').' '. sprintf(__('Date and Time formats follow the <a href="%s">WordPress time formatting conventions</a>', 'events-manager'), 'http://codex.wordpress.org/Formatting_Date_and_Time'));
+		    ?>
+		    
+		    <tr class="em-subheader"><td colspan="2"><h5><?php echo esc_html( sprintf(_x('%1$s %2$s Formats', 'cpt type and view type', 'events-manager'), __('Event', 'events-manager'), __('List', 'events-manager')) ); ?></h5></td></tr>
 		    <?php
 		    em_options_input_text ( __( 'No events message', 'events-manager'), 'dbem_no_events_message', __( 'The message displayed when no events are available.', 'events-manager') );
 			?>
@@ -99,6 +107,25 @@
 		    ?>
 		    </tbody>
 		    <!-- /ADVANCED Formatting -->
+
+		    <tr class="em-subheader"><td colspan="2"><h5><?php echo esc_html( sprintf(_x('%1$s %2$s Formats', 'cpt type and view type', 'events-manager'), __('Event', 'events-manager'), __('Grid', 'events-manager')) ); ?></h5></td></tr>
+		    <!-- ADVANCED Formatting -->
+		    <tbody class="am-af">
+		    <?php
+		    em_options_radio_binary ( __( 'Override Default Formats?', 'events-manager'), 'dbem_advanced_formatting_modes[events-grid]', '', '', '.am-af-events-grid' );
+		    ?>
+		    </tbody>
+		    <tbody class="am-af am-af-events-grid">
+		    <?php
+		    em_options_textarea ( sprintf(_x( 'Default %1$s %2$s format header', 'events-manager', 'cpt type and view type'), __('Event', 'events-manager'), __('Grid', 'events-manager')), 'dbem_event_grid_item_format_header', sprintf(__( 'This content will appear just above your code for the %s list format below. Default is blank', 'events-manager'), __('grid','events-manager')), true );
+		    em_options_textarea ( sprintf(_x( 'Default %1$s %2$s format', 'events-manager', 'cpt type and view type'), __('Event', 'events-manager'), __('Grid', 'events-manager')), 'dbem_event_grid_item_format', sprintf(__( 'The format of a single %s in a list.', 'events-manager'), __('event','events-manager')).$events_placeholder_tip, true );
+		    em_options_textarea ( sprintf(_x( 'Default %1$s %2$s format footer', 'events-manager', 'cpt type and view type'), __('Event', 'events-manager'), __('Grid', 'events-manager')), 'dbem_event_grid_item_format_footer', sprintf(__( 'This content will appear just below your code for the %s list format above. Default is blank', 'events-manager'), __('grid','events-manager')), true );
+		    ?>
+		    </tbody>
+		    <!-- /ADVANCED Formatting -->
+		    <?php
+		    em_options_input_text( sprintf(_x( 'Default %1$s %2$s width', 'events-manager', 'cpt type and view type'), __('Event', 'events-manager'), __('Grid', 'events-manager')), 'dbem_event_grid_item_width', __( 'The default minimum width, in pixels, that each grid item can shrink to fit on one line.', 'events-manager') );
+		    ?>
 
 		    <!-- ADVANCED Formatting -->
 		    <tbody class="am-af">
@@ -150,6 +177,41 @@
 	<div class="handlediv" title="<?php __('Click to toggle', 'events-manager'); ?>"><br /></div><h3><span><?php _e ( 'Search Form', 'events-manager'); ?> </span></h3>
 	<div class="inside">
 		<table class="form-table em-search-form-main">
+			<tbody>
+				<tr class="em-header"><td colspan="2"><h4><?php _e('Views','events-manager'); ?></h4></td></tr>
+				<tr class="em-header">
+					<td colspan="2">
+						<em><?php echo sprintf(__('These formats can be used when WordPress automatically displays %s excerpts on your site and %s is enabled in your %s settings tab.','events-manager'),__('event','events-manager'),'<strong>'.__( 'Override Excerpts with Formats?', 'events-manager').'</strong>','<a href="#formats" class="nav-tab-link" rel="#em-menu-pages">'.__('Pages','events-manager').'  &gt; '.sprintf(__('%s List/Archives','events-manager'),__('Event','events-manager')).'</a>');?></em>
+					</td>
+				</tr>
+				<?php
+				$views_map = em_get_search_views();
+				$views = array();
+				foreach( $views_map as $view_key => $view ){
+					$views[$view_key] = $view['name'];
+				}
+				em_options_select ( __( 'Default View', 'events-manager'), 'dbem_search_form_view', $views, __('Appears within the input box.','events-manager'));
+				?>
+				<tr valign="top" id='dbem_location_types_row'>
+					<th scope="row"><?php esc_html_e('View Types', 'events-manager'); ?></th>
+					<td>
+						<?php
+						$view_types = get_option('dbem_search_form_views', array());
+						?>
+						<fieldset class="em-field-checkboxes">
+							<legend class="screen-reader-text"><?php esc_html_e('View Types', 'events-manager'); ?></legend>
+							<?php foreach ( $views as $view_name => $view_label ): ?>
+							<label>
+								<input type="checkbox" name="dbem_search_form_views[]" value="<?php  echo esc_attr($view_name); ?>" <?php if( in_array($view_name, $view_types) ) echo 'checked'; ?>>
+								<?php echo esc_html($view_label); ?>
+							</label>
+							<?php endforeach; ?>
+						</fieldset>
+						<p><em><?php echo sprintf( esc_html__('Select the view types a user can select to display on the default search form, you can override this selection using the %s argument in shortcodes and PHP functions.', 'events-manager'), '<code>views</code>'); ?></em></p>
+					</td>
+				</tr>
+			</tbody>
+			
 		    <tr class="em-header"><td colspan="2"><h4><?php _e('Main Search Fields','events-manager'); ?></h4></td></tr>
 		    <tbody class="em-subsection">
 			<tr class="em-subheader"><td colspan="2"><h5><?php esc_html_e( 'Search', 'events-manager'); ?></h5></td></tr>
@@ -385,6 +447,7 @@
 		    
 		    <!-- ADVANCED Formatting -->
 		    <tbody class="am-af">
+		        <tr class="em-subheader"><td colspan="2"><h5><?php echo esc_html( sprintf(_x('%1$s %2$s Formats', 'cpt type and view type', 'events-manager'), __('Location', 'events-manager'), __('List', 'events-manager')) ); ?></h5></td></tr>
 			    <?php em_options_radio_binary ( __( 'Override Default Formats?', 'events-manager'), 'dbem_advanced_formatting_modes[locations-list]', '', '', '.am-af-locations-list' ); ?>
 		    </tbody>
 		    <tbody class="am-af am-af-locations-list">
@@ -395,6 +458,25 @@
 		 	?>
 		    </tbody>
 		    <!-- /ADVANCED Formatting -->
+
+		    <tr class="em-subheader"><td colspan="2"><h5><?php echo esc_html( sprintf(_x('%1$s %2$s Formats', 'cpt type and view type', 'events-manager'), __('Location', 'events-manager'), __('Grid', 'events-manager')) ); ?></h5></td></tr>
+		    <!-- ADVANCED Formatting -->
+		    <tbody class="am-af">
+		    <?php
+		    em_options_radio_binary ( __( 'Override Default Formats?', 'events-manager'), 'dbem_advanced_formatting_modes[locations-grid]', '', '', '.am-af-locations-grid' );
+		    ?>
+		    </tbody>
+		    <tbody class="am-af am-af-locations-grid">
+		    <?php
+		    em_options_textarea ( sprintf(_x( 'Default %1$s %2$s format header', 'events-manager', 'cpt type and view type'), __('Location', 'events-manager'), __('Grid', 'events-manager')), 'dbem_location_grid_item_format_header', sprintf(__( 'This content will appear just above your code for the %s list format below. Default is blank', 'events-manager'), __('Grid','events-manager')), true );
+		    em_options_textarea ( sprintf(_x( 'Default %1$s %2$s format', 'events-manager', 'cpt type and view type'), __('Location', 'events-manager'), __('Grid', 'events-manager')), 'dbem_location_grid_item_format', sprintf(__( 'The format of a single %s in a list.', 'events-manager'), __('event','events-manager')).$locations_placeholder_tip, true );
+		    em_options_textarea ( sprintf(_x( 'Default %1$s %2$s format footer', 'events-manager', 'cpt type and view type'), __('Location', 'events-manager'), __('Grid', 'events-manager')), 'dbem_location_grid_item_format_footer', sprintf(__( 'This content will appear just below your code for the %s list format above. Default is blank', 'events-manager'), __('Grid','events-manager')), true );
+		    ?>
+		    </tbody>
+		    <!-- /ADVANCED Formatting -->
+		    <?php
+		    em_options_input_text( sprintf(_x( 'Default %1$s %2$s width', 'events-manager', 'cpt type and view type'), __('Location', 'events-manager'), __('Grid', 'events-manager')), 'dbem_location_grid_item_width', __( 'The default minimum width, in pixels, that each grid item can shrink to fit on one line.', 'events-manager') );
+		    ?>
 		    
 		    <!-- ADVANCED Formatting -->
 		    <tbody class="am-af">
