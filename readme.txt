@@ -157,6 +157,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 15. Responsive lists that adapt to the size of its containing content.
 16. Clean forms for submitting and managing events, as well as booking events for users.
 17. Dashboard graph widget for quick review of your event bookings with tons of meaningful data views.
+18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
 = 6.3 =
