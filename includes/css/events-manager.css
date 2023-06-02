@@ -84,6 +84,8 @@
   --background-color-softer: hsl(var(--theme-hue), 0%, 95%);
   --background-color-checkboxes: white;
   --background-color-inputs: white;
+  --background-color-skeleton: #ededed;
+  --background-color-skeleton-softer: hsl(var(--theme-hue), 0%, 95%);
   --code-background: hsl(var(--theme-hue), 0%, 95%);
   /* #f1f1f1 		code background*/
   --button-primary-color: white;
@@ -630,9 +632,10 @@
   /* Create standard dropdown arrow (like WP admin) */
   /* Removes awkward default styles on some inputs for iOS */
 }
-.em.pixelbones .input input, .em.pixelbones .input textarea, .em.pixelbones .input select, .em.pixelbones .input fieldset, .em.pixelbones.input input, .em.pixelbones.input textarea, .em.pixelbones.input select, .em.pixelbones.input fieldset {
+.em.pixelbones .input input, .em.pixelbones .input textarea, .em.pixelbones .input select, .em.pixelbones .input fieldset, .em.pixelbones .input div.input-wrap, .em.pixelbones.input input, .em.pixelbones.input textarea, .em.pixelbones.input select, .em.pixelbones.input fieldset, .em.pixelbones.input div.input-wrap {
   margin-bottom: 15px !important;
 }
+.em.pixelbones .input div.input-wrap,
 .em.pixelbones .input input[type=email],
 .em.pixelbones .input input[type=number],
 .em.pixelbones .input input[type=search],
@@ -641,7 +644,8 @@
 .em.pixelbones .input input[type=url],
 .em.pixelbones .input input[type=password],
 .em.pixelbones .input textarea,
-.em.pixelbones .input select:not([multiple]), .em.pixelbones.input input[type=email],
+.em.pixelbones .input select:not([multiple]), .em.pixelbones.input div.input-wrap,
+.em.pixelbones.input input[type=email],
 .em.pixelbones.input input[type=number],
 .em.pixelbones.input input[type=search],
 .em.pixelbones.input input[type=text],
@@ -660,6 +664,7 @@
   box-sizing: border-box !important;
   border: 1px solid var(--border-color-softer) !important;
 }
+.em.pixelbones .input div.input-wrap.inline,
 .em.pixelbones .input input[type=email].inline,
 .em.pixelbones .input input[type=number].inline,
 .em.pixelbones .input input[type=search].inline,
@@ -668,7 +673,8 @@
 .em.pixelbones .input input[type=url].inline,
 .em.pixelbones .input input[type=password].inline,
 .em.pixelbones .input textarea.inline,
-.em.pixelbones .input select:not([multiple]).inline, .em.pixelbones.input input[type=email].inline,
+.em.pixelbones .input select:not([multiple]).inline, .em.pixelbones.input div.input-wrap.inline,
+.em.pixelbones.input input[type=email].inline,
 .em.pixelbones.input input[type=number].inline,
 .em.pixelbones.input input[type=search].inline,
 .em.pixelbones.input input[type=text].inline,
@@ -723,6 +729,7 @@
   padding-top: 6px !important;
   padding-bottom: 6px !important;
 }
+.em.pixelbones .input div.input-wrap:focus,
 .em.pixelbones .input input[type=email]:focus,
 .em.pixelbones .input input[type=number]:focus,
 .em.pixelbones .input input[type=search]:focus,
@@ -731,7 +738,8 @@
 .em.pixelbones .input input[type=url]:focus,
 .em.pixelbones .input input[type=password]:focus,
 .em.pixelbones .input textarea:focus,
-.em.pixelbones .input select:focus, .em.pixelbones.input input[type=email]:focus,
+.em.pixelbones .input select:focus, .em.pixelbones.input div.input-wrap:focus,
+.em.pixelbones.input input[type=email]:focus,
 .em.pixelbones.input input[type=number]:focus,
 .em.pixelbones.input input[type=search]:focus,
 .em.pixelbones.input input[type=text]:focus,
@@ -742,6 +750,19 @@
 .em.pixelbones.input select:focus {
   border: 1px solid var(--accent-color) !important;
   outline: 0 !important;
+}
+.em.pixelbones .input div.input-wrap, .em.pixelbones.input div.input-wrap {
+  padding: 0 !important;
+  /* The 7px vertically centers text on FF, ignored by Webkit */
+}
+.em.pixelbones .input div.input-wrap > input, .em.pixelbones .input div.input-wrap > input:focus, .em.pixelbones .input div.input-wrap > input:hover, .em.pixelbones.input div.input-wrap > input, .em.pixelbones.input div.input-wrap > input:focus, .em.pixelbones.input div.input-wrap > input:hover {
+  width: 100% !important;
+  margin: 0 !important;
+  border: none !important;
+  outline: 0 !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
 }
 .em.pixelbones .input label,
 .em.pixelbones .input legend, .em.pixelbones.input label,
@@ -825,6 +846,49 @@
 .em.pixelbones .input input:disabled, .em.pixelbones .input select:disabled, .em.pixelbones .input textarea:disabled, .em.pixelbones.input input:disabled, .em.pixelbones.input select:disabled, .em.pixelbones.input textarea:disabled {
   opacity: 0.5;
   background-color: #efefef;
+}
+.em.pixelbones .skeleton {
+  box-sizing: border-box;
+  position: relative;
+}
+.em.pixelbones .skeleton .item {
+  width: 100%;
+  height: 38px;
+  margin-bottom: 15px;
+  border: 1px var(--background-color-skeleton-softer);
+  border-radius: 4px;
+  background-color: var(--background-color-skeleton);
+  box-shadow: none;
+}
+.em.pixelbones .skeleton .item::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.2) 80%, rgba(255, 255, 255, 0.5) 20%, rgba(255, 255, 255, 0));
+  animation: shimmer 1.5s infinite;
+  content: "";
+}
+.em.pixelbones .skeleton .item.label {
+  width: 33%;
+  height: 14px;
+  margin-bottom: 8px;
+  border-radius: 0;
+}
+.em.pixelbones .skeleton .item.text {
+  height: 26px;
+  border-radius: 0;
+}
+.em.pixelbones .skeleton .item.title {
+  margin-bottom: 15px;
+  border-radius: 0;
+}
+@keyframes shimmer {
+  100% {
+    transform: translateX(110%);
+  }
 }
 .em.pixelbones ul {
   list-style: circle inside !important;
@@ -1940,17 +2004,17 @@
   line-height: var(--line-height) !important;
   text-align: justify;
 }
-.em.em-search, .em.em-search-advanced {
+.em.em-search, .em.em-search-advanced, .em .em-search-advanced {
   --border-color: #dedede;
   margin: 10px 0 25px;
 }
-.em.em-search form, .em.em-search-advanced form {
+.em.em-search form, .em.em-search-advanced form, .em .em-search-advanced form {
   --background-color: #fff;
 }
-.em.em-search .em-search-main, .em.em-search-advanced .em-search-main {
+.em.em-search .em-search-main, .em.em-search-advanced .em-search-main, .em .em-search-advanced .em-search-main {
   /* More work needed here for autocomplete messing up icons */
 }
-.em.em-search .em-search-main.em-search-main-bar, .em.em-search-advanced .em-search-main.em-search-main-bar {
+.em.em-search .em-search-main.em-search-main-bar, .em.em-search-advanced .em-search-main.em-search-main-bar, .em .em-search-advanced .em-search-main.em-search-main-bar {
   border: 1px solid var(--border-color);
   padding: 10px;
   width: 100%;
@@ -1961,40 +2025,39 @@
   align-items: center;
   justify-items: stretch;
 }
-.em.em-search .em-search-main.em-search-main-bar > .em-search-field, .em.em-search-advanced .em-search-main.em-search-main-bar > .em-search-field {
+.em.em-search .em-search-main.em-search-main-bar > .em-search-field, .em.em-search-advanced .em-search-main.em-search-main-bar > .em-search-field, .em .em-search-advanced .em-search-main.em-search-main-bar > .em-search-field {
   border-right: 1px solid var(--border-color) !important;
 }
-.em.em-search .em-search-main.em-search-main-bar > .em-search-field input, .em.em-search-advanced .em-search-main.em-search-main-bar > .em-search-field input {
+.em.em-search .em-search-main.em-search-main-bar > .em-search-field input, .em.em-search-advanced .em-search-main.em-search-main-bar > .em-search-field input, .em .em-search-advanced .em-search-main.em-search-main-bar > .em-search-field input {
   margin: 0 !important;
   text-overflow: ellipsis;
   overflow: hidden;
 }
-.em.em-search .em-search-main.em-search-main-bar > .em-search-field:not(:first-child) input, .em.em-search-advanced .em-search-main.em-search-main-bar > .em-search-field:not(:first-child) input {
+.em.em-search .em-search-main.em-search-main-bar > .em-search-field:not(:first-child) input, .em.em-search-advanced .em-search-main.em-search-main-bar > .em-search-field:not(:first-child) input, .em .em-search-advanced .em-search-main.em-search-main-bar > .em-search-field:not(:first-child) input {
   border: none !important;
   border-radius: 0 !important;
   padding-left: 50px !important;
   background-position-x: 15px !important;
   background-size: 20px !important;
 }
-.em.em-search .em-search-main.em-search-main-bar > .em-search-field:first-child input, .em.em-search-advanced .em-search-main.em-search-main-bar > .em-search-field:first-child input {
+.em.em-search .em-search-main.em-search-main-bar > .em-search-field:first-child input, .em.em-search-advanced .em-search-main.em-search-main-bar > .em-search-field:first-child input, .em .em-search-advanced .em-search-main.em-search-main-bar > .em-search-field:first-child input {
   border: none !important;
   margin-left: 0;
   padding-left: 50px !important;
   background-position-x: 15px !important;
   background-size: 20px !important;
 }
-.em.em-search .em-search-main.em-search-main-bar > div, .em.em-search-advanced .em-search-main.em-search-main-bar > div {
+.em.em-search .em-search-main.em-search-main-bar > div, .em.em-search-advanced .em-search-main.em-search-main-bar > div, .em .em-search-advanced .em-search-main.em-search-main-bar > div {
   flex: none;
 }
-.em.em-search .em-search-main.em-search-main-bar > .em-search-text, .em.em-search .em-search-main.em-search-main-bar > .em-search-geo, .em.em-search-advanced .em-search-main.em-search-main-bar > .em-search-text, .em.em-search-advanced .em-search-main.em-search-main-bar > .em-search-geo {
+.em.em-search .em-search-main.em-search-main-bar > .em-search-text, .em.em-search .em-search-main.em-search-main-bar > .em-search-geo, .em.em-search-advanced .em-search-main.em-search-main-bar > .em-search-text, .em.em-search-advanced .em-search-main.em-search-main-bar > .em-search-geo, .em .em-search-advanced .em-search-main.em-search-main-bar > .em-search-text, .em .em-search-advanced .em-search-main.em-search-main-bar > .em-search-geo {
   flex: auto;
   width: 100%;
 }
-.em.em-search .em-search-main.em-search-main-bar > .em-search-scope, .em.em-search-advanced .em-search-main.em-search-main-bar > .em-search-scope {
-  flex: none;
-  width: 180px;
+.em.em-search .em-search-main.em-search-main-bar > .em-search-scope, .em.em-search-advanced .em-search-main.em-search-main-bar > .em-search-scope, .em .em-search-advanced .em-search-main.em-search-main-bar > .em-search-scope {
+  flex: 1 0 180px;
 }
-.em.em-search .em-search-main.em-search-main-bar > .em-search-scope .em-datepicker-data, .em.em-search-advanced .em-search-main.em-search-main-bar > .em-search-scope .em-datepicker-data {
+.em.em-search .em-search-main.em-search-main-bar > .em-search-scope .em-datepicker-data, .em.em-search-advanced .em-search-main.em-search-main-bar > .em-search-scope .em-datepicker-data, .em .em-search-advanced .em-search-main.em-search-main-bar > .em-search-scope .em-datepicker-data {
   width: 100%;
   overflow: hidden;
   background: var(--icon-calendar) 8px 50% no-repeat !important;
@@ -2002,7 +2065,7 @@
   padding-left: 36px !important;
   background-position-x: 14px !important;
 }
-.em.em-search .em-search-main.em-search-main-bar > .em-search-scope .em-datepicker-data input, .em.em-search-advanced .em-search-main.em-search-main-bar > .em-search-scope .em-datepicker-data input {
+.em.em-search .em-search-main.em-search-main-bar > .em-search-scope .em-datepicker-data input, .em.em-search-advanced .em-search-main.em-search-main-bar > .em-search-scope .em-datepicker-data input, .em .em-search-advanced .em-search-main.em-search-main-bar > .em-search-scope .em-datepicker-data input {
   position: relative;
   display: inline-block !important;
   width: 130px !important;
@@ -2011,7 +2074,7 @@
   font-size: 14px;
   color: #777;
 }
-.em.em-search .em-search-main.em-search-main-bar > .em-search-scope .em-datepicker-data input::-webkit-calendar-picker-indicator, .em.em-search-advanced .em-search-main.em-search-main-bar > .em-search-scope .em-datepicker-data input::-webkit-calendar-picker-indicator {
+.em.em-search .em-search-main.em-search-main-bar > .em-search-scope .em-datepicker-data input::-webkit-calendar-picker-indicator, .em.em-search-advanced .em-search-main.em-search-main-bar > .em-search-scope .em-datepicker-data input::-webkit-calendar-picker-indicator, .em .em-search-advanced .em-search-main.em-search-main-bar > .em-search-scope .em-datepicker-data input::-webkit-calendar-picker-indicator {
   position: absolute;
   left: 0;
   top: 0;
@@ -2022,78 +2085,79 @@
   cursor: pointer;
   background: transparent;
 }
-.em.em-search .em-search-main.em-search-main-bar > .em-search-scope .em-datepicker-data .separator, .em.em-search-advanced .em-search-main.em-search-main-bar > .em-search-scope .em-datepicker-data .separator {
+.em.em-search .em-search-main.em-search-main-bar > .em-search-scope .em-datepicker-data .separator, .em.em-search-advanced .em-search-main.em-search-main-bar > .em-search-scope .em-datepicker-data .separator, .em .em-search-advanced .em-search-main.em-search-main-bar > .em-search-scope .em-datepicker-data .separator {
   display: none;
 }
-.em.em-search .em-search-main.em-search-main-bar > .em-search-submit button, .em.em-search-advanced .em-search-main.em-search-main-bar > .em-search-submit button {
+.em.em-search .em-search-main.em-search-main-bar > .em-search-submit button, .em.em-search-advanced .em-search-main.em-search-main-bar > .em-search-submit button, .em .em-search-advanced .em-search-main.em-search-main-bar > .em-search-submit button {
   padding: 0 20px !important;
   line-height: 34px !important;
   height: 34px !important;
   margin: 0 !important;
 }
-.em.em-search .em-search-main input.em-search-text, .em.em-search-advanced .em-search-main input.em-search-text {
+.em.em-search .em-search-main input.em-search-text, .em.em-search-advanced .em-search-main input.em-search-text, .em .em-search-advanced .em-search-main input.em-search-text {
   background: var(--icon-magnifying-glass) 8px 50% no-repeat !important;
   background-size: 18px !important;
   padding-left: 36px !important;
 }
-.em.em-search .em-search-main input.em-search-geo, .em.em-search-advanced .em-search-main input.em-search-geo {
+.em.em-search .em-search-main input.em-search-geo, .em.em-search-advanced .em-search-main input.em-search-geo, .em .em-search-advanced .em-search-main input.em-search-geo {
   background: var(--icon-location) 8px 50% no-repeat !important;
   background-size: 18px !important;
   padding-left: 36px !important;
 }
-.em.em-search .em-search-main input.em-search-geo.on, .em.em-search-advanced .em-search-main input.em-search-geo.on {
+.em.em-search .em-search-main input.em-search-geo.on, .em.em-search-advanced .em-search-main input.em-search-geo.on, .em .em-search-advanced .em-search-main input.em-search-geo.on {
   background-image: var(--icon-location-on) !important;
 }
-.em.em-search .em-search-main input.em-search-geo.off, .em.em-search-advanced .em-search-main input.em-search-geo.off {
+.em.em-search .em-search-main input.em-search-geo.off, .em.em-search-advanced .em-search-main input.em-search-geo.off, .em .em-search-advanced .em-search-main input.em-search-geo.off {
   background-image: var(--icon-location-off) !important;
 }
-.em.em-search .em-search-main input.em-search-scope, .em.em-search-advanced .em-search-main input.em-search-scope {
+.em.em-search .em-search-main input.em-search-scope, .em.em-search-advanced .em-search-main input.em-search-scope, .em .em-search-advanced .em-search-main input.em-search-scope {
   background: var(--icon-calendar) 8px 50% no-repeat !important;
   background-size: 18px !important;
   padding-left: 36px !important;
 }
 .em.em-search .em-search-main input:-webkit-autofill,
 .em.em-search .em-search-main input:-webkit-autofill:focus, .em.em-search-advanced .em-search-main input:-webkit-autofill,
-.em.em-search-advanced .em-search-main input:-webkit-autofill:focus {
+.em.em-search-advanced .em-search-main input:-webkit-autofill:focus, .em .em-search-advanced .em-search-main input:-webkit-autofill,
+.em .em-search-advanced .em-search-main input:-webkit-autofill:focus {
   transition: background-color 600000s 0s, color 600000s 0s;
 }
-.em.em-search .em-search-main input[data-autocompleted], .em.em-search-advanced .em-search-main input[data-autocompleted] {
+.em.em-search .em-search-main input[data-autocompleted], .em.em-search-advanced .em-search-main input[data-autocompleted], .em .em-search-advanced .em-search-main input[data-autocompleted] {
   background-color: transparent !important;
 }
-.em.em-search button[type=submit].disabled:hover, .em.em-search-advanced button[type=submit].disabled:hover {
+.em.em-search button[type=submit].disabled:hover, .em.em-search-advanced button[type=submit].disabled:hover, .em .em-search-advanced button[type=submit].disabled:hover {
   cursor: not-allowed !important;
   pointer-events: auto !important;
 }
-.em.em-search .em-search-advanced-trigger, .em.em-search-advanced .em-search-advanced-trigger {
+.em.em-search .em-search-advanced-trigger, .em.em-search-advanced .em-search-advanced-trigger, .em .em-search-advanced .em-search-advanced-trigger {
   width: 55px;
   padding: 0 15px;
 }
-.em.em-search .em-search-views, .em.em-search-advanced .em-search-views {
+.em.em-search .em-search-views, .em.em-search-advanced .em-search-views, .em .em-search-advanced .em-search-views {
   width: 52px;
   height: 25px;
   padding: 0 15px;
 }
-.em.em-search .em-search-views [data-view=list], .em.em-search-advanced .em-search-views [data-view=list] {
+.em.em-search .em-search-views [data-view=list], .em.em-search-advanced .em-search-views [data-view=list], .em .em-search-advanced .em-search-views [data-view=list] {
   background-image: var(--icon-list) !important;
 }
-.em.em-search .em-search-views [data-view=list-grouped], .em.em-search-advanced .em-search-views [data-view=list-grouped] {
+.em.em-search .em-search-views [data-view=list-grouped], .em.em-search-advanced .em-search-views [data-view=list-grouped], .em .em-search-advanced .em-search-views [data-view=list-grouped] {
   background-image: var(--icon-list-grouped) !important;
 }
-.em.em-search .em-search-views [data-view=calendar], .em.em-search-advanced .em-search-views [data-view=calendar] {
+.em.em-search .em-search-views [data-view=calendar], .em.em-search-advanced .em-search-views [data-view=calendar], .em .em-search-advanced .em-search-views [data-view=calendar] {
   background-image: var(--icon-calendar) !important;
 }
-.em.em-search .em-search-views [data-view=map], .em.em-search-advanced .em-search-views [data-view=map] {
+.em.em-search .em-search-views [data-view=map], .em.em-search-advanced .em-search-views [data-view=map], .em .em-search-advanced .em-search-views [data-view=map] {
   background-image: var(--icon-map) !important;
 }
-.em.em-search .em-search-views [data-view=grid], .em.em-search-advanced .em-search-views [data-view=grid] {
+.em.em-search .em-search-views [data-view=grid], .em.em-search-advanced .em-search-views [data-view=grid], .em .em-search-advanced .em-search-views [data-view=grid] {
   background-image: var(--icon-list-grid) !important;
 }
-.em.em-search .em-search-views button[data-view=map], .em.em-search-advanced .em-search-views button[data-view=map] {
+.em.em-search .em-search-views button[data-view=map], .em.em-search-advanced .em-search-views button[data-view=map], .em .em-search-advanced .em-search-views button[data-view=map] {
   background-size: 28px;
   width: 28px;
   height: 28px;
 }
-.em.em-search .em-search-views .em-search-views-trigger, .em.em-search-advanced .em-search-views .em-search-views-trigger {
+.em.em-search .em-search-views .em-search-views-trigger, .em.em-search-advanced .em-search-views .em-search-views-trigger, .em .em-search-advanced .em-search-views .em-search-views-trigger {
   display: block;
   width: 42px;
   height: 25px;
@@ -2103,7 +2167,7 @@
   margin: 0;
   cursor: pointer;
 }
-.em.em-search .em-search-views .em-search-views-trigger .em-search-view-option, .em.em-search-advanced .em-search-views .em-search-views-trigger .em-search-view-option {
+.em.em-search .em-search-views .em-search-views-trigger .em-search-view-option, .em.em-search-advanced .em-search-views .em-search-views-trigger .em-search-view-option, .em .em-search-advanced .em-search-views .em-search-views-trigger .em-search-view-option {
   display: block;
   width: 25px;
   height: 25px;
@@ -2111,15 +2175,15 @@
   background-repeat: no-repeat;
   background-position: center center;
   background-color: transparent !important;
-  font-size: 0 !important;
+  text-indent: -10000px !important;
 }
-.em.em-search .em-search-views .em-search-views-options, .em.em-search-advanced .em-search-views .em-search-views-options {
+.em.em-search .em-search-views .em-search-views-options, .em.em-search-advanced .em-search-views .em-search-views-options, .em .em-search-advanced .em-search-views .em-search-views-options {
   display: none;
 }
-.em.em-search .em-search-views .tippy-content .em-search-views-options, .em.em-search-advanced .em-search-views .tippy-content .em-search-views-options {
+.em.em-search .em-search-views .tippy-content .em-search-views-options, .em.em-search-advanced .em-search-views .tippy-content .em-search-views-options, .em .em-search-advanced .em-search-views .tippy-content .em-search-views-options {
   display: block;
 }
-.em.em-search .em-search-views .em-search-views-options-list, .em.em-search-advanced .em-search-views .em-search-views-options-list {
+.em.em-search .em-search-views .em-search-views-options-list, .em.em-search-advanced .em-search-views .em-search-views-options-list, .em .em-search-advanced .em-search-views .em-search-views-options-list {
   display: block !important;
   padding: 0 !important;
   margin: 5px 0 !important;
@@ -2128,7 +2192,7 @@
   cursor: pointer !important;
   overflow: visible !important;
 }
-.em.em-search .em-search-views .em-search-views-options-list label.em-search-view-option, .em.em-search-advanced .em-search-views .em-search-views-options-list label.em-search-view-option {
+.em.em-search .em-search-views .em-search-views-options-list label.em-search-view-option, .em.em-search-advanced .em-search-views .em-search-views-options-list label.em-search-view-option, .em .em-search-advanced .em-search-views .em-search-views-options-list label.em-search-view-option {
   display: block !important;
   padding: 5px 10px 5px 40px !important;
   margin: 0 !important;
@@ -2137,13 +2201,13 @@
   background-position: 10px center !important;
   background-color: transparent !important;
 }
-.em.em-search .em-search-views .em-search-views-options-list label.em-search-view-option:hover, .em.em-search .em-search-views .em-search-views-options-list label.em-search-view-option.focused, .em.em-search-advanced .em-search-views .em-search-views-options-list label.em-search-view-option:hover, .em.em-search-advanced .em-search-views .em-search-views-options-list label.em-search-view-option.focused {
+.em.em-search .em-search-views .em-search-views-options-list label.em-search-view-option:hover, .em.em-search .em-search-views .em-search-views-options-list label.em-search-view-option.focused, .em.em-search-advanced .em-search-views .em-search-views-options-list label.em-search-view-option:hover, .em.em-search-advanced .em-search-views .em-search-views-options-list label.em-search-view-option.focused, .em .em-search-advanced .em-search-views .em-search-views-options-list label.em-search-view-option:hover, .em .em-search-advanced .em-search-views .em-search-views-options-list label.em-search-view-option.focused {
   background-color: #efefef !important;
 }
-.em.em-search .em-search-views .em-search-views-options-list label.em-search-view-option:checked, .em.em-search .em-search-views .em-search-views-options-list label.em-search-view-option.checked, .em.em-search-advanced .em-search-views .em-search-views-options-list label.em-search-view-option:checked, .em.em-search-advanced .em-search-views .em-search-views-options-list label.em-search-view-option.checked {
+.em.em-search .em-search-views .em-search-views-options-list label.em-search-view-option:checked, .em.em-search .em-search-views .em-search-views-options-list label.em-search-view-option.checked, .em.em-search-advanced .em-search-views .em-search-views-options-list label.em-search-view-option:checked, .em.em-search-advanced .em-search-views .em-search-views-options-list label.em-search-view-option.checked, .em .em-search-advanced .em-search-views .em-search-views-options-list label.em-search-view-option:checked, .em .em-search-advanced .em-search-views .em-search-views-options-list label.em-search-view-option.checked {
   background-color: #cee0ea !important;
 }
-.em.em-search .em-search-views .em-search-views-options-list label.em-search-view-option input[type=radio], .em.em-search-advanced .em-search-views .em-search-views-options-list label.em-search-view-option input[type=radio] {
+.em.em-search .em-search-views .em-search-views-options-list label.em-search-view-option input[type=radio], .em.em-search-advanced .em-search-views .em-search-views-options-list label.em-search-view-option input[type=radio], .em .em-search-advanced .em-search-views .em-search-views-options-list label.em-search-view-option input[type=radio] {
   border: 0;
   padding: 0;
   margin: 0;
@@ -2160,11 +2224,11 @@
   white-space: nowrap;
   /* added line to stop words getting smushed together (as they go onto seperate lines and some screen readers do not understand line feeds as a space */
 }
-.em.em-search .em-search-views .em-search-views-options-list:focus, .em.em-search-advanced .em-search-views .em-search-views-options-list:focus {
+.em.em-search .em-search-views .em-search-views-options-list:focus, .em.em-search-advanced .em-search-views .em-search-views-options-list:focus, .em .em-search-advanced .em-search-views .em-search-views-options-list:focus {
   border: none !important;
   outline: none !important;
 }
-.em.em-search[data-view=calendar] .em-search-scope, .em.em-search-advanced[data-view=calendar] .em-search-scope {
+.em.em-search[data-view=calendar] .em-search-scope, .em.em-search-advanced[data-view=calendar] .em-search-scope, .em .em-search-advanced[data-view=calendar] .em-search-scope {
   display: none;
   visibility: hidden;
 }
@@ -2178,18 +2242,24 @@
   padding-left: 15px;
   flex: 0 0 42px;
 }
+.em.em-search.has-search-main .em-search-advanced-inline {
+  margin-top: 20px;
+}
 .em.em-search.size-small {
   padding: 5px !important;
 }
-.em.em-search.size-small .em-search-geo, .em.em-search.size-small .em-search-scope {
+.em.em-search.size-small .em-search-main-bar > .em-search-field:not(:first-child) {
   display: none;
   visibility: hidden;
 }
-.em.em-search.size-small > .em-search-field:first-child input {
+.em.em-search.size-small .em-search-main-bar > .em-search-field:first-child input {
   padding-left: 30px !important;
   padding-right: 5px !important;
   background-position-x: 3px !important;
   background-size: 16px !important;
+}
+.em.em-search.size-small .em-search-main-bar .em-search-scope {
+  flex: auto;
 }
 .em.em-search.size-small .em-search-advanced-trigger {
   width: 45px;
@@ -2200,11 +2270,11 @@
   width: 62px;
   padding-left: 10px;
 }
-.em.em-search.size-medium .em-search-main .em-search-geo {
+.em.em-search.size-medium .em-search-main-bar > .em-search-field:not(:first-child):not(:last-child) {
   display: none;
   visibility: hidden;
 }
-.em.em-search.size-medium > .em-search-field:first-child input {
+.em.em-search.size-medium .em-search-main-bar > .em-search-field:first-child input {
   padding-left: 40px !important;
   padding-right: 10px !important;
   background-position-x: 8px !important;
@@ -2238,45 +2308,75 @@
   color: var(--counter-color-tentative);
   border-color: var(--counter-background-tentative);
 }
-.em.em-modal.em-search-advanced {
+.em.em-search-advanced {
   /* Modal Structure */
 }
-.em.em-modal.em-search-advanced .em-modal-content {
+.em.em-search-advanced section.em-search-main > .em-search-field {
+  margin: 0 !important;
+}
+.em.em-search-advanced.em-modal-content {
   overflow-y: auto;
   padding: 20px;
   margin: 0;
 }
-.em.em-modal.em-search-advanced .em-modal-content section > div {
+.em.em-search-advanced.em-modal-content section > div {
   margin: 0;
 }
-.em.em-modal.em-search-advanced footer {
+.em.em-search-advanced.em-modal footer {
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
 }
-.em.em-modal.em-search-advanced footer div:first-child {
+.em.em-search-advanced.em-modal footer div:first-child {
   justify-self: start;
 }
-.em.em-modal.em-search-advanced footer div:last-child {
+.em.em-search-advanced.em-modal footer div:last-child {
   justify-self: end;
 }
-.em.em-modal.em-search-advanced footer button.button {
+.em.em-search-advanced.em-modal footer button.button {
   margin-bottom: 0 !important;
   padding-bottom: 0 !important;
 }
+.em.em-search-advanced.em-search-advanced-inline footer {
+  text-align: right;
+}
+.em.em-search-advanced.em-search-advanced-inline footer .em-search-views {
+  width: auto !important;
+  height: auto !important;
+  border: none !important;
+  border-right: 1px solid var(--border-color);
+  padding-left: 0 !important;
+  padding: 0 !important;
+  text-align: left;
+}
+.em.em-search-advanced.em-search-advanced-inline footer .em-search-views .em-search-views-trigger {
+  width: auto !important;
+  height: auto !important;
+  background-position: calc(100% - 8px) center;
+  padding: 0 !important;
+}
+.em.em-search-advanced.em-search-advanced-inline footer .em-search-views .em-search-views-trigger button {
+  width: auto !important;
+  padding: 0 40px 0 25px !important;
+  background-position: calc(50% - 8px) center;
+  background-size: 22px;
+}
+.em.em-search-advanced.em-search-advanced-inline footer div {
+  display: inline-block;
+}
 @media only screen and (max-width: 39.99rem) {
-  .em.em-modal.em-search-advanced footer > div {
+  .em.em-search-advanced.em-modal footer > div {
     padding: 10px 15px;
   }
-  .em.em-modal.em-search-advanced footer button.button {
+  .em.em-search-advanced.em-modal footer button.button {
     padding: 0 20px !important;
   }
 }
-.em.em-modal.em-search-advanced .em-search-advanced-sections section {
+.em.em-search-advanced .em-search-advanced-sections > section.em-search-advanced-section {
   background: var(--icon-options-v) 0 15px no-repeat;
   background-size: 18px 18px;
 }
-.em.em-modal.em-search-advanced .em-search-advanced-sections section header {
+.em.em-search-advanced .em-search-advanced-sections > section.em-search-advanced-section header {
   width: 100%;
   font-size: 18px;
   padding: 16px 0 14px 28px;
@@ -2285,10 +2385,10 @@
   background: var(--icon-plus) right 50% no-repeat;
   background-size: 18px 18px;
 }
-.em.em-modal.em-search-advanced .em-search-advanced-sections section header:hover {
+.em.em-search-advanced .em-search-advanced-sections > section.em-search-advanced-section header:hover {
   cursor: pointer;
 }
-.em.em-modal.em-search-advanced .em-search-advanced-sections section header span.total-count {
+.em.em-search-advanced .em-search-advanced-sections > section.em-search-advanced-section header span.total-count {
   border: 1px solid var(--counter-background);
   border-radius: 50%;
   color: #fff;
@@ -2302,61 +2402,62 @@
   text-align: center;
   top: -4px;
   position: relative;
+  line-height: 16px;
 }
-.em.em-modal.em-search-advanced .em-search-advanced-sections section:last-of-type header {
+.em.em-search-advanced .em-search-advanced-sections > section.em-search-advanced-section:last-of-type header {
   border-bottom: 0;
 }
-.em.em-modal.em-search-advanced .em-search-advanced-sections section div.em-search-section-content {
+.em.em-search-advanced .em-search-advanced-sections > section.em-search-advanced-section div.em-search-section-content {
   display: none;
   visibility: hidden;
 }
-.em.em-modal.em-search-advanced .em-search-advanced-sections section.active header {
+.em.em-search-advanced .em-search-advanced-sections > section.em-search-advanced-section.active header {
   background-image: var(--icon-minus);
   border-bottom: 0;
   margin-bottom: 10px;
 }
-.em.em-modal.em-search-advanced .em-search-advanced-sections section.active div.em-search-section-content {
+.em.em-search-advanced .em-search-advanced-sections > section.em-search-advanced-section.active div.em-search-section-content {
   display: block;
   visibility: visible;
   border-bottom: 1px solid #dedede;
   padding: 0 0 20px;
 }
-.em.em-modal.em-search-advanced .em-search-advanced-sections section.active:last-of-type header, .em.em-modal.em-search-advanced .em-search-advanced-sections section.active:last-of-type div.em-search-section-content {
+.em.em-search-advanced .em-search-advanced-sections > section.em-search-advanced-section.active:last-of-type header, .em.em-search-advanced .em-search-advanced-sections > section.em-search-advanced-section.active:last-of-type div.em-search-section-content {
   border-bottom: 0;
 }
-.em.em-modal.em-search-advanced .em-search-advanced-sections section.em-search-section-location {
+.em.em-search-advanced .em-search-advanced-sections > section.em-search-advanced-section.em-search-section-location {
   background-image: var(--icon-compass);
 }
-.em.em-modal.em-search-advanced .em-search-advanced-sections section.em-search-section-categories {
+.em.em-search-advanced .em-search-advanced-sections > section.em-search-advanced-section.em-search-section-categories {
   background-image: var(--icon-folder);
 }
-.em.em-modal.em-search-advanced .em-search-advanced-sections section.em-search-section-tags {
+.em.em-search-advanced .em-search-advanced-sections > section.em-search-advanced-section.em-search-section-tags {
   background-image: var(--icon-tag);
 }
-.em.em-modal.em-search-advanced .em-search-advanced-sections .em-search-field {
+.em.em-search-advanced .em-search-advanced-sections .em-search-field {
   margin-bottom: 10px;
 }
-.em.em-modal.em-search-advanced .em-search-advanced-sections .em-search-geo-units {
+.em.em-search-advanced .em-search-advanced-sections .em-search-geo-units {
   display: flex;
   flex-direction: row;
   gap: 5px;
 }
-.em.em-modal.em-search-advanced .em-search-advanced-sections .em-search-geo-units select {
+.em.em-search-advanced .em-search-advanced-sections .em-search-geo-units select {
   display: inline-block !important;
   padding-right: 30px !important;
 }
-.em.em-modal.em-search-advanced .em-search-advanced-sections .em-search-geo-units label {
+.em.em-search-advanced .em-search-advanced-sections .em-search-geo-units label {
   display: inline-block !important;
   vertical-align: top !important;
   padding: 9px 15px 9px !important;
 }
-.em.em-modal.em-search-advanced .em-search-advanced-sections .em-search-geo-units .em-search-geo-distance {
+.em.em-search-advanced .em-search-advanced-sections .em-search-geo-units .em-search-geo-distance {
   width: auto !important;
   border-top-right-radius: 0 !important;
   border-bottom-right-radius: 0 !important;
   margin-right: 0 !important;
 }
-.em.em-modal.em-search-advanced .em-search-advanced-sections .em-search-geo-units .em-search-geo-unit {
+.em.em-search-advanced .em-search-advanced-sections .em-search-geo-units .em-search-geo-unit {
   width: auto !important;
   border-top-left-radius: 0 !important;
   border-bottom-left-radius: 0 !important;
@@ -2965,6 +3066,7 @@
 }
 .em.em-events-widget .em-item .em-item-image-placeholder div.date {
   padding-top: 15%;
+  min-width: 60px;
 }
 .em.em-events-widget .em-item .em-item-image-placeholder div.date span.day {
   font-size: 30px !important;
@@ -3086,9 +3188,21 @@
 .em.em-event-booking-form .em-booking-form {
   border: 1px solid var(--main-border-color);
 }
-.em.em-event-booking-form .em-booking-form .input-group {
+.em.em-event-booking-form .em-booking-form .input-user-field, .em.em-event-booking-form .em-booking-form .input-group, .em.em-event-booking-form .em-booking-form .input-type {
   display: block !important;
   /* bootstrap and others interfere with this */
+  margin-bottom: 25px !important;
+}
+.em.em-event-booking-form .em-booking-form .input-user-field input:not([type=checkbox], [type=radio]), .em.em-event-booking-form .em-booking-form .input-user-field select, .em.em-event-booking-form .em-booking-form .input-user-field .input-group, .em.em-event-booking-form .em-booking-form .input-user-field .input-group-checkboxes, .em.em-event-booking-form .em-booking-form .input-user-field button, .em.em-event-booking-form .em-booking-form .input-group input:not([type=checkbox], [type=radio]), .em.em-event-booking-form .em-booking-form .input-group select, .em.em-event-booking-form .em-booking-form .input-group .input-group, .em.em-event-booking-form .em-booking-form .input-group .input-group-checkboxes, .em.em-event-booking-form .em-booking-form .input-group button, .em.em-event-booking-form .em-booking-form .input-type input:not([type=checkbox], [type=radio]), .em.em-event-booking-form .em-booking-form .input-type select, .em.em-event-booking-form .em-booking-form .input-type .input-group, .em.em-event-booking-form .em-booking-form .input-type .input-group-checkboxes, .em.em-event-booking-form .em-booking-form .input-type button {
+  margin-bottom: 0 !important;
+}
+.em.em-event-booking-form .em-booking-form > section {
+  margin: 0;
+  padding: 0;
+}
+.em.em-event-booking-form.em-hide-dynamic .em-booking-form[data-spaces="0"] section:not(.em-booking-form-section-tickets) {
+  display: none;
+  visibility: hidden;
 }
 .em.em-event-booking-form h3.em-booking-section-title {
   width: auto;
@@ -3108,11 +3222,18 @@
   font-size: var(--font-size);
   font-weight: bold;
 }
+.em.em-event-booking-form .em-button.em-booking-submit:disabled, .em.em-event-booking-form .em-button.em-booking-submit.disabled {
+  opacity: 1 !important;
+}
 .em.em-event-booking-form .em-booking-section {
+  position: relative;
   width: auto;
   float: none;
-  margin: 20px 30px;
-  padding: 0;
+  padding: 20px 30px;
+  margin: 0;
+}
+.em.em-event-booking-form .em-booking-section.em-booking-form-buttons {
+  z-index: 100000000;
 }
 .em.em-event-booking-form .em-tickets {
   border: 0;
@@ -3121,6 +3242,9 @@
   width: calc(100% - 20px);
   /* Attendee Info i.e. Ticket Bookings */
   /* Attendee Info - Legacy */
+}
+.em.em-event-booking-form .em-tickets.widefat {
+  background-color: transparent;
 }
 .em.em-event-booking-form .em-tickets thead {
   position: absolute;
@@ -3269,12 +3393,96 @@
   width: 100%;
   margin-bottom: 5px;
 }
-.em.em-event-booking-form .em-booking-form-payment .em-booking-gateway-form {
+.em.em-event-booking-form .em-booking-form-confirm .em-booking-gateway-form {
   margin-bottom: 20px;
 }
-.em.em-event-booking-form .em-booking-form-payment .em-bookings-form-gateway-expiry select {
+.em.em-event-booking-form .em-booking-form-confirm .em-bookings-form-gateway-expiry select {
   width: auto !important;
   min-width: 100px;
+}
+.em .em-booking-form-summary.em-booking-section {
+  padding-bottom: 30px;
+}
+.em .em-booking-form-summary.em-booking-section.no-booking {
+  padding-bottom: 40px;
+}
+.em .em-booking-form-summary.em-booking-section.no-booking .em-loading {
+  background-position-y: calc(50% - 10px) !important;
+}
+.em .em-booking-form-summary .em-bs-section {
+  display: grid;
+  grid-template-rows: 1fr;
+  grid-template-columns: none;
+  grid-gap: 10px;
+}
+.em .em-booking-form-summary .em-bs-section:not(:first-child) {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #dedede;
+}
+.em .em-booking-form-summary .em-bs-section .em-bs-row {
+  display: grid;
+  grid-template-rows: none;
+  grid-template-columns: auto max-content;
+  grid-gap: 10px;
+  align-items: center;
+  justify-items: start;
+}
+.em .em-booking-form-summary .em-bs-section .em-bs-row.em-bs-row-item {
+  grid-template-columns: max-content auto max-content;
+}
+.em .em-booking-form-summary .em-bs-section .em-bs-subtitle {
+  width: 100%;
+  align-self: center;
+  justify-self: start;
+  justify-content: start;
+  grid-column: 1/-1;
+  margin: 20px 14px 0 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #dedede;
+  font-weight: 500;
+}
+.em .em-booking-form-summary .em-loading {
+  opacity: 85% !important;
+  background-size: 55px !important;
+}
+.em .em-booking-form-summary .em-bs-section-total {
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+.em .em-booking-form-summary .em-bs-section-total .em-bs-total-taxes-inc {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: normal;
+  font-style: italic;
+}
+.em .em-booking-form-summary .em-bs-cell-price {
+  justify-self: end;
+  justify-content: end;
+  text-align: right;
+}
+.em .em-booking-form-summary .em-bs-cell-desc .em-icon {
+  font-size: 15px;
+  line-height: 17px;
+  width: 15px;
+  height: 17px;
+  background-size: 13px;
+}
+.em .em-booking-form-summary .em-bs-subsection .em-bs-cell-desc {
+  padding-left: 20px;
+}
+.em .em-booking-form-summary .em-bs-qty-x {
+  display: inline-block;
+  padding-right: 5px;
+}
+.em .em-booking-form-summary .skeleton .item {
+  margin-bottom: 0;
+}
+.em .em-booking-form-summary .skeleton .em-bs-row {
+  grid-template-columns: 8fr 2fr;
+}
+.em .em-booking-form-summary .skeleton .em-bs-row.em-bs-row-item {
+  grid-template-columns: 7fr 1fr 2fr;
 }
 .em.pixelbones .input div.tablenav {
   display: flex;

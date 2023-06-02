@@ -960,7 +960,7 @@ class Dashboard {
 								<span><?php esc_html_e('Booking Status', 'events-manager'); ?></span>
 								<select name="status" class="em-chart-filter em-booking-status" aria-label="<?php esc_html_e('Booking Statuses', 'events-manager'); ?>">
 									<?php
-									$status_arg = implode(',', $args['status']);
+									$status_arg = is_array($args['status']) ? implode(',', $args['status']) : $args['status'];
 									?>
 									<option value="all" <?php self::selected($status_arg, 'all'); ?>><?php esc_html_e('All', 'events-manager'); ?></option>
 									<option value="0,1" <?php self::selected($status_arg, '0,1'); ?>><?php esc_html_e('Pending and Approved', 'events-manager'); ?></option>

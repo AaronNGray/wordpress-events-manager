@@ -40,7 +40,7 @@ function em_get_locations_map_shortcode($args){
 	$args['width'] = $width;
 	$args['height'] = $height;
 	//assign random number for element id reference
-	$args['random_id'] = substr(md5(rand().rand()),0,5);
+	if( !empty($args['id']) ) $args['id'] = rand(100, getrandmax());
 	//add JSON style to map
 	$style = '';
 	if( !empty($args['map_style']) ){
@@ -80,8 +80,7 @@ function em_get_events_map_shortcode($args){
 	$args['width'] = $width;
 	$args['height'] = $height;
 	//assign random number for element id reference
-	$args['random_id'] = substr(md5(rand().rand()),0,5);
-	if( !empty($args['id']) ) $args['id'] = rand();
+	if( !empty($args['id']) ) $args['id'] = rand(100, getrandmax());
 	//add JSON style to map
 	$style = '';
 	if( !empty($args['map_style']) ){
@@ -112,10 +111,14 @@ function em_get_events_list_shortcode($args, $format='') {
 	$args['format'] = ($format != '' || empty($args['format'])) ? $format : $args['format']; 
 	$args['format'] = html_entity_decode($args['format']); //shortcode doesn't accept html
 	$args['limit'] = isset($args['limit']) ? $args['limit'] : get_option('dbem_events_default_limit');
-	if( !empty($args['id']) ) $args['id'] = rand();
+	if( !empty($args['id']) ) $args['id'] = rand(100, getrandmax());
 	if( empty($args['format']) && empty($args['format_header']) && empty($args['format_footer']) ){
 		ob_start();
-		em_locate_template('templates/events-list.php', true, array('args'=>$args));
+		if( !empty($args['view']) ){
+			em_output_events_view( $args );
+		}else{
+			em_locate_template('templates/events-list.php', true, array('args'=>$args));
+		}
 		$return = ob_get_clean();
 	}else{
 		$args['ajax'] = false;
@@ -140,7 +143,7 @@ function em_get_events_list_grouped_shortcode($args = array(), $format = ''){
 	$args['format'] = ($format != '' || empty($args['format'])) ? $format : $args['format']; 
 	$args['format'] = html_entity_decode($args['format']); //shortcode doesn't accept html
 	$args['limit'] = isset($args['limit']) ? $args['limit'] : get_option('dbem_events_default_limit');
-	if( !empty($args['id']) ) $args['id'] = rand();
+	if( !empty($args['id']) ) $args['id'] = rand(100, getrandmax());
 	if( empty($args['format']) && empty($args['format_header']) && empty($args['format_footer']) ){
 		ob_start();
 		em_locate_template('templates/events-list-grouped.php', true, array('args'=>$args));
@@ -193,7 +196,7 @@ function em_get_locations_list_shortcode( $args, $format='' ) {
 	$args['format'] = ($format != '' || empty($args['format'])) ? $format : $args['format']; 
 	$args['format'] = html_entity_decode($args['format']); //shorcode doesn't accept html
 	$args['limit'] = isset($args['limit']) ? $args['limit'] : get_option('dbem_locations_default_limit');
-	if( !empty($args['id']) ) $args['id'] = rand();
+	if( !empty($args['id']) ) $args['id'] = rand(100, getrandmax());
 	if( empty($args['format']) && empty($args['format_header']) && empty($args['format_footer']) ){
 		ob_start();
 		if( !empty($args['ajax']) ){ echo '<div class="em-search-ajax">'; } //open AJAX wrapper
@@ -246,7 +249,7 @@ function em_get_categories_shortcode($args, $format=''){
 	$args['order'] = !empty($args['order']) ? $args['order'] : get_option('dbem_categories_default_order');
 	$args['pagination'] = isset($args['pagination']) ? $args['pagination'] : !isset($args['limit']);
 	$args['limit'] = isset($args['limit']) ? $args['limit'] : get_option('dbem_categories_default_limit');
-	if( !empty($args['id']) ) $args['id'] = rand();
+	if( !empty($args['id']) ) $args['id'] = rand(100, getrandmax());
 	if( empty($args['format']) && empty($args['format_header']) && empty($args['format_footer']) ){
 		ob_start();
 		if( !empty($args['ajax']) ){ echo '<div class="em-search-ajax">'; } //open AJAX wrapper

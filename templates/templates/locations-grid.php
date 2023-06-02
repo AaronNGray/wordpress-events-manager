@@ -10,7 +10,7 @@
  */
 /* @var array $args - the args passed onto EM_Locations::output() */
 $args = apply_filters('em_content_locations_args', $args);
-if( empty($args['id']) ) $args['id'] = rand(); // prevent warnings
+if( empty($args['id']) ) $args['id'] = rand(100, getrandmax()); // prevent warnings
 $id = esc_attr($args['id']);
 ?>
 <div class="<?php em_template_classes('view-container'); ?>" id="em-view-<?php echo $id; ?>" data-view="grid" style="--view-grid-width : <?php echo esc_attr( get_option('dbem_location_grid_item_width') ); ?>px">

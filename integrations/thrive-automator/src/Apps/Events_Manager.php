@@ -21,7 +21,7 @@ class Events_Manager extends App {
 	}
 
 	public static function get_logo() {
-		return 'https://ps.w.org/events-manager/assets/logo-260x260.png';
+		return trailingslashit(EM_DIR_URI).'includes/images/logo-160x160.png';
 	}
 
 	/**

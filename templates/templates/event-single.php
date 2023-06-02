@@ -13,7 +13,7 @@
  */
 global $EM_Event;
 /* @var $EM_Event EM_Event */
-if( empty($args['id']) ) $args['id'] = rand(); // prevent warnings
+if( empty($args['id']) ) $args['id'] = rand(100, getrandmax()); // prevent warnings
 $id = esc_attr($args['id']);
 ?>
 <div class="<?php em_template_classes('view-container'); ?>" id="em-view-<?php echo $id; ?>" data-view="event">

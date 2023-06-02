@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 6.2
-Stable tag: 6.3
+Stable tag: 6.4
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
@@ -160,6 +160,40 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
+= 6.4 =
+* revamped booking form html structure (backwards compatible) and added a dynamic booking price summary
+* moved booking button into own template
+* rewritten booking form JS to remove dependence on jQuery entirely
+* added booking intent architecture
+* added skeleton loader CSS for more intuitive UI AJAX laoding
+* split email logic in EM_Booking->email into email_attendee and email_admins functions
+* added EM_Booking->get_currency() for later multi-currency integration possibilities
+* changed EM_Booking->boking_status back to public scope
+* fixed bug where ticket_id isn't added to EM_Ticket_Booking if supplied via $ticket_data
+* fixed calendar links not going through if tooltip and modal previews are disabled
+* added minified js files
+* split up events-manager.js into separate src files and compiled/minified by a grunt project in src folder
+* added min main JS and flatpickr l10n file loading if WP_DEBUG, SCRIPT_DEBUG or EM_DEBUG defined to true
+* fixed n/a booking field values when field ID is excessively long
+* added migration for copying previously used uuids in booking meta and making it the booking_uuid (without dashes) value given it is still not 'officiallly in use'
+* fixed shortcode events_list not recognizing the view argument such as [events_list view="grid"]
+* fixed PHP warning on graph dashboard
+* added/fixed search form support for inline advanced search and additional options to show/hide fields in both main and advanced search sections,
+* added individual settings for search/geo/scope search input fields in both main/advanced search forms
+* split up search form templates avoiding redundant data,
+* fixed disappearing input fields in responsive forms when search text field disabled,
+* fixed/improved logic for calculating when advanced fields and main search bar should/not be shown,
+* added view selection to advanced fields when main search bar is not shown
+* added fixed ids to view wrappers for fixed pages including event/calendar lists, calendar day lists, location lists, category/tag pages, event/location/tag/category single pages making it easier to use search forms placed on other parts of the page using shortcode
+* added em_template_before_{$template_name} and em_template_after_{$template_name} actions when auto-loading via em_locate_template
+* added additional verification and revokation methods for tokens in oauth api class if access token is not passed within the url
+* added better handling of errors upon OAuth requests
+* added em_search_form_footer action and moved hidden input fields for pre-defined search params without selectable fields into action function
+* fixed issue with misaligned event image placeholder date in widgets
+* tweaked EM_Options::remove to allow deleting entire array options
+* moved privacy checkbox to bottom of booking form user/form fields, above summary and buttons
+* fixed outdated coupon trigger not firing in jQuery for updated booking form
+
 = 6.3 =
 * fixed mobile display issue for selecting list views from search toolbar
 * added grid view for events and locations

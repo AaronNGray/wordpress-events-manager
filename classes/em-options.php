@@ -70,9 +70,12 @@ class EM_Options {
 	 * @param boolean $site
 	 * @return boolean
 	 */
-	public static function remove( $option_name, $option_key, $dataset = 'dbem_data', $site = false ){
+	public static function remove( $option_name, $option_key = null, $dataset = 'dbem_data', $site = false ){
 		$data = $site ? get_site_option($dataset) : get_option($dataset);
-		if( !empty($data[$option_name][$option_key]) ){
+		if( $option_key === null && isset($data[$option_name]) ){
+			unset($data[$option_name]);
+			return $site ? update_site_option($dataset, $data) : update_option($dataset, $data);
+		}elseif( !empty($data[$option_name][$option_key]) ){
 			unset($data[$option_name][$option_key]);
 			if( empty($data[$option_name]) ) unset($data[$option_name]);
 			return $site ? update_site_option($dataset, $data) : update_option($dataset, $data);
@@ -121,7 +124,7 @@ class EM_Options {
 	 * @param string $dataset
 	 * @return boolean
 	 */
-	public static function site_remove( $option_name, $option_key, $dataset = 'dbem_data' ){
+	public static function site_remove( $option_name, $option_key = null, $dataset = 'dbem_data' ){
 		return self::remove( $option_name, $option_key, $dataset, true );
 	}
 }

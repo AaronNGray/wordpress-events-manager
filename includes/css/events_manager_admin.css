@@ -88,16 +88,16 @@ div.em-location-data .em-location-map-404 { vertical-align:middle; text-align: c
 
 /* Booking Form */
 .em-booking { margin:15px 0px 10px 0px; position:relative; }
-.em-booking-form  { position:relative; clear:left; max-width:1200px; }
-.em-booking-form-details  { padding:10px; width:360px; float:left; }
-.em-booking-form-details input.input, .em-booking-form-details textarea { width:250px; }
-.em-booking-form p { clear:left; }
-.em-booking-form label { display:block; float:left; }
-.em-booking-form span.input-group input { margin-left:-20px; }
-.em-booking-form span.input-group { display:block; margin-left:120px; }
-.em-booking-form label  { display:inline-block; width:100px; }
-.em-booking-form p.input-field-data_privacy_consent label { display:block; width:100%; }
-.em-booking-form-details .em-booking-submit { width:auto; }
+div:not(.em) > .em-booking-form  { position:relative; clear:left; max-width:1200px; }
+div:not(.em) > .em-booking-form .em-booking-form-details  { padding:10px; width:360px; float:left; }
+div:not(.em) > .em-booking-form .em-booking-form-details input.input, .em-booking-form-details textarea { width:250px; }
+div:not(.em) > .em-booking-form p { clear:left; }
+div:not(.em) > .em-booking-form label { display:block; float:left; }
+div:not(.em) > .em-booking-form span.input-group input { margin-left:-20px; }
+div:not(.em) > .em-booking-form span.input-group { display:block; margin-left:120px; }
+div:not(.em) > .em-booking-form label  { display:inline-block; width:100px; }
+div:not(.em) > .em-booking-form p.input-field-data_privacy_consent label { display:block; width:100%; }
+div:not(.em) > .em-booking-form-details .em-booking-submit { width:auto; }
 /* Admin single booking view overrides */
 #em-bookings-admin-booking .em-booking-form .em-form-fields th { max-width:300px; padding:10px 0 0; vertical-align: top; }
 #em-bookings-admin-booking .em-booking-form .em-form-fields td { text-align:left; padding:10px 0 0 20px; }

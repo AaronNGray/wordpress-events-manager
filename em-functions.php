@@ -394,6 +394,7 @@ function em_booking_add_registration( $EM_Booking ){
     //Does this user need to be registered first?
     $registration = true;
     if( ((!is_user_logged_in() && get_option('dbem_bookings_anonymous')) || EM_Bookings::is_registration_forced()) && !get_option('dbem_bookings_registration_disable') ){
+		// Check if this is a tentative booking, meaning the booking should be made, user checks should be done, but an account isn't created until moved out of this status into an approved or pending status.
     	//find random username - less options for user, less things go wrong
     	$user_email = trim(wp_unslash($_REQUEST['user_email'])); //otherwise may fail validation
     	$username_root = explode('@', wp_kses_data($user_email));
@@ -448,7 +449,7 @@ function em_booking_add_registration( $EM_Booking ){
  * @param array associative array of user values to insert
  * @return int|WP_Error Either user's ID or error on failure.
  */
-function em_register_new_user( $user_data ) {
+function em_register_new_user( $user_data, $tentative = false ) {
 	$user_data = apply_filters('em_register_new_user_pre',$user_data);
 	$errors = new WP_Error();
 	if( !empty($user_data['user_name']) ){
@@ -487,26 +488,33 @@ function em_register_new_user( $user_data ) {
 	
 	if ( $errors->get_error_code() ) return $errors;
 
+	
 	if(empty($user_data['user_pass'])){
 		$user_data['user_pass'] =  wp_generate_password( 12, false);
 	}
 
-	$user_id = wp_insert_user( $user_data );
-	if( is_numeric($user_id) && !empty($user_data['dbem_phone']) ){
-		update_user_meta($user_id, 'dbem_phone', $user_data['dbem_phone']);
+	if( $tentative ) {
+		// return user data which can be used later for registration
+		return $user_data;
 	}
-
+	
+	$user_id = wp_insert_user( $user_data );
+	if ( is_numeric( $user_id ) && ! empty( $user_data['dbem_phone'] ) ) {
+		update_user_meta( $user_id, 'dbem_phone', $user_data['dbem_phone'] );
+	}
+	
 	if ( ! $user_id ) {
-		$errors->add( 'registerfail', sprintf( __( '<strong>ERROR</strong>: Couldn&#8217;t register you... please contact the <a href="mailto:%s">webmaster</a> !', 'events-manager'), get_option( 'admin_email' ) ) );
+		$errors->add( 'registerfail', sprintf( __( '<strong>ERROR</strong>: Couldn&#8217;t register you... please contact the <a href="mailto:%s">webmaster</a> !', 'events-manager' ), get_option( 'admin_email' ) ) );
+		
 		return $errors;
 	}
-
+	
 	update_user_option( $user_id, 'default_password_nag', true, true ); //Set up the Password change nag.
-
+	
 	global $em_temp_user_data;
-	$em_temp_user_data = $user_data; //for later useage
+	$em_temp_user_data            = $user_data; //for later useage
 	$em_temp_user_data['user_id'] = $user_id;
-
+	
 	return apply_filters('em_register_new_user',$user_id);
 }
 
@@ -597,14 +605,16 @@ function em_get_search_form_defaults($base_args = array(), $context = 'events') 
 	//search text
 	$search_args['search'] = ''; //default search term
 	$search_args['search_term'] = $search_args['search_term_main'] = get_option('dbem_search_form_text');
-	//$search_args['search_term_main'] = get_option('dbem_search_form_text_main'); // show in main form?
 	$search_args['search_term_label'] = get_option('dbem_search_form_text_label'); //field label
+	$search_args['search_term_advanced'] = get_option('dbem_search_form_text_advanced'); // show in main form?
+	$search_args['search_term_label_advanced'] = get_option('dbem_search_form_text_label_advanced'); //field label
 	//geo and units
 	$search_args['geo'] = '';  //default geo search term (requires 'near' as well for it to make sense)
 	$search_args['near'] = ''; //default near search params
-	$search_args['search_geo'] = $search_args['search_geo_main'] = get_option('dbem_search_form_geo'); // show geo search?
-	//$search_args['search_geo_main'] = get_option('dbem_search_form_geo_main'); // show in main form?
+	$search_args['search_geo'] = get_option('dbem_search_form_geo'); // show geo search?
 	$search_args['geo_label'] = get_option('dbem_search_form_geo_label'); //field label
+	$search_args['search_geo_advanced'] = get_option('dbem_search_form_geo_advanced'); // show geo search in advanced?
+	$search_args['geo_label_advanced'] = get_option('dbem_search_form_geo_label_advanced'); // show geo search?
 	$search_args['search_geo_units'] = get_option('dbem_search_form_geo_units'); //field label
 	$search_args['geo_units_label'] = get_option('dbem_search_form_geo_units_label'); //field label
 	$search_args['near_unit'] = get_option('dbem_search_form_geo_unit_default'); //default distance unit
@@ -612,11 +622,14 @@ function em_get_search_form_defaults($base_args = array(), $context = 'events') 
 	$search_args['geo_distance_values'] = explode(',', get_option('dbem_search_form_geo_distance_options')); //possible distance values
 	//scope
 	$search_args['scope'] = array('', '', 'name' => 'all'); //default scope term
-	$search_args['search_scope'] = $search_args['search_scope_main'] = get_option('dbem_search_form_dates');
-	//$search_args['search_scope_main'] = get_option('dbem_search_form_scope_main'); // show in main form?
+	$search_args['search_scope'] = get_option('dbem_search_form_dates'); // show in main form
 	$search_args['scope_label'] = get_option('dbem_search_form_dates_label'); //field label
 	$search_args['scope_seperator'] = get_option('dbem_search_form_dates_separator'); //field label
 	$search_args['scope_format'] = get_option('dbem_search_form_dates_format'); //field label
+	$search_args['search_scope_advanced'] = get_option('dbem_search_form_dates_advanced'); // show in advanced form?
+	$search_args['scope_label_advanced'] = get_option('dbem_search_form_dates_label_advanced'); // advanced field label
+	$search_args['scope_seperator_advanced'] = get_option('dbem_search_form_dates_separator_advanced'); // advanced field label
+	$search_args['scope_format_advanced'] = get_option('dbem_search_form_dates_format_advanced'); // advanced field label
 	//eventful locations
 	$search_args['search_eventful_main'] = true;
 	$search_args['search_eventful'] = true;
@@ -656,13 +669,9 @@ function em_get_search_form_defaults($base_args = array(), $context = 'events') 
 	$search_args['search_towns'] = get_option('dbem_search_form_towns');
 	$search_args['town_label'] = get_option('dbem_search_form_town_label'); //field label
 	//sections to show
-	$search_args['show_main'] = !empty($search_args['search_term']) || !empty($search_args['search_geo']); //decides whether or not to show main area and collapseable advanced search options
-	$search_args['show_advanced'] = get_option('dbem_search_form_advanced', true) && ( $search_args['search_categories'] || $search_args['search_tags'] || $search_args['search_countries'] || $search_args['search_regions'] || $search_args['search_states'] || $search_args['search_towns']);
-	$search_args['advanced_mode'] = get_option('dbem_search_form_advanced_mode') == 'inline' ? 'inline':'modal';
-	$search_args['advanced_hidden'] = $search_args['show_advanced'] && (get_option('dbem_search_form_advanced_hidden', true) || $search_args['advanced_mode'] == 'modal');
-	
-	// legacy stuff
-	$search_args['show_advanced'] = get_option('dbem_search_form_advanced') && ( $search_args['search_categories'] || $search_args['search_countries'] || $search_args['search_regions'] || $search_args['search_states'] || $search_args['search_towns']);
+	$search_args['show_main'] = get_option('dbem_search_form_main');
+	$search_args['show_advanced'] = get_option('dbem_search_form_advanced') && ( $search_args['search_categories'] || $search_args['search_tags'] || $search_args['search_countries'] || $search_args['search_regions'] || $search_args['search_states'] || $search_args['search_towns']);
+	$search_args['advanced_mode'] = get_option('dbem_search_form_advanced_mode') === 'inline' ? 'inline':'modal';
 	$search_args['advanced_hidden'] = $search_args['show_advanced'] && get_option('dbem_search_form_advanced_hidden');
 	
 	// disable certain things based on context, can be overriden by $base_args, not necessarily recommended
@@ -688,6 +697,21 @@ function em_get_search_form_defaults($base_args = array(), $context = 'events') 
 	
 	//merge defaults with supplied arguments
 	$args = array_merge($search_args, $base_args);
+	
+	// forcse some settings if supplied settings require display decisions
+	if( $args['show_main'] ) {
+		$show_main = ! empty( $args['search_term'] ) || ! empty( $args['search_geo'] ) || ! empty( $args['search_scope'] ); //decides whether or not to show main area and collapseable advanced search options
+		$args['show_main'] = $show_main;
+	}
+	if( !$args['show_main'] ){
+		// we're not showing main, therefore we must show advanced search
+		$args['advanced_mode'] = 'inline';
+		$args['advanced_hidden'] = false;
+	}elseif( $args['advanced_mode'] === 'modal' ){
+		// modal always starts as hidden
+		$args['advanced_hidden'] = true;
+	}
+	
 	
 	// sanitize views option
 	$search_views = em_get_search_views();
@@ -731,6 +755,9 @@ function em_get_search_form_defaults($base_args = array(), $context = 'events') 
 		$args['css_classes'][] = 'is-hidden';
 	}
 	$args['css_classes_advanced'] = array();
+	if( empty($args['advanced_hidden']) ){
+		$args['css_classes_advanced'][] = ' visible';
+	}
 	
 	//overwrite with $_REQUEST defaults in event of a submitted search
 	if( isset($_REQUEST['view_id']) ) $args['id'] = absint($_REQUEST['view_id']); // id used for element ids
@@ -772,8 +799,73 @@ function em_get_search_form_defaults($base_args = array(), $context = 'events') 
 			}
 		}
 	}
-	return $args;
+	return apply_filters('em_get_search_form_defaults', $args, $base_args, $context);
 }
+
+/**
+ * Adds hidden inputs to the search form in the event certain fields are hidden but also required (e.g. a category but no category search enabled)
+ * @param $args
+ *
+ * @since 6.4
+ * @return void
+ */
+function em_search_form_footer( $args ){
+	$show_advanced = !empty($args['show_advanced']);
+	$i = array();
+	// search terms on main bar and advanced main section
+	if( empty($args['search_term']) && $show_advanced && empty($args['search_term_advanced']) && !empty($args['search']) ){
+		$i['search'] = $args['search'];
+	};
+	if( empty($args['search_geo']) && $show_advanced && empty($args['search_geo_advanced']) ){
+		$i['geo'] = !empty($args['geo']) ? $args['geo'] : null;
+		$i['near'] = !empty($args['near']) ? $args['near'] : null;
+		$i['near_distance'] = !empty($args['near_distance']) ? $args['near_distance'] : null;
+		$i['near_unit'] = !empty($args['near_unit']) ? $args['near_unit'] : null;
+	}
+	if( empty($args['search_scope']) && $show_advanced && empty($args['search_scope_advanced']) && !empty($args['scope']) ){
+		$scope = array();
+		if( is_array($args['scope']) ){
+			if( !empty($args['scope'][0]) ){
+				$scope[] = $args['scope'][0];
+			}
+			if( !empty($args['scope'][1]) ){
+				if( empty($scope) ) {
+					$scope[] = '';
+				}
+				$scope[] = $args['scope'][1];
+			}
+			if( empty($scope) && !empty($args['scope']['name']) ){
+				$scope = $args['scope']['name'];
+			}
+		}else{
+			$scope = $args['scope'];
+		}
+		$i['scope'] = $scope;
+	}
+	// location fields
+	$address_fields = array('countries' => 'country', 'regions' => 'region', 'states' => 'state', 'towns' => 'town');
+	foreach( $address_fields as $search => $field )
+	if( ($show_advanced || empty($args['search_'.$search])) && !empty($args[$field]) ){
+		$i[$field] = $args[$field];
+	}
+	// taxonomies
+	if( ($show_advanced || empty($args['search_categories'])) && !empty($args['category']) ){
+		$i['category'] = $args['category'];
+	}
+	if( ($show_advanced || empty($args['search_tags'])) && !empty($args['tag']) ){
+		$i['tag'] = $args['tag'];
+	}
+	// put it all together, output hidden inputs, escaped etc.
+	foreach( $i as $name => $value ){
+		if( $value !== null ) {
+			if( is_array($value) ){
+				$value = implode(',', $value);
+			}
+			echo '<input type="hidden" name="' . $name . '" value="' . esc_attr( $value ) . '">';
+		}
+	}
+}
+add_action('em_search_form_footer', 'em_search_form_footer', 10, 1);
 
 function em_get_search_views(){
 	$search_views = array(
@@ -923,8 +1015,8 @@ function em_checkbox_items($name, $array, $saved_values, $horizontal = true) {
 	$output = "";
 	foreach($array as $key => $item) {
 		$checked = "";
-		if (in_array($key, $saved_values)) $checked = "checked='checked'";
-		$output .= "<label><input type='checkbox' name='".esc_attr($name)."' value='".esc_attr($key)."' $checked /> ".esc_html($item)."</label>&nbsp; ";
+		if (in_array($key, $saved_values)) $checked = "checked";
+		$output .= "<label><input type='checkbox' name='".esc_attr($name)."' value='".esc_attr($key)."' $checked > ".esc_html($item)."</label>&nbsp; ";
 		if(!$horizontal)
 			$output .= "<br/>\n";
 	}
@@ -1048,7 +1140,7 @@ function em_options_radio($name, $options, $title='') {
 	   			<table>
 	   			<?php foreach($options as $value => $text): ?>
 	   				<tr>
-	   					<td><input id="<?php echo esc_attr($name) ?>_<?php echo esc_attr($value); ?>" name="<?php echo esc_attr($name) ?>" type="radio" value="<?php echo esc_attr($value); ?>" <?php if($option == $value) echo "checked='checked'"; ?> /></td>
+	   					<td><input id="<?php echo esc_attr($name) ?>_<?php echo esc_attr($value); ?>" name="<?php echo esc_attr($name) ?>" type="radio" value="<?php echo esc_attr($value); ?>" <?php if($option == $value) echo "checked"; ?> /></td>
 	   					<td><?php echo $text ?></td>
 	   				</tr>
 				<?php endforeach; ?>
@@ -1076,23 +1168,23 @@ function em_options_radio_binary($title, $name, $description='', $option_names =
 		}
 	}
 	if( $untrigger ){
-		$trigger_att = ($trigger) ? 'data-trigger="'.esc_attr($trigger).'" class="em-untrigger"':'';
+		$trigger_att = ($trigger) ? ' data-trigger="'.esc_attr($trigger).'" class="em-untrigger"':'';
 	}else{
-		$trigger_att = ($trigger) ? 'data-trigger="'.esc_attr($trigger).'" class="em-trigger"':'';
+		$trigger_att = ($trigger) ? ' data-trigger="'.esc_attr($trigger).'" class="em-trigger"':'';
 	}
 	?>
    	<tr valign="top" class="<?php echo $class ?>_row" id='<?php echo $id;?>_row'>
    		<th scope="row"><?php echo esc_html($title); ?></th>
    		<td class="<?php echo $class; ?>">
-   			<?php echo $option_names[1]; ?> <input id="<?php echo esc_attr($id) ?>_yes" name="<?php echo esc_attr($name) ?>" type="radio" value="1" <?php if($value) echo "checked='checked'"; echo $trigger_att; ?> />&nbsp;&nbsp;&nbsp;
-			<?php echo $option_names[0]; ?> <input id="<?php echo esc_attr($id) ?>_no" name="<?php echo esc_attr($name) ?>" type="radio" value="0" <?php if(!$value) echo "checked='checked'"; echo $trigger_att; ?> />
+   			<?php echo $option_names[1]; ?> <input id="<?php echo esc_attr($id) ?>_yes" name="<?php echo esc_attr($name) ?>" type="radio" value="1" <?php if($value) echo "checked"; echo $trigger_att; ?> />&nbsp;&nbsp;&nbsp;
+			<?php echo $option_names[0]; ?> <input id="<?php echo esc_attr($id) ?>_no" name="<?php echo esc_attr($name) ?>" type="radio" value="0" <?php if(!$value) echo "checked"; echo $trigger_att; ?> />
 			<br/><em><?php echo $description; ?></em>
 		</td>
    	</tr>
 	<?php
 }
 
-function em_options_select($title, $name, $list, $description='', $default='') {
+function em_options_select($title, $name, $list, $description='', $default='', $triggers = array()) {
 	$option_value = get_option($name, $default);
 	if( $name == 'dbem_events_page' && !is_object(get_page($option_value)) ){
 		$option_value = 0; //Special value
@@ -1101,22 +1193,24 @@ function em_options_select($title, $name, $list, $description='', $default='') {
    	<tr valign="top" id='<?php echo esc_attr($name);?>_row'>
    		<th scope="row"><?php echo esc_html($title); ?></th>
    		<td>
-			<select name="<?php echo esc_attr($name); ?>" >
+			<select name="<?php echo esc_attr($name); ?>" <?php if( !empty($triggers) ) echo 'class="em-trigger"'; ?> >
 				<?php 
 				foreach($list as $key => $value) {
 					if( is_array($value) ){
 						?><optgroup label="<?php echo $key; ?>"><?php
 						foreach( $value as $key_group => $value_group ){
+							$trigger = !empty( $triggers[$key_group] ) ? $triggers[$key_group] : '';
 							?>
-			 				<option value='<?php echo esc_attr($key_group) ?>' <?php echo ("$key_group" == $option_value) ? "selected='selected' " : ''; ?>>
+			 				<option value='<?php echo esc_attr($key_group) ?>' <?php echo ("$key_group" == $option_value) ? "selected='selected' " : ''; ?> data-trigger="<?php echo esc_attr($trigger); ?>">
 			 					<?php echo esc_html($value_group); ?>
 			 				</option>
 							<?php 
 						}
 						?></optgroup><?php
 					}else{
+						$trigger = !empty( $triggers[$key] ) ? $triggers[$key] : '';
 						?>
-		 				<option value='<?php echo esc_attr($key) ?>' <?php echo ("$key" == $option_value) ? "selected='selected' " : ''; ?>>
+		 				<option value='<?php echo esc_attr($key) ?>' <?php echo ("$key" == $option_value) ? "selected='selected' " : ''; ?> data-trigger="<?php echo esc_attr($trigger); ?>">
 		 					<?php echo esc_html($value); ?>
 		 				</option>
 						<?php 
@@ -1136,6 +1230,19 @@ function em_ascii_encode($e){
     return $output;
 }
 
+/**
+ * Handy shortcut similar to constant() which checks if a constant exists and returns the value but does not trigger an error if not defined.
+ * @param $constant
+ *
+ * @return mixed|null
+ */
+function em_constant( $constant ){
+	if( defined($constant) ){
+		return constant($constant);
+	}
+	return null;
+}
+
 if( !function_exists( 'is_main_query' ) ){
 	/**
 	 * Substitutes the original function in 3.3 onwards, for backwards compatability (only created if not previously defined)
@@ -1151,4 +1258,32 @@ if( !function_exists( 'is_main_query' ) ){
 function em_get_date_format(){
 	return get_option('dbem_date_format');
 }
+
+/**
+ * Backwards compatibility fuction to trigger the deprecated em_bookings_form_footer action if the newly introduced action em_booking_form_buttons_header is fired.
+ * This will ensure any previous code using this action will still trigger appropriately, because we can assume the template was replaced with a new one containing em_booking_form_buttons_header and not em_booking_form_footer
+ * @param $EM_Event
+ * @return void
+ */
+function em_bookings_form_footer_backcompat( $EM_Event ){
+	/**
+	 * Do not use, this is for backwards compatibility only
+	 * @deprecated
+	 */
+	do_action('em_booking_form_footer', $EM_Event);
+}
+add_action('em_booking_form_buttons_header', 'em_bookings_form_footer_backcompat', 10, 1);
+
+/**
+ * Backwards compatibility for functionality added in EM Pro 3.1 which was moved into EM, ensuring versions of EM Pro removing this code will not duplicate headers.
+ * If you still want this header to be handled via EM Pro (in the event you override booking form templates and use an outdated Pro version), remove the action below at the plugins_loaded action like so:
+ * add_action('plugins_loaded', function(){ remove_action('em_pro_loaded', 'em_bookings_form_confirm_header_backcompat'); });
+ * @return void
+ */
+function em_bookings_form_confirm_header_backcompat(){
+	remove_action('em_checkout_form_footer',  array('EM_Booking_Form', 'booking_form_section_confirm_mb'), 1);
+	remove_action('em_booking_form_before_confirm', array('EM_Booking_Form', 'booking_form_section_confirm'), 1);
+	remove_action('em_booking_form_footer', array('EM_Booking_Form', 'booking_form_section_confirm'), 1);
+}
+add_action('em_pro_loaded', 'em_bookings_form_confirm_header_backcompat');
 ?>

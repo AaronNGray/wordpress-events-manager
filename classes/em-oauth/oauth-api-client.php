@@ -85,6 +85,12 @@ class OAuth_API_Client {
 	 * @var bool
 	 */
 	public $oauth_state = true;
+	
+	/**
+	 * Array of request arguments which would be supplied to wp_remote_* functions
+	 * @var array[]
+	 */
+	public $default_request_args = array();
 
 	/**
 	 * OAuth_API_Client constructor.
@@ -191,9 +197,10 @@ class OAuth_API_Client {
 	public function http_request( $endpoint, array $request_args = array(), $json_decode = true ){
 		// clean up whether endpoint or full URL is provided
 		$endpoint = str_replace($this->api_base, '', $endpoint);
-		$request_url = $this->api_base. $endpoint;
+		$request_url = $this->api_base . $endpoint;
 		//$request_url = add_query_arg('access_token', $this->token->access_token, $request_url);
 		// add oauth and method heaeders
+		$request_args = array_merge( $this->default_request_args, $request_args );
 		if( empty($request_args['headers']) ) $request_args['headers'] = array();
 		$request_args['headers']['authorization'] = 'Bearer '.$this->token->access_token;
 		$request_args['method'] = in_array($request_args['method'], array('GET','POST','PUT','PATCH','DELETE')) ? $request_args['method'] : 'GET';
@@ -233,7 +240,7 @@ class OAuth_API_Client {
 	 * @return array
 	 * @throws EM_Exception
 	 */
-	public function get($endpoint, array $args = array(), array $request_args = array() ){
+	public function get($endpoint, $args = array(), array $request_args = array() ){
 		$request_url = add_query_arg( $args, $this->api_base.$endpoint );
 		$request_args['method'] = 'GET';
 		return static::http_request( $request_url, $request_args );
@@ -241,14 +248,17 @@ class OAuth_API_Client {
 	
 	/**
 	 * @param $endpoint
-	 * @param array $vars
+	 * @param array|object $vars
 	 * @param array $request_args
 	 * @param bool $json            Shorthand for setting Content-Type in headers to application/json
 	 * @return array|mixed
 	 * @throws EM_Exception
 	 */
-	public function post($endpoint, array $vars = array(), array $request_args = array(), $json = false ){
-		$request_args['body'] = $vars;
+	public function post($endpoint, $vars = array(), array $request_args = array(), $json = false ){
+		if( !empty($vars) || empty($request_args['body']) ) {
+			// if vars supplied and/or no body defined
+			$request_args['body'] = $vars;
+		}
 		$request_args = array_merge(array('method' => 'POST'), $request_args);
 		if( $json ){
 			if( empty($request_args['headers'])) $request_args['headers'] = array();
@@ -337,7 +347,7 @@ class OAuth_API_Client {
 			$this->user_id = null;
 		}
 		$access_token = $this->request_access_token($code);
-		$this->token = new OAuth_API_Token($access_token);
+		$this->token = new $this->token_class($access_token);
 		if( $this->token->refresh_token === true ) $this->token->refresh_token = false; // if no token was provided, we may be able to obtain it here, otherwise validation will fail upon refresh.
 		// verify the access token so we can establish the id of this account and then save it to user profile
 		$access_token_meta = $this->verify_access_token();
@@ -437,25 +447,43 @@ class OAuth_API_Client {
 
 	/**
 	 * Verifies an access token by obtaining further meta data about the account associated with that token.
+	 * If ACCESS_TOKEN is found in the url then it is assumed to be a OAuth GET request, otherwise a regular API GET request using Bearer authorization.
 	 * Expected return is an associative array containing the id (service account id the token belongs to), name, photo and email (optional).
 	 *
 	 * @return array
 	 * @throws EM_Exception
 	 */
 	public function verify_access_token(){
-		$request_url = str_replace('ACCESS_TOKEN', $this->token->access_token, $this->oauth_verification_url);
-		$access_token = $this->oauth_request('get', $request_url);
+		if( preg_match('/ACCESS_TOKEN/', $this->oauth_verification_url) ){
+			$request_url = str_replace('ACCESS_TOKEN', $this->token->access_token, $this->oauth_verification_url);
+			$access_token = $this->oauth_request('get', $request_url);
+		}else{
+			$response = $this->get($this->oauth_verification_url);
+			$access_token = (array) $response['body'];
+		}
 		return $access_token; // we may want to override this depending on what's returned
 	}
 
 	/**
+	 * Revoke the access token. It is assumed that an OAuth request is being made, GET (if revoke url includes ACCESS_TOKEN placeholder) or POSTing 'token' in the body.
+	 * Any special instances should override this method and revoike according to API
 	 * @return bool
 	 * @throws EM_Exception
 	 */
 	public function revoke_access_token(){
 		if( empty($this->oauth_revoke_url) ) return false;
-		$request_url = str_replace('ACCESS_TOKEN', $this->token->access_token, $this->oauth_revoke_url);
-		return $this->oauth_request('get', $request_url); // we may want to override this depending on what's returned
+		if( preg_match('/ACCESS_TOKEN/', $this->oauth_revoke_url) ){
+			$request_url = str_replace('ACCESS_TOKEN', $this->token->access_token, $this->oauth_revoke_url);
+			$result = $this->oauth_request('get', $request_url);
+		}else{
+			$request_args = array(
+				'body' => array(
+					'token' => $this->token->access_token
+				)
+			);
+			$result = $this->oauth_request('post', $this->oauth_revoke_url, $request_args);
+		}
+		return $result;
 	}
 	
 	/**
@@ -494,7 +522,13 @@ class OAuth_API_Client {
 			throw new EM_Exception($response->get_error_messages());
 		}elseif( $response['response']['code'] != '200' ){
 			$errors = json_decode($response['body']);
-			$error = current($errors);
+			if( is_array($errors) ){
+				$error = current($errors);
+			}elseif( is_object($errors) ){
+				$error = $errors;
+			}else{
+				$error = "Unknown error occurred with status {$response['response']['code']} - {$response['response']['message']}";
+			}
 			if( !empty($error->message) ){
 				$message = $error->message;
 			}elseif( !empty($error->error) ){

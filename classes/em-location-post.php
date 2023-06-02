@@ -110,7 +110,11 @@ class EM_Location_Post {
 						$EM_Location->post_content = $content;
 					}
 					ob_start();
-					em_locate_template('templates/location-single.php',true);
+					$args = array();
+					if( em_is_event_page() ){
+						$args['id'] = 7;
+					}
+					em_locate_template('templates/location-single.php',true, array('args' => $args));
 					$content = ob_get_clean();
 				}
 			}

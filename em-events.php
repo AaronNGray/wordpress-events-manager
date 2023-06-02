@@ -24,7 +24,7 @@ function em_content($page_content) {
 	$args = array(				
 		'owner' => false,
 		'pagination' => 1,
-		'id' => rand(),
+		'id' => rand(100, getrandmax()),
 	);
 	$args['ajax'] = isset($args['ajax']) ? $args['ajax']:EM_AJAX_SEARCH;
 	if( !post_password_required() && in_array($post->ID, array($events_page_id, $locations_page_id, $categories_page_id, $edit_bookings_page_id, $edit_events_page_id, $edit_locations_page_id, $my_bookings_page_id, $tags_page_id)) ){
@@ -35,16 +35,19 @@ function em_content($page_content) {
 			if ( $post->ID == $events_page_id && $events_page_id != 0 ) {
 				if ( !empty($_REQUEST['calendar_day']) ) {
 					//Events for a specific day
+					$args['id'] = 2; // for easier reference in customizations
 					$args = EM_Events::get_post_search( array_merge($args, $_REQUEST) );
 					$args['limit'] = !empty($args['limit']) ? $args['limit'] : get_option('dbem_events_default_limit');
 					em_locate_template('templates/calendar-day.php',true, array('args'=>$args));
 				}elseif ( is_object($EM_Event)) {
+					$args['id'] = 6; // for easier reference in customizations
 					em_locate_template('templates/event-single.php',true, array('args'=>$args));	
 				}else{
 					// Multiple events page
 					$args['orderby'] = get_option('dbem_events_default_orderby');
 					$args['order'] = get_option('dbem_events_default_order');
 					if (get_option ( 'dbem_display_calendar_in_events_page' )){
+						$args['id'] = 1; // for easier reference in customizations
 						$args['long_events'] = 1;
 						em_locate_template('templates/events-calendar.php',true, array('args'=>$args));
 					}else{
@@ -52,6 +55,7 @@ function em_content($page_content) {
 						if( !empty($_REQUEST['action']) && ($_REQUEST['action'] == 'search_events' || $_REQUEST['action'] == 'search_events_grouped') ){
 							$args = EM_Events::get_post_search( array_merge($args, $_REQUEST) );
 						}
+						$args['id'] = 1; // for easier reference in customizations
 						if( empty($args['scope']) ){
 						    $args['scope'] = get_option('dbem_events_page_scope');
 						}
@@ -70,6 +74,7 @@ function em_content($page_content) {
 				$args['orderby'] = get_option('dbem_locations_default_orderby');
 				$args['order'] = get_option('dbem_locations_default_order');
 				$args['limit'] = !empty($args['limit']) ? $args['limit'] : get_option('dbem_locations_default_limit');
+				$args['id'] = 3; // for easier reference in customizations
 				if( EM_MS_GLOBAL && is_object($EM_Location) ){
 					em_locate_template('templates/location-single.php',true, array('args'=>$args));
 				}else{
@@ -88,11 +93,13 @@ function em_content($page_content) {
 					em_output_locations_view( $args );
 				}
 			}elseif( $post->ID == $categories_page_id && $categories_page_id != 0 ){
+				$args['id'] = 4; // for easier reference in customizations
 				$args['limit'] = !empty($args['limit']) ? $args['limit'] : get_option('dbem_categories_default_limit');
 				if( !empty($args['ajax']) ){ echo '<div class="em-search-ajax">'; } //AJAX wrapper open
 				em_locate_template('templates/categories-list.php',true, array('args'=>$args));
 				if( !empty($args['ajax']) ) echo "</div>"; //AJAX wrapper close
 			}elseif( $post->ID == $tags_page_id && $tags_page_id != 0 ){
+				$args['id'] = 5; // for easier reference in customizations
 				$args['limit'] = !empty($args['limit']) ? $args['limit'] : get_option('dbem_tags_default_limit');
 				if( !empty($args['ajax']) ){ echo '<div class="em-search-ajax">'; } //AJAX wrapper open
 				em_locate_template('templates/tags-list.php',true, array('args'=>$args));

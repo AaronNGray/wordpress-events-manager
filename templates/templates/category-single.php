@@ -8,7 +8,7 @@
  */
 global $EM_Category;
 /* @var $EM_Category EM_Category */
-if( empty($args['id']) ) $args['id'] = rand(); // prevent warnings
+if( empty($args['id']) ) $args['id'] = rand(100, getrandmax()); // prevent warnings
 $id = esc_attr($args['id']);
 ?>
 <div class="<?php em_template_classes('view-container'); ?>" id="em-view-<?php echo $id; ?>" data-view="category">

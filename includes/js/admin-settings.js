@@ -1,4 +1,5 @@
 jQuery(document).ready(function($){
+
 	//Meta Box Options
 	var open_close = $('<a href="#" style="display:block; float:right; clear:right; margin:10px;">'+EM.open_text+'</a>');
 	$('#em-options-title').before(open_close);
@@ -14,6 +15,7 @@ jQuery(document).ready(function($){
 	});
 	$(".postbox > h3").on('click', function(){ $(this).parent().toggleClass('closed'); });
 	$(".postbox").addClass('closed');
+
 	//Navigation Tabs
 	$('.tabs-active .nav-tab-wrapper .nav-tab').on('click', function(){
 		el = $(this);
@@ -59,6 +61,7 @@ jQuery(document).ready(function($){
 		document.location = newloc;
 		$(this).closest('form').append('<input type="hidden" name="tab_path" value="'+ tab_path +'" />');
 	});
+
 	//Page Options
 	$('input[name="dbem_cp_events_has_archive"]').on('change', function(){ //event archives
 		if( $('input:radio[name="dbem_cp_events_has_archive"]:checked').val() == 1 ){
@@ -81,6 +84,7 @@ jQuery(document).ready(function($){
 			$('tbody.em-location-archive-sub-options').hide();
 		}
 	}).trigger('change');
+
 	//For rewrite titles
 	$('input:radio[name=dbem_disable_title_rewrites]').on('change',function(){
 		checked_check = $('input:radio[name=dbem_disable_title_rewrites]:checked');
@@ -99,10 +103,12 @@ jQuery(document).ready(function($){
 			$('tr#dbem_event_list_groupby_header_format_row, tr#dbem_event_list_groupby_format_row').show();
 		}
 	}).trigger('change');
+
 	//ML Stuff
 	$('.em-translatable').on('click', function(){
 		$(this).nextAll('.em-ml-options').toggle();
 	});
+
 	//radio triggers
 	$('input[type="radio"].em-trigger').on('change', function(e){
 		var el = $(this);
@@ -132,6 +138,41 @@ jQuery(document).ready(function($){
 			return false;
 		}
 	});
+	// select triggers
+	$('select.em-trigger').on('change', function(e){
+		// hide all other option selectors
+		let el = $(this)
+		el.find('option:not(:selected)').each( function(){
+			if( this.getAttribute('data-trigger') ){
+				$( this.getAttribute('data-trigger') ).hide();
+			}
+		});
+		if( this.selectedOptions.length > 0  && this.selectedOptions[0].getAttribute('data-trigger') ){
+			$( this.selectedOptions[0].getAttribute('data-trigger') ).show();
+		}
+	}).trigger('change');
+
+	// specific triggers
+	// geolocation search form default distance options (main & advanced)
+	$('input[name="dbem_search_form_geo"],input[name="dbem_search_form_geo_advanced"]').on( 'change', function(){
+		let defaults = $('#dbem_search_form_geo_distance_default_row, #dbem_search_form_geo_unit_default_row');
+		if ( document.getElementById('dbem_search_form_main_yes').checked && document.getElementById('dbem_search_form_geo_yes').checked ) {
+			// just move the current default options to main setting, regardelss where they are
+			$('#em-search-form-geo').append( defaults );
+		} else {
+			if ( document.getElementById('dbem_search_form_geo_advanced_yes').checked ){
+				// move to advanced section and show
+				$('#em-search-form-geo-advanced').append( defaults );
+				$('#em-search-form-geo-advanced tr').show();
+			}else{
+				// hide all advanced options, because we have no geo searches here
+				$('#em-search-form-geo-advanced tr:not(.em-subheader, #dbem_search_form_geo_advanced_row)').hide();
+				// append to main, in case not already and hide
+				$('#em-search-form-geo').append( defaults );
+			}
+		}
+	}).filter(':checked').first().trigger('change');
+
 	//color pickers
 	$('#dbem_category_default_color, #dbem_tag_default_color').wpColorPicker();
 

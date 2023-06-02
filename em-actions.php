@@ -23,12 +23,12 @@ function em_init_actions_start() {
 				$EM_Ticket = new EM_Ticket( absint($_REQUEST['id']) );
 				$result = $EM_Ticket->delete();
 				if( $result ){
-					$result = array('result'=>true);
+					$result = array('result'=>true, 'success'=>true);
 				}else{
-					$result = array('result'=>false, 'error'=>$EM_Ticket->feedback_message);
+					$result = array('result'=>false, 'success'=>false, 'error'=>$EM_Ticket->feedback_message);
 				}
 			}else{
-				$result = array('result'=>false, 'error'=>__('No ticket id provided','events-manager'));	
+				$result = array('result'=>false, 'success'=>false, 'error'=>__('No ticket id provided','events-manager'));
 			}			
 		    echo EM_Object::json_encode($result);
 			die();
@@ -157,9 +157,9 @@ function em_init_actions_start() {
 		//AJAX Exit
 		if( isset($events_result) && !empty($_REQUEST['em_ajax']) ){
 			if( $events_result ){
-				$return = array('result'=>true, 'message'=>$EM_Event->feedback_message);
+				$return = array('result'=>true, 'success'=>true, 'message'=>$EM_Event->feedback_message);
 			}else{		
-				$return = array('result'=>false, 'message'=>$EM_Event->feedback_message, 'errors'=>$EM_Event->errors);
+				$return = array('result'=>false, 'success'=>false, 'message'=>$EM_Event->feedback_message, 'errors'=>$EM_Event->errors);
 			}
 			echo EM_Object::json_encode($return);
 			edit();
@@ -261,18 +261,22 @@ function em_init_actions_start() {
 			die();
 		}
 		if( isset($result) && $result && !empty($_REQUEST['em_ajax']) ){
-			$return = array('result'=>true, 'message'=>$EM_Location->feedback_message);
+			$return = array('result'=>true, 'success'=>true, 'message'=>$EM_Location->feedback_message);
 			echo EM_Object::json_encode($return);
 			die();
 		}elseif( isset($result) && !$result && !empty($_REQUEST['em_ajax']) ){
-			$return = array('result'=>false, 'message'=>$EM_Location->feedback_message, 'errors'=>$EM_Notices->get_errors());
+			$return = array('result'=>false, 'success'=>false, 'message'=>$EM_Location->feedback_message, 'errors'=>$EM_Notices->get_errors());
 			echo EM_Object::json_encode($return);
 			die();
 		}
 	}
 	
 	//Booking Actions
-	if( !empty($_REQUEST['action']) && substr($_REQUEST['action'],0,7) == 'booking' && (is_user_logged_in() || ($_REQUEST['action'] == 'booking_add' && get_option('dbem_bookings_anonymous'))) ){
+	$booking_allowed_actions = array('bookings_approve'=>'approve','bookings_reject'=>'reject','bookings_unapprove'=>'unapprove', 'bookings_delete'=>'delete');
+	$booking_ajax_actions = array('booking_add', 'booking_add_one', 'booking_cancel', 'booking_save', 'booking_set_status', 'booking_resend_email', 'booking_modify_person', 'bookings_add_note', 'booking_form_summary');
+	$booking_nopriv_actions = array('booking_add', 'booking_form_summary');
+	$booking_actions = array_merge( $booking_ajax_actions, array_keys($booking_allowed_actions) );
+	if( !empty($_REQUEST['action']) && in_array($_REQUEST['action'], $booking_actions) && (is_user_logged_in() || (in_array($_REQUEST['action'], $booking_nopriv_actions) && get_option('dbem_bookings_anonymous'))) ){
 		global $EM_Event, $EM_Booking, $EM_Person;
 		//Load the booking object, with saved booking if requested
 		$EM_Booking = ( !empty($_REQUEST['booking_id']) ) ? em_get_booking($_REQUEST['booking_id']) : em_get_booking();
@@ -282,9 +286,9 @@ function em_init_actions_start() {
 		}elseif( !empty($_REQUEST['event_id']) ){
 			$EM_Event = new EM_Event( absint($_REQUEST['event_id']) );
 		}
-		$allowed_actions = array('bookings_approve'=>'approve','bookings_reject'=>'reject','bookings_unapprove'=>'unapprove', 'bookings_delete'=>'delete');
 		$result = false;
 		$feedback = '';
+		do_action('em_before_booking_action_'.$_REQUEST['action'], $EM_Event, $EM_Booking);
 		if ( $_REQUEST['action'] == 'booking_add') {
 			//ADD/EDIT Booking
 			ob_start();
@@ -400,9 +404,9 @@ function em_init_actions_start() {
 				$EM_Notices->add_error( __('You must log in to cancel your booking.', 'events-manager') );
 			}
 		//TODO user action shouldn't check permission, booking object should.
-	  	}elseif( array_key_exists($_REQUEST['action'], $allowed_actions) && $EM_Event->can_manage('manage_bookings','manage_others_bookings') ){
+	  	}elseif( array_key_exists($_REQUEST['action'], $booking_allowed_actions) && $EM_Event->can_manage('manage_bookings','manage_others_bookings') ){
 	  		//Event Admin only actions
-			$action = $allowed_actions[$_REQUEST['action']];
+			$action = $booking_allowed_actions[$_REQUEST['action']];
 			//Just do it here, since we may be deleting bookings of different events.
 			if( !empty($_REQUEST['bookings']) && EM_Object::array_is_numeric($_REQUEST['bookings'])){
 				$results = array();
@@ -532,15 +536,25 @@ function em_init_actions_start() {
 			}else{
 				$EM_Notices->add_error($EM_Booking->errors);
 			}
+		}elseif( $_REQUEST['action'] === 'booking_form_summary' ){
+			$EM_Booking->get_post();
+			// wrap in main tag as we only need what's inside by JS
+			echo '<main>';
+			if( get_option('dbem_bookings_summary') ){
+				em_locate_template('forms/bookingform/summary.php', true, array('EM_Event' => $EM_Event, 'EM_Booking' => $EM_Booking));
+			}
+			echo $EM_Booking->output_intent_html();
+			echo '</main>';
+			exit();
 		}
 	
 		if( $result && defined('DOING_AJAX') ){
-			$return = array('result'=>true, 'message'=>$feedback);
+			$return = array('result'=>true, 'success'=>true, 'message'=>$feedback);
 			header( 'Content-Type: application/javascript; charset=UTF-8', true ); //add this for HTTP -> HTTPS requests which assume it's a cross-site request
 			echo EM_Object::json_encode(apply_filters('em_action_'.$_REQUEST['action'], $return, $EM_Booking));
 			die();
 		}elseif( !$result && defined('DOING_AJAX') ){
-			$return = array('result'=>false, 'message'=>$feedback, 'errors'=>$EM_Notices->get_errors());
+			$return = array('result'=>false, 'success'=>false, 'message'=>$feedback, 'errors'=>$EM_Notices->get_errors());
 			header( 'Content-Type: application/javascript; charset=UTF-8', true ); //add this for HTTP -> HTTPS requests which assume it's a cross-site request
 			echo EM_Object::json_encode(apply_filters('em_action_'.$_REQUEST['action'], $return, $EM_Booking));
 			die();
@@ -550,7 +564,7 @@ function em_init_actions_start() {
 		$EM_Booking = ( !empty($_REQUEST['booking_id']) ) ? em_get_booking($_REQUEST['booking_id']) : em_get_booking();
 		$EM_Notices->add_error( get_option('dbem_booking_feedback_log_in') );
 		if( defined('DOING_AJAX') ){
-			$return = array('result'=>false, 'message'=>get_option('dbem_booking_feedback_log_in'), 'errors'=>$EM_Notices->get_errors());
+			$return = array('result'=>false, 'success'=>false, 'message'=>get_option('dbem_booking_feedback_log_in'), 'errors'=>$EM_Notices->get_errors());
 			echo EM_Object::json_encode(apply_filters('em_action_'.$_REQUEST['action'], $return, $EM_Booking));
 			die();
 		}

@@ -215,7 +215,7 @@ function wpfc_em_ajax() {
 						$start_date = $EM_Event->start()->format('Y-m-d\TH:i:s');
 						$end_date = $EM_Event->end()->format('Y-m-d\TH:i:s');						
 					}
-					$event_array = array ("title" => $title, "color" => $color, 'textColor'=>$textColor, 'borderColor'=>$borderColor, "start" => $start_date, "end" => $end_date, "url" => $EM_Event->get_permalink(), 'post_id' => $EM_Event->post_id, 'event_id' => $EM_Event->event_id, 'allDay' => $allDay );
+					$event_array = array ("title" => $title, "color" => $color, 'textColor'=>$textColor, 'borderColor'=>$borderColor, "start" => $start_date, "end" => $end_date, "url" => $EM_Event->get_permalink(), 'post_id' => $EM_Event->post_id, 'event_id' => $EM_Event->event_id, 'allDay' => $allDay, 'nonce' => wp_create_nonce('wpfc_event_nonce_'.$EM_Event->event_id) );
 					if( $args['long_events'] == 0 ) $event_array['end'] = $event_array['start']; //if long events aren't wanted, make the end date same as start so it shows this way on the calendar
 					$events[] = apply_filters('wpfc_events_event', $event_array, $EM_Event);
 					$event_ids[] = $EM_Event->event_id;
@@ -238,7 +238,7 @@ function wpfc_em_ajax() {
  * @return string
  */
 function wpfc_em_qtip_content( $content='' ){
-	if( !empty($_REQUEST['event_id'] ) && trim(get_option('dbem_emfc_qtips_format')) != '' ){
+	if( !empty($_REQUEST['event_id'] ) && !empty($_REQUEST['nonce']) && wp_verify_nonce($_REQUEST['nonce'], 'wpfc_event_nonce_'.$_REQUEST['event_id']) && trim(get_option('dbem_emfc_qtips_format')) != '' ){
 		global $EM_Event;
 		$EM_Event = em_get_event( absint($_REQUEST['event_id']) );
 		if( !empty($EM_Event->event_id) ){

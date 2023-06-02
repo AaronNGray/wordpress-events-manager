@@ -180,6 +180,10 @@ class EM_Admin_Notices {
 		}else{
 			$result = self::remove($_REQUEST['notice'], $network);
 		}
+		if( !empty($_REQUEST['redirect']) ){
+			wp_safe_redirect( wp_get_referer() );
+			exit();
+		}
 		echo !empty($result) ? 'Thou art dismissed!' : 'Thou shall not pass!';
 		exit();
 	}

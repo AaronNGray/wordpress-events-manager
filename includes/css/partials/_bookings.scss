@@ -36,9 +36,24 @@
 	.em-booking-form {
 		border: 1px solid var(--main-border-color);
 
-		.input-group {
+		.input-user-field, .input-group, .input-type {
 			display: block !important; /* bootstrap and others interfere with this */
+			margin-bottom: 25px !important;
+
+			input:not([type="checkbox"],[type="radio"]), select, .input-group, .input-group-checkboxes, button {
+				margin-bottom : 0 !important;
+			}
 		}
+
+		> section {
+			margin: 0;
+			padding: 0;
+		}
+	}
+
+	&.em-hide-dynamic .em-booking-form[data-spaces="0"] section:not(.em-booking-form-section-tickets) {
+		display : none;
+		visibility : hidden;
 	}
 
 	h3.em-booking-section-title {
@@ -59,13 +74,22 @@
 		padding: 15px;
 		font-size: var(--font-size);
 		font-weight: bold;
+
+		&:disabled, &.disabled {
+			opacity : 1 !important;
+		}
 	}
 
 	.em-booking-section {
+		position: relative;
 		width: auto;
 		float: none;
-		margin: 20px 30px;
-		padding: 0;
+		padding: 20px 30px;
+		margin: 0;
+
+		&.em-booking-form-buttons {
+			z-index: 100000000;
+		}
 	}
 
 	/* Tickets Table */
@@ -74,6 +98,10 @@
 		margin: 0 10px;
 		padding: 0;
 		width: calc(100% - 20px);
+
+		&.widefat {
+			background-color: transparent;
+		}
 
 		thead {
 			position: absolute;
@@ -268,13 +296,118 @@
 	}
 
 	/* Temp Fixes for Pro */
-	.em-booking-form-payment {
+	.em-booking-form-confirm {
 		.em-booking-gateway-form {
 			margin-bottom: 20px;
 		}
 		.em-bookings-form-gateway-expiry select {
 			width : auto !important;
 			min-width: 100px;
+		}
+	}
+}
+.em-booking-form-summary {
+
+	&.em-booking-section {
+		padding-bottom: 30px;
+
+		&.no-booking {
+			padding-bottom: 40px;
+			.em-loading {
+				background-position-y: calc(50% - 10px) !important;
+			}
+		}
+	}
+
+	.em-bs-section {
+		display: grid;
+		grid-template-rows: 1fr;
+		grid-template-columns: none;
+		grid-gap: 10px;
+
+		&:not(:first-child) {
+			margin-top: 20px;
+			padding-top: 20px;
+			border-top: 1px solid #dedede;
+		}
+
+		.em-bs-row {
+			display: grid;
+			grid-template-rows: none;
+			grid-template-columns: auto max-content;
+			grid-gap: 10px;
+			align-items: center;
+			justify-items: start;
+
+			&.em-bs-row-item { // i.e. tickets, not subtotals/totals
+				grid-template-columns: max-content auto max-content;
+			}
+		}
+
+		.em-bs-subtitle {
+			width: 100%;
+			align-self: center;
+			justify-self: start;
+			justify-content: start;
+			grid-column: 1 / -1;
+
+			margin: 20px 14px 0 10px;
+			padding-bottom: 5px;
+			border-bottom: 1px solid #dedede;
+			font-weight: 500;
+		}
+
+	}
+
+	.em-loading {
+		opacity: 85% !important;
+		background-size: 55px !important;
+	}
+
+	.em-bs-section-total {
+		font-weight: bold;
+		font-size: 1.2rem;
+		.em-bs-total-taxes-inc {
+			display: block;
+			font-size: 0.8rem;
+			font-weight: normal;
+			font-style: italic;
+		}
+	}
+
+	.em-bs-cell-price {
+		justify-self: end;
+		justify-content: end;
+		text-align: right;
+	}
+	.em-bs-cell-desc {
+		.em-icon {
+			font-size: 15px;
+			line-height: 17px;
+			width: 15px;
+			height: 17px;
+			background-size: 13px
+		}
+	}
+	.em-bs-subsection {
+		.em-bs-cell-desc {
+			padding-left: 20px;
+		}
+	}
+	.em-bs-qty-x {
+		display: inline-block;
+		padding-right: 5px;
+	}
+
+	.skeleton {
+		.item {
+			margin-bottom: 0;
+		}
+		.em-bs-row {
+			grid-template-columns: 8fr 2fr;
+			&.em-bs-row-item {
+				grid-template-columns: 7fr 1fr 2fr;
+			}
 		}
 	}
 }

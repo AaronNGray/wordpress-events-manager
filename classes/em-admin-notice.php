@@ -35,7 +35,7 @@ class EM_Admin_Notice {
 	public $where = 'settings';
 	/**
 	 * The actual message that will be displayed. If left blank, a filter will be applied upon output with format
-	 * em_admin_notice_output_{$this->name}
+	 * em_admin_notice_{$this->name}_message
 	 * @var string
 	 */
 	public $message = false; //the message

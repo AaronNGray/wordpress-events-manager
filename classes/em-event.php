@@ -2476,7 +2476,33 @@ class EM_Event extends EM_Object{
 							define('EM_XSS_BOOKINGFORM_FILTER',true);
 						}
 						ob_start();
-						$template = em_locate_template('placeholders/bookingform.php', true, array('EM_Event'=>$this));
+						// We are firstly checking if the user has already booked a ticket at this event, if so offer a link to view their bookings.
+						$EM_Booking = $this->get_bookings()->has_booking();
+						//count tickets and available tickets
+						$template_vars = array(
+							'EM_Event' => $this,
+							'tickets_count' =>  count($this->get_bookings()->get_tickets()->tickets),
+							'available_tickets_count' =>  count($this->get_bookings()->get_available_tickets()),
+							//decide whether user can book, event is open for bookings etc.
+							'can_book' =>  is_user_logged_in() || (get_option('dbem_bookings_anonymous') && !is_user_logged_in()),
+							'is_open' =>  $this->get_bookings()->is_open(), //whether there are any available tickets right now
+							'is_free' =>  $this->is_free(),
+							'show_tickets' =>  true,
+							'id' =>  absint($this->event_id),
+							'already_booked' => is_object($EM_Booking) && $EM_Booking->booking_id > 0,
+							'EM_Booking' => $this->get_bookings()->get_intent_default(), // get the booking intent if not supplied already
+						);
+						//if user is logged out, check for member tickets that might be available, since we should ask them to log in instead of saying 'bookings closed'
+						if( !$template_vars['is_open'] && !is_user_logged_in() && $this->get_bookings()->is_open(true) ){
+							$template_vars['is_open'] = true;
+							$template_vars['can_book'] = false;
+							$template_vars['show_tickets'] = get_option('dbem_bookings_tickets_show_unavailable') && get_option('dbem_bookings_tickets_show_member_tickets');
+						}
+						$output_intents = did_filter('em_booking_output_intent_html');
+						em_locate_template('placeholders/bookingform.php', true, $template_vars);
+						if( $output_intents == did_filter('em_booking_output_intent_html') ){
+							// output the intent here, the id can be found from the event id
+						}
 						EM_Bookings::enqueue_js();
 						$replace = ob_get_clean();
 					}
@@ -2484,7 +2510,7 @@ class EM_Event extends EM_Object{
 				case '#_BOOKINGBUTTON':
 					if( get_option('dbem_rsvp_enabled') && $this->event_rsvp ){
 						ob_start();
-						$template = em_locate_template('placeholders/bookingbutton.php', true, array('EM_Event'=>$this));
+						em_locate_template('placeholders/bookingbutton.php', true, array('EM_Event'=>$this));
 						$replace = ob_get_clean();
 					}
 					break;
@@ -2636,17 +2662,17 @@ class EM_Event extends EM_Object{
 					break;
 				case '#_ATTENDEES':
 					ob_start();
-					$template = em_locate_template('placeholders/attendees.php', true, array('EM_Event'=>$this));
+					em_locate_template('placeholders/attendees.php', true, array('EM_Event'=>$this));
 					$replace = ob_get_clean();
 					break;
 				case '#_ATTENDEESLIST':
 					ob_start();
-					$template = em_locate_template('placeholders/attendeeslist.php', true, array('EM_Event'=>$this));
+					em_locate_template('placeholders/attendeeslist.php', true, array('EM_Event'=>$this));
 					$replace = ob_get_clean();
 					break;
 				case '#_ATTENDEESPENDINGLIST':
 					ob_start();
-					$template = em_locate_template('placeholders/attendeespendinglist.php', true, array('EM_Event'=>$this));
+					em_locate_template('placeholders/attendeespendinglist.php', true, array('EM_Event'=>$this));
 					$replace = ob_get_clean();
 					break;
 				//Categories and Tags
@@ -2654,7 +2680,7 @@ class EM_Event extends EM_Object{
 				    $replace = '';
 				    if( get_option('dbem_categories_enabled') ){
     					ob_start();
-    					$template = em_locate_template('placeholders/eventcategoriesimages.php', true, array('EM_Event'=>$this));
+    					em_locate_template('placeholders/eventcategoriesimages.php', true, array('EM_Event'=>$this));
     					$replace = ob_get_clean();
 				    }
 					break;
@@ -2662,7 +2688,7 @@ class EM_Event extends EM_Object{
 				    $replace = '';
                     if( get_option('dbem_tags_enabled') ){
     					ob_start();
-    					$template = em_locate_template('placeholders/eventtags.php', true, array('EM_Event'=>$this));
+    					em_locate_template('placeholders/eventtags.php', true, array('EM_Event'=>$this));
     					$replace = ob_get_clean();
                     }
 					break;
@@ -2687,7 +2713,7 @@ class EM_Event extends EM_Object{
 				    $replace = '';
 				    if( get_option('dbem_categories_enabled') ){
     					ob_start();
-    					$template = em_locate_template('placeholders/categories.php', true, array('EM_Event'=>$this));
+    					em_locate_template('placeholders/categories.php', true, array('EM_Event'=>$this));
     					$replace = ob_get_clean();
 				    }
 					break;

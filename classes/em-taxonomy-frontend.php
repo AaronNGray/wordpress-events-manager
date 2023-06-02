@@ -115,7 +115,8 @@ class EM_Taxonomy_Frontend {
 		if( ($is_taxonomy_page && !empty($taxonomy_id)) || (empty($post->ID) && !empty($taxonomy_id)) ){
 			$GLOBALS[self::$tax_class] = EM_Taxonomy_Term::get($taxonomy_id, self::$tax_class);
 			ob_start();
-			em_locate_template('templates/'.self::$option_name.'-single.php',true);
+			$args = array('id' => 8); // 4 is for categories, stable reference for view
+			em_locate_template('templates/'.self::$option_name.'-single.php',true, array('args' => $args));
 			return ob_get_clean();
 		}
 		return $content;

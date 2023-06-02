@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Events Manager
-Version: 6.3
+Version: 6.4
 Plugin URI: https://wp-events-plugin.com
 Description: Event registration and booking management for WordPress. Recurring events, locations, webinars, google maps, rss, ical, booking registration and more!
 Author: Pixelite
@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 // Setting constants
-define('EM_VERSION', '6.3'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
+define('EM_VERSION', '6.4'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
 define('EM_PRO_MIN_VERSION', '3.0'); //self expanatory
 define('EM_PRO_MIN_VERSION_CRITICAL', '3.0'); //self expanatory
 define('EM_DIR', dirname( __FILE__ )); //an absolute path to this directory
@@ -308,28 +308,17 @@ class EM_Scripts_and_Styles {
 		}
         $script_deps = apply_filters('em_public_script_deps', $script_deps);
         if( !empty($script_deps) ){ //given we depend on jQuery, there must be at least a jQuery dep for our file to be loaded
-			wp_enqueue_script('events-manager', plugins_url('includes/js/events-manager.js',__FILE__), array_values($script_deps), EM_VERSION); //jQuery will load as dependency
-	        if( static::$locale != 'en' && file_exists(EM_DIR."/includes/external/flatpickr/l10n/".static::$locale.".min.js") ){
-		        if( (defined('WP_DEBUG') && WP_DEBUG) || (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG) || (defined('EM_DEBUG') && EM_DEBUG) ) {
-			        wp_enqueue_script('em-flatpickr-localization', plugins_url("includes/external/flatpickr/l10n/" . static::$locale . ".js", __FILE__), array('events-manager'), EM_VERSION);
-		        }else{
-			        wp_enqueue_script('em-flatpickr-localization', plugins_url("includes/external/flatpickr/l10n/" . static::$locale . ".min.js", __FILE__), array('events-manager'), EM_VERSION);
-		        }
-		        static::$localize_flatpickr = true;
-	        }
-			self::localize_script();
-    		do_action('em_enqueue_scripts');
+	        static::enqueue_scripts( $script_deps );
         }
 		// list tables dependencies
-		$style_deps = array();
 		/*
+		$style_deps = array();
 		if( (!empty($pages['edit-bookings']) && is_page($pages['edit-bookings'])) || get_option('dbem_js_limit_edit_bookings') === '0' || in_array($obj_id, explode(',', get_option('dbem_js_limit_edit_bookings'))) ){
 			$script_deps[] = 'list-tables';
 			$style_deps[] = 'list-tables';
 		}
 		*/
 		//Now decide on showing the CSS file
-		$min = !((defined('WP_DEBUG') && WP_DEBUG) || (defined('EM_DEBUG') && EM_DEBUG)) ? '.min':'';
 		if( get_option('dbem_css_limit') ){
 			$includes = get_option('dbem_css_limit_include');
 			$excludes = get_option('dbem_css_limit_exclude');
@@ -340,12 +329,10 @@ class EM_Scripts_and_Styles {
 				$exclude = true;
 			}
 			if( !empty($include) && empty($exclude) ){
-			    wp_enqueue_style('events-manager', plugins_url('includes/css/events-manager'.$min.'.css',__FILE__), $style_deps, EM_VERSION); //main css
-	    		do_action('em_enqueue_styles');
+				static::enqueue_public_styles();
 			}
 		}else{
-			wp_enqueue_style('events-manager', plugins_url('includes/css/events-manager'.$min.'.css',__FILE__), $style_deps, EM_VERSION); //main css
-	    	do_action('em_enqueue_styles');
+			static::enqueue_public_styles();
 		}
 	}
 	
@@ -372,12 +359,10 @@ class EM_Scripts_and_Styles {
 			}
 			static::register();
 			wp_enqueue_style( 'wp-color-picker' );
-			$min = !((defined('WP_DEBUG') && WP_DEBUG) || (defined('EM_DEBUG') && EM_DEBUG)) ? '.min':'';
-			wp_enqueue_script('events-manager', plugins_url('includes/js/events-manager'.$min.'.js',__FILE__), array('jquery', 'jquery-ui-core','jquery-ui-widget','jquery-ui-position','jquery-ui-sortable','jquery-ui-datepicker','jquery-ui-dialog','wp-color-picker'), EM_VERSION);
-		    do_action('em_enqueue_admin_scripts');
-			wp_enqueue_style('events-manager-admin', plugins_url('includes/css/events-manager-admin'.$min.'.css',__FILE__), array(), EM_VERSION);
+			static::enqueue_scripts();
+			static::enqueue_admin_styles();
 			if( empty($_REQUEST['page']) ) {
-				wp_enqueue_style('events-manager', plugins_url('includes/css/events-manager' . $min . '.css', __FILE__), array(), EM_VERSION); //main css
+				static::enqueue_public_styles();
 			}
 			do_action('em_enqueue_admin_styles');
 			self::localize_script();
@@ -385,6 +370,37 @@ class EM_Scripts_and_Styles {
 				wp_enqueue_code_editor( array( 'type' => 'text/html' ) );
 			}
 		}
+	}
+	
+	public static function enqueue_public_styles( $deps = array(), $min = true ){
+		$min = static::get_minified_extension( $min );
+		wp_enqueue_style('events-manager', plugins_url('includes/css/events-manager' . $min . '.css', __FILE__), $deps, EM_VERSION); //main css
+		do_action('em_enqueue_styles', $deps, $min);
+	}
+	
+	public static function enqueue_scripts( $deps = null, $min = true ){
+		$min = static::get_minified_extension( $min );
+		if( $deps === null ){
+			// default deps if null
+			$deps = array('jquery', 'jquery-ui-core','jquery-ui-widget','jquery-ui-position','jquery-ui-sortable','jquery-ui-datepicker','jquery-ui-dialog','wp-color-picker');
+		}
+		wp_enqueue_script('events-manager', plugins_url('includes/js/events-manager'.$min.'.js',__FILE__), $deps, EM_VERSION);
+		if( static::$locale != 'en' && file_exists(EM_DIR."/includes/external/flatpickr/l10n/".static::$locale.".min.js") ){
+			wp_enqueue_script('em-flatpickr-localization', plugins_url("includes/external/flatpickr/l10n/" . static::$locale . $min. ".js", __FILE__), array('events-manager'), EM_VERSION);
+			static::$localize_flatpickr = true;
+		}
+		self::localize_script();
+		do_action('em_enqueue_scripts', $deps, $min);
+	}
+	
+	public static function enqueue_admin_styles( $deps = array(), $min = true ){
+		$min = static::get_minified_extension( $min );
+		wp_enqueue_style('events-manager-admin', plugins_url('includes/css/events-manager-admin'.$min.'.css',__FILE__), $deps, EM_VERSION);
+		do_action('em_enqueue_admin_styles', $deps, $min);
+	}
+	
+	public static function get_minified_extension( $minified = true ){
+		return ( !$minified || defined( 'WP_DEBUG' ) && WP_DEBUG ) || ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) || ( defined( 'EM_DEBUG' ) && EM_DEBUG ) ? '' : '.min';
 	}
 	
 	/**
@@ -449,6 +465,15 @@ class EM_Scripts_and_Styles {
 				'bookings_settings_save' => __('Save Settings','events-manager'),
 				'booking_delete' => __("Are you sure you want to delete?",'events-manager'),
 		    	'booking_offset' => $offset,
+				'bookings' => array(
+					'submit_button' => array(
+						'text' => array(
+							'default' => get_option('dbem_bookings_submit_button'),
+							'payment' => get_option('dbem_bookings_submit_button_paid'),
+							'processing' => get_option('dbem_bookings_submit_button_processing'),
+						),
+					),
+				),
 				//booking button
 				'bb_full' =>  get_option('dbem_booking_button_msg_full'),
 				'bb_book' => get_option('dbem_booking_button_msg_book'),
@@ -762,7 +787,9 @@ function em_locate_template( $template_name, $load=false, $the_args = array() ) 
 	if( $located && $load ){
 		$the_args = apply_filters('em_locate_template_args_'.$template_name, $the_args, $located);
 		if( is_array($the_args) ) extract($the_args);
+		do_action('em_template_before_'.$template_name, $the_args);
 		include($located);
+		do_action('em_template_after_'.$template_name, $the_args);
 	}
 	return $located;
 }
@@ -804,6 +831,9 @@ function em_get_template_components_classes( $component ){
 			break;
 		case 'event-booking-form':
 			$show_theme_class = get_option('dbem_css_rsvp');
+			if( get_option('dbem_bookings_form_hide_dynamic') ){
+				array_unshift($component_classes, 'em-hide-dynamic');
+			}
 			break;
 		case 'view-container':
 			$show_theme_class = 2; // not a theme wrapper, just a view wrapper

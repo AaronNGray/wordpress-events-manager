@@ -56,7 +56,7 @@ class EM_Ticket_Booking extends EM_Object{
 				}
 				if( !empty($ticket_data['ticket']) && !empty($ticket_data['ticket']->ticket_id) ){
 					$this->ticket = $ticket_data['ticket'];
-					$this->ticket_id = $this->ticket;
+					$this->ticket_id = $this->ticket->ticket_id;
 				}
 			} elseif (is_numeric($ticket_data)) {
 				//Retreiving from the database

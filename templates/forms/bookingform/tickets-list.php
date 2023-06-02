@@ -12,7 +12,7 @@ $EM_Tickets = $EM_Event->get_bookings()->get_tickets(); //already instantiated, 
  */
 $collumns = $EM_Tickets->get_ticket_collumns(); //array of collumn type => title
 ?>
-<table class="em-tickets" cellspacing="0" cellpadding="0">
+<table class="em-tickets">
 	<thead>
 		<tr>
 			<?php foreach($collumns as $type => $name): ?>

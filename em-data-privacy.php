@@ -5,6 +5,7 @@
  */
 function em_data_privacy_consent_checkbox( $EM_Object = false ){
 	if( !empty($EM_Object) && (!empty($EM_Object->booking_id) || !empty($EM_Object->post_id)) ) return; //already saved so consent was given at one point
+	if( did_action('em_booking_form_after_user_details') ) return; // backcompat
 	$label = get_option('dbem_data_privacy_consent_text');
 	// buddyboss fix since bb v1.6.0
 	if( has_filter( 'the_privacy_policy_link', 'bp_core_change_privacy_policy_link_on_private_network') ) $bb_fix = remove_filter('the_privacy_policy_link', 'bp_core_change_privacy_policy_link_on_private_network', 999999);
@@ -34,7 +35,8 @@ function em_data_privacy_consent_checkbox( $EM_Object = false ){
 function em_data_privacy_consent_hooks(){
 	//BOOKINGS
 	if( get_option('dbem_data_privacy_consent_bookings') == 1 || ( get_option('dbem_data_privacy_consent_bookings') == 2 && !is_user_logged_in() ) ){
-	    add_action('em_booking_form_footer', 'em_data_privacy_consent_checkbox', 9, 0); //supply 0 args since arg is $EM_Event and callback will think it's an event submission form
+		add_action('em_booking_form_footer', 'em_data_privacy_consent_checkbox', 9, 0); //supply 0 args since arg is $EM_Event and callback will think it's an event submission form
+	    add_action('em_booking_form_after_user_details', 'em_data_privacy_consent_checkbox', 9, 0); //supply 0 args since arg is $EM_Event and callback will think it's an event submission form
 		add_filter('em_booking_get_post', 'em_data_privacy_consent_booking_get_post', 10, 2);
 		add_filter('em_booking_validate', 'em_data_privacy_consent_booking_validate', 10, 2);
 		add_filter('em_booking_save', 'em_data_privacy_consent_booking_save', 10, 2);

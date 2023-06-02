@@ -2773,6 +2773,8 @@
   --background-color-softer: hsl(var(--theme-hue), 0%, 95%);
   --background-color-checkboxes: white;
   --background-color-inputs: white;
+  --background-color-skeleton: #ededed;
+  --background-color-skeleton-softer: hsl(var(--theme-hue), 0%, 95%);
   --code-background: hsl(var(--theme-hue), 0%, 95%);
   /* #f1f1f1 		code background*/
   --button-primary-color: white;
@@ -3319,9 +3321,10 @@
   /* Create standard dropdown arrow (like WP admin) */
   /* Removes awkward default styles on some inputs for iOS */
 }
-.wp-admin .em.pixelbones .input input, .wp-admin .em.pixelbones .input textarea, .wp-admin .em.pixelbones .input select, .wp-admin .em.pixelbones .input fieldset, .wp-admin .em.pixelbones.input input, .wp-admin .em.pixelbones.input textarea, .wp-admin .em.pixelbones.input select, .wp-admin .em.pixelbones.input fieldset {
+.wp-admin .em.pixelbones .input input, .wp-admin .em.pixelbones .input textarea, .wp-admin .em.pixelbones .input select, .wp-admin .em.pixelbones .input fieldset, .wp-admin .em.pixelbones .input div.input-wrap, .wp-admin .em.pixelbones.input input, .wp-admin .em.pixelbones.input textarea, .wp-admin .em.pixelbones.input select, .wp-admin .em.pixelbones.input fieldset, .wp-admin .em.pixelbones.input div.input-wrap {
   margin-bottom: 15px !important;
 }
+.wp-admin .em.pixelbones .input div.input-wrap,
 .wp-admin .em.pixelbones .input input[type=email],
 .wp-admin .em.pixelbones .input input[type=number],
 .wp-admin .em.pixelbones .input input[type=search],
@@ -3330,7 +3333,8 @@
 .wp-admin .em.pixelbones .input input[type=url],
 .wp-admin .em.pixelbones .input input[type=password],
 .wp-admin .em.pixelbones .input textarea,
-.wp-admin .em.pixelbones .input select:not([multiple]), .wp-admin .em.pixelbones.input input[type=email],
+.wp-admin .em.pixelbones .input select:not([multiple]), .wp-admin .em.pixelbones.input div.input-wrap,
+.wp-admin .em.pixelbones.input input[type=email],
 .wp-admin .em.pixelbones.input input[type=number],
 .wp-admin .em.pixelbones.input input[type=search],
 .wp-admin .em.pixelbones.input input[type=text],
@@ -3349,6 +3353,7 @@
   box-sizing: border-box !important;
   border: 1px solid var(--border-color-softer) !important;
 }
+.wp-admin .em.pixelbones .input div.input-wrap.inline,
 .wp-admin .em.pixelbones .input input[type=email].inline,
 .wp-admin .em.pixelbones .input input[type=number].inline,
 .wp-admin .em.pixelbones .input input[type=search].inline,
@@ -3357,7 +3362,8 @@
 .wp-admin .em.pixelbones .input input[type=url].inline,
 .wp-admin .em.pixelbones .input input[type=password].inline,
 .wp-admin .em.pixelbones .input textarea.inline,
-.wp-admin .em.pixelbones .input select:not([multiple]).inline, .wp-admin .em.pixelbones.input input[type=email].inline,
+.wp-admin .em.pixelbones .input select:not([multiple]).inline, .wp-admin .em.pixelbones.input div.input-wrap.inline,
+.wp-admin .em.pixelbones.input input[type=email].inline,
 .wp-admin .em.pixelbones.input input[type=number].inline,
 .wp-admin .em.pixelbones.input input[type=search].inline,
 .wp-admin .em.pixelbones.input input[type=text].inline,
@@ -3412,6 +3418,7 @@
   padding-top: 6px !important;
   padding-bottom: 6px !important;
 }
+.wp-admin .em.pixelbones .input div.input-wrap:focus,
 .wp-admin .em.pixelbones .input input[type=email]:focus,
 .wp-admin .em.pixelbones .input input[type=number]:focus,
 .wp-admin .em.pixelbones .input input[type=search]:focus,
@@ -3420,7 +3427,8 @@
 .wp-admin .em.pixelbones .input input[type=url]:focus,
 .wp-admin .em.pixelbones .input input[type=password]:focus,
 .wp-admin .em.pixelbones .input textarea:focus,
-.wp-admin .em.pixelbones .input select:focus, .wp-admin .em.pixelbones.input input[type=email]:focus,
+.wp-admin .em.pixelbones .input select:focus, .wp-admin .em.pixelbones.input div.input-wrap:focus,
+.wp-admin .em.pixelbones.input input[type=email]:focus,
 .wp-admin .em.pixelbones.input input[type=number]:focus,
 .wp-admin .em.pixelbones.input input[type=search]:focus,
 .wp-admin .em.pixelbones.input input[type=text]:focus,
@@ -3431,6 +3439,19 @@
 .wp-admin .em.pixelbones.input select:focus {
   border: 1px solid var(--accent-color) !important;
   outline: 0 !important;
+}
+.wp-admin .em.pixelbones .input div.input-wrap, .wp-admin .em.pixelbones.input div.input-wrap {
+  padding: 0 !important;
+  /* The 7px vertically centers text on FF, ignored by Webkit */
+}
+.wp-admin .em.pixelbones .input div.input-wrap > input, .wp-admin .em.pixelbones .input div.input-wrap > input:focus, .wp-admin .em.pixelbones .input div.input-wrap > input:hover, .wp-admin .em.pixelbones.input div.input-wrap > input, .wp-admin .em.pixelbones.input div.input-wrap > input:focus, .wp-admin .em.pixelbones.input div.input-wrap > input:hover {
+  width: 100% !important;
+  margin: 0 !important;
+  border: none !important;
+  outline: 0 !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
 }
 .wp-admin .em.pixelbones .input label,
 .wp-admin .em.pixelbones .input legend, .wp-admin .em.pixelbones.input label,
@@ -3514,6 +3535,49 @@
 .wp-admin .em.pixelbones .input input:disabled, .wp-admin .em.pixelbones .input select:disabled, .wp-admin .em.pixelbones .input textarea:disabled, .wp-admin .em.pixelbones.input input:disabled, .wp-admin .em.pixelbones.input select:disabled, .wp-admin .em.pixelbones.input textarea:disabled {
   opacity: 0.5;
   background-color: #efefef;
+}
+.wp-admin .em.pixelbones .skeleton {
+  box-sizing: border-box;
+  position: relative;
+}
+.wp-admin .em.pixelbones .skeleton .item {
+  width: 100%;
+  height: 38px;
+  margin-bottom: 15px;
+  border: 1px var(--background-color-skeleton-softer);
+  border-radius: 4px;
+  background-color: var(--background-color-skeleton);
+  box-shadow: none;
+}
+.wp-admin .em.pixelbones .skeleton .item::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.2) 80%, rgba(255, 255, 255, 0.5) 20%, rgba(255, 255, 255, 0));
+  animation: shimmer 1.5s infinite;
+  content: "";
+}
+.wp-admin .em.pixelbones .skeleton .item.label {
+  width: 33%;
+  height: 14px;
+  margin-bottom: 8px;
+  border-radius: 0;
+}
+.wp-admin .em.pixelbones .skeleton .item.text {
+  height: 26px;
+  border-radius: 0;
+}
+.wp-admin .em.pixelbones .skeleton .item.title {
+  margin-bottom: 15px;
+  border-radius: 0;
+}
+@keyframes shimmer {
+  100% {
+    transform: translateX(110%);
+  }
 }
 .wp-admin .em.pixelbones ul {
   list-style: circle inside !important;
@@ -4501,8 +4565,8 @@
   box-shadow: none;
 }
 .wp-admin .em .hidden {
-  display: none;
-  visibility: hidden;
+  display: none !important;
+  visibility: hidden !important;
 }
 .wp-admin .selectize-control.em-selectize:not(.always-open) .selectize-input, .wp-admin .selectize-control.em-selectize-autocomplete:not(.always-open) .selectize-input {
   min-height: calc(1.5em + 0.75rem + 2px) !important;

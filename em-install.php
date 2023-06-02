@@ -440,17 +440,23 @@ function em_add_options() {
 		'dbem_events_default_order' => 'ASC',
 		'dbem_events_default_limit' => 10,
 		//Event Search Options
+		'dbem_search_form_main' => 1,
 		'dbem_search_form_submit' => __('Search','events-manager'),
 		'dbem_search_form_views' => array('list', 'list-grouped', 'grid', 'map', 'calendar'),
 		'dbem_search_form_view' => 'list',
 		'dbem_search_form_advanced' => 1,
+		'dbem_search_form_advanced_mode' => 'modal',
 		'dbem_search_form_advanced_hidden' => 1,
 		'dbem_search_form_advanced_show' => __('Show Advanced Search','events-manager'),
 		'dbem_search_form_advanced_hide' => __('Hide Advanced Search','events-manager'),
 		'dbem_search_form_text' => 1,
 		'dbem_search_form_text_label' => __('Search','events-manager'),
+		'dbem_search_form_text_advanced' => 1,
+		'dbem_search_form_text_label_advanced' => __('Search','events-manager'),
 		'dbem_search_form_geo' => 1,
 		'dbem_search_form_geo_label' => __('Near...','events-manager'),
+		'dbem_search_form_geo_advanced' => 1,
+		'dbem_search_form_geo_label_advanced' => __('Near...','events-manager'),
 		'dbem_search_form_geo_units' => 1,
 		'dbem_search_form_geo_units_label' => __('Within','events-manager'),
 		'dbem_search_form_geo_unit_default' => 'mi',
@@ -460,6 +466,10 @@ function em_add_options() {
 		'dbem_search_form_dates_label' => __('Dates','events-manager'),
 		'dbem_search_form_dates_separator' => __('and','events-manager'),
 		'dbem_search_form_dates_format' => 'M j',
+		'dbem_search_form_dates_advanced' => 1,
+		'dbem_search_form_dates_label_advanced' => __('Dates','events-manager'),
+		'dbem_search_form_dates_separator_advanced' => __('and','events-manager'),
+		'dbem_search_form_dates_format_advanced' => 'M j',
 		'dbem_search_form_categories' => 1,
 		'dbem_search_form_categories_label' => __('All Categories','events-manager'),
 		'dbem_search_form_category_label' => __('Categories','events-manager'),
@@ -697,13 +707,22 @@ function em_add_options() {
 		'dbem_bookings_tax' => 0, //extra tax
 		'dbem_bookings_tax_auto_add' => 0, //adjust prices to show tax?
 			//Form Options
-			'dbem_bookings_submit_button' => __('Send your booking', 'events-manager'),
+			'dbem_bookings_submit_button' => __('Submit Booking', 'events-manager'),
+			'dbem_bookings_submit_button_paid' => __('Submit Booking', 'events-manager') .' - %s',
+			'dbem_bookings_submit_button_processing' => __('Processing ...', 'events-manager'),
 			'dbem_bookings_login_form' => 1, //show login form on booking area
+			'dbem_bookings_form_hide_dynamic' => get_option('dbem_version', false) === false, //show login form on booking area
+			'dbem_bookings_summary' => 1,
+			'dbem_bookings_summary_taxes_itemized' => !get_option('dbem_bookings_tax_auto_add', 0),
+			'dbem_bookings_summary_free' => 1,
+			'dbem_bookings_summary_message' => __('Please select at least one space to proceed with your booking.', 'events-manager'),
 			'dbem_bookings_anonymous' => 1,
 			'dbem_bookings_form_max' => 20,
 			'dbem_bookings_header_tickets' => esc_html__('Tickets', 'events-manager'),
 			'dbem_bookings_header_reg_info' => esc_html__('Registration Information', 'events-manager'),
-			'dbem_bookings_header_payment' => esc_html__('Payment and Confirmation', 'events-manager'),
+			'dbem_bookings_header_summary' => esc_html__('Booking Summary', 'events-manager'),
+			'dbem_bookings_header_confirm' => '', // blank so appears below summary section
+			'dbem_bookings_header_confirm_free' => '', // blank so appears below summary section
 			//Messages
 			'dbem_bookings_form_msg_disabled' => __('Online bookings are not available for this event.','events-manager'),
 			'dbem_bookings_form_msg_closed' => __('Bookings are closed for this event.','events-manager'),
@@ -896,6 +915,20 @@ function em_add_options() {
 
 function em_upgrade_current_installation(){
 	global $wpdb, $wp_locale, $EM_Notices;
+	$current_version = get_option('dbem_version');
+	
+	// add review popup
+	$data = get_site_option('dbem_data', array());
+	if( empty($current_version) || !isset($data['admin-modals']) ){ // if admin-modals isn't set, it was never added before
+		if( empty($data['admin-modals']) ) $data['admin-modals'] = array();
+		$data['admin-modals']['review-nudge'] = time() + (DAY_IN_SECONDS * 14);
+		update_site_option('dbem_data', $data);
+	}
+	// temp promo
+	if( time() < 1686139200 ) {
+		$data['admin-modals']['promo-popup'] = true;
+		update_site_option('dbem_data', $data);
+	}
 	
 	// Check EM Pro update min
 	if( defined('EMP_VERSION') && EMP_VERSION < EM_PRO_MIN_VERSION && !defined('EMP_DISABLE_WARNINGS') ) {
@@ -903,8 +936,6 @@ function em_upgrade_current_installation(){
 		$EM_Admin_Notice = new EM_Admin_Notice(array('name' => 'em-pro-updates', 'who' => 'admin', 'where' => 'all', 'message' => "$message"));
 		EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
 	}
-	
-	$current_version = get_option('dbem_version');
 	if( !$current_version ){ add_option('dbem_credits',1); }
 	if( $current_version != '' && $current_version < 5 ){
 		//make events, cats and locs pages
@@ -1327,9 +1358,11 @@ function em_upgrade_current_installation(){
 		}
 		// atomic booking meta! for 6.1
 		// let's go through every booking and split it all up
-		$query = 'SELECT booking_id, booking_meta FROM '. EM_BOOKINGS_TABLE ." WHERE booking_meta_migrated IS NULL";
+		$query = 'SELECT booking_id, booking_meta FROM '. EM_BOOKINGS_TABLE ." WHERE booking_meta_migrated IS NULL LIMIT 500";
 		$results = $wpdb->get_results( $query, ARRAY_A );
+		$timeout = ini_get('max_execution_time') >= 30 ? ini_get('max_execution_time') : 30;
 		while( !empty($results) ){
+			set_time_limit($timeout); // reset the timer, let it run for 30 if we keep hitting the loop, if it gets stuck inside this then let it time out
 			$migrated_bookings = $booking_meta_split = array();
 			foreach( $results as $booking ) {
 				// now we generate split meta, any meta in an array should be dealt with by corresponding plugin (e.g. Pro for form field meta)
@@ -1393,6 +1426,7 @@ function em_upgrade_current_installation(){
 		$wpdb->query('ALTER TABLE '. EM_BOOKINGS_TABLE . ' DROP `booking_meta_migrated`'); // flag done
 		EM_Admin_Notices::remove('v6.1-booking-atomic-meta-error', is_multisite());
 		EM_Admin_Notices::remove('v6.1-atomic-error', is_multisite());
+		update_option('dbem_version', '6.1.0.2'); // we don't need to make this happen again
 	}
 	if( $current_version != '' && version_compare($current_version, '6.1.1', '<') ){
 		EM_Admin_Notices::remove('v6.1-atomic-error', is_multisite());
@@ -1460,18 +1494,6 @@ function em_upgrade_current_installation(){
 		}
 	}
 	
-	// add review popup
-	if( version_compare($current_version, '6.1.4', '<') ){
-		// disable the modal so it's not shown again
-		$data = is_multisite() ? get_site_option('dbem_data', array()) : get_option('dbem_data', array());
-		if( empty($data['admin-modals']) ) $data['admin-modals'] = array();
-		if( time() < 1668067200 ) {
-			$data['admin-modals']['promo-popup'] = true;
-		}
-		$data['admin-modals']['review-nudge'] = time() + (DAY_IN_SECONDS * 14);
-		is_multisite() ? update_site_option('dbem_data', $data) : update_option('dbem_data', $data);
-	}
-	
 	if( $current_version != '' && version_compare($current_version, '6.2.2', '<') ){
 		if( !get_option('dbem_css') ){
 			// prevent grids just to avoid styling snafus
@@ -1483,6 +1505,35 @@ function em_upgrade_current_installation(){
 		}else{
 			update_option('dbem_search_form_view', 'list-grouped');
 		}
+	}
+	
+	// do pro retrofit of bookings that previously had a uuid in booking meta, make that the uuid of the booking itself so we can transition out of uuid in booking meta
+	if( version_compare($current_version, '6.3.0.5', '<') ){
+		// get all bookings with a uuid meta, leave that meta for backcompat old code but move the same uuid into the booking and overwrite
+		$uuid_sql = 'UPDATE ' . EM_BOOKINGS_TABLE . ' b INNER JOIN ' . EM_BOOKINGS_META_TABLE . " bm ON b.booking_id=bm.booking_id AND meta_key='uuid' SET booking_uuid=REPLACE(meta_value,'-','') WHERE meta_value IS NOT NULL AND REPLACE(meta_value,'-','') != booking_uuid";
+		$wpdb->query($uuid_sql);
+		// add new advanced search option values to default to main/previous settings for user
+		$search_advanced = array(
+			'dbem_search_form_text_advanced' => get_option('dbem_search_form_text'),
+			'dbem_search_form_text_label_advanced' => get_option('dbem_search_form_text_label'),
+			'dbem_search_form_geo_advanced' => get_option('dbem_search_form_geo'),
+			'dbem_search_form_geo_label_advanced' => get_option('dbem_search_form_geo_label'),
+			'dbem_search_form_dates_advanced' => get_option('dbem_search_form_dates'),
+			'dbem_search_form_dates_label_advanced' => get_option('dbem_search_form_dates_label'),
+			'dbem_search_form_dates_separator_advanced' => get_option('dbem_search_form_dates_separator'),
+			'dbem_search_form_dates_format_advanced' => get_option('dbem_search_form_dates_format'),
+		);
+		foreach ( $search_advanced as $k => $v ){
+			update_option($k, $v);
+		}
+	}
+	if( version_compare( $current_version, '6.4', '<') ){
+		// new 'pay' button will by default be worded same as free button
+		update_option('dbem_bookings_submit_button_paid', get_option('dbem_bookings_submit_button') );
+		// update message
+		$settings_page_url = '<a href="'.admin_url('admin.php?page=events-manager-options').'">Settings > Bookings > Booking Form Options</a>';
+		$message = 'Welcome to Events Manager 6.4! This version introduces some new booking form upgrades, including a dynamic price breakdown before confirming a booking! Enable this feature in <a href=""><em>'. $settings_page_url .'</em></a>';
+		EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.4-update', 'who' => 'admin', 'where' => 'plugin', 'message' => $message )), is_multisite());
 	}
 }
 

@@ -158,7 +158,11 @@ class EM_Event_Post {
 						$EM_Event->post_content = $content;
 					}
 					ob_start();
-					em_locate_template('templates/event-single.php',true);
+					$args = array();
+					if( em_is_event_page() ){
+						$args['id'] = 6;
+					}
+					em_locate_template('templates/event-single.php',true, array('args' => $args));
 					$content = ob_get_clean();
 				}elseif( !post_password_required() ){
 					$EM_Event = em_get_event($post);

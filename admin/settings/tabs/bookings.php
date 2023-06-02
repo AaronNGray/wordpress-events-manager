@@ -116,14 +116,36 @@
 		<table class='form-table'>
 			<?php
 			em_options_radio_binary ( __( 'Display login form?', 'events-manager'), 'dbem_bookings_login_form', __( 'Choose whether or not to display a login form in the booking form area to remind your members to log in before booking.', 'events-manager') );
-			em_options_input_text ( __( 'Submit button text', 'events-manager'), 'dbem_bookings_submit_button', sprintf(__( 'The text used by the submit button. To use an image instead, enter the full url starting with %s or %s.', 'events-manager'), '<code>http://</code>','<code>https://</code>') );
+			em_options_radio_binary ( __( 'Hide form until tickets selected?', 'events-manager'), 'dbem_bookings_form_hide_dynamic', __( 'If enabled, the entire booking form will show once a space is selected, or if an ticket is already pre-selected with minimum spaces.', 'events-manager') );
+			em_options_input_text ( __( 'Submit button text', 'events-manager'), 'dbem_bookings_submit_button', sprintf(__( 'The text used by the submit button. To use an image instead, enter the full url starting with %s or %s.', 'events-manager'), '<code>http://</code>','<code>https://</code>') ). ' ' . __( 'This button text would be shown for a free booking', 'events-manager');
+			em_options_input_text ( __( 'Submit button text (payment)', 'events-manager'), 'dbem_bookings_submit_button_paid', sprintf(__( 'The text shown when a booking is not free, %s will be replaced by the total amount due.', 'events-manager'), '<code>%s</code>'). ' <strong>' . __( 'This text will be shown only if the default (free) button is not an image.', 'events-manager') . '</strong>' );
+			em_options_input_text ( __( 'Submit button text (processing)', 'events-manager'), 'dbem_bookings_submit_button_processing', sprintf(__( 'The text shown when a booking is being submitted, %s will be replaced by the total amount due.', 'events-manager'), '<code>%s</code>'). ' <strong>' . __( 'This text will be shown only if the default (free) button is not an image.', 'events-manager') . '</strong>' );
 			?>
+			<tr class="em-header"><td colspan='2'><h4><?php esc_html_e('Booking Summary','events-manager') ?></h4></td></tr>
+			<tr><td colspan='2'><?php echo esc_html__('When selecting tickets on a booking form, the price will dynamically be broken down in a summary before the booking confirmation button.','events-manager'); ?></td></tr>
+			<?php
+			em_options_radio_binary ( __( 'Display booking summary?', 'events-manager'), 'dbem_bookings_summary', __( 'Displays a booking summary including itemized subtotals, taxes, discounts, surcharges and totals where applicable.', 'events-manager'), '', '.em-booking-summmary-options, #dbem_bookings_header_summary_row' );
+			?>
+			<tbody class="em-booking-summmary-options">
+				<?php
+				em_options_radio_binary ( __( 'Display free booking summary?', 'events-manager'), 'dbem_bookings_summary_free', __( 'Display the booking summary if the event is free. If there are any available tickets worth more than 0 then the event is not considered free.', 'events-manager') );
+				em_options_input_text ( __( 'Booking summary default text', 'events-manager'), 'dbem_bookings_summary_message', __( 'When no tickets are selected, this text will appear in place of a booking summary, prompting users to select a ticket.', 'events-manager'));
+				em_options_radio_binary ( __( 'Display taxes separately?', 'events-manager'), 'dbem_bookings_summary_taxes_itemized', __( 'Display ticket prices without tax and calculate the tax total separately.', 'events-manager') );
+				em_options_radio_binary ( __( 'Display subsection titles?', 'events-manager'), 'dbem_bookings_summary_subsections', __( 'Display subsection titles above groups of line items, such as taxes, discounts and surcharges.', 'events-manager') );
+				
+				?>
+			</tbody>
 			<tr class="em-header"><td colspan='2'><h4><?php esc_html_e('Booking form section headers','events-manager') ?></h4></td></tr>
 			<tr><td colspan='2'><?php echo esc_html__('These headings appear above sections of the booking form. Leave blank for no heading.','events-manager'); ?></td></tr>
 			<?php
 			em_options_input_text ( esc_html__('Tickets', 'events-manager'), 'dbem_bookings_header_tickets' );
 			em_options_input_text ( esc_html__('Registration Information', 'events-manager'), 'dbem_bookings_header_reg_info' );
-			em_options_input_text ( esc_html__('Payment and Confirmation', 'events-manager'), 'dbem_bookings_header_payment' );
+			em_options_input_text ( esc_html__('Boooking Summary', 'events-manager'), 'dbem_bookings_header_summary' );
+			$paid_description = esc_html__('The default value is blank so that the booking submission button appears just below the %s section.', 'events-manager');
+			em_options_input_text ( esc_html__('Payment and Confirmation', 'events-manager'), 'dbem_bookings_header_confirm', sprintf($paid_description, '<em>'.esc_html__('Boooking Summary', 'events-manager').'</em>' ) );
+			$free_description = esc_html__('If the booking is free, this will be displayed instead of the %s heading.', 'events-manager') . ' ' . esc_html__('The default value is blank so that the booking submission button appears just below the %s section.', 'events-manager');
+			$free_description = sprintf($free_description, '<em>'.esc_html__('Payment and Confirmation', 'events-manager').'</em>', '<em>'.esc_html__('Boooking Summary', 'events-manager').'</em>' );
+			em_options_input_text ( esc_html__('Booking Confirmation', 'events-manager'), 'dbem_bookings_header_confirm_free', $free_description );
 			
 			do_action('em_options_booking_form_options');
 			echo $save_button;

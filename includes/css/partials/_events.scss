@@ -41,6 +41,7 @@ For other event list and single event display CSS, see the _items.scss file
 		.em-item-image-placeholder {
 			div.date {
 				padding-top : 15%;
+				min-width: 60px;
 				span.day {
 					font-size: 30px !important;
 					line-height: 30px !important;
