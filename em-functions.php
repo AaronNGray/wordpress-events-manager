@@ -1284,6 +1284,15 @@ function em_bookings_form_confirm_header_backcompat(){
 	remove_action('em_checkout_form_footer',  array('EM_Booking_Form', 'booking_form_section_confirm_mb'), 1);
 	remove_action('em_booking_form_before_confirm', array('EM_Booking_Form', 'booking_form_section_confirm'), 1);
 	remove_action('em_booking_form_footer', array('EM_Booking_Form', 'booking_form_section_confirm'), 1);
+	add_action('em_booking_form_before_buttons', function( $EM_Event ){
+		do_action('em_booking_form_footer_before_buttons', $EM_Event);
+	});
+	add_action('em_booking_form_before_confirm', function( $EM_Event ){
+		do_action('em_booking_form_before_confirmation', $EM_Event);
+	});
+	add_action('em_booking_form_after_confirm', function( $EM_Event ){
+		do_action('em_booking_form_after_confirmation', $EM_Event);
+	});
 }
 add_action('em_pro_loaded', 'em_bookings_form_confirm_header_backcompat');
 ?>

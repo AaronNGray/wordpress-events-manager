@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 6.2
-Stable tag: 6.4
+Stable tag: 6.4.1
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
@@ -160,6 +160,11 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
+= 6.4.1 =
+* fixed data privacy consent checkbox not showing on booking form since
+* fixed 'undefined' button error
+* added back-compat fallback for deleted actions on booking form
+
 = 6.4 =
 * revamped booking form html structure (backwards compatible) and added a dynamic booking price summary
 * moved booking button into own template

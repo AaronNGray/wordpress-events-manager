@@ -64,15 +64,22 @@ var em_booking_form_init = function( booking_form ){
 		}
 	});
 
+	let em_booking_form_updated_listener; // prevents double-check due to jQuery listener
 	/**
 	 * When booking form is updated, get a booking intent
 	 */
 	booking_form.addEventListener("em_booking_form_updated", function( e ){
-		em_booking_summary_ajax( booking_form );
+		em_booking_form_updated_listener = true;
+		em_booking_summary_ajax( booking_form ).finally( function(){
+			em_booking_form_updated_listener = false;
+		});
 	});
 	if( jQuery ) {
+		// check for jQuery-fired legacy JS, but check above isn't already in progress due to new JS elements
 		jQuery(booking_form).on('em_booking_form_updated', function () {
-			em_booking_summary_ajax(booking_form);
+			if( !em_booking_form_updated_listener ){
+				em_booking_summary_ajax(booking_form);
+			}
 		})
 	}
 
@@ -182,7 +189,8 @@ var em_booking_form_hide_success = function( booking_form, opts = {} ){
 	}, opts);
 	let booking_summary_sections = booking_form.querySelectorAll('.em-booking-form-summary-title, .em-booking-form-summary-title');
 	if ( booking_summary_sections.length > 0 ) {
-		booking_form.querySelectorAll('section:not(.em-booking-form-section-summary').forEach( section => section.classList.add('hidden') );
+		booking_form.querySelectorAll('section:not(.em-booking-form-section-summary)').forEach( section => section.classList.add('hidden') );
+		booking_form.parentElement.querySelectorAll('.em-booking-form > h3.em-booking-section-title').forEach( section => section.classList.add('hidden') ); // backcompat
 	} else {
 		booking_form.classList.add('hidden');
 	}
@@ -231,11 +239,11 @@ var em_booking_form_update_booking_intent = function( booking_form, booking_inte
 				}
 			} else {
 				// we have a free booking, show free booking button
-				button.value = EM.bookings.submit_button.text.free;
+				button.value = EM.bookings.submit_button.text.default;
 			}
 		} else {
 			// no booking_intent means no valid booking params yet
-			button.value = EM.bookings.submit_button.text.free;
+			button.value = EM.bookings.submit_button.text.default;
 			button.disabled = true;
 			button.classList.add('disabled');
 		}

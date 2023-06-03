@@ -5,7 +5,7 @@
  */
 function em_data_privacy_consent_checkbox( $EM_Object = false ){
 	if( !empty($EM_Object) && (!empty($EM_Object->booking_id) || !empty($EM_Object->post_id)) ) return; //already saved so consent was given at one point
-	if( did_action('em_booking_form_after_user_details') ) return; // backcompat
+	if( !doing_action('em_booking_form_after_user_details') && did_action('em_booking_form_after_user_details') ) return; // backcompat
 	$label = get_option('dbem_data_privacy_consent_text');
 	// buddyboss fix since bb v1.6.0
 	if( has_filter( 'the_privacy_policy_link', 'bp_core_change_privacy_policy_link_on_private_network') ) $bb_fix = remove_filter('the_privacy_policy_link', 'bp_core_change_privacy_policy_link_on_private_network', 999999);
