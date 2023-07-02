@@ -130,6 +130,13 @@
 			em_options_radio_binary ( __( 'Override with Formats?', 'events-manager'), 'dbem_cp_events_archive_formats', sprintf($format_override_tip,__('events','events-manager')));
 			em_options_radio_binary ( __( 'Override Excerpts with Formats?', 'events-manager'), 'dbem_cp_events_excerpt_formats', sprintf($format_override_tip,__('events','events-manager')));
 			em_options_radio_binary ( __( 'Are current events past events?', 'events-manager'), 'dbem_events_current_are_past', __( "By default, events that have an end date later than today will be included in searches, set this to yes to consider events that started 'yesterday' as past.", 'events-manager') );
+			?>
+		        <tbody class="event-active-status-option">
+		        <?php
+		        em_options_radio_binary ( __( 'Include cancelled events?', 'events-manager'), 'dbem_events_include_status_cancelled', sprintf(__( "If an event is cancelled, you can exclude them from event lists. You can display cancelled events in shortcode using the %s parameter.", 'events-manager'), '<code>cancelled</code>') );
+		        ?>
+		        </tbody>
+		    <?php
 			em_options_radio_binary ( __( 'Include in WordPress Searches?', 'events-manager'), 'dbem_cp_events_search_results', sprintf(__( "Allow %s to appear in the built-in search results.", 'events-manager'),__('events','events-manager')) );
 			?>
 			<tr class="em-header">

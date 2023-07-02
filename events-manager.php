@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Events Manager
-Version: 6.4.1
+Version: 6.4.1.11
 Plugin URI: https://wp-events-plugin.com
 Description: Event registration and booking management for WordPress. Recurring events, locations, webinars, google maps, rss, ical, booking registration and more!
 Author: Pixelite
@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 // Setting constants
-define('EM_VERSION', '6.4.1'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
+define('EM_VERSION', '6.4.1.10'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
 define('EM_PRO_MIN_VERSION', '3.0'); //self expanatory
 define('EM_PRO_MIN_VERSION_CRITICAL', '3.0'); //self expanatory
 define('EM_DIR', dirname( __FILE__ )); //an absolute path to this directory
@@ -484,8 +484,31 @@ class EM_Scripts_and_Styles {
 				'bb_cancel' => get_option('dbem_booking_button_msg_cancel'),
 				'bb_canceling' => get_option('dbem_booking_button_msg_canceling'),
 				'bb_cancelled' => get_option('dbem_booking_button_msg_cancelled'),
-				'bb_cancel_error' => get_option('dbem_booking_button_msg_cancel_error')
+				'bb_cancel_error' => get_option('dbem_booking_button_msg_cancel_error'),
 			));
+			// Cancellation warning
+			if( get_option('dbem_event_status_enabled') ){
+				$cancellation_text = __('If you choose to cancel your event, after you save this event, no further bookings will be possible for this event.', 'events-manager');
+				$additionals_text = '';
+				if( get_option('dbem_event_cancelled_bookings') ){
+					$additionals_text .= '\n- ' . __('Bookings will be automatically cancelled.', 'events-manager');
+					if( get_option('dbem_event_cancelled_bookings_email') ){
+						$additionals_text .= '\n- ' . __('Booking cancellation emails will be sent.', 'events-manager');
+					}else{
+						$additionals_text .= ' ' . __('Booking cancellation emails are not sent.', 'events-manager');
+					}
+				}
+				if( get_option('dbem_event_cancelled_email') ){
+					$additionals_text .= '\n- ' . __('All confirmed and pending bookings will be emailed a general event cancellation notification.', 'events-manager');
+				}
+				if( !empty($additionals_text) ){
+					$cancellation_text .= '\n\n' . __('Also, the following will occur:', 'events-manager');
+					$cancellation_text .= '\n' . $additionals_text;
+				}
+				$em_localized_js['event_cancellations'] = array(
+					'warning' => $cancellation_text,
+				);
+			}
 		}
 		$em_localized_js['txt_search'] = get_option('dbem_search_form_text_label',__('Search','events-manager'));
 		$em_localized_js['txt_searching'] = __('Searching...','events-manager');

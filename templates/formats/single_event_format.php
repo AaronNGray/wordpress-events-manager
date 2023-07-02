@@ -4,6 +4,12 @@
 		#_EVENTIMAGE{medium}
 	</div>
 	{/has_image}
+	{is_cancelled}
+	<div class="em-event-cancelled em-notice em-notice-error em-notice-icon">
+		<span class="em-icon em-icon-cross-circle"></span>
+		<?php esc_html_e('This event has been cancelled.', 'events-manager'); ?>
+	</div>
+	{/is_cancelled}
 	<div class="em-item-meta">
 		<section class="em-item-meta-column">
 			<section class="em-event-when">

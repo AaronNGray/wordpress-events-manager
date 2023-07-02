@@ -160,6 +160,22 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
+= 6.4.1.11 (dev) =
+* fixed google maps JS errors with embedded Google maps
+* fixed booking form issues and added fallbacks for settings and template overrides where booking intents are not present on initial booking form load
+* added fallback polyfill function to add booking_intent to booking forms overriden in template files which still uses em_booking_form_footer
+* fixed compatiblity issues with other plugins using reCaptcha breaking booking form AJAX process and causing "Network Error" error messages
+* added further fallbacks to handle non-network issues triggering  caused by unhandled thrown errors preventing booking form from fully processing
+* changed JS use of response.result to response.success in bookingform.js
+* fixed fatal PHP error when deleting an event on front-end admin
+* fixed fatal error when 0 views are selected/saved to settings or if dbem_search_form_views is saved incorrectly
+* added PHP $email_args parameter to EM_Booking status change functions which is passed onto the email() function for limiting admin/attendee sending
+* added event status feature including active and cancelled states along with options to email booked users about a cancellation
+* added is_cancelled and is_active conditional placeholders
+* added #_EVENTSTATUS placeholder
+* added cancelled (bool), active (bool) and active_status (int) search arguments for PHP and shortcode arguments
+* (minor) fixed PHP 8 error in ticket editor
+
 = 6.4.1 =
 * fixed data privacy consent checkbox not showing on booking form since
 * fixed 'undefined' button error
@@ -1966,7 +1982,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * events with >1 ticket will show multi-ticket editor regardless of single ticket mode setting
 * updated Brazilian language, added Catalan and fixed a few language datepicker oddities
 * fixed RSS validation fails for some special characters
-* fixed cancellations being possible after event boookings close 
+* fixed cancellations being possible after event bookings close
 * fixed admin-side search-by-category
 * fixed manage_others_bookings not allowing access to bookings without other caps
 * fixed calendar widgets taking on day link search arguments from other parts of the page

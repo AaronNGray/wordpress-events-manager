@@ -54,7 +54,7 @@ class EM_Mailer {
 			if( !empty($args) ){
 				if( !empty($args['reply-to']) && is_email($args['reply-to']) ){
 					array_pop($headers); // remove Reply-To
-					$name = !empty($args['reply-to-name']) ? filter_var($args['reply-to-name'], FILTER_SANITIZE_STRING) : false;
+					$name = !empty($args['reply-to-name']) ? htmlspecialchars($args['reply-to-name']) : false;
 					if( $name ){
 						$headers[] = 'Reply-To: '.$name.' <'.$args['reply-to'].'>';
 					}else{

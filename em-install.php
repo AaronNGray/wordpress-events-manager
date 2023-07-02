@@ -138,6 +138,7 @@ function em_create_events_table() {
 		event_slug VARCHAR( 200 ) NULL DEFAULT NULL,
 		event_owner bigint(20) unsigned DEFAULT NULL,
 		event_status tinyint(1) NULL DEFAULT NULL,
+		event_active_status tinyint(2) NULL DEFAULT 1,
 		event_name text NULL DEFAULT NULL,
 		event_start_date date NULL DEFAULT NULL,
 		event_end_date date NULL DEFAULT NULL,
@@ -184,7 +185,7 @@ function em_create_events_table() {
 		}
 		dbDelta($sql);
 	}
-	em_sort_out_table_nu_keys($table_name, array('event_status','post_id','blog_id','group_id','location_id','event_start', 'event_end', 'event_start_date', 'event_end_date'));
+	em_sort_out_table_nu_keys($table_name, array('event_status','event_active_status','post_id','blog_id','group_id','location_id','event_start', 'event_end', 'event_start_date', 'event_end_date'));
 	if( em_check_utf8mb4_tables() ) maybe_convert_table_to_utf8mb4( $table_name );
 }
 
@@ -386,6 +387,7 @@ function em_create_tickets_bookings_meta_table() {
 
 function em_add_options() {
 	global $wp_locale, $wpdb;
+	$already_installed = get_option('dbem_version', false) !== false;
 	$decimal_point = !empty($wp_locale->number_format['decimal_point']) ? $wp_locale->number_format['decimal_point']:'.';
 	$thousands_sep = !empty($wp_locale->number_format['thousands_sep']) ? $wp_locale->number_format['thousands_sep']:',';
 	$email_footer = '<br/><br/>-------------------------------<br/>Powered by Events Manager - http://wp-events-plugin.com';
@@ -393,6 +395,7 @@ function em_add_options() {
 	$respondent_email_pending_body_localizable = __("Dear #_BOOKINGNAME, <br/>You have requested #_BOOKINGSPACES space/spaces for #_EVENTNAME.<br/>When : #_EVENTDATES @ #_EVENTTIMES<br/>Where : #_LOCATIONNAME - #_LOCATIONFULLLINE<br/>Your booking is currently pending approval by our administrators. Once approved you will receive an automatic confirmation.<br/>Yours faithfully,<br/>#_CONTACTNAME",'events-manager').$email_footer;
 	$respondent_email_rejected_body_localizable = __("Dear #_BOOKINGNAME, <br/>Your requested booking for #_BOOKINGSPACES spaces at #_EVENTNAME on #_EVENTDATES has been rejected.<br/>Yours faithfully,<br/>#_CONTACTNAME",'events-manager').$email_footer;
 	$respondent_email_cancelled_body_localizable = __("Dear #_BOOKINGNAME, <br/>Your requested booking for #_BOOKINGSPACES spaces at #_EVENTNAME on #_EVENTDATES has been cancelled.<br/>Yours faithfully,<br/>#_CONTACTNAME",'events-manager').$email_footer;
+	$respondent_email_event_cancelled = __("Dear Guest, <br/>We regret to inform you that #_EVENTNAME on #_EVENTDATES has been cancelled.<br/>Yours faithfully,<br/>#_CONTACTNAME",'events-manager').$email_footer;
 	$event_approved_email_body = EM_Formats::get_email_format('dbem_event_approved_email_body') .$email_footer;
 	$event_submitted_email_body = __("A new event has been submitted by #_CONTACTNAME.<br/>Name : #_EVENTNAME <br/>Date : #_EVENTDATES <br/>Time : #_EVENTTIMES <br/>Please visit #_EDITEVENTURL to review this event for approval.",'events-manager').$email_footer;
 	$event_submitted_email_body = str_replace('#_EDITEVENTURL', admin_url().'post.php?action=edit&post=#_EVENTPOSTID', $event_submitted_email_body);
@@ -595,7 +598,12 @@ function em_add_options() {
 		'dbem_tags_default_limit' => 10,
 		'dbem_tags_default_orderby' => 'name',
 		'dbem_tags_default_order' =>  'ASC',
-		
+		// Event Status and Cancellations
+		'dbem_event_cancelled_email' => !$already_installed,
+		'dbem_event_cancelled_email_subject' => __('Cancelled', 'events-manager') . ' - #_EVENTNAME',
+		'dbem_event_cancelled_email_body' => str_replace("<br/>", "\n\r", $respondent_email_event_cancelled),
+		'dbem_event_cancelled_bookings' => !$already_installed,
+		'dbem_event_cancelled_bookings_email' => !$already_installed,
 		//Tags Page Formatting
 		'dbem_tags_list_item_format_header' => EM_Formats::dbem_tags_list_item_format_header(''),
 		'dbem_tags_list_item_format' => EM_Formats::dbem_tags_list_item_format(''),
@@ -726,6 +734,7 @@ function em_add_options() {
 			//Messages
 			'dbem_bookings_form_msg_disabled' => __('Online bookings are not available for this event.','events-manager'),
 			'dbem_bookings_form_msg_closed' => __('Bookings are closed for this event.','events-manager'),
+			'dbem_bookings_form_msg_cancelled' => __('This event has been cancelled.','events-manager'). ' ' . __('Bookings are closed for this event.','events-manager'),
 			'dbem_bookings_form_msg_full' => __('This event is fully booked.','events-manager'),
 			'dbem_bookings_form_msg_attending'=>__('You are currently attending this event.','events-manager'),
 			'dbem_bookings_form_msg_bookings_link'=>__('Manage my bookings','events-manager'),
@@ -752,6 +761,7 @@ function em_add_options() {
 			'dbem_booking_button_msg_error' => sprintf(__('%s Error. Try again?','events-manager'), __('Booking','events-manager')),
 			'dbem_booking_button_msg_full' => __('Sold Out', 'events-manager'),
             'dbem_booking_button_msg_closed' => ucwords(__( 'Bookings closed', 'events-manager')), //ucwords it to prevent extra translation
+			'dbem_booking_button_msg_event_cancelled' => ucwords(__('Event cancelled', 'events-manager')), //ucwords it to prevent extra translation
 			'dbem_booking_button_msg_cancel' => __('Cancel', 'events-manager'),
 			'dbem_booking_button_msg_canceling' => __('Canceling...','events-manager'),
 			'dbem_booking_button_msg_cancelled' => __('Cancelled','events-manager'),
@@ -915,17 +925,19 @@ function em_add_options() {
 
 function em_upgrade_current_installation(){
 	global $wpdb, $wp_locale, $EM_Notices;
-	$current_version = get_option('dbem_version');
+	$current_version = get_option('dbem_version', 0);
 	
 	// add review popup
 	$data = get_site_option('dbem_data', array());
 	if( empty($current_version) || !isset($data['admin-modals']) ){ // if admin-modals isn't set, it was never added before
 		if( empty($data['admin-modals']) ) $data['admin-modals'] = array();
+		if( !is_array($data['admin-modals']) ) $data['admin-modals'] = array();
 		$data['admin-modals']['review-nudge'] = time() + (DAY_IN_SECONDS * 14);
 		update_site_option('dbem_data', $data);
 	}
 	// temp promo
-	if( time() < 1686139200 ) {
+	if( time() < 1686139200 && version_compare($current_version, '6.4', '<') ) {
+		if( empty($data['admin-modals']) ) $data['admin-modals'] = array();
 		$data['admin-modals']['promo-popup'] = true;
 		update_site_option('dbem_data', $data);
 	}
@@ -1534,6 +1546,12 @@ function em_upgrade_current_installation(){
 		$settings_page_url = '<a href="'.admin_url('admin.php?page=events-manager-options').'">Settings > Bookings > Booking Form Options</a>';
 		$message = 'Welcome to Events Manager 6.4! This version introduces some new booking form upgrades, including a dynamic price breakdown before confirming a booking! Enable this feature in <a href=""><em>'. $settings_page_url .'</em></a>';
 		EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.4-update', 'who' => 'admin', 'where' => 'plugin', 'message' => $message )), is_multisite());
+	}
+	if( version_compare( $current_version, '6.4.2', '<') ){
+		// update message
+		$settings_page_url = '<a href="'.admin_url('admin.php?page=events-manager-options#general+general').'">'. esc_html__('Settings', 'events-manager').' > '. esc_html__('General','events-manager') .' > '. esc_html__('General Options', 'events-manager') . '</a>' . ' > ' . esc_html__('Enable Event Status?', 'events-manager');
+		$message = 'Welcome to Events Manager 6.4.2! This version introduces event status options including cancellation of an event! Enable this feature in <a href=""><em>'. $settings_page_url .'</em></a>';
+		EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.4.2-update', 'who' => 'admin', 'where' => 'plugin', 'message' => $message )), is_multisite());
 	}
 }
 

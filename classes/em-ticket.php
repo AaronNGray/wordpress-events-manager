@@ -363,32 +363,34 @@ class EM_Ticket extends EM_Object{
 		if( EM_Bookings::$disable_restrictions ) return apply_filters('em_ticket_is_available', true, $this, true, true, true, null); // complete short-circuit, but overriding functions should beware of the $disable_restrictions flag!
 		if( isset($this->is_available) && !$ignore_member_restrictions && !$ignore_guest_restrictions && !$ignore_spaces && $user === null ) return apply_filters('em_ticket_is_available',  $this->is_available, $this, false, false, false, null); //save extra queries if doing a standard check
 		$is_available = false;
-		if( $user === null ){
-			$user = is_user_logged_in() ? wp_get_current_user() : false;
-		}
 		$EM_Event = $this->get_event();
-		$available_spaces = $this->get_available_spaces();
-		$condition_1 = empty($this->ticket_start) || $this->start()->getTimestamp() <= time();
-		$condition_2 = empty($this->ticket_end) || $this->end()->getTimestamp() >= time();
-		$condition_3 = $EM_Event->rsvp_end()->getTimestamp() > time(); //either defined ending rsvp time, or start datetime is used here
-		$condition_4 = !$this->ticket_members || $user !== false || $ignore_member_restrictions;
-		$condition_5 = true;
-		if( !$ignore_member_restrictions && $this->ticket_members && !empty($this->ticket_members_roles) ){
-			//check if user has the right role to use this ticket
-			$condition_5 = false;
-			if( $user !== false ){
-				if( count(array_intersect($user->roles, $this->ticket_members_roles)) > 0 ){
-					$condition_5 = true;
+		if( $EM_Event->get_active_status() !== 0 ){
+			if( $user === null ){
+				$user = is_user_logged_in() ? wp_get_current_user() : false;
+			}
+			$available_spaces = $this->get_available_spaces();
+			$condition_1 = empty($this->ticket_start) || $this->start()->getTimestamp() <= time();
+			$condition_2 = empty($this->ticket_end) || $this->end()->getTimestamp() >= time();
+			$condition_3 = $EM_Event->rsvp_end()->getTimestamp() > time(); //either defined ending rsvp time, or start datetime is used here
+			$condition_4 = !$this->ticket_members || $user !== false || $ignore_member_restrictions;
+			$condition_5 = true;
+			if( !$ignore_member_restrictions && $this->ticket_members && !empty($this->ticket_members_roles) ){
+				//check if user has the right role to use this ticket
+				$condition_5 = false;
+				if( $user !== false ){
+					if( count(array_intersect($user->roles, $this->ticket_members_roles)) > 0 ){
+						$condition_5 = true;
+					}
 				}
 			}
-		}
-		$condition_6 = !$this->ticket_guests || $user === false || $ignore_guest_restrictions;
-		if( $condition_1 && $condition_2 && $condition_3 && $condition_4 && $condition_5 && $condition_6  ){
-			//Time Constraints met, now quantities
-			if( $available_spaces > 0 && ($available_spaces >= $this->ticket_min || empty($this->ticket_min)) ){
-				$is_available = true;
-			}elseif( $ignore_spaces === true ) {
-				$is_available = true;
+			$condition_6 = !$this->ticket_guests || $user === false || $ignore_guest_restrictions;
+			if( $condition_1 && $condition_2 && $condition_3 && $condition_4 && $condition_5 && $condition_6  ){
+				//Time Constraints met, now quantities
+				if( $available_spaces > 0 && ($available_spaces >= $this->ticket_min || empty($this->ticket_min)) ){
+					$is_available = true;
+				}elseif( $ignore_spaces === true ) {
+					$is_available = true;
+				}
 			}
 		}
 		if( !$ignore_member_restrictions && !$ignore_guest_restrictions && !$ignore_spaces ){ //$this->is_available is only stored for the viewing user

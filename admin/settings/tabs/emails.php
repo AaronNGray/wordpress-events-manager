@@ -177,6 +177,23 @@
 		</table>
 	</div> <!-- . inside -->
 	</div> <!-- .postbox -->
+
+	<div  class="postbox event-active-status-option event-cancelled-emails" id="em-opt-event-submission-emails" >
+		<div class="handlediv" title="<?php __('Click to toggle', 'events-manager'); ?>"><br /></div><h3><span><?php _e ( 'Event Cancellation', 'events-manager'); ?> </span></h3>
+		<div class="inside">
+			<table class='form-table'>
+				<tr class="em-subheader"><td colspan='2'>
+						<h5><?php _e('Cancelled event email','events-manager') ?></h5>
+						<em><?php echo __('When an event is cancelled, a general email is sent to all confirmed and pending bookings to an event that has been cancelled.','events-manager').$events_placeholder_tip ?></em>
+					</td></tr>
+				<?php
+				em_options_input_text ( __( 'Email Subject', 'events-manager'), 'dbem_event_cancelled_email_subject', $email_subject_tip );
+				em_options_textarea ( __( 'Email Message', 'events-manager'), 'dbem_event_cancelled_email_body' );
+				?>
+				<?php echo $save_button; ?>
+			</table>
+		</div> <!-- . inside -->
+	</div> <!-- .postbox -->
 	
 	<?php do_action('em_options_page_footer_emails'); ?>
 	

@@ -94,6 +94,17 @@ jQuery(document).ready( function($){
 		trigger.siblings('.em-reschedule-value').val(0);
 		trigger.addClass('reschedule-hidden').siblings('a').removeClass('reschedule-hidden');
 	});
+	// Event Status
+	$('select[name="event_active_status"]').on('change', function(event){
+		var selected = $(this);
+		if( selected.val() == '0' ){
+			var warning_text = EM.event_cancellations.warning.replace(/\\n/g, '\n');
+			confirmation = confirm(warning_text);
+			if( confirmation == false ){
+				event.preventDefault();
+			}
+		}
+	});
 	//Tickets & Bookings
 	if( $("#em-tickets-form").length > 0 ){
 		//Enable/Disable Bookings
@@ -1453,7 +1464,7 @@ jQuery(document).on('em_view_loaded_map', function( e, view, form ){
 	if( !em_maps_loaded ){
 		em_maps_load();
 	}else{
-		let map = view.find('.em-locations-map');
+		let map = view.find('div.em-locations-map');
 		em_maps_load_locations( map );
 	}
 });
@@ -1548,15 +1559,15 @@ function em_maps_load_location(el){
 }
 jQuery(document).on('em_search_ajax', function(e, vars, wrapper){
 	if( em_maps_loaded ){
-		wrapper.find('.em-location-map').each( function(index, el){ em_maps_load_location(el); } );
-		wrapper.find('.em-locations-map').each( function(index, el){ em_maps_load_locations(el); });
+		wrapper.find('div.em-location-map').each( function(index, el){ em_maps_load_location(el); } );
+		wrapper.find('div.em-locations-map').each( function(index, el){ em_maps_load_locations(el); });
 	}
 });
 //Load single maps (each map is treated as a seperate map).
 function em_maps() {
 	//Find all the maps on this page and load them
-	jQuery('.em-location-map').each( function(index, el){ em_maps_load_location(el); } );
-	jQuery('.em-locations-map').each( function(index, el){ em_maps_load_locations(el); } );
+	jQuery('div.em-location-map').each( function(index, el){ em_maps_load_location(el); } );
+	jQuery('div.em-locations-map').each( function(index, el){ em_maps_load_locations(el); } );
 
 	//Location stuff - only needed if inputs for location exist
 	if( jQuery('select#location-select-id, input#location-address').length > 0 ){

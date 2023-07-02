@@ -1275,6 +1275,18 @@ function em_bookings_form_footer_backcompat( $EM_Event ){
 add_action('em_booking_form_buttons_header', 'em_bookings_form_footer_backcompat', 10, 1);
 
 /**
+ * @param EM_Event $EM_Event
+ * @return void
+ */
+function em_bookings_form_footer_polyfill( $EM_Event ) {
+	if( !doing_action('em_booking_form_buttons_header') ){
+		// we're in backcompat mode for a template, so let's output the intent just in case
+		echo $EM_Event->get_bookings()->get_intent_default()->output_intent_html();
+	}
+}
+add_action('em_booking_form_footer', 'em_bookings_form_footer_polyfill');
+
+/**
  * Backwards compatibility for functionality added in EM Pro 3.1 which was moved into EM, ensuring versions of EM Pro removing this code will not duplicate headers.
  * If you still want this header to be handled via EM Pro (in the event you override booking form templates and use an outdated Pro version), remove the action below at the plugins_loaded action like so:
  * add_action('plugins_loaded', function(){ remove_action('em_pro_loaded', 'em_bookings_form_confirm_header_backcompat'); });

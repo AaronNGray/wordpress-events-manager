@@ -13,6 +13,7 @@
 			</tr>
 			<?php
 			em_options_radio_binary ( __( 'Enable Timezone Support?', 'events-manager'), 'dbem_timezone_enabled', sprintf(__( 'Each event can have its own timezone if enabled. If set to no, then all newly created events will have the blog timezone, which currently is set to %s','events-manager'), '<code>'.EM_DateTimeZone::create()->getName().'</code>'), '', '.event-timezone-option' );
+			em_options_radio_binary ( __( 'Enable Event Status?', 'events-manager'), 'dbem_event_status_enabled', sprintf(__( 'Events can have a status associated with them, such as a cancelled event, which can then be filtered out of search listings. By default, or if disabled, events have an %s status.','events-manager'), '<code>'. __('Active', 'events-manager') .'</code>'), '', '.event-active-status-option' );
 			?>
 			<tr class="event-timezone-option">
 				<th>
@@ -209,6 +210,26 @@
 	</div> <!-- . inside --> 
 	</div> <!-- .postbox -->
 	<?php do_action('em_options_page_event_submission_after'); ?>
+
+	<div  class="postbox event-active-status-option" id="em-opt-event-cancellation" >
+		<div class="handlediv" title="<?php __('Click to toggle', 'events-manager'); ?>"><br /></div><h3><span><?php _e ( 'Event Cancellation', 'events-manager'); ?></span></h3>
+		<div class="inside">
+			<table class="form-table">
+				<tr><td colspan="2" class="em-boxheader">
+						<h4><?php echo esc_html__('Cancellation Actions','events-manager'); ?></h4>
+						<?php echo esc_html__('If an event is cancelled, the following actions can be taken upon cancellation.','events-manager'); ?>
+					</td></tr>
+				<?php
+				em_options_radio_binary ( __( 'Notfication email?', 'events-manager'), 'dbem_event_cancelled_email', sprintf(__('Sends a general email to all confirmed and pending bookings to an event that has been cancelled, which is customized in your %s setings.','events-manager'), '<a href="#emails">'.__('Emails', 'events-manager').'</a>'), '', '.event-cancelled-emails' );
+				em_options_radio_binary ( __( 'Cancel bookings?', 'events-manager'), 'dbem_event_cancelled_bookings', __( 'Cancel all confirmed and pending bookings automatically.', 'events-manager'), '', '#dbem_event_cancelled_bookings_email_row' );
+				em_options_radio_binary ( __( 'Send cancelled booking email?', 'events-manager'), 'dbem_event_cancelled_bookings_email', __( 'When the booking is cancelled, the cancellation status email can also be sent independently of a general event cancellation notification.', 'events-manager') );
+				?>
+				<?php echo $save_button; ?>
+			</table>
+			<?php do_action('em_options_page_event_cancellation_footer'); ?>
+		</div> <!-- . inside -->
+	</div> <!-- .postbox -->
+	<?php do_action('em_options_page_event_cancellation_after'); ?>
 
 	<?php do_action('em_options_page_footer'); ?>
 	

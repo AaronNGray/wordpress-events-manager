@@ -89,8 +89,8 @@ $reschedule_warnings = !empty($EM_Event->event_id) && $EM_Event->is_recurring() 
 									<span class="dashicons dashicons-menu <?php if($EM_Ticket->ticket_id && $EM_Ticket->is_available(true, true)){ echo 'ticket-on'; }elseif($EM_Ticket->ticket_id > 0){ echo 'ticket-off'; }else{ echo 'ticket-new'; } ?>"></span>
 								</td>
 								<td class="ticket-name">
-									<span class="ticket_name"><?php if($EM_Ticket->ticket_members) echo '* ';?><?php echo wp_kses_data($EM_Ticket->ticket_name); ?></span>
-									<div class="ticket_description"><?php echo wp_kses($EM_Ticket->ticket_description,$allowedposttags); ?></div>
+									<span class="ticket_name"><?php if($EM_Ticket->ticket_members) echo '* ';?><?php echo wp_kses_post($EM_Ticket->ticket_name); ?></span>
+									<div class="ticket_description"><?php if( !empty($EM_Ticket->ticket_description) ) echo wp_kses_post($EM_Ticket->ticket_description); ?></div>
 									<div class="ticket-actions">
 										<a href="#" class="ticket-actions-edit"><?php esc_html_e('Edit','events-manager'); ?></a>
 										<?php if( $EM_Ticket->get_bookings_count() == 0 ): ?>

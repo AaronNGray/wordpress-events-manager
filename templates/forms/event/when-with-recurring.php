@@ -19,4 +19,7 @@ $with_recurring = true;
 	<?php include( em_locate_template('forms/event/when/recurrence-duration.php') ); ?>
 	<?php include( em_locate_template('forms/event/when/times.php') ); ?>
 	<?php include( em_locate_template('forms/event/when/timezone.php') ); ?>
+	<?php if( get_option('dbem_event_status_enabled') ) : ?>
+		<?php include( em_locate_template('forms/event/when/active-status.php') ); ?>
+	<?php endif; ?>
 </div>

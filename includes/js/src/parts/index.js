@@ -94,6 +94,17 @@ jQuery(document).ready( function($){
 		trigger.siblings('.em-reschedule-value').val(0);
 		trigger.addClass('reschedule-hidden').siblings('a').removeClass('reschedule-hidden');
 	});
+	// Event Status
+	$('select[name="event_active_status"]').on('change', function(event){
+		var selected = $(this);
+		if( selected.val() == '0' ){
+			var warning_text = EM.event_cancellations.warning.replace(/\\n/g, '\n');
+			confirmation = confirm(warning_text);
+			if( confirmation == false ){
+				event.preventDefault();
+			}
+		}
+	});
 	//Tickets & Bookings
 	if( $("#em-tickets-form").length > 0 ){
 		//Enable/Disable Bookings

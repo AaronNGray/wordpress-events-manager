@@ -1050,33 +1050,33 @@ class EM_Booking extends EM_Object{
 		return apply_filters('em_booking_delete',( $result !== false ), $this);
 	}
 	
-	function cancel($email = true){
+	function cancel($email = true, $email_args = array()){
 		if( $this->get_person()->ID == get_current_user_id() ){
 			$this->manage_override = true; //normally, users can't manage a booking, only event owners, so we allow them to mod their booking status in this case only.
 		}
-		return $this->set_status(3, $email);
+		return $this->set_status(3, $email, false, $email_args);
 	}
 	
 	/**
 	 * Approve a booking.
 	 * @return bool
 	 */
-	function approve($email = true, $ignore_spaces = false){
-		return $this->set_status(1, $email, $ignore_spaces);
+	function approve($email = true, $ignore_spaces = false, $email_args = array()){
+		return $this->set_status(1, $email, $ignore_spaces, $email_args);
 	}	
 	/**
 	 * Reject a booking and save
 	 * @return bool
 	 */
-	function reject($email = true){
-		return $this->set_status(2, $email);
+	function reject($email = true, $email_args = array()){
+		return $this->set_status(2, $email, false, $email_args);
 	}	
 	/**
 	 * Unapprove a booking.
 	 * @return bool
 	 */
-	function unapprove($email = true){
-		return $this->set_status(0, $email);
+	function unapprove($email = true, $email_args = array()){
+		return $this->set_status(0, $email, false, $email_args);
 	}
 	
 	/**
@@ -1084,8 +1084,9 @@ class EM_Booking extends EM_Object{
 	 * @param int $status
 	 * @return boolean
 	 */
-	function set_status($status, $email = true, $ignore_spaces = false){
+	function set_status($status, $email = true, $ignore_spaces = false, $email_args = array() ){
 		global $wpdb;
+		$email_args = array_merge( array('email_admin'=> true, 'force_resend' => false, 'email_attendee' => true), $email_args );
 		$action_string = strtolower($this->status_array[$status]); 
 		//if we're approving we can't approve a booking if spaces are full, so check before it's approved.
 		if(!$ignore_spaces && $status == 1){
@@ -1104,7 +1105,7 @@ class EM_Booking extends EM_Object{
 			if( $result && $this->previous_status != $this->booking_status ){ //email if status has changed
 				do_action('em_booking_status_changed', $this, array('status' => $status, 'email' => $email, 'ignore_spaces' => $ignore_spaces)); // method params passed as array
 				if( $email ){
-					if( $this->email() ){
+					if( $this->email( !empty($email_args['email_admin']), !empty($email_args['force_resend']), !empty($email_args['email_attendee'])) ){
 					    if( $this->mails_sent > 0 ){
 					        $this->feedback_message .= " ".__('Email Sent.','events-manager');
 					    }

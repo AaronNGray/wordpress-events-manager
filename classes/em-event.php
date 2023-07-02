@@ -67,6 +67,8 @@ function em_get_event($id = false, $search_by = 'event_id') {
  * @property string $event_timezone     Timezone representation in PHP string or WP-style UTC offset
  * @property string $event_rsvp_date    Start rsvo date of event
  * @property string $event_rsvp_time    End rsvp time of event
+ * @property int $event_active_status   End rsvp time of event
+ * @property int $previous_active_status End rsvp time of event
  *
  */
 //TODO Can add more recurring functionality such as "also update all future recurring events" or "edit all events" like google calendar does.
@@ -74,12 +76,12 @@ function em_get_event($id = false, $search_by = 'event_id') {
 //FIXME If you create a super long recurrence timespan, there could be thousands of events... need an upper limit here.
 class EM_Event extends EM_Object{
 	/* Field Names */
-	var $event_id;
-	var $post_id;
-	var $event_parent;
-	var $event_slug;
-	var $event_owner;
-	var $event_name;
+	public $event_id;
+	public $post_id;
+	public $event_parent;
+	public $event_slug;
+	public $event_owner;
+	public $event_name;
 	/**
 	 * The event start time in local time, represented by a mysql TIME format or 00:00:00 default.
 	 * Protected so when set in PHP it will reset the EM_Event->start property (EM_DateTime object) so it will have the correct UTC time according to timezone.
@@ -120,20 +122,20 @@ class EM_Event extends EM_Object{
 	 * Whether an event is all day or at specific start/end times. When set to true, event start/end times are assumed to be 00:00:00 and 11:59:59 respectively.
 	 * @var boolean
 	 */
-	var $event_all_day;
+	public $event_all_day;
 	/**
 	 * Timezone representation in PHP string or WP-style UTC offset.
 	 * @var string
 	 */
 	protected $event_timezone;
-	var $post_content;
-	var $event_rsvp = 0;
+	public $post_content;
+	public $event_rsvp = 0;
 	protected $event_rsvp_date;
 	protected $event_rsvp_time;
-	var $event_rsvp_spaces;
-	var $event_spaces;
-	var $event_private;
-	var $location_id;
+	public $event_rsvp_spaces;
+	public $event_spaces;
+	public $event_private;
+	public $location_id;
 	/**
 	 * Key name of event location type associated to this event.
 	 *
@@ -142,34 +144,36 @@ class EM_Event extends EM_Object{
 	 * @var string
 	 */
 	public $event_location_type;
-	var $recurrence_id;
-	var $event_status;
-	var $blog_id = 0;
-	var $group_id;
-	var $event_language;
-	var $event_translation = 0;
+	public $recurrence_id;
+	public $event_status;
+	protected $event_active_status = 1;
+	protected $previous_active_status = 1;
+	public $blog_id = 0;
+	public $group_id;
+	public $event_language;
+	public $event_translation = 0;
 	/**
 	 * Populated with the non-hidden event post custom fields (i.e. not starting with _) 
 	 * @var array
 	 */
-	var $event_attributes = array();
+	public $event_attributes = array();
 	/* Recurring Specific Values */
-	var $recurrence = 0;
-	var $recurrence_interval;
-	var $recurrence_freq;
-	var $recurrence_byday;
-	var $recurrence_days = 0;
-	var $recurrence_byweekno;
-	var $recurrence_rsvp_days;
+	public $recurrence = 0;
+	public $recurrence_interval;
+	public $recurrence_freq;
+	public $recurrence_byday;
+	public $recurrence_days = 0;
+	public $recurrence_byweekno;
+	public $recurrence_rsvp_days;
 	/* anonymous submission information */
-	var $event_owner_anonymous;
-	var $event_owner_name;
-	var $event_owner_email;
+	public $event_owner_anonymous;
+	public $event_owner_name;
+	public $event_owner_email;
 	/**
 	 * Previously used to give this object shorter property names for db values (each key has a name) but this is now deprecated, use the db field names as properties. This propertey provides extra info about the db fields.
 	 * @var array
 	 */
-	var $fields = array(
+	public $fields = array(
 		'event_id' => array( 'name'=>'id', 'type'=>'%d' ),
 		'post_id' => array( 'name'=>'post_id', 'type'=>'%d' ),
 		'event_parent' => array( 'type'=>'%d', 'null'=>true ),
@@ -194,6 +198,7 @@ class EM_Event extends EM_Object{
 		'event_location_type' => array( 'type'=>'%s', 'null'=>true ),
 		'recurrence_id' => array( 'name'=>'recurrence_id', 'type'=>'%d', 'null'=>true ),
 		'event_status' => array( 'name'=>'status', 'type'=>'%d', 'null'=>true ),
+		'event_active_status' => array( 'name'=>'active_status', 'type'=>'%d', 'null'=>true ),
 		'event_private' => array( 'name'=>'status', 'type'=>'%d', 'null'=>true ),
 		'blog_id' => array( 'name'=>'blog_id', 'type'=>'%d', 'null'=>true ),
 		'group_id' => array( 'name'=>'group_id', 'type'=>'%d', 'null'=>true ),
@@ -207,8 +212,8 @@ class EM_Event extends EM_Object{
 		'recurrence_byweekno' => array( 'name'=>'byweekno', 'type'=>'%d', 'null'=>true ), //if monthly which week (-1 is last)
 		'recurrence_rsvp_days' => array( 'name'=>'recurrence_rsvp_days', 'type'=>'%d', 'null'=>true ), //days before or after start date to generat bookings cut-off date
 	);
-	var $post_fields = array('event_slug','event_owner','event_name','event_private','event_status','event_attributes','post_id','post_content'); //fields that won't be taken from the em_events table anymore
-	var $recurrence_fields = array('recurrence', 'recurrence_interval', 'recurrence_freq', 'recurrence_days', 'recurrence_byday', 'recurrence_byweekno', 'recurrence_rsvp_days');
+	public $post_fields = array('event_slug','event_owner','event_name','event_private','event_status','event_attributes','post_id','post_content'); //fields that won't be taken from the em_events table anymore
+	public $recurrence_fields = array('recurrence', 'recurrence_interval', 'recurrence_freq', 'recurrence_days', 'recurrence_byday', 'recurrence_byweekno', 'recurrence_rsvp_days');
 	
 	protected $shortnames = array(
 		'language' => 'event_language',
@@ -221,7 +226,7 @@ class EM_Event extends EM_Object{
 		'owner' => 'event_owner',
 	);
 	
-	var $image_url = '';
+	public $image_url = '';
 	/**
 	 * EM_DateTime of start date/time in local timezone.
 	 * As of EM 5.8 this property is protected and accessible via __get(). For backwards compatibility accessing this property directly returns the timestamp as before with an offset to timezone.
@@ -245,109 +250,114 @@ class EM_Event extends EM_Object{
 	/**
 	 * @var EM_Location
 	 */
-	var $location;
+	public $location;
 	/**
 	 * @var Event_Location
 	 */
-	var $event_location;
+	public $event_location;
 	/**
 	 * If we're switching event location types, previous event location is kept here and deleted upon save()
 	 * @var Event_Location
 	 */
-	var $event_location_deleted = null;
+	public $event_location_deleted = null;
 	/**
 	 * @var EM_Bookings
 	 */
-	var $bookings;
+	public $bookings;
 	/**
 	 * The contact person for this event
 	 * @var WP_User
 	 */
-	var $contact;
+	public $contact;
 	/**
 	 * The categories object containing the event categories
 	 * @var EM_Categories
 	 */
-	var $categories;
+	public $categories;
 	/**
 	 * The tags object containing the event tags
 	 * @var EM_Tags
 	 */
-	var $tags;
+	public $tags;
 	/**
 	 * If there are any errors, they will be added here.
 	 * @var array
 	 */
-	var $errors = array();
+	public $errors = array();
 	/**
 	 * If something was successful, a feedback message might be supplied here.
 	 * @var string
 	 */
-	var $feedback_message;
+	public $feedback_message;
 	/**
 	 * Any warnings about an event (e.g. bad data, recurrence, etc.)
 	 * @var string
 	 */
-	var $warnings;
+	public $warnings;
 	/**
 	 * Array of dbem_event field names required to create an event 
 	 * @var array
 	 */
-	var $required_fields = array('event_name', 'event_start_date');
-	var $mime_types = array(1 => 'gif', 2 => 'jpg', 3 => 'png'); 
+	public $required_fields = array('event_name', 'event_start_date');
+	public $mime_types = array(1 => 'gif', 2 => 'jpg', 3 => 'png'); 
 	/**
 	 * previous status of event when instantiated
 	 * @access protected
 	 * @var mixed
 	 */
-	var $previous_status = false;
+	public $previous_status = false;
 	/**
 	 * If set to true, recurring events will delete and recreate recurrences when saved.
 	 * @var boolean
 	 */
-	var $recurring_reschedule = false;
+	public $recurring_reschedule = false;
 	/**
 	 * If set to true, recurring events will delete bookings and tickets of recurrences and recreate tickets. If set explicitly to false bookings will be ignored when creating recurrences.
 	 * @var boolean
 	 */
-	var $recurring_recreate_bookings;
+	public $recurring_recreate_bookings;
 	/**
 	 * Flag used for when saving a recurring event that previously had bookings enabled and then subsequently disabled.
 	 * If set to true, and $this->recurring_recreate_bookings is false, bookings and tickets of recurrences will be deleted.
 	 * @var boolean
 	 */
-	var $recurring_delete_bookings = false;
+	public $recurring_delete_bookings = false;
 	/**
 	 * If the event was just added/created during this execution, value will be true. Useful when running validation or making decisions on taking actions when events are saved/created for the first time.
 	 * @var boolean
 	 */
-	var $just_added_event = false;
+	public $just_added_event = false;
 	
 	/* Post Variables - copied out of post object for easy IDE reference */
-	var $ID;
-	var $post_author;
-	var $post_date;
-	var $post_date_gmt;
-	var $post_title;
-	var $post_excerpt = '';
-	var $post_status;
-	var $comment_status;
-	var $ping_status;
-	var $post_password;
-	var $post_name;
-	var $to_ping;
-	var $pinged;
-	var $post_modified;
-	var $post_modified_gmt;
-	var $post_content_filtered;
-	var $post_parent;
-	var $guid;
-	var $menu_order;
-	var $post_type;
-	var $post_mime_type;
-	var $comment_count;
-	var $ancestors;
-	var $filter;
+	public $ID;
+	public $post_author;
+	public $post_date;
+	public $post_date_gmt;
+	public $post_title;
+	public $post_excerpt = '';
+	public $post_status;
+	public $comment_status;
+	public $ping_status;
+	public $post_password;
+	public $post_name;
+	public $to_ping;
+	public $pinged;
+	public $post_modified;
+	public $post_modified_gmt;
+	public $post_content_filtered;
+	public $post_parent;
+	public $guid;
+	public $menu_order;
+	public $post_type;
+	public $post_mime_type;
+	public $comment_count;
+	public $ancestors;
+	public $filter;
+	
+	/**
+	 * @var array   List of status types an event can have, mapped by status number as keys and name of status for value. Consider states 0-9 reserved by core for future features.
+	 */
+	public static $active_statuses;
 	
 	/**
 	 * Initialize an event. You can provide event data in an associative array (using database table field names), an id number, or false (default) to create empty event.
@@ -405,6 +415,11 @@ class EM_Event extends EM_Object{
 				$this->post_id = !empty($id->ID) ? $id->ID : $id;
 			}
 			$this->load_postdata($event_post, $search_by);
+			// check if active status is enabled, if not set to 1 by default
+			if( !get_option('dbem_event_status_enabled') && $this->event_active_status == 0 ){
+				$this->event_active_status = 1;
+			}
+			$this->previous_active_status = $this->event_active_status;
 		}
 		//set default timezone
 		if( empty($this->event_timezone) ){
@@ -451,6 +466,9 @@ class EM_Event extends EM_Object{
 	    if( $var == 'start' ) return $this->start()->getTimestampWithOffset();
 	    if( $var == 'end' ) return $this->end()->getTimestampWithOffset();    	
 	    if( $var == 'rsvp_end' ) return $this->rsvp_end()->getTimestampWithOffset();
+		if( $var == 'event_active_status' || $var == 'active_status' ) {
+			return get_option('dbem_event_status_enabled') ? absint($this->event_active_status) : 1;
+		}
 	    return parent::__get( $var );
 	}
 	
@@ -476,6 +494,10 @@ class EM_Event extends EM_Object{
 				$this->$val = new EM_DateTime($val, $this->event_timezone);
 			}
 		}
+		// active status
+		elseif ( $prop == 'event_active_status' ) {
+			$this->event_active_status = absint($val);
+		}
 		//anything else
 		else{
 			$this->$prop = $val;
@@ -488,6 +510,8 @@ class EM_Event extends EM_Object{
 			return !empty($this->$prop);
 		}elseif( $prop == 'event_timezone' ){
 			return true;
+		}elseif( $prop == 'event_active_status' ){
+			return !empty($this->event_active_status);
 		}elseif( $prop == 'start' || $prop == 'end' || $prop == 'rsvp_end' ){
 			return $this->$prop()->valid;
 		}
@@ -691,6 +715,12 @@ class EM_Event extends EM_Object{
 		}
 		//reset start and end objects so they are recreated with the new dates/times if and when needed
 		$this->start = $this->end = null;
+		
+		// set status, if supplied
+		if ( isset($_POST['event_active_status']) && array_key_exists( $_POST['event_active_status'], static::get_active_statuses() ) ) {
+			$this->previous_active_status = $this->event_active_status;
+			$this->event_active_status = absint($_POST['event_active_status']);
+		}
 		
 		//Get Location Info
 		if( get_option('dbem_locations_enabled') ){
@@ -1484,6 +1514,7 @@ class EM_Event extends EM_Object{
 	function set_status($status, $set_post_status = false){
 		global $wpdb;
 		//decide on what status to set and update wp_posts in the process
+		if( EM_MS_GLOBAL ) switch_to_blog( $this->blog_id );
 		if($status === null){ 
 			$set_status='NULL'; //draft post
 			if($set_post_status){
@@ -1515,11 +1546,67 @@ class EM_Event extends EM_Object{
 			}
 			$this->post_status = $post_status;
 		}
+		if( EM_MS_GLOBAL ) restore_current_blog();
 		//save in the wp_em_locations table
 		$this->get_previous_status();
 		$result = $wpdb->query( $wpdb->prepare("UPDATE ".EM_EVENTS_TABLE." SET event_status=$set_status, event_slug=%s WHERE event_id=%d", array($this->post_name, $this->event_id)) );
 		$this->get_status(); //reload status
 		return apply_filters('em_event_set_status', $result !== false, $status, $this);
+	}
+	
+	public function cancel(){
+		return $this->set_active_status( 0 );
+	}
+	
+	public function set_active_status( $active_status ){
+		global $wpdb;
+		if( is_int($active_status) && $active_status >= 0 ){
+			$em_result = $wpdb->update( EM_EVENTS_TABLE, array('event_active_status' => $active_status ), array( 'event_id' => $this->event_id ), array('%d'), array('%d') );
+			if( EM_MS_GLOBAL ) switch_to_blog( $this->blog_id );
+			$meta_result = $wpdb->update( $wpdb->postmeta, array( 'meta_key' => '_event_active_status', 'meta_value' => $active_status ), array( 'meta_key' => '_event_active_status', 'post_id' => $this->post_id ), array('%s', '%d'), array('%s', '%d') );
+			if( EM_MS_GLOBAL ) restore_current_blog();
+			$result = $em_result !== false && $meta_result !== false;
+			if( $result ){
+				$this->previous_active_status = $this->event_active_status;
+				$this->event_active_status = $active_status;
+				if( $active_status === 0 ) {
+					// cancelled event, let's cancel bookings and send out emails (if set)
+					if ( get_option( 'dbem_event_cancelled_bookings' ) ) {
+						$bookings_array = array(
+							$this->get_bookings()->get_bookings(),
+							$this->get_bookings()->get_pending_bookings()
+						);
+						foreach( $bookings_array as $EM_Bookings ) {
+							foreach ( $EM_Bookings as $EM_Booking ) {
+								$EM_Booking->manage_override = true;
+								$EM_Booking->cancel( get_option( 'dbem_event_cancelled_bookings_email' ), array( 'email_admin' => false ) );
+							}
+						}
+					}
+					if ( get_option('dbem_event_cancelled_email') ) {
+						if( !isset($bookings_array) ) {
+							$bookings_array = array(
+								$this->get_bookings()->get_bookings(),
+								$this->get_bookings()->get_pending_bookings()
+							);
+						}
+						foreach( $bookings_array as $EM_Bookings ) {
+							foreach ( $EM_Bookings as $EM_Booking ) {
+								$message = array(
+									'user' => array(
+										'subject' => get_option('dbem_event_cancelled_email_subject'),
+										'body' => get_option('dbem_event_cancelled_email_body'),
+									),
+								);
+								$EM_Booking->email_attendee( $message );
+							}
+						}
+					}
+				}
+			}
+			return apply_filters('em_event_set_active_status', $result, $active_status, $this);
+		}
+		return false;
 	}
 	
 	public function set_timezone( $timezone = false ){
@@ -1663,6 +1750,21 @@ class EM_Event extends EM_Object{
 		return $this->previous_status;
 	}
 	
+	function get_active_status(){
+		if ( !get_option('dbem_event_status_enabled') ) {
+			return __('Active', 'events-manager');
+		}
+		switch( absint($this->event_active_status) ){
+			case 0:
+				$status = __('Cancelled', 'events-manager');
+				break;
+			default: // active
+				$status = __('Active', 'events-manager');
+				break;
+		}
+		return apply_filters('em_event_get_active_status', $status, $this);
+	}
+	
 	/**
 	 * Returns an EM_Categories object of the EM_Event instance.
 	 * @return EM_Categories
@@ -1689,7 +1791,7 @@ class EM_Event extends EM_Object{
 		$textColor = '#fff';
 		if ( get_option('dbem_categories_enabled') && !empty ( $this->get_categories()->categories )) {
 			foreach($this->get_categories()->categories as $EM_Category){
-				/* @var $EM_Category EM_Category */
+				/* @public $EM_Category EM_Category */
 				if( $EM_Category->get_color() != '' ){
 					$color = $borderColor = $EM_Category->get_color();
 					if( preg_match("/#fff(fff)?/i",$color) ){
@@ -1938,7 +2040,7 @@ class EM_Event extends EM_Object{
 	function is_free( $now = false ){
 		$free = true;
 		foreach($this->get_tickets() as $EM_Ticket){
-		    /* @var $EM_Ticket EM_Ticket */
+		    /* @public $EM_Ticket EM_Ticket */
 			if( $EM_Ticket->get_price() > 0 ){
 				if( !$now || $EM_Ticket->is_available() ){	
 				    $free = false;
@@ -2150,6 +2252,12 @@ class EM_Event extends EM_Object{
 					}elseif ($condition == 'not_private'){
 						//if event is not a recurrence
 						$show_condition = $this->event_private == 0;
+					}elseif ($condition == 'is_cancelled'){
+						//if event is not a recurrence
+						$show_condition = $this->event_active_status == 0;
+					}elseif ($condition == 'is_active'){
+						//if event is not a recurrence
+						$show_condition = $this->event_active_status == 1;
 					}elseif ( strpos($condition, 'is_user_attendee') !== false || strpos($condition, 'not_user_attendee') !== false ){
 						//if current user has a booking at this event
 						$show_condition = false;
@@ -2248,6 +2356,14 @@ class EM_Event extends EM_Object{
 				case '#_NAME': //deprecated
 				case '#_EVENTNAME':
 					$replace = $this->event_name;
+					break;
+				case '#_EVENTSTATUS':
+					$statuses = static::get_active_statuses();
+					if( array_key_exists($this->event_active_status, $statuses) ){
+						$replace = $statuses[$this->event_active_status];
+					}else{
+						$replace = $statuses[1];
+					}
 					break;
 				case '#_NOTES': //deprecated
 				case '#_EVENTNOTES':
@@ -2498,11 +2614,7 @@ class EM_Event extends EM_Object{
 							$template_vars['can_book'] = false;
 							$template_vars['show_tickets'] = get_option('dbem_bookings_tickets_show_unavailable') && get_option('dbem_bookings_tickets_show_member_tickets');
 						}
-						$output_intents = did_filter('em_booking_output_intent_html');
 						em_locate_template('placeholders/bookingform.php', true, $template_vars);
-						if( $output_intents == did_filter('em_booking_output_intent_html') ){
-							// output the intent here, the id can be found from the event id
-						}
 						EM_Bookings::enqueue_js();
 						$replace = ob_get_clean();
 					}
@@ -2522,7 +2634,7 @@ class EM_Event extends EM_Object{
 					$max = 0;
 					if( $this->get_bookings()->is_open() || !empty($show_all_ticket_prices) ){
 						foreach( $this->get_tickets()->tickets as $EM_Ticket ){
-							/* @var $EM_Ticket EM_Ticket */
+							/* @public $EM_Ticket EM_Ticket */
 							if( $EM_Ticket->is_available() || get_option('dbem_bookings_tickets_show_unavailable') || !empty($show_all_ticket_prices) ){
 								if($EM_Ticket->get_price() > $max ){
 									$max = $EM_Ticket->get_price();
@@ -2545,7 +2657,7 @@ class EM_Event extends EM_Object{
 					//get the range of prices
 					$min = false;
 					foreach( $this->get_tickets()->tickets as $EM_Ticket ){
-						/* @var $EM_Ticket EM_Ticket */
+						/* @public $EM_Ticket EM_Ticket */
 						if( $EM_Ticket->is_available() || $result == '#_EVENTPRICEMINALL'){
 							if( $EM_Ticket->get_price() < $min || $min === false){
 								$min = $EM_Ticket->get_price();
@@ -2560,7 +2672,7 @@ class EM_Event extends EM_Object{
 					//get the range of prices
 					$max = 0;
 					foreach( $this->get_tickets()->tickets as $EM_Ticket ){
-						/* @var $EM_Ticket EM_Ticket */
+						/* @public $EM_Ticket EM_Ticket */
 						if( $EM_Ticket->is_available() || $result == '#_EVENTPRICEMAXALL'){
 							if( $EM_Ticket->get_price() > $max ){
 								$max = $EM_Ticket->get_price();
@@ -3180,7 +3292,7 @@ class EM_Event extends EM_Object{
 				$exclude_meta_update_keys = apply_filters('em_event_save_events_exclude_update_meta_keys', array('_parent_id'), $this);
 				//now we go through the recurrences and check whether things relative to dates need to be changed
 				$events = EM_Events::get( array('recurrence'=>$this->event_id, 'scope'=>'all', 'status'=>'everything', 'array' => true ) );
-			 	foreach($events as $event_array){ /* @var $EM_Event EM_Event */
+			 	foreach($events as $event_array){ /* @public $EM_Event EM_Event */
 			 		//set new start/end times to obtain accurate timestamp according to timezone and DST
 			 		$EM_DateTime = $this->start()->copy()->modify($event_array['event_start_date']. ' ' . $event_array['event_start_time']);
 			 		$start_timestamp = $EM_DateTime->getTimestamp();
@@ -3268,7 +3380,7 @@ class EM_Event extends EM_Object{
 			 	if( $this->event_rsvp ){
 			 		$meta_inserts = array();
 			 		foreach($this->get_tickets() as $EM_Ticket){
-			 			/* @var $EM_Ticket EM_Ticket */
+			 			/* @public $EM_Ticket EM_Ticket */
 			 			//get array, modify event id and insert
 			 			$ticket = $EM_Ticket->to_array();
 			 			//empty cut-off dates of ticket, add them at per-event level
@@ -3710,6 +3822,18 @@ class EM_Event extends EM_Object{
 		}
 		return $event;
 	}
+	
+	public static function get_active_statuses(){
+		if( !empty(static::$active_statuses) ) {
+			return static::$active_statuses;
+		}
+		$statuses = array(
+			0 => __('Cancelled', 'events-manager'),
+			1 => __('Active', 'events-manager')
+		);
+		static::$active_statuses = apply_filters('event_get_active_statuses', $statuses);
+		return static::$active_statuses;
+	}
 }
 
 //TODO placeholder targets filtering could be streamlined better
@@ -3802,6 +3926,11 @@ function em_booking_form_status_closed(){
 	echo '<p>'. get_option('dbem_bookings_form_msg_closed') .'</p>';
 }
 add_action('em_booking_form_status_closed', 'em_booking_form_status_closed');
+
+function em_booking_form_status_cancelled(){
+	echo '<p>'. get_option('dbem_bookings_form_msg_cancelled') .'</p>';
+}
+add_action('em_booking_form_status_cancelled', 'em_booking_form_status_cancelled');
 
 function em_booking_form_status_already_booked(){
 	echo get_option('dbem_bookings_form_msg_attending');

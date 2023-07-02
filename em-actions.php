@@ -118,12 +118,12 @@ function em_init_actions_start() {
 		}
 		if ( $_REQUEST['action'] == 'event_delete' && wp_verify_nonce($_REQUEST['_wpnonce'],'event_delete_'.$EM_Event->event_id) ) { 
 			//DELETE action
-			$selectedEvents = !empty($_REQUEST['events']) ? $_REQUEST['events']:'';
+			$selectedEvents = !empty($_REQUEST['events']) ? $_REQUEST['events']:array();
 			if(  EM_Object::array_is_numeric($selectedEvents) ){
 				$events_result = EM_Events::delete( $selectedEvents );
 			}elseif( is_object($EM_Event) ){
 				$events_result = $EM_Event->delete();
-			}		
+			}
 			$plural = (count($selectedEvents) > 1) ? __('Events','events-manager'):__('Event','events-manager');
 			if($events_result){
 				$message = ( !empty($EM_Event->feedback_message) ) ? $EM_Event->feedback_message : sprintf(__('%s successfully deleted.','events-manager'),$plural);

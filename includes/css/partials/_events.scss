@@ -34,6 +34,11 @@ For other event list and single event display CSS, see the _items.scss file
 			}
 		}
 	}
+	&.em-event-cancelled, .em-event-cancelled {
+		.em-event-meta-datetime {
+			text-decoration: line-through;
+		}
+	}
 }
 
 &.em-events-widget {

@@ -32,6 +32,8 @@ do_action('em_booking_form_start', $EM_Event); // do not delete
 		<?php do_action('em_booking_form_status_already_booked', $EM_Event); // do not delete ?>
 	<?php elseif( !$EM_Event->event_rsvp ): //bookings not enabled ?>
 		<?php do_action('em_booking_form_status_disabled', $EM_Event); // do not delete ?>
+	<?php elseif( $EM_Event->event_active_status === 0 ): //event is cancelled ?>
+		<?php do_action('em_booking_form_status_cancelled', $EM_Event); // do not delete ?>
 	<?php elseif( $EM_Event->get_bookings()->get_available_spaces() <= 0 && !EM_Bookings::$disable_restrictions ): ?>
 		<?php do_action('em_booking_form_status_full', $EM_Event); // do not delete ?>
 	<?php elseif( !$is_open ): //event has started ?>

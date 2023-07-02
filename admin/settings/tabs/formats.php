@@ -201,6 +201,7 @@
 					<td>
 						<?php
 						$view_types = get_option('dbem_search_form_views', array());
+						if( !is_array($view_types) ) $view_types = array();
 						?>
 						<fieldset class="em-field-checkboxes">
 							<legend class="screen-reader-text"><?php esc_html_e('View Types', 'events-manager'); ?></legend>

@@ -37,6 +37,19 @@ document.addEventListener("DOMContentLoaded", function() {
 	}
 });
 
+var em_booking_form_count_spaces = function( booking_form ){
+	// count spaces booked, if greater than 0 show booking form
+	let tickets_selected = 0;
+	let booking_data = new FormData(booking_form);
+	for ( const pair of booking_data.entries() ) {
+		if( pair[0].match(/^em_tickets\[[0-9]+\]\[spaces\]/) && parseInt(pair[1]) > 0 ){
+			tickets_selected++;
+		}
+	}
+	booking_form.setAttribute('data-spaces', tickets_selected);
+	return tickets_selected;
+};
+
 var em_booking_form_init = function( booking_form ){
 	booking_form.dispatchEvent( new CustomEvent('em_booking_form_init', {
 		bubbles : true,
@@ -47,18 +60,8 @@ var em_booking_form_init = function( booking_form ){
 	 */
 	booking_form.addEventListener("change", function( e ){
 		if ( e.target.matches('.em-ticket-select') ){
-			// count spaces booked, if greater than 0 show booking form
-			let tickets_selected = 0;
-			let booking_data = new FormData(booking_form);
-			for ( const pair of booking_data.entries() ) {
-				if( pair[0].match(/^em_tickets\[[0-9]+\]\[spaces\]/) && parseInt(pair[1]) > 0 ){
-					tickets_selected++;
-				}
-			}
-			booking_form.setAttribute('data-spaces', tickets_selected);
-			if( tickets_selected > 0 ){
-
-			}
+			// trigger spaces refresh
+			em_booking_form_count_spaces( booking_form );
 			// let others do similar stuff
 			booking_form.dispatchEvent( new CustomEvent('em_booking_form_updated') );
 		}
@@ -241,6 +244,12 @@ var em_booking_form_update_booking_intent = function( booking_form, booking_inte
 				// we have a free booking, show free booking button
 				button.value = EM.bookings.submit_button.text.default;
 			}
+		} else if ( !booking_intent && em_booking_form_count_spaces( booking_form ) > 0 ){
+			// this is in the event that the booking form has minimum spaces selected, but no booking_intent was ever output by booking form
+			// fallback / backcompat mainly for sites overriding templates and possibly not incluing the right actions/filters in their template
+			button.value = EM.bookings.submit_button.text.default;
+			button.disabled = false;
+			button.classList.remove('disabled');
 		} else {
 			// no booking_intent means no valid booking params yet
 			button.value = EM.bookings.submit_button.text.default;
@@ -392,6 +401,8 @@ var em_booking_form_submit = function( booking_form, opts = {} ){
 		em_booking_form_submit_start( booking_form, options );
 	}
 
+	let $response = null;
+
 	return fetch( EM.bookingajaxurl, {
 		method: "POST",
 		body: new FormData( booking_form ),
@@ -402,14 +413,25 @@ var em_booking_form_submit = function( booking_form, opts = {} ){
 		return Promise.reject( response );
 	}).then( function( response ){
 		if ( options.doSuccess ) {
+			$response = response
 			em_booking_form_submit_success( booking_form, response, options );
 		}
 		return response;
 	}).catch( function( error ){
-		if( options.doCatch ){
-			em_booking_form_submit_error( booking_form, error );
+		// only interested in network errors, if response was processed, we may be catching a thrown error
+		if ( $response ){
+			// response was given
+			if( options.showErrorMessages === true ){
+				let $error = 'errors' in $response && $response.errors ? $response.errors : $response.message;
+				em_booking_form_add_error( booking_form,  $error );
+			}
+		} else {
+			if( options.doCatch ){
+				em_booking_form_submit_error( booking_form, error );
+			}
 		}
 	}).finally( function(){
+		$response = null;
 		if( options.doFinally ) {
 			em_booking_form_submit_finally( booking_form, options );
 		}
@@ -423,7 +445,12 @@ var em_booking_form_submit_start = function( booking_form ){
 	let button = booking_form.querySelector( 'input.em-form-submit' );
 	if( button ) {
 		button.setAttribute('data-current-text', button.value);
-		button.value = EM.bookings.submit_button.text.processing.replace('%s', booking_intent.dataset.amount_formatted);
+		if ( booking_intent && 'dataset' in booking_intent ) {
+			button.value = EM.bookings.submit_button.text.processing.replace('%s', booking_intent.dataset.amount_formatted);
+		} else {
+			// fallback
+			button.value = EM.bookings.submit_button.text.processing;
+		}
 	}
 }
 
@@ -434,7 +461,7 @@ var em_booking_form_submit_success = function( booking_form, response, opts = {}
 		em_booking_form_hide_spinner( booking_form );
 	}
 	//show error or success message
-	if ( response.result ) {
+	if ( response.success ) {
 		// show message
 		if( options.showSuccessMessages === true ){
 			em_booking_form_add_confirm( booking_form, response.message );
@@ -484,10 +511,18 @@ var em_booking_form_submit_success = function( booking_form, response, opts = {}
 		}
 	}
 	// reload recaptcha if available (shoud move this out)
-	if ( !response.result && typeof Recaptcha != 'undefined' && typeof RecaptchaState != 'undefined') {
-		Recaptcha.reload();
-	}else if ( !response.result && typeof grecaptcha != 'undefined' ) {
-		grecaptcha.reset();
+	if ( !response.success && typeof Recaptcha != 'undefined' && typeof RecaptchaState != 'undefined') {
+		try {
+			Recaptcha.reload();
+		} catch (error) {
+			// do nothing
+		}
+	}else if ( !response.success && typeof grecaptcha != 'undefined' ) {
+		try {
+			grecaptcha.reset();
+		} catch (error) {
+			// do nothing
+		}
 	}
 	// trigger final success event
 	if ( options.triggerEvents === true ) {

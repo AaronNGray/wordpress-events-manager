@@ -128,6 +128,18 @@
 			background: #fff3cd;
 			border-color: #ffecb5;
 		}
+		&.em-notice-icon {
+			display:grid !important;
+			grid-template-columns : 25px auto;
+			grid-gap: 10px;
+
+			.em-icon {
+				align-self: center;
+			}
+		}
+		&.em-notice-thin {
+			padding: 10px 15px !important;
+		}
 	}
 
 }

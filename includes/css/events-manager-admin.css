@@ -18,6 +18,7 @@
   /* Selectize-specific stuff */
 }
 .wp-admin .event-form-when > * {
+  display: block;
   margin-bottom: 15px !important;
 }
 .wp-admin .event-form-when > p {

@@ -612,6 +612,37 @@ $limit $offset";
 				$conditions['has_event_location'] = "event_location_type IS NULL";
 			}
 		}
+		// active status filters
+		if ( get_option('dbem_event_status_enabled') ) {
+			$active_statuses = array( 'include' => array(), 'exclude' => array() );
+			// get individual status search args
+			$active_status_map = array('active' => 1, 'cancelled' => 0 );
+			foreach ( $active_status_map as $status_opt => $status ){
+				if ( $args[$status_opt] == 1 ) {
+					$active_statuses['include'][] = $status;
+				} elseif( $args[$status_opt] !== null ) {
+					$active_statuses['exclude'][] = $status;
+				}
+			}
+			// get general active status
+			if ( !empty($args['active_status']) ){
+				$active_status_array = is_array($args['active_status']) ? $args['active_status'] : explode(',', str_replace(' ', '', $args['active_status']));
+				foreach ( $active_status_array as $status ){
+					if ( $status > 0 ) {
+						$active_statuses['include'][] = $status;
+					} else {
+						$active_statuses['exclude'][] = absint($status);
+					}
+				}
+			}
+			// add conditional
+			if( !empty($active_statuses['include']) ){
+				$conditions['active_status_include'] = "event_active_status IN (". implode(',', $active_statuses['include']) .")";
+			}
+			if( !empty($active_statuses['exclude']) ){
+				$conditions['active_status_exclude'] = "event_active_status NOT IN (". implode(',', $active_statuses['exclude']) .")";
+			}
+		}
 		return apply_filters( 'em_events_build_sql_conditions', $conditions, $args );
 	}
 	
@@ -697,6 +728,9 @@ $limit $offset";
 			'location_status' => false, //search events with locations of a specific publish status
 			'event_location_type' => false,
 			'has_event_location' => false,
+			'cancelled' => get_option('dbem_events_include_status_cancelled') ? null : false, // include cancelled events
+			'active' => null,
+			'active_status' => null,
 		);
 		//sort out whether defaults were supplied or just the array of search values
 		if( empty($array) ){
@@ -738,6 +772,8 @@ $limit $offset";
 			$location_args = array('town', 'state', 'country', 'region', 'has_location', 'no_location', 'location_status', 'location', 'geo', 'near', 'location_id');
 			foreach( $location_args as $arg ) $args[$arg] = false;
 		}
+		// cancelled status
+		$args['cancelled'] === null ? get_option('dbem_events_include_status_cancelled') : $args['cancelled'];
 		return apply_filters('em_events_get_default_search', $args, $array, $defaults);
 	}
 }

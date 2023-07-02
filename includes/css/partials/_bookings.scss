@@ -40,6 +40,9 @@
 			display: block !important; /* bootstrap and others interfere with this */
 			margin-bottom: 25px !important;
 
+			&.hidden {
+				display:none !important;
+			}
 			input:not([type="checkbox"],[type="radio"]), select, .input-group, .input-group-checkboxes, button {
 				margin-bottom : 0 !important;
 			}

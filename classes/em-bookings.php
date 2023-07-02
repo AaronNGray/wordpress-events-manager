@@ -349,9 +349,11 @@ class EM_Bookings extends EM_Object implements Iterator, ArrayAccess {
 	function has_open_time(){
 	    $return = false;
 	    $EM_Event = $this->get_event();
-	    if( $EM_Event->rsvp_end()->getTimestamp() > time()){
-	    	$return = true;
-	    }
+		if( $EM_Event->event_active_status !== 0 ){
+		    if( $EM_Event->rsvp_end()->getTimestamp() > time()){
+		    	$return = true;
+	        }
+		}
 	    return $return;
 	}
 	
@@ -475,11 +477,17 @@ class EM_Bookings extends EM_Object implements Iterator, ArrayAccess {
 	 * @return int
 	 */
 	function get_spaces( $force_refresh=false ){
-		if($force_refresh || $this->spaces == 0){
-			$this->spaces = $this->get_tickets()->get_spaces();
+		if ( $this->get_event()->event_active_status === 0 ) {
+			$this->spaces = 0;
+		} else {
+			if ( $force_refresh || $this->spaces == 0 ) {
+				$this->spaces = $this->get_tickets()->get_spaces();
+			}
+			//check overall events cap
+			if ( ! empty( $this->get_event()->event_spaces ) && $this->get_event()->event_spaces < $this->spaces ) {
+				$this->spaces = $this->get_event()->event_spaces;
+			}
 		}
-		//check overall events cap
-		if(!empty($this->get_event()->event_spaces) && $this->get_event()->event_spaces < $this->spaces) $this->spaces = $this->get_event()->event_spaces;
 		return apply_filters('em_booking_get_spaces',$this->spaces,$this);
 	}
 	
@@ -488,10 +496,14 @@ class EM_Bookings extends EM_Object implements Iterator, ArrayAccess {
 	 * @return int
 	 */
 	function get_available_spaces( $force_refresh = false ){
-		$spaces = $this->get_spaces($force_refresh);
-		$available_spaces = $spaces - $this->get_booked_spaces($force_refresh);
-		if( get_option('dbem_bookings_approval_reserved') ){ //deduct reserved/pending spaces from available spaces 
-			$available_spaces -= $this->get_pending_spaces($force_refresh);
+		if ( $this->get_event()->event_active_status === 0 ) {
+			$available_spaces = 0;
+		}else{
+			$spaces = $this->get_spaces($force_refresh);
+			$available_spaces = $spaces - $this->get_booked_spaces($force_refresh);
+			if( get_option('dbem_bookings_approval_reserved') ){ //deduct reserved/pending spaces from available spaces
+				$available_spaces -= $this->get_pending_spaces($force_refresh);
+			}
 		}
 		return apply_filters('em_booking_get_available_spaces', $available_spaces, $this);
 	}

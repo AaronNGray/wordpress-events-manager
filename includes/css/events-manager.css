@@ -3064,6 +3064,9 @@
   line-height: 45px;
   align-self: end;
 }
+.em.em-event.em-event-cancelled .em-event-meta-datetime, .em.em-event .em-event-cancelled .em-event-meta-datetime, .em.em-events-list.em-event-cancelled .em-event-meta-datetime, .em.em-events-list .em-event-cancelled .em-event-meta-datetime, .em.em-events-widget.em-event-cancelled .em-event-meta-datetime, .em.em-events-widget .em-event-cancelled .em-event-meta-datetime {
+  text-decoration: line-through;
+}
 .em.em-events-widget .em-item .em-item-image-placeholder div.date {
   padding-top: 15%;
   min-width: 60px;
@@ -3192,6 +3195,9 @@
   display: block !important;
   /* bootstrap and others interfere with this */
   margin-bottom: 25px !important;
+}
+.em.em-event-booking-form .em-booking-form .input-user-field.hidden, .em.em-event-booking-form .em-booking-form .input-group.hidden, .em.em-event-booking-form .em-booking-form .input-type.hidden {
+  display: none !important;
 }
 .em.em-event-booking-form .em-booking-form .input-user-field input:not([type=checkbox], [type=radio]), .em.em-event-booking-form .em-booking-form .input-user-field select, .em.em-event-booking-form .em-booking-form .input-user-field .input-group, .em.em-event-booking-form .em-booking-form .input-user-field .input-group-checkboxes, .em.em-event-booking-form .em-booking-form .input-user-field button, .em.em-event-booking-form .em-booking-form .input-group input:not([type=checkbox], [type=radio]), .em.em-event-booking-form .em-booking-form .input-group select, .em.em-event-booking-form .em-booking-form .input-group .input-group, .em.em-event-booking-form .em-booking-form .input-group .input-group-checkboxes, .em.em-event-booking-form .em-booking-form .input-group button, .em.em-event-booking-form .em-booking-form .input-type input:not([type=checkbox], [type=radio]), .em.em-event-booking-form .em-booking-form .input-type select, .em.em-event-booking-form .em-booking-form .input-type .input-group, .em.em-event-booking-form .em-booking-form .input-type .input-group-checkboxes, .em.em-event-booking-form .em-booking-form .input-type button {
   margin-bottom: 0 !important;
@@ -3568,6 +3574,7 @@
   margin-bottom: 5px !important;
 }
 .em.em-event-editor .input .event-form-when > * {
+  display: block;
   margin-bottom: 15px !important;
 }
 .em.em-event-editor .input .event-form-when > p {
@@ -4605,6 +4612,17 @@
   color: #664d03;
   background: #fff3cd;
   border-color: #ffecb5;
+}
+.em .em-notice.em-notice-icon {
+  display: grid !important;
+  grid-template-columns: 25px auto;
+  grid-gap: 10px;
+}
+.em .em-notice.em-notice-icon .em-icon {
+  align-self: center;
+}
+.em .em-notice.em-notice-thin {
+  padding: 10px 15px !important;
 }
 
 /* Fix z-index issues for some 3rd party stuff */

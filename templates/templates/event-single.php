@@ -17,7 +17,7 @@ if( empty($args['id']) ) $args['id'] = rand(100, getrandmax()); // prevent warni
 $id = esc_attr($args['id']);
 ?>
 <div class="<?php em_template_classes('view-container'); ?>" id="em-view-<?php echo $id; ?>" data-view="event">
-	<div class="<?php em_template_classes('event-single'); ?> em-event-<?php echo esc_attr($EM_Event->event_id); ?>" id="em-event-<?php echo $id; ?>" data-view-id="<?php echo $id; ?>">
+	<div class="<?php em_template_classes('event-single'); ?> em-event-<?php echo esc_attr($EM_Event->event_id); ?> <?php if( $EM_Event->active_status == 0 ) echo 'em-event-cancelled'; ?>" id="em-event-<?php echo $id; ?>" data-view-id="<?php echo $id; ?>">
 		<?php
 		echo $EM_Event->output_single();
 		?>

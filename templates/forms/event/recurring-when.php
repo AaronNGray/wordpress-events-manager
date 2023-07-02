@@ -44,5 +44,8 @@ $id = rand();
 		    <input type="hidden" name="event_reschedule" class="em-reschedule-value" value="<?php echo empty($_REQUEST['reschedule']) ? 0:1 ?>" />
 		</div>
 		<?php endif; ?>
+		<?php if( get_option('dbem_event_status_enabled') ) : ?>
+			<?php include( em_locate_template('forms/event/when/active-status.php') ); ?>
+		<?php endif; ?>
 	</div>
 </div>

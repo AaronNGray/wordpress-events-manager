@@ -1,4 +1,4 @@
-<div class="em-event em-item" style="--default-border:#_CATEGORYCOLOR;">
+<div class="em-event em-item {is_cancelled}em-event-cancelled{/is_cancelled}" style="--default-border:#_CATEGORYCOLOR;">
 	<div class="em-item-image {no_image}has-placeholder{/no_image}">
 		{has_image}
 		#_EVENTIMAGE{medium}
@@ -14,6 +14,12 @@
 	</div>
 	<div class="em-item-info">
 		<h3 class="em-item-title">#_EVENTLINK</h3>
+		{is_cancelled}
+		<div class="em-event-cancelled em-notice em-notice-error em-notice-thin em-notice-icon">
+			<span class="em-icon em-icon-cross-circle"></span>
+			<?php esc_html_e('This event has been cancelled.', 'events-manager'); ?>
+		</div>
+		{/is_cancelled}
 		<div class="em-event-meta em-item-meta">
 			<div class="em-item-meta-line em-event-date em-event-meta-datetime">
 				<span class="em-icon-calendar em-icon"></span>

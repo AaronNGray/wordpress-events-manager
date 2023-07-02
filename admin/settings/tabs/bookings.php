@@ -71,6 +71,7 @@
 			<?php
 			em_options_input_text ( __( 'Bookings disabled', 'events-manager'), 'dbem_bookings_form_msg_disabled', __( 'An event with no bookings.', 'events-manager') );
 			em_options_input_text ( __( 'Bookings closed', 'events-manager'), 'dbem_bookings_form_msg_closed', __( 'Bookings have closed (e.g. event has started).', 'events-manager') );
+			em_options_input_text ( __( 'Event cancelled ', 'events-manager'), 'dbem_bookings_form_msg_cancelled', '');
 			em_options_input_text ( __( 'Fully booked', 'events-manager'), 'dbem_bookings_form_msg_full', __( 'Event is fully booked.', 'events-manager') );
 			em_options_input_text ( __( 'Already attending', 'events-manager'), 'dbem_bookings_form_msg_attending', __( 'If already attending and double bookings are disabled, this message will be displayed, followed by a link to the users booking page.', 'events-manager') );
 			em_options_input_text ( __( 'Manage bookings link text', 'events-manager'), 'dbem_bookings_form_msg_bookings_link', __( 'Link text used for link to user bookings.', 'events-manager') );
@@ -98,6 +99,7 @@
 			em_options_input_text ( __( 'Booking already made', 'events-manager'), 'dbem_booking_button_msg_already_booked', '');
 			em_options_input_text ( __( 'Booking error', 'events-manager'), 'dbem_booking_button_msg_error', '');
 			em_options_input_text ( __( 'Event fully booked', 'events-manager'), 'dbem_booking_button_msg_full', '');
+			em_options_input_text ( __( 'Event cancelled', 'events-manager'), 'dbem_booking_button_msg_event_cancelled', '');
 			em_options_input_text ( __( 'Bookings closed', 'events-manager'), 'dbem_booking_button_msg_closed', '');
 			em_options_input_text ( __( 'Cancel', 'events-manager'), 'dbem_booking_button_msg_cancel', '');
 			em_options_input_text ( __( 'Cancelation in progress', 'events-manager'), 'dbem_booking_button_msg_canceling', '');
@@ -140,11 +142,11 @@
 			<?php
 			em_options_input_text ( esc_html__('Tickets', 'events-manager'), 'dbem_bookings_header_tickets' );
 			em_options_input_text ( esc_html__('Registration Information', 'events-manager'), 'dbem_bookings_header_reg_info' );
-			em_options_input_text ( esc_html__('Boooking Summary', 'events-manager'), 'dbem_bookings_header_summary' );
+			em_options_input_text ( esc_html__('Booking Summary', 'events-manager'), 'dbem_bookings_header_summary' );
 			$paid_description = esc_html__('The default value is blank so that the booking submission button appears just below the %s section.', 'events-manager');
-			em_options_input_text ( esc_html__('Payment and Confirmation', 'events-manager'), 'dbem_bookings_header_confirm', sprintf($paid_description, '<em>'.esc_html__('Boooking Summary', 'events-manager').'</em>' ) );
+			em_options_input_text ( esc_html__('Payment and Confirmation', 'events-manager'), 'dbem_bookings_header_confirm', sprintf($paid_description, '<em>'.esc_html__('Booking Summary', 'events-manager').'</em>' ) );
 			$free_description = esc_html__('If the booking is free, this will be displayed instead of the %s heading.', 'events-manager') . ' ' . esc_html__('The default value is blank so that the booking submission button appears just below the %s section.', 'events-manager');
-			$free_description = sprintf($free_description, '<em>'.esc_html__('Payment and Confirmation', 'events-manager').'</em>', '<em>'.esc_html__('Boooking Summary', 'events-manager').'</em>' );
+			$free_description = sprintf($free_description, '<em>'.esc_html__('Payment and Confirmation', 'events-manager').'</em>', '<em>'.esc_html__('Booking Summary', 'events-manager').'</em>' );
 			em_options_input_text ( esc_html__('Booking Confirmation', 'events-manager'), 'dbem_bookings_header_confirm_free', $free_description );
 			
 			do_action('em_options_booking_form_options');
