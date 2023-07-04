@@ -18,6 +18,8 @@ class List_Table extends WP_List_Table {
 	public $has_checkboxes = true;
 	public $checkbox_id = 'id';
 	
+	public $format;
+	
 	/**
 	 * Prepare the items for the table to process
 	 *

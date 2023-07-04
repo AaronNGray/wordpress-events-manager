@@ -1355,9 +1355,21 @@ function em_setup_tippy( container_element ){
 		theme : 'light-border',
 		appendTo : 'parent',
 		content(reference) {
+			if( 's' in reference.dataset && reference.dataset.content.match(/^[.#][a-zA-Z0-9]+/) ){
+				try {
+					let content = container[0].querySelector(reference.dataset.content);
+					if (content) {
+						content.classList.remove('hidden');
+						return content;
+					}
+				} catch ( error ) {
+					console.log('Invlid tooltip selector in %o : %o', reference, error);
+				}
+			}
 			return reference.getAttribute('aria-label');
 		},
-		'touch' : ['hold', 300]
+		'touch' : ['hold', 300],
+		allowHTML : true,
 	};
 	jQuery(document).trigger('em-tippy-vars',[tooltip_vars, container]);
 	tippy('.em-tooltip', tooltip_vars);
@@ -2348,7 +2360,7 @@ jQuery(document).ready( function($){
 				em_submit_legacy_search_form(form);
 			}else{
 				let view = $('#em-view-'+search_id);
-				let view_type = form.find('[name="view"]:checked, .em-search-view-option-hidden').val();
+				let view_type = form.find('[name="view"]:checked, [name="view"][type="hidden"], .em-search-view-option-hidden').val();
 				if( Array.isArray(view_type) ) view_type = view_type.shift();
 				// copy over custom view information, remove it further down
 				let custom_view_data = view.find('#em-view-custom-data-search-'+search_id).clone();

@@ -403,6 +403,9 @@ class EM_Calendar extends EM_Object {
 			$base_args['month'] = absint($year_month[1]);
 			$base_args['year'] = absint($year_month[0]);
 		}
+		if( empty($base_args['calendar_size']) && !empty($_REQUEST['calendar_size']) ){
+			$base_args['calendar_size'] = $_REQUEST['calendar_size'];
+		}
 		$calendar_array  = self::get($base_args);
 		$args = array_merge($base_args, $calendar_array['args']);
 		// get any template-specific $_REQUEST info here
@@ -414,12 +417,12 @@ class EM_Calendar extends EM_Object {
 		if( !isset($args['show_search']) ) $args['show_search'] = false; // don't show the search bar above by default, filters yes
 		if( !isset($args['has_search']) ) $args['has_search'] = false; // by default no search
 		$args['has_advanced_trigger'] = ($args['has_search'] && !$args['show_search']) || !empty($args['has_advanced_trigger']); // override search trigger option if search is hidden
-		$args = em_get_search_form_defaults($args);
 		// output main form
 		ob_start();
+		$args = em_get_search_form_defaults($args);
 		// do we output a search form first?
 		if( !empty($args['has_search']) ){
-			$args['search_scope'] = false;
+			$args['search_scope'] = false; $args['search_scope_advanced'] = false;
 			$args['show_advanced'] = true;
 			$args['advanced_mode'] = 'modal';
 			$args['advanced_hidden'] = true;
@@ -480,9 +483,10 @@ class EM_Calendar extends EM_Object {
 			<div class="em-view-custom-data" id="em-view-custom-data-<?php echo absint($args['id']); ?>">
 				<?php
 				$ignore_keys = array('page','offset', 'pagination', 'array'); // stuff we don't need to consider
-				$global_args_keys = array('has_advanced_trigger', 'month', 'year', 'scope', 'id', 'view_id'); // things both searches and caelendar navs need
-				$search_exclusive_args_keys = array_keys(array_diff_key( static::get_default_search(), em_get_search_form_defaults() )); //vars only searches need
-				$calendar_exclusive_args_keys = array_keys(array_diff_key( static::get_default_search(), $args )); // vars only the calendar needs
+				$global_args_keys = array('has_advanced_trigger', 'month', 'year', 'scope', 'id', 'view_id', 'calendar_size'); // things both searches and caelendar navs need
+				$default_search = static::get_default_search();
+				$search_exclusive_args_keys = array_keys(array_diff_key( $default_search, em_get_search_form_defaults() )); //vars only searches need
+				$calendar_exclusive_args_keys = array_keys(array_diff_key( $default_search, $args )); // vars only the calendar needs
 				$custom_args = array('global' => array(), 'search' => array(), 'calendar' => array());
 				foreach( $args as $name => $value ){
 					if( in_array($name, $ignore_keys) ) continue;

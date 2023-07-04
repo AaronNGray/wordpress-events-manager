@@ -562,7 +562,7 @@ jQuery(document).ready( function($){
 				em_submit_legacy_search_form(form);
 			}else{
 				let view = $('#em-view-'+search_id);
-				let view_type = form.find('[name="view"]:checked, .em-search-view-option-hidden').val();
+				let view_type = form.find('[name="view"]:checked, [name="view"][type="hidden"], .em-search-view-option-hidden').val();
 				if( Array.isArray(view_type) ) view_type = view_type.shift();
 				// copy over custom view information, remove it further down
 				let custom_view_data = view.find('#em-view-custom-data-search-'+search_id).clone();

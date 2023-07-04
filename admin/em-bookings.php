@@ -210,6 +210,7 @@ function em_bookings_ticket(){
 			<?php
 			$EM_Bookings_Table = new EM_Bookings_Table();
 			$EM_Bookings_Table->status = get_option('dbem_bookings_approval') ? 'needs-attention':'confirmed';
+			$EM_Bookings_Table->ticket = $EM_Ticket;
 			if( is_admin() ) {
 				$EM_Bookings_Table->display();
 			}else{

@@ -859,7 +859,7 @@ class EM_Booking extends EM_Object{
 	 */
 	function get_tickets_bookings(){
 		global $wpdb;
-		if( !is_object($this->tickets_bookings) || get_class($this->tickets_bookings)!='EM_Tickets_Bookings'){
+		if( !is_object($this->tickets_bookings) || get_class($this->tickets_bookings) != 'EM_Tickets_Bookings'){
 			$this->tickets_bookings = new EM_Tickets_Bookings($this);
 		}
 		return apply_filters('em_booking_get_tickets_bookings', $this->tickets_bookings, $this);

@@ -61,10 +61,14 @@ class EM_Bookings_Table extends EM\List_Table {
 	public $scope = 'future';
 	public $search = '';
 	public $show_tickets = false;
+	/**
+	 * @var EM_Ticket
+	 */
+	public $ticket;
 	public $bookings;
 	public $bookings_count = 0;
 	
-	function __construct($show_tickets = false){
+	function __construct($show_tickets = true){
 		$this->uid = $this->id . '-' . rand(1,99999);
 		$this->statuses = array(
 			'all' => array('label'=>__('All','events-manager'), 'search'=>false),
@@ -95,6 +99,7 @@ class EM_Bookings_Table extends EM\List_Table {
 		$this->status = get_option('dbem_bookings_approval') ? 'needs-attention':'confirmed';
 		$this->status = ( !empty($_REQUEST['status']) && array_key_exists($_REQUEST['status'], $this->statuses) ) ? sanitize_text_field($_REQUEST['status']):$this->status;
 		$this->search = ( !empty($_REQUEST['em_search']) ) ? sanitize_text_field($_REQUEST['em_search']):$this->search;
+		if( !empty($_REQUEST['ticket_id']) ) $this->ticket = new EM_Ticket(absint($_REQUEST['ticket_id']));
 		// Basic Vars for List_Table
 		$this->per_page = $this->limit;
 		//build template of possible collumns
@@ -122,6 +127,7 @@ class EM_Bookings_Table extends EM\List_Table {
 		), $this);
 		$this->cols_attendees_template = apply_filters('em_bookings_table_cols_attendees_template', array(), $this);
 		$this->cols_tickets_template = apply_filters('em_bookings_table_cols_tickets_template', array(
+			'ticket_spaces'=>__('Ticket Spaces','events-manager'),
 			'ticket_name'=>__('Ticket Name','events-manager'),
 			'ticket_description'=>__('Ticket Description','events-manager'),
 			'ticket_price'=>__('Ticket Price','events-manager'),
@@ -143,7 +149,7 @@ class EM_Bookings_Table extends EM\List_Table {
 				),
 			'ticket'=> array(
 					'label' => __('Ticket','events-manager'),
-					'fields' => array('ticket_name', 'ticket_description', 'ticket_price', 'ticket_total', 'ticket_id', ),
+					'fields' => array('ticket_spaces', 'ticket_name', 'ticket_description', 'ticket_price', 'ticket_total', 'ticket_id', ),
 				),
 			'attendee' => array(
 					'label' => __('Attendee (Per Space Booked)','events-manager'),
@@ -563,12 +569,18 @@ class EM_Bookings_Table extends EM\List_Table {
 								*/ 
 								/* @var $EM_Booking EM_Booking */
 								/* @var $EM_Ticket_Booking EM_Ticket_Booking */
-								if( $this->show_tickets ){
-									foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking){
-										$row = $this->get_row($EM_Ticket_Booking);
+								if( $this->show_tickets && empty($this->ticket) ){
+									$count = 1;
+									foreach($EM_Booking->get_tickets_bookings()->get_ticket_bookings() as $EM_Ticket_Booking){
+										if( $count > 1 ){
+											echo '</tr><tr>';
+										}
+										$this->ticket = $EM_Ticket_Booking->get_ticket();
+										$row = $this->get_row($EM_Booking);
 										foreach( $row as $key => $row_cell ){
 										?><td class="em-bt-col-<?php echo esc_attr($key); ?>"class="em-bt-col-<?php echo esc_attr($key); ?>"><?php echo $row_cell; ?></td><?php
 										}
+										$this->ticket = null;
 									}
 								}else{
 									$row = $this->get_row($EM_Booking);
@@ -639,11 +651,11 @@ class EM_Bookings_Table extends EM\List_Table {
 		/* @var $EM_Ticket EM_Ticket */
 		/* @var $EM_Ticket_Booking EM_Ticket_Booking */
 		/* @var $EM_Booking EM_Booking */
-		if( $format === true ) $format = 'csv'; //backwards compatibility, previously $format was $csv which was a boolean 
+		$this->format = $format === true ? 'csv' : $format;  //backwards compatibility, previously $format was $csv which was a boolean
 		if( $object instanceof EM_Ticket_Booking || $object instanceof EM_Ticket_Bookings ){
 			$EM_Ticket_Booking = $object;
-			$EM_Ticket = $EM_Ticket_Booking->get_ticket();
 			$EM_Booking = $EM_Ticket_Booking->get_booking();
+			$this->ticket = $EM_Ticket_Booking->get_ticket();
 		}elseif( $object instanceof EM_Booking ){
 			$EM_Booking = $object;
 		}else{
@@ -652,83 +664,8 @@ class EM_Bookings_Table extends EM\List_Table {
 		}
 		$cols = array();
 		foreach($this->cols as $col){
-			$val = ''; //reset value
-			//is col a user col or else?
 			//TODO fix urls so this works in all pages in front as well
-			if( $col == 'user_email' ){
-				$val = $EM_Booking->get_person()->user_email;
-			}elseif($col == 'user_login'){
-				if( $EM_Booking->is_no_user() ){
-					$val = esc_html__('Guest User', 'events-manager');
-				}else{
-					if( $format == 'csv' ){
-						$val = $EM_Booking->get_person()->user_login;
-					}else{
-						$val = '<a href="'.esc_url(add_query_arg(array('person_id'=>$EM_Booking->person_id, 'event_id'=>null), $EM_Booking->get_event()->get_bookings_url())).'">'. esc_html($EM_Booking->person->user_login) .'</a>';
-					}
-				}
-			}elseif($col == 'dbem_phone'){
-				$val = $EM_Booking->get_person()->phone;
-			}elseif($col == 'user_name'){
-				if( $format == 'csv' ){
-					$val = $EM_Booking->get_person()->get_name();
-				}elseif( $EM_Booking->is_no_user() ){
-					$val = esc_html($EM_Booking->get_person()->get_name());
-				}else{
-					$val = '<a href="'.esc_url(add_query_arg(array('person_id'=>$EM_Booking->person_id, 'event_id'=>null), $EM_Booking->get_event()->get_bookings_url())).'">'. esc_html($EM_Booking->person->get_name()) .'</a>';
-				}
-			}elseif($col == 'first_name'){
-				$val = $EM_Booking->get_person()->first_name;
-			}elseif($col == 'last_name'){
-				$val = $EM_Booking->get_person()->last_name;
-			}elseif($col == 'event_name'){
-				if( $format == 'csv' ){
-					$val = $EM_Booking->get_event()->event_name;
-				}else{
-					$val = '<a href="'.$EM_Booking->get_event()->get_bookings_url().'">'. esc_html($EM_Booking->get_event()->event_name) .'</a>';
-				}
-			}elseif($col == 'event_date'){
-				$val = $EM_Booking->get_event()->output('#_EVENTDATES');
-			}elseif($col == 'event_time'){
-				$val = $EM_Booking->get_event()->output('#_EVENTTIMES');
-			}elseif($col == 'booking_price'){
-				$val = $EM_Booking->get_price(true);
-			}elseif($col == 'booking_status'){
-				$val = $EM_Booking->get_status(true);
-			}elseif($col == 'booking_date'){
-				$val = $EM_Booking->date()->i18n( get_option('dbem_date_format').' '. get_option('dbem_time_format') );
-			}elseif($col == 'actions' ){
-				if( $format == 'csv' ) continue; 
-				$val = implode(' | ', $this->get_booking_actions($EM_Booking));
-			}elseif( $col == 'booking_spaces' ){
-				$val = ($this->show_tickets && !empty($EM_Ticket)) ? $EM_Ticket_Booking->get_spaces() : $EM_Booking->get_spaces();
-			}elseif( $col == 'booking_id' ){
-				$val = $EM_Booking->booking_id;
-			}elseif( $col == 'ticket_name' && $this->show_tickets && !empty($EM_Ticket) ){
-				$val = $EM_Ticket->$col;
-			}elseif( $col == 'ticket_description' && $this->show_tickets && !empty($EM_Ticket) ){
-				$val = $EM_Ticket->$col;
-			}elseif( $col == 'ticket_price' && $this->show_tickets && !empty($EM_Ticket) ){
-				$val = $EM_Ticket->get_price(true);
-			}elseif( $col == 'ticket_total' && $this->show_tickets && !empty($EM_Ticket_Booking) ){
-				$val = apply_filters('em_bookings_table_row_booking_price_ticket', $EM_Ticket_Booking->get_price(false), $EM_Booking, true);
-				$val = $EM_Booking->format_price($val * (1 + $EM_Booking->get_tax_rate(true)));
-			}elseif( $col == 'ticket_id' && $this->show_tickets && !empty($EM_Ticket) ){
-				$val = $EM_Ticket->ticket_id;
-			}elseif( $col == 'booking_comment' ){
-				$val = $EM_Booking->booking_comment;
-			}
-			//escape all HTML if destination is HTML or not defined
-			if( $format == 'html' || empty($format) ){
-				if( !in_array($col, array('user_login', 'user_name', 'event_name', 'actions')) ) $val = esc_html($val);
-			}
-			//use this
-			$val = apply_filters('em_bookings_table_rows_col_'.$col, $val, $EM_Booking, $this, $format, $object);
-			$val = apply_filters('em_bookings_table_rows_col', $val, $col, $EM_Booking, $this, $format, $object); //use the above filter instead for better performance
-			//csv/excel escaping
-			if( $format == 'csv' || $format == 'xls' || $format == 'xlsx' ){
-				$val = self::sanitize_spreadsheet_cell($val);
-			}
+			$val = $this->default_column_data( $EM_Booking, $col );
 			//add to cols
 			$cols[$col] = $val;
 		}
@@ -738,13 +675,20 @@ class EM_Bookings_Table extends EM\List_Table {
 	function get_row_csv($EM_Booking){
 	    $row = $this->get_row($EM_Booking, 'csv');
 	    foreach($row as $k=>$v){
-	    	$row[$k] = html_entity_decode($v);
+			if ( empty($v) ) {
+				$row[ $k ] = '';
+			} else {
+				$row[ $k ] = html_entity_decode( $v );
+			}
 	    } //remove things like &amp; which may have been saved to the DB directly
 	    return $row;
 	}
 	
 	public static function sanitize_spreadsheet_cell( $cell ){
-		return preg_replace('/^([;=@\+\-])/', "'$1", $cell);
+		if ( !empty($cell) ) {
+			return preg_replace( '/^([;=@\+\-])/', "'$1", $cell );
+		}
+		return '';
 	}
 	
 	/**
@@ -851,94 +795,21 @@ class EM_Bookings_Table extends EM\List_Table {
 	/**
 	 * Define what data to show on each column of the table
 	 *
-	 * @param  EM_Booking   $EM_Booking     Data
-	 * @param  string       $column_name    Current column name
+	 * @param  EM_Booking   $object             Data
+	 * @param  string       $column_name        Current column name
 	 *
 	 * @return string
 	 */
-	function column_default( $EM_Booking, $col ){
-		$format = $this->format;
+	function column_default( $object, $column_name ){
+		/* @var $EM_Ticket EM_Ticket */
+		/* @var $EM_Ticket_Booking EM_Ticket_Booking */
+		/* @var $EM_Booking EM_Booking */
+		$EM_Booking = $object;
 		$val = '';
-		if( in_array($col, $this->cols) || $col === 'actions' ){
-			$val = ''; //reset value
-			//is col a user col or else?
-			//TODO fix urls so this works in all pages in front as well
-			if( $col == 'user_email' ){
-				$val = $EM_Booking->get_person()->user_email;
-			}elseif($col == 'user_login'){
-				if( $EM_Booking->is_no_user() ){
-					$val = esc_html__('Guest User', 'events-manager');
-				}else{
-					if( $format == 'csv' ){
-						$val = $EM_Booking->get_person()->user_login;
-					}else{
-						$val = '<a href="'.esc_url(add_query_arg(array('person_id'=>$EM_Booking->person_id, 'event_id'=>null), $EM_Booking->get_event()->get_bookings_url())).'">'. esc_html($EM_Booking->person->user_login) .'</a>';
-					}
-				}
-			}elseif($col == 'dbem_phone'){
-				$val = $EM_Booking->get_person()->phone;
-			}elseif($col == 'user_name'){
-				if( $format == 'csv' ){
-					$val = $EM_Booking->get_person()->get_name();
-				}elseif( $EM_Booking->is_no_user() ){
-					$val = esc_html($EM_Booking->get_person()->get_name());
-				}else{
-					$val = '<a href="'.esc_url(add_query_arg(array('person_id'=>$EM_Booking->person_id, 'event_id'=>null), $EM_Booking->get_event()->get_bookings_url())).'">'. esc_html($EM_Booking->person->get_name()) .'</a>';
-				}
-			}elseif($col == 'first_name'){
-				$val = $EM_Booking->get_person()->first_name;
-			}elseif($col == 'last_name'){
-				$val = $EM_Booking->get_person()->last_name;
-			}elseif($col == 'event_name'){
-				if( $format == 'csv' ){
-					$val = $EM_Booking->get_event()->event_name;
-				}else{
-					$val = '<a href="'.$EM_Booking->get_event()->get_bookings_url().'">'. esc_html($EM_Booking->get_event()->event_name) .'</a>';
-				}
-			}elseif($col == 'event_date'){
-				$val = $EM_Booking->get_event()->output('#_EVENTDATES');
-			}elseif($col == 'event_time'){
-				$val = $EM_Booking->get_event()->output('#_EVENTTIMES');
-			}elseif($col == 'booking_price'){
-				$val = $EM_Booking->get_price(true);
-			}elseif($col == 'booking_status'){
-				$val = $EM_Booking->get_status(true);
-			}elseif($col == 'booking_date'){
-				$val = $EM_Booking->date()->i18n( get_option('dbem_date_format').' '. get_option('dbem_time_format') );
-			}elseif($col == 'actions' && $format !== 'csv' ) {
-				// html only
-				$val = implode(' | ', $this->get_booking_actions($EM_Booking));
-			}elseif( $col == 'booking_spaces' ){
-				$val = ($this->show_tickets && !empty($EM_Ticket)) ? $EM_Ticket_Booking->get_spaces() : $EM_Booking->get_spaces();
-			}elseif( $col == 'booking_id' ){
-				$val = $EM_Booking->booking_id;
-			}elseif( $col == 'ticket_name' && $this->show_tickets && !empty($EM_Ticket) ){
-				$val = $EM_Ticket->$col;
-			}elseif( $col == 'ticket_description' && $this->show_tickets && !empty($EM_Ticket) ){
-				$val = $EM_Ticket->$col;
-			}elseif( $col == 'ticket_price' && $this->show_tickets && !empty($EM_Ticket) ){
-				$val = $EM_Ticket->get_price(true);
-			}elseif( $col == 'ticket_total' && $this->show_tickets && !empty($EM_Ticket_Booking) ){
-				$val = apply_filters('em_bookings_table_row_booking_price_ticket', $EM_Ticket_Booking->get_price(false), $EM_Booking, true);
-				$val = $EM_Booking->format_price($val * (1 + $EM_Booking->get_tax_rate(true)));
-			}elseif( $col == 'ticket_id' && $this->show_tickets && !empty($EM_Ticket) ){
-				$val = $EM_Ticket->ticket_id;
-			}elseif( $col == 'booking_comment' ){
-				$val = $EM_Booking->booking_comment;
-			}
-			//escape all HTML if destination is HTML or not defined
-			if( ($format == 'html' || empty($format)) && !in_array($col, array('user_login', 'user_name', 'event_name', 'actions')) ){
-				$val = esc_html($val);
-			}
-			//use this
-			$val = apply_filters('em_bookings_table_rows_col_'.$col, $val, $EM_Booking, $this, $format, $EM_Booking);
-			$val = apply_filters('em_bookings_table_rows_col', $val, $col, $EM_Booking, $this, $format, $EM_Booking); //use the above filter instead for better performance
-			//csv/excel escaping
-			if( $format == 'csv' || $format == 'xls' || $format == 'xlsx' ){
-				$val = self::sanitize_spreadsheet_cell($val);
-			}
+		if( in_array($column_name, $this->cols) || $column_name === 'actions' ){
+			$val = $this->default_column_data( $EM_Booking, $column_name );
 			$primary_column = reset($this->cols);
-			if( $primary_column === $col ){
+			if( $primary_column === $column_name ){
 				// add responsive extra data
 				/* WIP for frontend
 				ob_start();
@@ -963,6 +834,179 @@ class EM_Bookings_Table extends EM\List_Table {
 			}
 		}
 		return $val;
+	}
+	
+	public function default_column_data( $EM_Booking, $col ){
+		if( $this->show_tickets && $this->ticket ){
+			$EM_Ticket = $this->ticket;
+			$EM_Tickets_Bookings = $EM_Booking->get_tickets_bookings();
+			if( !empty($EM_Tickets_Bookings->tickets_bookings[$EM_Ticket->ticket_id]) ){
+				$EM_Ticket_Booking = $EM_Tickets_Bookings->tickets_bookings[$EM_Ticket->ticket_id];
+			}
+		}
+		$format = $this->format;
+		$val = ''; //reset value
+		//is col a user col or else?
+		//TODO fix urls so this works in all pages in front as well
+		if( $col == 'user_email' ){
+			$val = $EM_Booking->get_person()->user_email;
+		}elseif($col == 'user_login'){
+			if( $EM_Booking->is_no_user() ){
+				$val = esc_html__('Guest User', 'events-manager');
+			}else{
+				if( $format == 'csv' ){
+					$val = $EM_Booking->get_person()->user_login;
+				}else{
+					$val = '<a href="'.esc_url(add_query_arg(array('person_id'=>$EM_Booking->person_id, 'event_id'=>null), $EM_Booking->get_event()->get_bookings_url())).'">'. esc_html($EM_Booking->person->user_login) .'</a>';
+				}
+			}
+		}elseif($col == 'dbem_phone'){
+			$val = $EM_Booking->get_person()->phone;
+		}elseif($col == 'user_name'){
+			if( $format == 'csv' ){
+				$val = $EM_Booking->get_person()->get_name();
+			}elseif( $EM_Booking->is_no_user() ){
+				$val = esc_html($EM_Booking->get_person()->get_name());
+			}else{
+				$val = '<a href="'.esc_url(add_query_arg(array('person_id'=>$EM_Booking->person_id, 'event_id'=>null), $EM_Booking->get_event()->get_bookings_url())).'">'. esc_html($EM_Booking->person->get_name()) .'</a>';
+			}
+		}elseif($col == 'first_name'){
+			$val = $EM_Booking->get_person()->first_name;
+		}elseif($col == 'last_name'){
+			$val = $EM_Booking->get_person()->last_name;
+		}elseif($col == 'event_name'){
+			if( $format == 'csv' ){
+				$val = $EM_Booking->get_event()->event_name;
+			}else{
+				$val = '<a href="'.$EM_Booking->get_event()->get_bookings_url().'">'. esc_html($EM_Booking->get_event()->event_name) .'</a>';
+			}
+		}elseif($col == 'event_date'){
+			$val = $EM_Booking->get_event()->output('#_EVENTDATES');
+		}elseif($col == 'event_time'){
+			$val = $EM_Booking->get_event()->output('#_EVENTTIMES');
+		}elseif($col == 'booking_price'){
+			$val = $EM_Booking->get_price(true);
+		}elseif($col == 'booking_status'){
+			$val = $EM_Booking->get_status(true);
+		}elseif($col == 'booking_date'){
+			$val = $EM_Booking->date()->i18n( get_option('dbem_date_format').' '. get_option('dbem_time_format') );
+		}elseif($col == 'actions' && $format !== 'csv' ) {
+			// html only
+			$val = implode(' | ', $this->get_booking_actions($EM_Booking));
+		}elseif( $col == 'booking_spaces' ){
+			$val = $EM_Booking->get_spaces();
+		}elseif( $col == 'booking_id' ){
+			$val = $EM_Booking->booking_id;
+		}elseif( $col == 'ticket_spaces' ){
+			if ( !empty($EM_Ticket_Booking) ) {
+				$val = $EM_Ticket_Booking->get_spaces();
+			} elseif ( $EM_Booking->get_tickets()->count() > 1 ) {
+				$val = $this->multiple_tickets_col( $EM_Booking, 'ticket_spaces' );
+				$allow_html = true;
+			} elseif ( $EM_Booking->get_tickets()->get_first() ) {
+				$val = $EM_Booking->get_spaces();
+			}
+		}elseif( $col == 'ticket_name' ){
+			if ( !empty($EM_Ticket) ) {
+				$val = $EM_Ticket->name;
+			} elseif( $EM_Booking->get_tickets()->count() > 1 ) {
+				$val = $this->multiple_tickets_col( $EM_Booking );
+				$allow_html = true;
+			} elseif ( $EM_Booking->get_tickets()->get_first() ) {
+				$val = $EM_Booking->get_tickets()->get_first()->name;
+			}
+		}elseif( $col == 'ticket_description' ){
+			if ( !empty($EM_Ticket) ) {
+				$val = $EM_Ticket->description;
+			} elseif( $EM_Booking->get_tickets()->count() > 1 ) {
+				$val = $this->multiple_tickets_col( $EM_Booking );
+				$allow_html = true;
+			} elseif ( $EM_Booking->get_tickets()->get_first() ) {
+				$val = $EM_Booking->get_tickets()->get_first()->description;
+			}
+		}elseif( $col == 'ticket_price' ){
+			if ( !empty($EM_Ticket) ) {
+				$val = $EM_Ticket->get_price(true);
+			} elseif( $EM_Booking->get_tickets()->count() > 1 ) {
+				$val = $this->multiple_tickets_col( $EM_Booking, 'ticket_price' );
+				$allow_html = true;
+			} elseif ( $EM_Booking->get_tickets()->get_first() ) {
+				$val = $EM_Booking->get_tickets()->get_first()->get_price(true);
+			}
+		}elseif( $col == 'ticket_total' ){
+			if ( !empty($EM_Ticket_Booking) ) {
+				$val = apply_filters('em_bookings_table_row_booking_price_ticket', $EM_Ticket_Booking->get_price(false), $EM_Booking, true);
+				$val = $EM_Booking->format_price($val * (1 + $EM_Booking->get_tax_rate(true)));
+			} elseif( $EM_Booking->get_tickets()->count() > 1 ) {
+				$val = $this->multiple_tickets_col( $EM_Booking, 'ticket_total' );
+				$allow_html = true;
+			} elseif ( $EM_Booking->get_tickets()->get_first() ) {
+				$price = $EM_Booking->get_tickets()->get_first()->get_price(false);
+				$val = apply_filters('em_bookings_table_row_booking_price_ticket', $price, $EM_Booking, true);
+				$val = $EM_Booking->format_price($val * (1 + $EM_Booking->get_tax_rate(true)));
+			}
+		}elseif( $col == 'ticket_id' ){
+			if ( !empty($EM_Ticket) ) {
+				$val = $EM_Ticket->ticket_id;
+			} elseif( $EM_Booking->get_tickets()->count() > 1 ) {
+				$val = $this->multiple_tickets_col( $EM_Booking, 'ticket_id' );
+				$allow_html = true;
+			} elseif ( $EM_Booking->get_tickets()->get_first() ) {
+				$val = $EM_Booking->get_tickets()->get_first()->ticket_id;
+			}
+		}elseif( $col == 'booking_comment' ){
+			$val = $EM_Booking->booking_comment;
+		}
+		//escape all HTML if destination is HTML or not defined
+		if( empty($allow_html) && ($format == 'html' || empty($format)) && !in_array($col, array('user_login', 'user_name', 'event_name', 'actions')) ){
+			$val = esc_html($val);
+		}
+		//use this
+		$val = apply_filters('em_bookings_table_rows_col_'.$col, $val, $EM_Booking, $this, $format, $EM_Booking);
+		$val = apply_filters('em_bookings_table_rows_col', $val, $col, $EM_Booking, $this, $format, $EM_Booking); //use the above filter instead for better performance
+		//csv/excel escaping
+		if( $format == 'csv' || $format == 'xls' || $format == 'xlsx' ){
+			$val = self::sanitize_spreadsheet_cell($val);
+		}
+		return $val;
+	}
+	
+	/**
+	 * @param EM_Booking $EM_Booking
+	 * @param string|false $show_meta
+	 *
+	 * @return false|string
+	 */
+	public function multiple_tickets_col( $EM_Booking, $show_meta = false ){
+		ob_start();
+		$value = $show_meta === 'ticket_spaces' ? $EM_Booking->get_spaces() : __( 'Multiple Tickets', 'events-manager' );
+		if( $this->format !== 'csv' ){
+			?>
+			<a href="#" class="em-bookings-table-col-tickets-tooltip em-tooltip input " data-content=".em-bookings-table-col-tickets-tooltip-content" data-tippy-interactive="true"><?php echo esc_html($value); ?></a>
+			<div class="em-bookings-table-col-tickets-tooltip-content hidden">
+				<?php foreach( $EM_Booking->get_tickets_bookings() as $EM_Ticket_Bookings ): ?>
+					<a class="em-bookings-table-col-tickets-tooltip-ticket" href="<?php echo esc_url(add_query_arg('ticket_id', $EM_Ticket_Bookings->ticket_id, $EM_Booking->get_event()->get_bookings_url())); ?>" target="_blank">
+						<?php
+							echo esc_html( $EM_Ticket_Bookings->get_ticket()->name );
+							if( $show_meta === 'ticket_price' ){
+								echo ' - ' . $EM_Ticket_Bookings->get_ticket()->get_price(true);
+							} elseif( $show_meta === 'ticket_total' ){
+								$price = $EM_Ticket_Bookings->get_price(false);
+								echo ' - ' . $EM_Booking->format_price($price * (1 + $EM_Booking->get_tax_rate(true)));
+							} elseif( $show_meta === 'ticket_id' ){
+								echo ' - ' . $EM_Ticket_Bookings->get_ticket()->ticket_id;
+							} elseif( $show_meta === 'ticket_spaces' ){
+								echo ' - ' . $EM_Ticket_Bookings->get_spaces();
+							}
+						?>
+					</a>
+					<br>
+				<?php endforeach; ?>
+			</div>
+			<?php
+			return ob_get_clean();
+		}
+		return $value;
 	}
 	
 	public function extra_tablenav( $which ) {

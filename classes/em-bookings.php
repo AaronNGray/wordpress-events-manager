@@ -199,10 +199,17 @@ class EM_Bookings extends EM_Object implements Iterator, ArrayAccess {
 		$EM_Booking->booking_status = 10; // booking intent status
 		if( $EM_Event->event_id ){
 			$EM_Booking->event_id = $EM_Event->event_id;
-			foreach( $this->get_available_tickets() as $EM_Ticket ){
-				$default = !empty($_REQUEST['em_tickets'][$EM_Ticket->ticket_id]['spaces']) ? $_REQUEST['em_tickets'][$EM_Ticket->ticket_id]['spaces']:0;
+			$EM_Tickets = $this->get_available_tickets();
+			$is_single_ticket = $EM_Tickets->count() == 1;
+			foreach( $EM_Tickets as $EM_Ticket ){
+				$spaces = !empty($_REQUEST['em_tickets'][$EM_Ticket->ticket_id]['spaces']) ? $_REQUEST['em_tickets'][$EM_Ticket->ticket_id]['spaces']:0;
 				$min_spaces = $EM_Ticket->get_spaces_minimum();
-				$spaces = $min_spaces > $default ? $min_spaces:$default;
+				// if ticket spaces defined by post, or if a ticket selection is required (by being only ticket or required)
+				if( $spaces > 0 ||  $is_single_ticket || $EM_Ticket->ticket_required ) {
+					// make sure we meet the minimum
+					$spaces = $min_spaces > $spaces ? $min_spaces : $spaces;
+				}
+				// impose ticket spaces if required
 				if( $spaces > 0 ){
 					$EM_Ticket_Bookings = $EM_Booking->get_tickets_bookings()->get_ticket_bookings($EM_Ticket->ticket_id);
 					for( $i = 0; $i < $spaces; $i++ ){

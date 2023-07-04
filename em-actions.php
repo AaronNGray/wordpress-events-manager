@@ -683,29 +683,37 @@ function em_init_actions_start() {
 		}
 		$_REQUEST['limit'] = 0;
 		
-		//generate bookings export according to search request
+		// set up output objects, http headers, etc.
 		$show_tickets = !empty($_REQUEST['show_tickets']);
 		$EM_Bookings_Table = new EM_Bookings_Table($show_tickets);
+		$EM_Bookings_Table->limit = 150; //if you're having server memory issues, try messing with this number
+		$EM_Bookings = $EM_Bookings_Table->get_bookings();
+		$handle = fopen("php://output", "w");
+		$delimiter = !defined('EM_CSV_DELIMITER') ? ',' : EM_CSV_DELIMITER;
+		$delimiter = apply_filters('em_csv_delimiter', $delimiter);
+		
+		//generate bookings export according to search request
 		header("Content-Type: application/octet-stream; charset=utf-8");
 		$file_name = !empty($EM_Event->event_slug) ? $EM_Event->event_slug:get_bloginfo();
 		header("Content-Disposition: Attachment; filename=".sanitize_title($file_name)."-bookings-export.csv");
 		do_action('em_csv_header_output');
 		echo "\xEF\xBB\xBF"; // UTF-8 for MS Excel (a little hacky... but does the job)
-		if( !defined('EM_CSV_DISABLE_HEADERS') || !EM_CSV_DISABLE_HEADERS ){
-			if( !empty($_REQUEST['event_id']) ){
-				echo __('Event','events-manager') . ' : ' . $EM_Event->event_name .  "\n";
-				if( $EM_Event->location_id > 0 ) echo __('Where','events-manager') . ' - ' . $EM_Event->get_location()->location_name .  "\n";
-				echo __('When','events-manager') . ' : ' . $EM_Event->output('#_EVENTDATES - #_EVENTTIMES') .  "\n";
+		
+		// csv headers
+		if ( !defined('EM_CSV_DISABLE_HEADERS') || !EM_CSV_DISABLE_HEADERS ) {
+			if( !empty($_REQUEST['event_id']) ) {
+				fputcsv($handle, array( __('Event','events-manager') . ' : ' . $EM_Event->event_name ), $delimiter);
+				if( $EM_Event->location_id > 0 ) {
+					fputcsv($handle, array( __('Where','events-manager') . ' - ' . $EM_Event->get_location()->location_name ), $delimiter);
+				}
+				fputcsv($handle, array( __('When','events-manager') . ' : ' . $EM_Event->output('#_EVENTDATES - #_EVENTTIMES') ), $delimiter);
 			}
 			$EM_DateTime = new EM_DateTime(current_time('timestamp'));
-			echo sprintf(__('Exported booking on %s','events-manager'), $EM_DateTime->format('D d M Y h:i')) .  "\n";
+			fputcsv($handle, array( sprintf(__('Exported booking on %s','events-manager'), $EM_DateTime->format('D d M Y h:i')) ), $delimiter);
+			fputcsv($handle, array(), $delimiter);
 		}
-		$delimiter = !defined('EM_CSV_DELIMITER') ? ',' : EM_CSV_DELIMITER;
-		$delimiter = apply_filters('em_csv_delimiter', $delimiter);
-		//Rows
-		$EM_Bookings_Table->limit = 150; //if you're having server memory issues, try messing with this number
-		$EM_Bookings = $EM_Bookings_Table->get_bookings();
-		$handle = fopen("php://output", "w");
+		
+		// Header and Rows
 		fputcsv($handle, $EM_Bookings_Table->get_headers(true), $delimiter);
 		while( !empty($EM_Bookings->bookings) ){
 			foreach( $EM_Bookings->bookings as $EM_Booking ) { /* @var EM_Booking $EM_Booking */
@@ -713,8 +721,10 @@ function em_init_actions_start() {
 				if( $show_tickets ){
 					foreach($EM_Booking->get_tickets_bookings() as $EM_Ticket_Bookings){ /* @var EM_Ticket_Bookings $EM_Ticket_Bookings */
 						// since we're splitting by ticket type, we don't need individual EM_Ticket_Booking objects, but the wrapper object
-						$row = $EM_Bookings_Table->get_row_csv($EM_Ticket_Bookings);
+						$EM_Bookings_Table->ticket = $EM_Ticket_Bookings->get_ticket();
+						$row = $EM_Bookings_Table->get_row_csv($EM_Booking);
 						fputcsv($handle, $row, $delimiter);
+						$EM_Bookings_Table->ticket = null;
 					}
 				}else{
 					$row = $EM_Bookings_Table->get_row_csv($EM_Booking);

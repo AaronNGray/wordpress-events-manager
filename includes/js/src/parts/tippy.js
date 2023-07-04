@@ -4,9 +4,21 @@ function em_setup_tippy( container_element ){
 		theme : 'light-border',
 		appendTo : 'parent',
 		content(reference) {
+			if( 's' in reference.dataset && reference.dataset.content.match(/^[.#][a-zA-Z0-9]+/) ){
+				try {
+					let content = container[0].querySelector(reference.dataset.content);
+					if (content) {
+						content.classList.remove('hidden');
+						return content;
+					}
+				} catch ( error ) {
+					console.log('Invlid tooltip selector in %o : %o', reference, error);
+				}
+			}
 			return reference.getAttribute('aria-label');
 		},
-		'touch' : ['hold', 300]
+		'touch' : ['hold', 300],
+		allowHTML : true,
 	};
 	jQuery(document).trigger('em-tippy-vars',[tooltip_vars, container]);
 	tippy('.em-tooltip', tooltip_vars);

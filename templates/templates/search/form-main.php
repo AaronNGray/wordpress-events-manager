@@ -3,7 +3,6 @@
 	<?php do_action('em_template_events_search_form_header'); //hook in here to add extra fields, text etc. ?>
 	<?php
 	//search text - tweak ID so it is unique when repeated in advanced further down
-	$args['id'] = '-main-' . $args['id'];
 	$id = esc_attr($args['id']);
 	if( !empty($args['search_term']) ) em_locate_template('templates/search/search.php',true,array('args'=>$args));
 	if( !empty($args['search_geo']) ) em_locate_template('templates/search/geo.php',true,array('args'=>$args));

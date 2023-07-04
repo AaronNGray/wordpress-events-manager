@@ -26,10 +26,11 @@ function em_paginate($link, $total, $limit, $page=1, $data=array(), $ajax = null
 	    	//if $data was passed, strip any of these vars from both the $query_arr and $link for inclusion in the data-em-ajax attribute
 	    	if( !empty($data) && is_array($data) && (!defined('EM_USE_DATA_ATTS') || EM_USE_DATA_ATTS) ){
 	    		//remove the data attributes from $query_arr
-	    		foreach( array_keys($data) as $key){
+	    		foreach( $data as $key => $value ){
 	    			if( array_key_exists($key, $query_arr) ){
 	    				unset($query_arr[$key]);
 	    			}
+					$data[$key] = urlencode($value);
 	    		}
 	    		//rebuild the master link, without these data attributes
 	    		if( count($query_arr) > 0 ){
@@ -703,8 +704,8 @@ function em_get_search_form_defaults($base_args = array(), $context = 'events') 
 		$show_main = ! empty( $args['search_term'] ) || ! empty( $args['search_geo'] ) || ! empty( $args['search_scope'] ); //decides whether or not to show main area and collapseable advanced search options
 		$args['show_main'] = $show_main;
 	}
-	if( !$args['show_main'] ){
-		// we're not showing main, therefore we must show advanced search
+	if( !$args['show_main'] && $args['show_search'] ){
+		// we're not showing main but are showing the form itself, therefore we must show advanced search
 		$args['advanced_mode'] = 'inline';
 		$args['advanced_hidden'] = false;
 	}elseif( $args['advanced_mode'] === 'modal' ){
@@ -849,10 +850,10 @@ function em_search_form_footer( $args ){
 		$i[$field] = $args[$field];
 	}
 	// taxonomies
-	if( ($show_advanced || empty($args['search_categories'])) && !empty($args['category']) ){
+	if( (!$show_advanced || empty($args['search_categories'])) && !empty($args['category']) ){
 		$i['category'] = $args['category'];
 	}
-	if( ($show_advanced || empty($args['search_tags'])) && !empty($args['tag']) ){
+	if( (!$show_advanced || empty($args['search_tags'])) && !empty($args['tag']) ){
 		$i['tag'] = $args['tag'];
 	}
 	// put it all together, output hidden inputs, escaped etc.

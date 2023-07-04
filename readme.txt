@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 6.2
-Stable tag: 6.4.1
+Stable tag: 6.4.2
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
@@ -160,7 +160,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
-= 6.4.1.11 (dev) =
+= 6.4.2 =
 * fixed google maps JS errors with embedded Google maps
 * fixed booking form issues and added fallbacks for settings and template overrides where booking intents are not present on initial booking form load
 * added fallback polyfill function to add booking_intent to booking forms overriden in template files which still uses em_booking_form_footer
@@ -175,6 +175,13 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 * added #_EVENTSTATUS placeholder
 * added cancelled (bool), active (bool) and active_status (int) search arguments for PHP and shortcode arguments
 * (minor) fixed PHP 8 error in ticket editor
+* fixed booking form summary showing all ticket (non-required) minimum spaces as if booked upon initial form load
+* fixed ticket columns not showing on booking admin summary tables
+* added multiple ticket support for columns showing single ticket data
+* added support for tippy html content in regular tooltip constructor html
+* fixed pagination issues with grouped event lists
+* fixed calendar advanced search popup not appearing when clicking trigger
+* fixed calendar size view change upon a calendar advanced search
 
 = 6.4.1 =
 * fixed data privacy consent checkbox not showing on booking form since
