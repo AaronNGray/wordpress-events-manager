@@ -1337,6 +1337,10 @@ class EM_Event extends EM_Object{
 			if( !empty($this->just_added_event) ){
 				do_action('em_event_added', $this);
 			}
+			// set active statuses if changed
+			if( $this->event_active_status === 0 && $this->previous_active_status !== 0 ){
+				$this->cancel();
+			}
 		}
 		$EM_SAVING_EVENT = false;
 		return apply_filters('em_event_save_meta', count($this->errors) == 0, $this);

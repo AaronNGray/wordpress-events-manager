@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 6.2
-Stable tag: 6.4.2
+Stable tag: 6.4.3
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
@@ -160,6 +160,10 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
+= 6.4.3 =
+* changed EM_Booking::set_status() parameters so $email_args is 4th overloaded function to prevent compile errors in Pro 3.2.2 or earlier with PHP 8
+* fixed cancelled events not triggering booking cancellations
+
 = 6.4.2 =
 * fixed google maps JS errors with embedded Google maps
 * fixed booking form issues and added fallbacks for settings and template overrides where booking intents are not present on initial booking form load
