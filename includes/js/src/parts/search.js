@@ -210,7 +210,7 @@ jQuery(document).ready( function($){
 		});
 
 		// add trigger logic for advanced popup modal
-		search.on('click', 'button.em-search-advanced-trigger', function(){
+		let search_advanced_trigger_click = function(){
 			if( search.hasClass('advanced-mode-inline') ){
 				// inline
 				if( !search_advanced.hasClass('visible') ){
@@ -239,12 +239,15 @@ jQuery(document).ready( function($){
 					});
 				}
 			}
-		});
+		};
+		search.on('click', 'button.em-search-advanced-trigger', search_advanced_trigger_click);
+		search_form.on('search_advanced_trigger', search_advanced_trigger_click);
+
 		search_advanced.on('em_modal_close', function(){
 			search_advanced.find('.em-modal-popup').appendTo(search_advanced);
 			search_advanced.children('form').remove();
 			let trigger = search.find('button.em-search-advanced-trigger').focus();
-			if( '_tippy' in trigger[0] ){
+			if( trigger.length > 0 && '_tippy' in trigger[0] ){
 				trigger[0]._tippy.hide();
 			}
 		});
@@ -615,9 +618,24 @@ jQuery(document).ready( function($){
 
 	// handle external triggers, e.g. a calendar shortcut for a hidden search form
 	$(document).on('click', '.em-search-advanced-trigger[data-search-advanced-id]', function(){
-		if( this.getAttribute('data-parent-trigger') ) {
-			document.getElementById(this.getAttribute('data-parent-trigger')).click();
+		if( this.getAttribute('data-search-advanced-id') ){
+			// trigger the search form by parent
+			let search_advanced_form = document.getElementById( this.getAttribute('data-search-advanced-id') );
+			if( search_advanced_form ){
+				let search_form = search_advanced_form.closest('form.em-search-form');
+				if( search_form ){
+					search_form.dispatchEvent( new CustomEvent('search_advanced_trigger') );
+					return;
+				}
+			}
+		} else if( this.getAttribute('data-parent-trigger') ) {
+			let trigger = document.getElementById(this.getAttribute('data-parent-trigger'));
+			if ( trigger ) {
+				trigger.click();
+				return;
+			}
 		}
+		console.log('Cannot locate a valid advanced search form trigger for %o', this);
 	});
 
 	$(document).on('click', '.em-view-container .em-ajax.em-pagination a.page-numbers', function(e){

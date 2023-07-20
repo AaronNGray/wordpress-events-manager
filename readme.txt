@@ -160,6 +160,18 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
+= 6.4.3.1 (dev) =
+* fixed session wakeup issues for the EM_Booking object due to recent atomic tickets update,
+* fixed EM_Tickets_Bookings and EM_Ticket_Booking possibly returning erroneous booking property
+* added JS booking form helper functions em_booking_form_unhide_success, em_booking_form_enable_button, em_booking_form_disable_button,
+* added backwards compatibility for booking ajax responses including the 'result' property rather than the new 'success' property
+* fixed calendar navigation issues showing default calendar size according to responsive sizing even when using forced calendar_size="large"
+* fixed advanced filters button in calendar not working when search forms disabled in settings page
+* moved advanced search trigger button html/php into separate template
+* fixed view of calendar changing to default events list format if default search forms disabled in settings
+* fixed error messages when updating Events Manager
+* moved default view setting to events formatting section, outside of search form options
+
 = 6.4.3 =
 * changed EM_Booking::set_status() parameters so $email_args is 4th overloaded function to prevent compile errors in Pro 3.2.2 or earlier with PHP 8
 * fixed cancelled events not triggering booking cancellations

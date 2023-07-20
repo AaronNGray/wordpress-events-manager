@@ -69,6 +69,14 @@
 		 		<h4><?php echo sprintf(__('%s Page','events-manager'),__('Events','events-manager')); ?></h4>
 		 		<p><?php _e('These formats will be used on your events page. This will also be used if you do not provide specified formats in other event lists, like in shortcodes.','events-manager'); ?></p>
 		 	</td></tr>
+		    <?php
+		    $views_map = em_get_search_views();
+		    $views = array();
+		    foreach( $views_map as $view_key => $view ){
+			    $views[$view_key] = $view['name'];
+		    }
+		    em_options_select ( __( 'Default View', 'events-manager'), 'dbem_search_form_view', $views );
+		    ?>
 			<?php
 			em_options_input_text ( __( 'List events by date title', 'events-manager'), 'dbem_list_date_title', __( 'If viewing a page for events on a specific date, this is the title that would show up. To insert date values, use <a href="http://www.php.net/manual/en/function.date.php">PHP time format characters</a>  with a <code>#</code> symbol before them, i.e. <code>#m</code>, <code>#M</code>, <code>#j</code>, etc.<br/>', 'events-manager') );
 			if( EM_MS_GLOBAL && !get_option('dbem_ms_global_events_links') ){
@@ -188,14 +196,6 @@
 						<em><?php echo sprintf(__('These formats can be used when WordPress automatically displays %s excerpts on your site and %s is enabled in your %s settings tab.','events-manager'),__('event','events-manager'),'<strong>'.__( 'Override Excerpts with Formats?', 'events-manager').'</strong>','<a href="#formats" class="nav-tab-link" rel="#em-menu-pages">'.__('Pages','events-manager').'  &gt; '.sprintf(__('%s List/Archives','events-manager'),__('Event','events-manager')).'</a>');?></em>
 					</td>
 				</tr>
-				<?php
-				$views_map = em_get_search_views();
-				$views = array();
-				foreach( $views_map as $view_key => $view ){
-					$views[$view_key] = $view['name'];
-				}
-				em_options_select ( __( 'Default View', 'events-manager'), 'dbem_search_form_view', $views, __('Appears within the input box.','events-manager'));
-				?>
 				<tr valign="top" id='dbem_location_types_row'>
 					<th scope="row"><?php esc_html_e('View Types', 'events-manager'); ?></th>
 					<td>

@@ -194,7 +194,7 @@ class EM_Calendar extends EM_Object {
 				$calendar_array['row_headers_'.$size] = $days_initials_array;
 			}
 		}
-		if( !empty($args['full']) ) {
+		if( $args['calendar_size'] === 'large' ) {
 			$calendar_array['row_headers'] = $calendar_array['row_headers_large'];
 		}else{
 			$calendar_array['row_headers'] = $calendar_array['row_headers_small'];
@@ -606,6 +606,7 @@ class EM_Calendar extends EM_Object {
 		$defaults = array( 
 			'recurring' => false, //we don't initially look for recurring events only events and recurrences of recurring events
 			//'full' => 0, //Will display a full calendar with event names
+			'calendar_size' => 'small',
 			'long_events' => 0, //Events that last longer than a day
 			'scope' => false,
 			'status' => 1, //approved events only
@@ -626,7 +627,8 @@ class EM_Calendar extends EM_Object {
 		}else{
 			$defaults = array_merge($defaults, $array_or_defaults);
 		}
-		$defaults['long_events'] = !isset($array['full']) || $array['full'] ? get_option('dbem_full_calendar_long_events') : get_option('dbem_small_calendar_long_events');
+		// decide long events default based on size
+		$defaults['long_events'] = !isset($array['calendar_size']) || $array['calendar_size'] === 'large' ? get_option('dbem_full_calendar_long_events') : get_option('dbem_small_calendar_long_events');
 		if( !empty($array['calendar_size']) ){
 			$defaults['long_events'] = $array['calendar_size'] == 'small' ? get_option('dbem_small_calendar_long_events') : get_option('dbem_full_calendar_long_events');
 		}

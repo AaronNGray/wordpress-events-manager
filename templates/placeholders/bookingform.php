@@ -53,9 +53,9 @@ do_action('em_booking_form_start', $EM_Event); // do not delete
 			<?php //Tickets exist, so we show a booking form. ?>
 			<form class="em-booking-form" name='booking-form' method='post' action='<?php echo apply_filters('em_booking_form_action_url',''); ?>#em-booking' id="em-booking-form-<?php echo $id; ?>" data-id="<?php echo $id; ?>" data-is-free="<?php echo $is_free ? 1:0; ?>" data-spaces="<?php echo esc_attr($EM_Booking->get_spaces()); ?>">
 				<?php do_action('em_booking_form_header', $EM_Event, $EM_Booking); ?>
-			 	<input type='hidden' name='action' value='booking_add'/>
-			 	<input type='hidden' name='event_id' value='<?php echo $EM_Event->event_id; ?>'/>
-			 	<input type='hidden' name='_wpnonce' value='<?php echo wp_create_nonce('booking_add'); ?>'/>
+			 	<input type='hidden' name='action' value='booking_add'>
+			 	<input type='hidden' name='event_id' value='<?php echo $EM_Event->event_id; ?>'>
+			 	<input type='hidden' name='_wpnonce' value='<?php echo wp_create_nonce('booking_add'); ?>'>
 				<?php echo $EM_Booking->output_intent_html(); ?>
 				<?php
 				/*

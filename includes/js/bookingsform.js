@@ -208,6 +208,28 @@ var em_booking_form_hide_success = function( booking_form, opts = {} ){
 	}
 }
 
+var em_booking_form_unhide_success = function( booking_form, opts = {} ){
+	let options = Object.assign({
+		showLogin : true,
+	}, opts);
+	let booking_summary_sections = booking_form.querySelectorAll('.em-booking-form-summary-title, .em-booking-form-summary-title');
+	if ( booking_summary_sections.length > 0 ) {
+		booking_form.querySelectorAll('section:not(.em-booking-form-section-summary)').forEach( section => section.classList.remove('hidden') );
+		booking_form.parentElement.querySelectorAll('.em-booking-form > h3.em-booking-section-title').forEach( section => section.classList.remove('hidden') ); // backcompat
+	} else {
+		booking_form.classList.remove('hidden');
+	}
+	booking_form.dispatchEvent( new CustomEvent( 'em_booking_form_unhide_success', {
+		detail : {
+			options : options,
+		},
+	}));
+	// hide login
+	if ( options.showLogin ) {
+		document.querySelectorAll('.em-booking-login').forEach( login => login.classList.add('hidden') );
+	}
+};
+
 var em_booking_form_hide_spinner = function( booking_form ){
 	booking_form.parentElement.querySelectorAll('.em-loading').forEach( spinner => spinner.remove() );
 }
@@ -216,6 +238,26 @@ var em_booking_form_show_spinner = function( booking_form ){
 	let spinner = document.createElement('div');
 	spinner.classList.add('em-loading');
 	booking_form.parentElement.append(spinner);
+}
+
+var em_booking_form_enable_button = function( booking_form, show = false ){
+	let button = booking_form.querySelector('input.em-form-submit');
+	button.disabled = false;
+	button.classList.remove('disabled');
+	if( show ){
+		button.classList.remove('hidden');
+	}
+	return button;
+}
+
+var em_booking_form_disable_button = function( booking_form, hide = false ){
+	let button = booking_form.querySelector('input.em-form-submit');
+	button.disabled = true;
+	button.classList.add('disabled');
+	if( hide ){
+		button.classList.add('hidden');
+	}
+	return button;
 }
 
 var em_booking_form_update_booking_intent = function( booking_form, booking_intent = null ){
@@ -233,8 +275,7 @@ var em_booking_form_update_booking_intent = function( booking_form, booking_inte
 	let button = booking_form.querySelector('input.em-form-submit');
 	if( button ){
 		if( booking_intent && booking_intent.dataset.spaces > 0 ){
-			button.disabled = false;
-			button.classList.remove('disabled');
+			em_booking_form_enable_button( booking_form )
 			if ( booking_intent.dataset.amount > 0 ) {
 				// we have a paid booking, show paid booking button text
 				if ( button.getAttribute('data-text-payment') ) {
@@ -248,13 +289,11 @@ var em_booking_form_update_booking_intent = function( booking_form, booking_inte
 			// this is in the event that the booking form has minimum spaces selected, but no booking_intent was ever output by booking form
 			// fallback / backcompat mainly for sites overriding templates and possibly not incluing the right actions/filters in their template
 			button.value = EM.bookings.submit_button.text.default;
-			button.disabled = false;
-			button.classList.remove('disabled');
+			em_booking_form_enable_button( booking_form );
 		} else {
 			// no booking_intent means no valid booking params yet
 			button.value = EM.bookings.submit_button.text.default;
-			button.disabled = true;
-			button.classList.add('disabled');
+			em_booking_form_disable_button( booking_form );
 		}
 	}
 	// if event is free or paid, show right heading (if avialable)
@@ -412,6 +451,11 @@ var em_booking_form_submit = function( booking_form, opts = {} ){
 		}
 		return Promise.reject( response );
 	}).then( function( response ){
+		// backwards compatibility response
+		if ( !('success' in response) && 'result' in response ){
+			response.success = response.result;
+		}
+		// do success logic if set/requested
 		if ( options.doSuccess ) {
 			$response = response
 			em_booking_form_submit_success( booking_form, response, options );
@@ -460,7 +504,11 @@ var em_booking_form_submit_success = function( booking_form, response, opts = {}
 	if ( options.hideSpinner === true ) {
 		em_booking_form_hide_spinner( booking_form );
 	}
-	//show error or success message
+	// backcompat
+	if( 'result' in response && !('success' in response) ){
+		response.success = response.result;
+	}
+	// show error or success message
 	if ( response.success ) {
 		// show message
 		if( options.showSuccessMessages === true ){
@@ -565,10 +613,13 @@ var em_booking_form_submit_finally = function( booking_form, opts = {} ){
 			button.value = EM.bookings.submit_button.text.default;
 		}
 	}
-
 	if( options.hideSpinner === true ) {
 		em_booking_form_hide_spinner( booking_form );
 	}
+	if( options.showForm === true ) {
+		em_booking_form_unhide_success( booking_form, opts );
+	}
+
 	if( jQuery ) { // backcompat jQuery events, use regular JS events instaed
 		jQuery(document).trigger('em_booking_ajax_complete', [null, null, booking_form]);
 	}
@@ -587,6 +638,7 @@ var em_booking_form_submit_options = function( opts ){
 		showSuccessMessages : true,
 		hideForm : true,
 		hideLogin : true,
+		showForm : true,
 		hideSpinner : true,
 		redirect : true, // can be redirected, not always
 		triggerEvents : true

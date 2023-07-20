@@ -929,6 +929,8 @@ function em_upgrade_current_installation(){
 	
 	// add review popup
 	$data = get_site_option('dbem_data', array());
+	if ( !is_array($data) ) $data = array();
+	
 	if( empty($current_version) || !isset($data['admin-modals']) ){ // if admin-modals isn't set, it was never added before
 		if( empty($data['admin-modals']) ) $data['admin-modals'] = array();
 		if( !is_array($data['admin-modals']) ) $data['admin-modals'] = array();

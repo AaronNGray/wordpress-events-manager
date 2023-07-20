@@ -239,13 +239,11 @@ class EM_Booking extends EM_Object{
 	 */
 	public function __wakeup(){
 		// we need to do this here because the __wakeup function bubbles up from the innermost class
-		foreach( $this->get_tickets_bookings() as $EM_Tickets_Bookings ){
-			$EM_Tickets_Bookings->booking = $this;
-			foreach( $EM_Tickets_Bookings as $EM_Ticket_Bookings ){
-				$EM_Ticket_Bookings->booking = $this;
-				foreach( $EM_Tickets_Bookings as $EM_Ticket_Booking ){
-					$EM_Ticket_Booking->booking = $this;
-				}
+		$this->get_tickets_bookings()->booking = $this;
+		foreach( $this->get_tickets_bookings() as $EM_Ticket_Bookings ){
+			$EM_Ticket_Bookings->booking = $this;
+			foreach( $EM_Ticket_Bookings as $EM_Ticket_Booking ){
+				$EM_Ticket_Booking->booking = $this;
 			}
 		}
 	}

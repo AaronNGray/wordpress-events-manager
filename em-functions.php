@@ -704,7 +704,7 @@ function em_get_search_form_defaults($base_args = array(), $context = 'events') 
 		$show_main = ! empty( $args['search_term'] ) || ! empty( $args['search_geo'] ) || ! empty( $args['search_scope'] ); //decides whether or not to show main area and collapseable advanced search options
 		$args['show_main'] = $show_main;
 	}
-	if( !$args['show_main'] && $args['show_search'] ){
+	if( !$args['show_main'] && !empty($args['show_search']) ){
 		// we're not showing main but are showing the form itself, therefore we must show advanced search
 		$args['advanced_mode'] = 'inline';
 		$args['advanced_hidden'] = false;
