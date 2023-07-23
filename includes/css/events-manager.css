@@ -850,6 +850,7 @@
 .em.pixelbones .skeleton {
   box-sizing: border-box;
   position: relative;
+  overflow: hidden;
 }
 .em.pixelbones .skeleton .item {
   width: 100%;

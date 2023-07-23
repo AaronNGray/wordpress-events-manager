@@ -442,9 +442,17 @@ var em_booking_form_submit = function( booking_form, opts = {} ){
 
 	let $response = null;
 
+	let data = new FormData( booking_form );
+
+	if( 'data' in opts && typeof opts.data === 'object') {
+		for ( const [key, value] of Object.entries(opts.data) ) {
+			data.set(key, value);
+		}
+	}
+
 	return fetch( EM.bookingajaxurl, {
 		method: "POST",
-		body: new FormData( booking_form ),
+		body: data,
 	}).then( function( response ){
 		if( response.ok ) {
 			return response.json();
@@ -638,7 +646,7 @@ var em_booking_form_submit_options = function( opts ){
 		showSuccessMessages : true,
 		hideForm : true,
 		hideLogin : true,
-		showForm : true,
+		showForm : false,
 		hideSpinner : true,
 		redirect : true, // can be redirected, not always
 		triggerEvents : true

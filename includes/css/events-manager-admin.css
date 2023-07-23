@@ -3540,6 +3540,7 @@
 .wp-admin .em.pixelbones .skeleton {
   box-sizing: border-box;
   position: relative;
+  overflow: hidden;
 }
 .wp-admin .em.pixelbones .skeleton .item {
   width: 100%;

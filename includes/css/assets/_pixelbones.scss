@@ -390,6 +390,7 @@
 	.skeleton {
 		box-sizing: border-box;
 		position : relative;
+		overflow: hidden;
 
 		.item {
 			width: 100%;
