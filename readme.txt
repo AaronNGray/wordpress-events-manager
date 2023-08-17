@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 6.3
-Stable tag: 6.4.4
+Stable tag: 6.4.5
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
@@ -160,6 +160,13 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
+= 6.4.5 =
+* added RSVP functionality (re-confirming a booking)
+* add uncancel option so users can undo a cancellation if spaces still available
+* switched my bookings page action links to a button dropdown rather than loose links
+* fixed class static binding issues with EM_OAuth libraries causing problems in Zoom-enabled bookings
+* fixed tippy dropdown button width issues
+
 = 6.4.4 =
 * fixed session wakeup issues for the EM_Booking object due to recent atomic tickets update,
 * fixed EM_Tickets_Bookings and EM_Ticket_Booking possibly returning erroneous booking property

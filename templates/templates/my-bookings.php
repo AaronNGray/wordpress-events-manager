@@ -40,6 +40,9 @@
 							<th class='manage-column' scope='col'><?php _e('Date', 'events-manager'); ?></th>
 							<th class='manage-column' scope='col'><?php _e('Spaces', 'events-manager'); ?></th>
 							<th class='manage-column' scope='col'><?php _e('Status', 'events-manager'); ?></th>
+							<?php if( get_option('dbem_bookings_rsvp') && get_option('dbem_bookings_rsvp_my_bookings') ): ?>
+							<th class='manage-column' scope='col'><?php _e('RSVP', 'events-manager'); ?></th>
+							<?php endif; ?>
 							<th class='manage-column' scope='col'>&nbsp;</th>
 						</tr>
 					</thead>
@@ -48,6 +51,7 @@
 						$rowno = 0;
 						$event_count = 0;
 						$nonce = wp_create_nonce('booking_cancel');
+						$rsvp_nonce = wp_create_nonce('booking_rsvp');
 						foreach ($EM_Bookings as $EM_Booking) {
 							/* @var $EM_Booking EM_Booking */
 							$EM_Event = $EM_Booking->get_event();						
@@ -61,14 +65,52 @@
 									<td>
 										<?php echo $EM_Booking->get_status(); ?>
 									</td>
+									<?php if( get_option('dbem_bookings_rsvp') && get_option('dbem_bookings_rsvp_my_bookings') ): ?>
+										<td>
+											<?php echo $EM_Booking->get_rsvp_status( true ); ?>
+										</td>
+									<?php endif; ?>
 									<td>
 										<?php
-										$cancel_link = '';
-										if( !in_array($EM_Booking->booking_status, array(2,3)) && $EM_Booking->can_cancel() ){
+										$cancel_links = array();
+										$show_rsvp = get_option('dbem_bookings_rsvp') && get_option('dbem_bookings_rsvp_my_bookings_buttons');
+										$show_cancel_rsvp = $EM_Booking->can_rsvp(0) && get_option('dbem_bookings_rsvp_sync_cancel');
+										if( !$show_cancel_rsvp && (!in_array($EM_Booking->booking_status, array(2,3)) && $EM_Booking->can_cancel()) ){
 											$cancel_url = em_add_get_params($_SERVER['REQUEST_URI'], array('action'=>'booking_cancel', 'booking_id'=>$EM_Booking->booking_id, '_wpnonce'=>$nonce));
-											$cancel_link = '<a class="em-bookings-cancel" href="'.$cancel_url.'" onclick="if( !confirm(EM.booking_warning_cancel) ){ return false; }">'.__('Cancel','events-manager').'</a>';
+											$cancel_links[] = '<a class="em-bookings-cancel" href="'. esc_url($cancel_url) .'" onclick="if( !confirm(EM.booking_warning_cancel) ){ return false; }">'.__('Cancel','events-manager').'</a>';
 										}
-										echo apply_filters('em_my_bookings_booking_actions', $cancel_link, $EM_Booking);
+										if ( $show_rsvp ) {
+											if( $EM_Booking->can_rsvp(1) ) {
+												$url = em_add_get_params($_SERVER['REQUEST_URI'], array('action'=>'booking_rsvp_change', 'status' => 1, 'booking_id'=>$EM_Booking->booking_id, '_wpnonce'=>$rsvp_nonce));
+												$cancel_links[] = '<a class="em-bookings-rsvp-confirm" href="'.esc_url($url).'">'. EM_Booking::get_rsvp_statuses(1)->label_action .'</a>';
+											}
+											if( $EM_Booking->can_rsvp(0) ) {
+												$url = em_add_get_params($_SERVER['REQUEST_URI'], array('action'=>'booking_rsvp_change', 'status' => 0, 'booking_id'=>$EM_Booking->booking_id, '_wpnonce'=>$rsvp_nonce));
+												$cancel_links[] = '<a class="em-bookings-rsvp-cancel" href="'.esc_url($url).'">'. EM_Booking::get_rsvp_statuses(0)->label_action .'</a>';
+											}
+											if( $EM_Booking->can_rsvp(2) ) {
+												$url = em_add_get_params($_SERVER['REQUEST_URI'], array('action'=>'booking_rsvp_change', 'status' => 2, 'booking_id'=>$EM_Booking->booking_id, '_wpnonce'=>$rsvp_nonce));
+												$cancel_links[] = '<a class="em-bookings-rsvp-maybe" href="'.esc_url($url).'">'. EM_Booking::get_rsvp_statuses(2)->label_action .'</a>';
+											}
+										}
+										$cancel_link_text = implode( '<br>', $cancel_links );
+										// @deprecated - stop using this and use em_my_bookings_booking_action_links below
+										$actions_text =	apply_filters('em_my_bookings_booking_actions', $cancel_link_text, $EM_Booking, $cancel_links);
+										if( strstr( $actions_text, $cancel_link_text ) ) {
+											// remove the links created here, put them in a button, and output whatever else is in the filtered text var
+											$actions_text = str_replace( $cancel_link_text, $actions_text, '' );
+											?>
+											<button type="button" class="em-tooltip-ddm em-clickable input button-secondary" data-button-width="match" data-tooltip-class="em-my-bookings-actions-tooltip"><?php esc_html_e('Actions', 'events-manager-pro'); ?></button>
+											<div class="em-tooltip-ddm-content em-my-bookings-actions-content">
+												<?php foreach( $cancel_links as $link ): ?>
+													<?php echo $link; ?>
+												<?php endforeach; ?>
+											</div>
+											<?php
+										}
+										// if we have legacy stuff running, just output links as probably expected
+										echo $actions_text;
+										do_action( 'em_my_bookings_booking_actions_bottom', $EM_Booking );
 										?>
 									</td>
 								</tr>								

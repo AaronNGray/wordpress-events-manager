@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Events Manager
-Version: 6.4.4
+Version: 6.4.5
 Plugin URI: https://wp-events-plugin.com
 Description: Event registration and booking management for WordPress. Recurring events, locations, webinars, google maps, rss, ical, booking registration and more!
 Author: Pixelite
@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 // Setting constants
-define('EM_VERSION', '6.4.4'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
+define('EM_VERSION', '6.4.5'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
 define('EM_PRO_MIN_VERSION', '3.0'); //self expanatory
 define('EM_PRO_MIN_VERSION_CRITICAL', '3.0'); //self expanatory
 define('EM_DIR', dirname( __FILE__ )); //an absolute path to this directory
@@ -120,6 +120,7 @@ include('classes/em-ticket.php');
 include('classes/em-tickets-bookings.php');
 include('classes/em-ticket-bookings.php');
 include('classes/em-tickets.php');
+
 //Admin Files
 if( is_admin() ){
 	include('classes/em-admin-notices.php');
@@ -437,7 +438,8 @@ class EM_Scripts_and_Styles {
 			),
 			'search' => array(
 				'breakpoints' => array( 'small' => 650, 'medium' => 850, 'full' => false, ) // reorder this array for efficiency if you override it, so smallest is first, largest or false is last
-			)
+			),
+			'url' => plugins_url('', __FILE__),
 		);
 		// localize flatpickr
 		if( static::$localize_flatpickr ){

@@ -37,6 +37,7 @@
   For other event list and single event display CSS, see the _items.scss file
    */
   /* Booking Form */
+  /* My Bookings Page */
   /* Bookings Table (originally from events-manager.css) */
   /** The Triggers - Search and other parts triggering search **/
   /* General Styles */
@@ -685,6 +686,7 @@
 .em.pixelbones.input select:not([multiple]).inline {
   width: auto !important;
   margin-bottom: 0 !important;
+  display: inline-block !important;
 }
 .em.pixelbones .input select.inline, .em.pixelbones.input select.inline {
   padding-right: 30px !important;
@@ -1026,6 +1028,7 @@
   --icon-last-circle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='currentColor' viewBox='0 0 15 15'%3E%3Cpath stroke='%23555' stroke-linecap='square' d='m8.5 9.5 2-2-2-2m-3 4 2-2-2-2'/%3E%3C/svg%3E");
   --icon-cross-circle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='currentColor' viewBox='25 25 214 214'%3E%3Cpath d='M128 28.00012a100 100 0 1 0 100 100 100.113 100.113 0 0 0-100-100Zm0 192a92 92 0 1 1 92-92 92.10446 92.10446 0 0 1-92 92Zm34.82813-121.17139-29.17139 29.17139 29.17139 29.17139a3.99992 3.99992 0 1 1-5.65625 5.65722L128 133.65686l-29.17187 29.17187a3.99992 3.99992 0 0 1-5.65625-5.65722l29.17138-29.17139-29.17138-29.17139a3.99992 3.99992 0 0 1 5.65625-5.65722L128 122.34338l29.17188-29.17187a3.99992 3.99992 0 1 1 5.65625 5.65722Z'/%3E%3C/svg%3E");
   --icon-checkmark-circle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='currentColor' viewBox='0 0 256 256'%3E%3Cpath d='M174.89307 101.2384a3.99936 3.99936 0 0 1-.13184 5.65528l-58.666 56a3.99989 3.99989 0 0 1-5.52343 0l-29.334-28a4 4 0 0 1 5.52344-5.78711l26.57227 25.36377 55.90429-53.36377a3.99936 3.99936 0 0 1 5.65527.13183Zm53.10644 26.76172a100 100 0 1 1-100-100 100.113 100.113 0 0 1 100 100Zm-8 0a92 92 0 1 0-92 92 92.10447 92.10447 0 0 0 92-92Z'/%3E%3C/svg%3E");
+  --icon-warning: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><path d="M124 144v-40a4 4 0 0 1 8 0v40a4 4 0 0 1-8 0Zm109.30273 65.98291a19.79613 19.79613 0 0 1-17.32617 10.00928H40.02344a19.9998 19.9998 0 0 1-17.30957-30.019L110.69043 37.981a20.00012 20.00012 0 0 1 34.61914 0l87.97656 151.99218a19.798 19.798 0 0 1 .0166 20.00973Zm-6.94043-16.00244L138.38574 41.98828a12.00037 12.00037 0 0 0-20.77148 0L29.6377 193.98047a12.00033 12.00033 0 0 0 10.38574 18.01172h175.95312a12.00033 12.00033 0 0 0 10.38574-18.01172ZM128 172a8 8 0 1 0 8 8 7.99977 7.99977 0 0 0-8-8Z"/></svg>');
   --icon-close: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M15.898 4.045c-.271-.272-.713-.272-.986 0l-4.71 4.711-4.709-4.711c-.272-.272-.714-.272-.986 0s-.272.714 0 .986l4.709 4.711-4.71 4.711c-.272.271-.272.713 0 .986.136.136.314.203.492.203.179 0 .357-.067.493-.203l4.711-4.711 4.71 4.711c.137.136.314.203.494.203.178 0 .355-.067.492-.203.273-.273.273-.715 0-.986l-4.711-4.711 4.711-4.711c.274-.272.274-.714 0-.986z'/%3E%3C/svg%3E");
   --icon-chevron-down: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%206l5%205%205-5%202%201-7%207-7-7%202-1z%22%20fill%3D%22%23555%22%2F%3E%3C%2Fsvg%3E");
   --icon-chevron-up: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='%23555'%3E%3Cpath d='M5.8 16.4c.4 0 .7-.1.9-.4l4.3-4.6c.5-.5 1.4-.5 1.9 0l4.3 4.6c.2.3.6.4.9.4 1.1 0 1.7-1.3.9-2.1l-6.2-6.8c-.5-.6-1.4-.6-1.9 0l-6.2 6.8c-.5.8.1 2.1 1.1 2.1z'%3E%3C/path%3E%3C/g%3E%3C/svg%3E");
@@ -1147,6 +1150,9 @@
 }
 .em .em-icon.em-icon-checkmark-circle {
   background-image: var(--icon-checkmark-circle);
+}
+.em .em-icon.em-icon-warning {
+  background-image: var(--icon-warning);
 }
 .em .em-icon.em-icon-close {
   background-image: var(--icon-close);
@@ -3491,6 +3497,15 @@
 .em .em-booking-form-summary .skeleton .em-bs-row.em-bs-row-item {
   grid-template-columns: 7fr 1fr 2fr;
 }
+.em .em-my-bookings-actions-content a.em-bookings-rsvp-confirm {
+  color: #198754 !important;
+}
+.em .em-my-bookings-actions-content a.em-bookings-rsvp-cancel {
+  color: #dc3545 !important;
+}
+.em .em-my-bookings-actions-content a.em-bookings-rsvp-maybe {
+  color: #6c757d !important;
+}
 .em.pixelbones .input div.tablenav {
   display: flex;
   flex-direction: row;
@@ -3518,15 +3533,22 @@
 .em.em-bookings-admin-single .input .em-button, .em.em-bookings-admin-single .input input[type=submit], .em.em-bookings-admin-single .input input[type=button] {
   margin: 0 0 0 10px !important;
 }
-.em.em-bookings-admin-single .input .em-booking-single-status-info {
+.em.em-bookings-admin-single .input .em-booking-single-status-info, .em.em-bookings-admin-single .input .em-booking-single-rsvp-status-info {
   line-height: 38px;
   margin-bottom: 30px !important;
 }
-.em.em-bookings-admin-single .input .em-booking-single-status-edit {
+.em.em-bookings-admin-single .input .em-booking-single-status-edit, .em.em-bookings-admin-single .input .em-booking-single-rsvp-status-edit {
   margin-bottom: 30px !important;
 }
-.em.em-bookings-admin-single .input .em-booking-single-status-edit em:last-child {
+.em.em-bookings-admin-single .input .em-booking-single-status-edit em:last-child, .em.em-bookings-admin-single .input .em-booking-single-rsvp-status-edit em:last-child {
   margin: 10px 0;
+}
+.em.em-bookings-admin-single .input .em-booking-single-rsvp-status {
+  display: block;
+  margin: 15px 0;
+}
+.em.em-bookings-admin-single .input .em-booking-single-rsvp-status .button-secondary {
+  vertical-align: initial;
 }
 .em.em-bookings-admin-single table.em-tickets-bookings-table td, .em.em-bookings-admin-single table.em-tickets-bookings-table th {
   border-top: 1px solid #dedede !important;
@@ -3679,6 +3701,20 @@
   /*modern browsers, clip-path works inwards from each corner*/
   white-space: nowrap;
   /* added line to stop words getting smushed together (as they go onto seperate lines and some screen readers do not understand line feeds as a space */
+}
+.em .em-tooltip-ddm-display {
+  top: -5px !important;
+}
+.em .em-tooltip-ddm-display a {
+  padding: 5px;
+  display: block;
+}
+.em .em-tooltip-ddm-display a:focus {
+  outline: 0;
+  box-shadow: none;
+}
+.em .em-tooltip-ddm-display .tippy-box {
+  width: 100%;
 }
 .em {
   --button-icon-padding: 20px;

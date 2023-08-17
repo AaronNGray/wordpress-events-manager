@@ -512,7 +512,9 @@ class EM_Bookings extends EM_Object implements Iterator, ArrayAccess {
 				$available_spaces -= $this->get_pending_spaces($force_refresh);
 			}
 		}
-		return apply_filters('em_booking_get_available_spaces', $available_spaces, $this);
+		// @deprecated use em_bookings_get_available_spaces instead
+		$available_spaces = apply_filters('em_booking_get_available_spaces', $available_spaces, $this);
+		return apply_filters('em_bookings_get_available_spaces', $available_spaces, $this, $force_refresh);
 	}
 
 	/**
@@ -1000,6 +1002,19 @@ class EM_Bookings extends EM_Object implements Iterator, ArrayAccess {
 		}elseif( !is_array($args['status']) && preg_match('/^([0-9],?)+$/', $args['status']) ){
 			$conditions['status'] = 'booking_status IN ('.$args['status'].')';
 		}
+		// RSVP status
+		if( $args['rsvp_status'] !== false ){
+			if( is_numeric($args['rsvp_status']) ){
+				$conditions['rsvp_status'] = 'booking_rsvp_status='.$args['rsvp_status'];
+			}elseif( $args['rsvp_status'] === null || $args['rsvp_status'] === 'null' ){
+				$conditions['rsvp_status'] = 'booking_rsvp_status IS NULL';
+			}elseif( self::array_is_numeric($args['rsvp_status']) && count($args['rsvp_status']) > 0 ){
+				$conditions['rsvp_status'] = 'booking_status IN ('.implode(',',$args['rsvp_status']).')';
+			}elseif( !is_array($args['rsvp_status']) && preg_match('/^(([0-9]|null),?)+$/i', $args['rsvp_status']) ){
+				$conditions['rsvp_status'] = 'booking_rsvp_status IN ('.$args['rsvp_status'].')';
+			}
+		}
+		// person/owner
 		if( is_numeric($args['person']) ){
 			$conditions['person'] = EM_BOOKINGS_TABLE.'.person_id='.$args['person'];
 		}
@@ -1037,6 +1052,7 @@ class EM_Bookings extends EM_Object implements Iterator, ArrayAccess {
 	public static function get_default_search( $array_or_defaults = array(), $array = array() ){
 		$defaults = array(
 			'status' => false,
+			'rsvp_status' => false,
 			'person' => true, //to add later, search by person's bookings...
 			'blog' => get_current_blog_id(),
 			'ticket_id' => false,

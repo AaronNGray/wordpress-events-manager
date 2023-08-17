@@ -533,7 +533,7 @@ class EM_Ticket extends EM_Object{
 		    $ticket_available_spaces = $ticket_available_spaces - $this->get_pending_spaces();
 		}
 		$return = ($ticket_available_spaces <= $event_available_spaces) ? $ticket_available_spaces:$event_available_spaces;
-		return apply_filters('em_ticket_get_available_spaces', $return, $this);
+		return apply_filters( 'em_ticket_get_available_spaces', $return, $this, array('event_spaces' => $event_available_spaces, 'ticket_spaces' => $ticket_available_spaces) );
 	}
 	
 	/**

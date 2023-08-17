@@ -115,6 +115,7 @@ class EM_Bookings_Table extends EM\List_Table {
 			'dbem_phone'=>__('Phone Number','events-manager'),
 			'booking_spaces'=>__('Spaces','events-manager'),
 			'booking_status'=>__('Status','events-manager'),
+			'booking_rsvp_status'=>__('RSVP Status','events-manager'),
 			'booking_date'=>__('Booking Date','events-manager'),
 			'booking_price'=>__('Total','events-manager'),
 			'booking_id'=>__('Booking ID','events-manager'),
@@ -888,6 +889,8 @@ class EM_Bookings_Table extends EM\List_Table {
 			$val = $EM_Booking->get_price(true);
 		}elseif($col == 'booking_status'){
 			$val = $EM_Booking->get_status(true);
+		} elseif ( $col == 'booking_rsvp_status' ) {
+			$val = $EM_Booking->get_rsvp_status( true );
 		}elseif($col == 'booking_date'){
 			$val = $EM_Booking->date()->i18n( get_option('dbem_date_format').' '. get_option('dbem_time_format') );
 		}elseif($col == 'actions' && $format !== 'csv' ) {

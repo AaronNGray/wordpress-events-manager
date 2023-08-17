@@ -11,3 +11,20 @@ button.input.em-tooltip-ddm[aria-expanded="true"] {
 .em-tooltip-ddm-content {
 	@include screen-readers-only();
 }
+.em-tooltip-ddm-display {
+
+	top : -5px !important;
+	a {
+		padding: 5px;
+		display: block;
+	}
+	a:focus {
+		outline: 0;
+		box-shadow: none;
+	}
+	.tippy-box {
+		width : 100%;
+	}
+
+
+}

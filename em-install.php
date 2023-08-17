@@ -276,6 +276,7 @@ function em_create_bookings_table() {
 		booking_comment text DEFAULT NULL,
 		booking_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		booking_status int(2) NOT NULL DEFAULT 1,
+		booking_rsvp_status int(1) NULL DEFAULT NULL,
  		booking_price decimal(14,4) unsigned NOT NULL DEFAULT 0,
  		booking_tax_rate decimal(7,4) NULL DEFAULT NULL,
  		booking_taxes decimal(14,4) NULL DEFAULT NULL,
@@ -284,7 +285,7 @@ function em_create_bookings_table() {
 		) DEFAULT CHARSET=utf8 ;";
 	require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 	dbDelta($sql);
-	em_sort_out_table_nu_keys($table_name, array('event_id','person_id','booking_status'));
+	em_sort_out_table_nu_keys($table_name, array('event_id','person_id','booking_status', 'booking_rsvp_status'));
 	if( em_check_utf8mb4_tables() ) maybe_convert_table_to_utf8mb4( $table_name );
 }
 

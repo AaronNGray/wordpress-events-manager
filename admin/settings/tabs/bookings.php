@@ -6,7 +6,7 @@
 	<div  class="postbox " id="em-opt-bookings-general" >
 	<div class="handlediv" title="<?php __('Click to toggle', 'events-manager'); ?>"><br /></div><h3><span><?php echo sprintf(__( '%s Options', 'events-manager'),__('General','events-manager')); ?> </span></h3>
 	<div class="inside">
-		<table class='form-table'> 
+		<table class='form-table'>
 			<?php
 			do_action('em_options_page_bookings_general_top');
 			em_options_radio_binary ( __( 'Allow guest bookings?', 'events-manager'), 'dbem_bookings_anonymous', __( 'If enabled, guest visitors can supply an email address and a user account will automatically be created for them along with their booking. They will be also be able to log back in with that newly created account.', 'events-manager') );
@@ -18,10 +18,14 @@
 			?>
 			<tr class="em-header"><td colspan='2'><h4><?php echo sprintf(__( '%s Options', 'events-manager'),__('Cancellation','events-manager')); ?></h4></td></tr>
 			<?php
-			em_options_radio_binary ( __( 'Can users cancel their booking?', 'events-manager'), 'dbem_bookings_user_cancellation', __( 'If enabled, users can cancel their bookings themselves from their bookings page.', 'events-manager'), '', '#dbem_bookings_user_cancellation_time_row' );
+			$uncancel_desc = __( 'Once cancelled, you can allow susers to re-instate their booking, provided there are still enough spaces.', 'events-manager');
+			$uncancel_desc = __( 'Bookings that are uncancelled are returned to their previous state (if available), the %1$s PHP constant value or if previous options are not available then pending/approved according to your booking approval settings.', 'events-manager');
+			$uncancel_desc = sprintf( $uncancel_desc, "<code>EM_BOOKINGS_UNCANCEL_STATUS</code>");
+			em_options_radio_binary ( __( 'Can users cancel their booking?', 'events-manager'), 'dbem_bookings_user_cancellation', __( 'If enabled, users can cancel their bookings themselves from their bookings page.', 'events-manager'), '', '#dbem_bookings_user_cancellation_time_row, #dbem_bookings_user_uncancellation_row, .booking-cancellation' );
+			em_options_radio_binary ( __( 'Can users uncancel their booking?', 'events-manager'), 'dbem_bookings_user_uncancellation', $uncancel_desc );
 			$cancellation_hours_desc = __( 'Enter the number of hours before an event starts for when users can cancel a booking. Leave blank for the start time of the event.', 'events-manager');
 			$cancellation_hours_desc_2 = __('%s are also accepted, for example %s equals 1 month and 12 hours before the event starts.', 'events-manager');
-			$cancellation_hours_desc .= ' '. sprintf($cancellation_hours_desc_2, '<a href="https://www.php.net/manual/en/dateinterval.construct.php" target="_blank">'.esc_html_x('PHP date intevals', 'Refer to PHP docs for translation.', 'em-pro').'</a>', '<code>P1MT12H</code>');
+			$cancellation_hours_desc .= ' '. sprintf($cancellation_hours_desc_2, '<a href="https://www.php.net/manual/en/dateinterval.construct.php" target="_blank">'.esc_html_x('PHP date intevals', 'Refer to PHP docs for translation.', 'events-manager').'</a>', '<code>P1MT12H</code>');
 			if( (!defined('EM_DIASBLE_EMP_HINTS') || EM_DIASBLE_EMP_HINTS) && (!defined('EMP_VERSION') || version_compare('3.0.3', get_option('em_pro_version'), '>') ) ){
 				$pro_notice = sprintf(__('Need event-specific cancellation settings or support for hours after an event started? This is included in our %s.', 'events-manager'), '<a href="https://wp-events-plugin.com/features/">'.esc_html__('Pro Add-On', 'events-manager') . '</a>');
 				$cancellation_hours_desc .= '<br>'. $pro_notice;
@@ -32,7 +36,7 @@
 			em_options_input_text ( __( 'How long before an event can users cancel?', 'events-manager'), 'dbem_bookings_user_cancellation_time',  $cancellation_hours_desc);
 			do_action('em_options_page_bookings_cancellations_after');
 			do_action('em_options_page_bookings_general_bottom');
-			echo $save_button; 
+			echo $save_button;
 			?>
 		</table>
 	</div> <!-- . inside -->
@@ -51,11 +55,11 @@
 			em_options_input_text ( __( 'Currency Format', 'events-manager'), 'dbem_bookings_currency_format', __('Choose how prices are displayed. <code>@</code> will be replaced by the currency symbol, and <code>#</code> will be replaced by the number.','events-manager').' <code>'.get_option('dbem_bookings_currency_format')." = ".em_get_currency_formatted('10000000').'</code>');
 			em_options_input_text ( __( 'Tax Rate', 'events-manager'), 'dbem_bookings_tax', __( 'Add a tax rate to your ticket prices (entering 10 will add 10% to the ticket price).', 'events-manager') );
 			em_options_radio_binary ( __( 'Add tax to ticket price?', 'events-manager'), 'dbem_bookings_tax_auto_add', __( 'When displaying ticket prices and booking totals, include the tax automatically?', 'events-manager') );
-			echo $save_button; 
+			echo $save_button;
 			?>
 		</table>
 	</div> <!-- . inside -->
-	</div> <!-- .postbox --> 
+	</div> <!-- .postbox -->
 	
 	<div  class="postbox " id="em-opt-booking-feedbacks" >
 	<div class="handlediv" title="<?php __('Click to toggle', 'events-manager'); ?>"><br /></div><h3><span><?php _e( 'Customize Feedback Messages', 'events-manager'); ?> </span></h3>
@@ -63,7 +67,7 @@
 		<p><?php _e('Below you will find texts that will be displayed to users in various areas during the bookings process, particularly on booking forms.','events-manager'); ?></p>
 		<table class='form-table'>
 			<tr class="em-header"><td colspan='2'><h4><?php _e('My Bookings messages','events-manager') ?></h4></td></tr>
-			<?php 
+			<?php
 			em_options_input_text ( __( 'Booking Cancelled', 'events-manager'), 'dbem_booking_feedback_cancelled', __( 'When a user cancels their booking, this message will be displayed confirming the cancellation.', 'events-manager') );
 			em_options_input_text ( __( 'Booking Cancellation Warning', 'events-manager'), 'dbem_booking_warning_cancel', __( 'When a user chooses to cancel a booking, this warning is displayed for them to confirm.', 'events-manager') );
 			?>
@@ -92,7 +96,7 @@
 			?>
 			<tr class="em-header"><td colspan='2'><h4><?php _e('Booking button feedback messages','events-manager') ?></h4></td></tr>
 			<tr><td colspan='2'><?php echo sprintf(__('With the %s placeholder, the below texts will be used.','events-manager'),'<code>#_BOOKINGBUTTON</code>'); ?></td></tr>
-			<?php			
+			<?php
 			em_options_input_text ( __( 'User can book', 'events-manager'), 'dbem_booking_button_msg_book', '');
 			em_options_input_text ( __( 'Booking in progress', 'events-manager'), 'dbem_booking_button_msg_booking', '');
 			em_options_input_text ( __( 'Booking complete', 'events-manager'), 'dbem_booking_button_msg_booked', '');
@@ -106,11 +110,11 @@
 			em_options_input_text ( __( 'Cancelation complete', 'events-manager'), 'dbem_booking_button_msg_cancelled', '');
 			em_options_input_text ( __( 'Cancelation error', 'events-manager'), 'dbem_booking_button_msg_cancel_error', '');
 			
-			echo $save_button; 
+			echo $save_button;
 			?>
 		</table>
 	</div> <!-- . inside -->
-	</div> <!-- .postbox --> 
+	</div> <!-- .postbox -->
 	
 	<div  class="postbox " id="em-opt-booking-form-options" >
 	<div class="handlediv" title="<?php __('Click to toggle', 'events-manager'); ?>"><br /></div><h3><span><?php echo sprintf(__( '%s Options', 'events-manager'),__('Booking Form','events-manager')); ?> </span></h3>
@@ -175,12 +179,55 @@
 				'ticket_name DESC, ticket_price DESC'=>__('Ticket Name (Descending)','events-manager')
 			));
 			em_options_select ( __( 'Order Tickets By', 'events-manager'), 'dbem_bookings_tickets_orderby', $ticket_orders, __( 'Choose which order your tickets appear.', 'events-manager') );
-			echo $save_button; 
+			echo $save_button;
 			?>
 		</table>
 	</div> <!-- . inside -->
-	</div> <!-- .postbox --> 
-		
+	</div> <!-- .postbox -->
+
+
+	<div  class="postbox " id="em-opt-rsvp" >
+		<div class="handlediv" title="<?php esc_attr_e_emp('Click to toggle', 'events-manager'); ?>"><br /></div><h3><?php esc_html_e( 'Booking RSVP', 'events-manager' ); ?></h3>
+		<div class="inside">
+			<table class='form-table'>
+				<tr class="em-boxheader">
+					<td colspan='2'>
+						<p>
+							<?php _e( 'Once a booking has been made, you can also allow a user to RSVP that booking, which confirms their intention of attending. This can be independent of the booking status itself.', 'events-manager' );  ?>
+						</p>
+					</td>
+				</tr>
+				<?php
+					em_options_radio_binary ( sprintf(_x( 'Enable %s?', 'Enable a feature in settings page', 'events-manager' ), __('Booking RSVP','events-manager')), 'dbem_bookings_rsvp', '', '', '.rsvp-options');
+				?>
+				<tbody class="rsvp-options">
+					<?php
+					em_options_radio_binary( __( 'Allow Maybe?', 'events-manager' ), 'dbem_bookings_rsvp_maybe', __("Allow users to respond with a 'Maybe' status rather than Attending or Not Attending", 'events-manager') );
+					?>
+					<tr class="em-header"><td colspan='2'><h4><?php echo sprintf(__('%s Pages','events-manager'),__('My Bookings','events-manager')); ?></h4></td></tr>
+					<tr><td colspan='2'><?php echo esc_html__('Choose what to show users on their booking management page.','events-manager'); ?></td></tr>
+					<?php
+					em_options_radio_binary( __( 'Display Status', 'events-manager' ), 'dbem_bookings_rsvp_my_bookings' );
+					em_options_radio_binary( __( 'Allow RSVP Actions', 'events-manager' ), 'dbem_bookings_rsvp_my_bookings_buttons' );
+					em_options_radio_binary( __( 'RSVP Modifications', 'events-manager' ), 'dbem_bookings_rsvp_can_change', esc_html__('Can attendees change their RSVP status? You can choose whether they can uncancel an RSVP below as well.', 'events-manager') );
+					?>
+
+					<tr class="em-header"><td colspan='2'><h4><?php echo sprintf(__('%s Pages','events-manager'),__('RSVP Syncing','events-manager')); ?></h4></td></tr>
+					<tr><td colspan='2'><?php echo esc_html__( 'If syncing is turned on for a booking status below, when a user RSVPs, the booking status will automatically be changed along with RSVP status.', 'events-manager' ); ?></td></tr>
+					<?php
+					em_options_radio_binary( __( 'Cancellations', 'events-manager' ), 'dbem_bookings_rsvp_sync_cancel' );
+					em_options_radio_binary( __( 'Confirmations', 'events-manager' ), 'dbem_bookings_rsvp_sync_confirm', esc_html__('In this case, a user can confirm their own booking even if the booking is pending.', 'events-manager') );
+					/*
+						em_options_radio_binary( __( 'Allow Un-Cancel?', 'events-manager' ), 'dbem_bookings_rsvp_uncancel', __("Allow users to change their minds from 'Not Attending' to 'Attending' if event still has availability, changing their booking status to 'Confirmed' or 'Pending' according to your settings.", 'events-manager') );
+					*/
+					?>
+				</tbody>
+				<?php do_action('em_options_bookings_rsvp_footer'); ?>
+				<?php echo $save_button; ?>
+			</table>
+		</div> <!-- . inside -->
+	</div> <!-- .postbox -->
+	
 	<div  class="postbox " id="em-opt-no-user-bookings" >
 	<div class="handlediv" title="<?php __('Click to toggle', 'events-manager'); ?>"><br /></div><h3><span><?php _e('No-User Booking Mode','events-manager'); ?> </span></h3>
 	<div class="inside">
@@ -194,7 +241,7 @@
 			<?php
 			em_options_radio_binary ( __( 'Enable No-User Booking Mode?', 'events-manager'), 'dbem_bookings_registration_disable', __( 'This disables user registrations for bookings.', 'events-manager') );
 			em_options_radio_binary ( __( 'Allow bookings with registered emails?', 'events-manager'), 'dbem_bookings_registration_disable_user_emails', __( 'By default, if a guest tries to book an event using the email of a user account on your site they will be asked to log in, selecting yes will bypass this security measure.', 'events-manager').'<br />'.__('<strong>Warning : </strong> By enabling this, registered users will not be able to see bookings they make as guests in their "My Bookings" page.','events-manager') );
-			echo $save_button; 
+			echo $save_button;
 			?>
 		</table>
 	</div> <!-- . inside -->

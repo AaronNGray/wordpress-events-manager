@@ -1024,16 +1024,22 @@ function em_checkbox_items($name, $array, $saved_values, $horizontal = true) {
 	echo $output;
 
 }
-function em_options_input_text($title, $name, $description ='', $default='', $resetable = false) {
-    $translate = EM_ML::is_option_translatable($name);
-    if( preg_match('/^([^\[]+)\[([^\]]+)?\]$/', $name, $matches) ){
-    	$value = EM_Options::get($matches[2], $default, $matches[1]);
-    }elseif( preg_match('/^([^\[]+)\[([^\]]+)\]\[([^\]]+)?\]$/', $name, $matches) ){
+
+function em_options_input_get_value( $name, $default = '' ){
+	if( preg_match('/^([^\[]+)\[([^\]]+)?\]$/', $name, $matches) ){
+		$value = EM_Options::get($matches[2], $default, $matches[1]);
+	}elseif( preg_match('/^([^\[]+)\[([^\]]+)\]\[([^\]]+)?\]$/', $name, $matches) ){
 		$value_array = EM_Options::get($matches[2], array(), $matches[1]);
 		$value = isset($value_array[$matches[3]]) ? $value_array[$matches[3]]:$default;
 	}else{
-        $value = get_option($name, $default);
-    }
+		$value = get_option($name, $default);
+	}
+	return $value;
+}
+
+function em_options_input_text($title, $name, $description ='', $default='', $resetable = false) {
+    $translate = EM_ML::is_option_translatable($name);
+	$value = em_options_input_get_value( $name, $default );
 	?>
 	<tr valign="top" id='<?php echo esc_attr($name);?>_row'>
 		<th scope="row">
@@ -1075,11 +1081,12 @@ function em_options_input_text($title, $name, $description ='', $default='', $re
 }
 
 function em_options_input_password($title, $name, $description ='') {
+	$value = em_options_input_get_value( $name );
 	?>
 	<tr valign="top" id='<?php echo esc_attr($name);?>_row'>
 		<th scope="row"><?php echo esc_html($title); ?></th>
 	    <td>
-			<input name="<?php echo esc_attr($name) ?>" type="password" id="<?php echo esc_attr($title) ?>" style="width: 95%" value="<?php echo esc_attr(get_option($name)); ?>" size="45" /><br />
+			<input name="<?php echo esc_attr($name) ?>" type="password" id="<?php echo esc_attr($title) ?>" style="width: 95%" value="<?php echo esc_attr($value); ?>" size="45" /><br />
 			<em><?php echo $description; ?></em>
 		</td>
 	</tr>

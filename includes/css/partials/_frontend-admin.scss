@@ -35,14 +35,22 @@
 		.em-button, input[type="submit"], input[type="button"] {
 			margin : 0 0 0 10px !important;
 		}
-		.em-booking-single-status-info {
+
+		.em-booking-single-status-info, .em-booking-single-rsvp-status-info {
 			line-height:38px;
 			margin-bottom:30px !important;
 		}
-		.em-booking-single-status-edit {
+		.em-booking-single-status-edit, .em-booking-single-rsvp-status-edit {
 			margin-bottom:30px !important;
 			em:last-child {
 				margin: 10px 0;
+			}
+		}
+		.em-booking-single-rsvp-status {
+			display: block;
+			margin: 15px 0;
+			.button-secondary {
+				vertical-align : initial;
 			}
 		}
 	}

@@ -78,3 +78,13 @@
 		}
 	}
 }
+
+.em-bookings-admin-single {
+	.em-booking-single-rsvp-status {
+		display: block;
+		margin: 15px 0;
+		.button-secondary {
+			vertical-align : initial;
+		}
+	}
+}

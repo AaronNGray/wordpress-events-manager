@@ -78,9 +78,8 @@ class OAuth_API {
 	 */
 	public static function get_client_class() {
 		if( static::$client_class !== null && class_exists(static::$client_class) ) return static::$client_class;
-		if( static::$client_class === null && class_exists(get_called_class().'_Client') ){
-			static::$client_class = get_called_class().'_Client';
-			return static::$client_class;
+		if( class_exists(get_called_class().'_Client') ){
+			return get_called_class().'_Client';
 		}
 		return 'EM_OAuth\OAuth_API_Client';
 	}
@@ -90,9 +89,8 @@ class OAuth_API {
 	 */
 	public static function get_token_class() {
 		if( static::$token_class !== null && class_exists(static::$token_class) ) return static::$token_class;
-		if( static::$token_class === null && class_exists(get_called_class().'_Token') ){
-			static::$token_class = get_called_class().'_Token';
-			return static::$token_class;
+		if( class_exists(get_called_class().'_Token') ){
+			return get_called_class().'_Token';
 		}
 		return 'EM_OAuth\OAuth_API_Token';
 	}

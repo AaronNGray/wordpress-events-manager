@@ -344,10 +344,34 @@ function em_bookings_single(){
 							    <input type='hidden' name='booking_id' value='<?php echo $EM_Booking->booking_id; ?>'/>
 							    <input type='hidden' name='event_id' value='<?php echo $EM_Event->event_id; ?>'/>
 							    <input type='hidden' name='_wpnonce' value='<?php echo wp_create_nonce('booking_set_status_'.$EM_Booking->booking_id); ?>'/>
-								<br /><em><?php echo wp_kses_data(__('<strong>Notes:</strong> Ticket availability not taken into account when approving new bookings (i.e. you can overbook).','events-manager')); ?></em>
+								<br><em><?php echo wp_kses_data(__('<strong>Notes:</strong> Ticket availability not taken into account when approving new bookings (i.e. you can overbook).','events-manager')); ?></em>
 							</form>
+							
 							<?php do_action('em_bookings_admin_booking_details_actions', $EM_Booking); ?>
 						</div>
+						<?php if( get_option('dbem_bookings_rsvp') ): ?>
+						<div class="em-booking-single-rsvp-status">
+							<form action="" method="post" class="em-booking-single-status-info em-booking-single-rsvp-status-info">
+								<strong class="em-tooltip" aria-label="<?php echo esc_attr('This represents whether the person has confirmed if they will be attending.', 'events-manager'); ?>"><?php esc_html_e('RSVP Status','events-manager'); ?> : </strong>
+								<?php echo $EM_Booking->get_rsvp_status( true ); ?>
+								<input type="button" class="button-secondary em-button em-booking-submit-status-modify" id="em-booking-submit-status-modify" value="<?php esc_attr_e('Change', 'events-manager'); ?>" />
+							</form>
+							<form action="" method="post" class="em-booking-single-status-edit em-booking-single-rsvp-status-info">
+								<strong class="em-tooltip" aria-label="<?php echo esc_attr('This represents whether the person has confirmed if they will be attending.', 'events-manager'); ?>"><?php esc_html_e('RSVP Status','events-manager'); ?> : </strong>
+								<select name="booking_rsvp_status">
+									<?php foreach($EM_Booking::get_rsvp_statuses() as $status => $status_type): ?>
+										<option value="<?php echo esc_attr($status); ?>" <?php if( $status === $EM_Booking->get_rsvp_status() ){ echo 'selected="selected"'; } ?>><?php echo esc_html($status_type->label); ?></option>
+									<?php endforeach; ?>
+								</select>
+								<input type="submit" class="button-primary em-button em-booking-submit-status" id="em-booking-submit-status" value="<?php esc_attr_e('Submit Changes', 'events-manager'); ?>" />
+								<input type="button" class="button-secondary em-button em-booking-submit-status-cancel" id="em-booking-submit-status-cancel" value="<?php esc_attr_e('Cancel', 'events-manager'); ?>" />
+								<input type='hidden' name='action' value='booking_set_rsvp_status'/>
+								<input type='hidden' name='booking_id' value='<?php echo $EM_Booking->booking_id; ?>'/>
+								<input type='hidden' name='event_id' value='<?php echo $EM_Event->event_id; ?>'/>
+								<input type='hidden' name='_wpnonce' value='<?php echo wp_create_nonce('booking_set_rsvp_status_'.$EM_Booking->booking_id); ?>'/>
+							</form>
+						</div>
+						<?php endif; ?>
 						<form action="" method="post" class="em-booking-form">
 							<table class="em-tickets em-tickets-bookings-table" cellpadding="0" cellspacing="0">
 								<thead>
@@ -537,13 +561,15 @@ function em_bookings_single(){
 								$('.em-booking-single-info').show();
 								$('.em-booking-single-edit').hide();
 
-								$('#em-booking-submit-status-modify').on('click', function(){
-									$('.em-booking-single-status-info').hide();
-									$('.em-booking-single-status-edit').show();
+								$('.em-booking-submit-status-modify').on('click', function(){
+									let el = $(this).closest('.em-booking-single-status-info');
+									el.hide();
+									el.next('.em-booking-single-status-edit').first().show();
 								});
-								$('#em-booking-submit-status-cancel').on('click', function(){
-									$('.em-booking-single-status-info').show();
-									$('.em-booking-single-status-edit').hide();
+								$('.em-booking-submit-status-cancel').on('click', function(){
+									let el = $(this).closest('.em-booking-single-status-edit');
+									el.hide();
+									el.prev('.em-booking-single-status-info').first().show();
 								});
 								$('.em-booking-single-status-info').show();
 								$('.em-booking-single-status-edit').hide();

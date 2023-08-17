@@ -49,6 +49,7 @@ function em_setup_tippy( container_element ){
 		if( button_width ){
 			if( button_width == 'match' ){
 				tippy_ddm_options.maxWidth = this.clientWidth;
+				ddm_content.style.width = this.clientWidth + 'px';
 			}else{
 				tippy_ddm_options.maxWidth = this.getAttribute('data-button-width');
 			}

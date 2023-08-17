@@ -414,3 +414,16 @@
 		}
 	}
 }
+
+/* My Bookings Page */
+.em-my-bookings-actions-content {
+	a.em-bookings-rsvp-confirm {
+		color : #198754 !important;
+	}
+	a.em-bookings-rsvp-cancel {
+		color : #dc3545 !important;
+	}
+	a.em-bookings-rsvp-maybe {
+		color : #6c757d !important;
+	}
+}

@@ -273,7 +273,7 @@ function em_init_actions_start() {
 	
 	//Booking Actions
 	$booking_allowed_actions = array('bookings_approve'=>'approve','bookings_reject'=>'reject','bookings_unapprove'=>'unapprove', 'bookings_delete'=>'delete');
-	$booking_ajax_actions = array('booking_add', 'booking_add_one', 'booking_cancel', 'booking_save', 'booking_set_status', 'booking_resend_email', 'booking_modify_person', 'bookings_add_note', 'booking_form_summary');
+	$booking_ajax_actions = array('booking_add', 'booking_add_one', 'booking_cancel', 'booking_save', 'booking_set_status', 'booking_resend_email', 'booking_modify_person', 'bookings_add_note', 'booking_form_summary', 'booking_rsvp_change', 'booking_set_rsvp_status');
 	$booking_nopriv_actions = array('booking_add', 'booking_form_summary');
 	$booking_actions = array_merge( $booking_ajax_actions, array_keys($booking_allowed_actions) );
 	if( !empty($_REQUEST['action']) && in_array($_REQUEST['action'], $booking_actions) && (is_user_logged_in() || (in_array($_REQUEST['action'], $booking_nopriv_actions) && get_option('dbem_bookings_anonymous'))) ){
@@ -404,7 +404,34 @@ function em_init_actions_start() {
 				$EM_Notices->add_error( __('You must log in to cancel your booking.', 'events-manager') );
 			}
 		//TODO user action shouldn't check permission, booking object should.
-	  	}elseif( array_key_exists($_REQUEST['action'], $booking_allowed_actions) && $EM_Event->can_manage('manage_bookings','manage_others_bookings') ){
+		}elseif ( $_REQUEST['action'] == 'booking_rsvp_change' && isset($_REQUEST['status']) ) {
+			// Change RSVP status
+			em_verify_nonce('booking_rsvp');
+			$status = absint($_REQUEST['status']);
+			if( $EM_Booking->can_manage() || $EM_Booking->person->ID == get_current_user_id() ){
+				if( $EM_Booking->can_rsvp( $status ) ) {
+					if ( $EM_Booking->set_rsvp_status( $status ) ) {
+						$result = true;
+						if ( !defined( 'DOING_AJAX' ) ) {
+							$EM_Notices->add_confirm( $EM_Booking->feedback_message, true );
+							wp_safe_redirect( $_SERVER['HTTP_REFERER'] );
+							exit();
+						}
+					} else {
+						$result = false;
+						$EM_Notices->add_error( $EM_Booking->get_errors() );
+						$feedback = $EM_Booking->feedback_message;
+					}
+				} else {
+					$rsvp_status = EM_Booking::get_rsvp_statuses( $status );
+					$feedback = sprintf( esc_html__('You cannot RSVP to this booking with %s', 'events-manager'), "'" . $rsvp_status->label_action . "'");
+					$EM_Notices->add_error($feedback);
+				}
+			}else{
+				$EM_Notices->add_error( __('You must log in to cancel your booking.', 'events-manager') );
+			}
+			//TODO user action shouldn't check permission, booking object should.
+		}elseif( array_key_exists($_REQUEST['action'], $booking_allowed_actions) && $EM_Event->can_manage('manage_bookings','manage_others_bookings') ){
 	  		//Event Admin only actions
 			$action = $booking_allowed_actions[$_REQUEST['action']];
 			//Just do it here, since we may be deleting bookings of different events.
@@ -477,6 +504,20 @@ function em_init_actions_start() {
 					$EM_Notices->add_error( $EM_Booking->get_errors() );
 					$feedback = $EM_Booking->feedback_message;
 				}	
+			}
+		}elseif( $_REQUEST['action'] == 'booking_set_rsvp_status' ){
+			$status = $_REQUEST['booking_rsvp_status'] === '' ? null : absint($_REQUEST['booking_rsvp_status']);
+			if( $EM_Booking->can_manage('manage_bookings','manage_others_bookings') && $status !== $EM_Booking->booking_rsvp_status ){
+				$result = $EM_Booking->set_rsvp_status($status, false, true);
+				if ( $result ){
+					$EM_Notices->add_confirm( $EM_Booking->feedback_message, true );
+					$redirect = !empty($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : em_wp_get_referer();
+					wp_safe_redirect( $redirect );
+					exit();
+				}else{
+					$EM_Notices->add_error( $EM_Booking->get_errors() );
+					$feedback = $EM_Booking->feedback_message;
+				}
 			}
 		}elseif( $_REQUEST['action'] == 'booking_resend_email' ){
 			em_verify_nonce('booking_resend_email_'.$EM_Booking->booking_id);
