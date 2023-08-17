@@ -187,7 +187,7 @@
 
 
 	<div  class="postbox " id="em-opt-rsvp" >
-		<div class="handlediv" title="<?php esc_attr_e_emp('Click to toggle', 'events-manager'); ?>"><br /></div><h3><?php esc_html_e( 'Booking RSVP', 'events-manager' ); ?></h3>
+		<div class="handlediv" title="<?php esc_html_e('Click to toggle', 'events-manager'); ?>"><br /></div><h3><?php esc_html_e( 'Booking RSVP', 'events-manager' ); ?></h3>
 		<div class="inside">
 			<table class='form-table'>
 				<tr class="em-boxheader">
