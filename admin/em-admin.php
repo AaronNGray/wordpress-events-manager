@@ -486,7 +486,6 @@ class EM_Admin_Modals {
 				<p>Pardon the interruption.... we'd like to make sure you're aware of our limited time deal. Purchase a license, renew or upgrade and get up to 42% off!</p>
 				<p>We hope you're enjoying the plugin and if you're at all considering going Pro, you still have time to make the best of this limited opportunity!</p>
 				<a href="https://eventsmanagerpro.com/gopro/?utm_source=events-manager&utm_medium=plugin-popup&utm_campaign=plugins" class="button button-primary input" target="_blank" style="margin-right:10px; --accent-color:#429543; --accent-color-hover:#429543;">Go Pro!</a>
-				<a href="<?php echo esc_url( admin_url('admin-ajax.php?action=em_dismiss_admin_notice&notice=promo-popup&redirect=1' ) ); ?>" class="button button-secondary"><?php esc_html_e('Dismiss', 'events-manager'); ?></a>
 			</div>
 		</div><!-- content -->
 		<?php
