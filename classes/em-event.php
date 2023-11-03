@@ -215,7 +215,7 @@ class EM_Event extends EM_Object{
 	public $post_fields = array('event_slug','event_owner','event_name','event_private','event_status','event_attributes','post_id','post_content'); //fields that won't be taken from the em_events table anymore
 	public $recurrence_fields = array('recurrence', 'recurrence_interval', 'recurrence_freq', 'recurrence_days', 'recurrence_byday', 'recurrence_byweekno', 'recurrence_rsvp_days');
 	
-	protected $shortnames = array(
+	public static $field_shortcuts = array(
 		'language' => 'event_language',
 		'translation' => 'event_translation',
 		'parent' => 'event_parent',
@@ -224,6 +224,26 @@ class EM_Event extends EM_Object{
 		'name' => 'event_name',
 		'status' => 'event_status',
 		'owner' => 'event_owner',
+		'start_time' => 'event_start_time',
+		'end_time' => 'event_end_time',
+		'start_date' => 'event_start_date',
+		'end_date' => 'event_end_date',
+		'start' => 'event_start',
+		'end' => 'event_end',
+		'all_day' => 'event_all_day',
+		'timezone' => 'event_timezone',
+		'rsvp' => 'event_rsvp',
+		'rsvp_date' => 'event_rsvp_date',
+		'rsvp_time' => 'event_rsvp_time',
+		'rsvp_spaces' => 'event_rsvp_spaces',
+		'spaces' => 'event_spaces',
+		'private' => 'event_private',
+		'location_type' => 'event_location_type',
+		'owner_anonymous' => 'event_owner_anonymous',
+		'owner_name' => 'event_owner_name',
+		'owner_email' => 'event_owner_email',
+		'active_status' => 'event_active_status',
+		'notes' => 'post_content',
 	);
 	
 	public $image_url = '';
@@ -433,11 +453,6 @@ class EM_Event extends EM_Object{
 		}
 		//set recurrence value already
 		$this->recurrence = $this->is_recurring() ? 1:0;
-		//Do it here so things appear in the po file.
-		$this->status_array = array(
-			0 => __('Pending','events-manager'),
-			1 => __('Approved','events-manager')
-		);
 		// fire hook to add any extra info to an event
 		do_action('em_event', $this, $id, $search_by);
 		//add this event to the cache
@@ -500,9 +515,8 @@ class EM_Event extends EM_Object{
 		}
 		//anything else
 		else{
-			$this->$prop = $val;
+			parent::__set( $prop, $val );
 		}
-		parent::__set( $prop, $val );
 	}
 	
 	public function __isset( $prop ){

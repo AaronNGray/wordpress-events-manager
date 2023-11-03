@@ -164,6 +164,7 @@ class EM_Admin_Notices {
 	 */
 	public static function dismiss_admin_notice(){
 		if( empty($_REQUEST['notice']) ) return;
+		if( empty($_REQUEST['nonce']) || !wp_verify_nonce($_REQUEST['nonce'], $_REQUEST['action'].$_REQUEST['notice'] ) ) die('Invalid Nonce');
 		$key = $_REQUEST['notice'];
 		$network = $_REQUEST['action'] == 'em_dismiss_network_admin_notice';
 		//get the notice
@@ -194,10 +195,26 @@ class EM_Admin_Notices {
 	public static function admin_footer(){
 		?>
 		<script type="text/javascript">
-		jQuery(document).ready( function($){
-			$('.em-admin-notice').on('click', 'button.notice-dismiss', function(e){
-				var the_notice = $(this).closest('.em-admin-notice');
-				$.get('<?php echo admin_url('admin-ajax.php'); ?>', {'action' : the_notice.data('dismiss-action'), 'notice' : the_notice.data('dismiss-key') });
+		document.addEventListener('DOMContentLoaded', function(){
+			document.querySelectorAll('.em-admin-notice').forEach( function( notice ){
+				notice.addEventListener('click', function( e ){
+					if( e.target.matches('button.notice-dismiss') ) {
+						e.preventDefault();
+						fetch( notice.dataset.url ).then( (response) => {
+							if ( response.ok ) {
+								return response.text();
+							} else {
+								console.log( 'Could not dismiss admin notice die to not OK repsonse: %o', response );
+								response.reject();
+							}
+						}, {mode : 'no-cors'} ).then( (response) => {
+							console.log( 'Admin notice dismissed OK with response: %s', response );
+						}).catch( (error) => {
+							console.log( 'Could not dismiss admin notice, error is %o', error );
+						});
+						return false;
+					}
+				});
 			});
 		});
 		</script>

@@ -216,6 +216,12 @@
 					</td>
 				</tr>
 			</tbody>
+			<tbody class="em-subsection em-search-form-main-option">
+			<tr class="em-subheader"><td colspan="2"><h5><?php esc_html_e( 'Sorting', 'events-manager'); ?></h5></td></tr>
+			<?php
+				em_options_radio_binary ( __( 'Show sorting icon?', 'events-manager'), 'dbem_search_form_sorting', __('Show the sorting icon to change the ordering of search results.', 'events-manager') );
+			?>
+			</tbody>
 		    <tbody class="em-subsection em-search-form-main-option">
 				<tr class="em-subheader"><td colspan="2"><h5><?php esc_html_e( 'Search', 'events-manager'); ?></h5></td></tr>
 				<?php

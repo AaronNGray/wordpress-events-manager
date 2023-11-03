@@ -22,7 +22,7 @@
 		//check if we're outputting an ical feed
 		if( !empty($wp_query) && $wp_query->get('ical') ){
 			$filename = 'events';
-			$args = array();
+			$args = array('scope' => 'all');
 			//single event
 			if( $wp_query->get(EM_POST_TYPE_EVENT) ){
 				$event_id = $wpdb->get_var('SELECT event_id FROM '.EM_EVENTS_TABLE." WHERE event_slug='".$wp_query->get(EM_POST_TYPE_EVENT)."' AND event_status=1 LIMIT 1");

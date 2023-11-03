@@ -103,7 +103,7 @@ class OAuth_API_Client {
 			'id' => EM_Options::get( $this->option_name. '_app_id', '', $this->option_dataset),
 			'secret' => EM_Options::get( $this->option_name. '_app_secret', '', $this->option_dataset)
 		);
-		foreach( array('id', 'secret', 'scope') as $k ){
+		foreach( array('id', 'secret') as $k ){
 			if( !empty($creds[$k]) ){
 				$this->$k = $creds[$k];
 			}elseif( empty($this->$k) ) { // constructors can be overriden to add any of the above

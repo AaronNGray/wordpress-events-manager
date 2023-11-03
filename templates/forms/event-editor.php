@@ -90,7 +90,10 @@ $id = rand(); // not related to searches, so we'll just add an ID for good pract
 			<div>
 				<div class="event-editor">
 					<?php if( get_option('dbem_events_form_editor') && function_exists('wp_editor') ): ?>
-						<?php wp_editor($EM_Event->post_content, 'em-editor-content', array('textarea_name'=>'content') ); ?>
+						<?php
+							$post_content = !empty($EM_Event->post_content) ? $EM_Event->post_content : '';
+							wp_editor($post_content, 'em-editor-content', array('textarea_name'=>'content') );
+						?>
 					<?php else: ?>
 						<textarea name="content" rows="10" style="width:100%"><?php echo $EM_Event->post_content ?></textarea>
 						<br >

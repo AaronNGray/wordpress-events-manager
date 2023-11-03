@@ -312,7 +312,7 @@ class EM_Admin_Modals {
 		add_filter('admin_enqueue_scripts', 'EM_Admin_Modals::admin_enqueue_scripts', 100);
 		add_filter('wp_ajax_em-admin-popup-modal', 'EM_Admin_Modals::ajax');
 		add_filter('em_admin_notice_review-nudge_message', 'EM_Admin_Modals::review_notice');
-		if( time() < 1686139200 ) {
+		if( time() < 1699682400 ) {
 			add_filter( 'em_admin_notice_promo-popup_message', 'EM_Admin_Modals::promo_notice' );
 		}
 	}
@@ -354,9 +354,9 @@ class EM_Admin_Modals {
 			$pro_license_active = defined('EMP_VERSION');
 			if( $pro_license_active ){
 				$key = get_option('dbem_pro_api_key');
-				$pro_license_active = !(empty($key['until']) || $key['until'] < 1686139200);
+				$pro_license_active = !(empty($key['until']) || $key['until'] > strtotime('+10 months'));
 			}
-			if( time() < 1686139200 && !empty($data['admin-modals']['promo-popup']) && !$pro_license_active) {
+			if( time() < 1699682400 && !empty($data['admin-modals']['promo-popup']) && !$pro_license_active) {
 				if( $data['admin-modals']['promo-popup'] == 1 || ($data['admin-modals']['promo-popup'] == 2 && ($show_plugin_pages || $show_network_admin) ) ) {
 					// enqueue script and load popup action
 					if( empty($data['admin-modals']['promo-popup-count']) ){
@@ -449,16 +449,12 @@ class EM_Admin_Modals {
 			<div class="em-modal-popup">
 				<header>
 					<a class="em-close-modal dismiss-modal" href="#"></a><!-- close modal -->
-					<div class="em-modal-title">Events Manager Pro - All add-ons condition ends soon!</div>
+					<div class="em-modal-title">Events Manager Pro - Flash Sale, 42% Off!</div>
 				</header>
 				<div class="em-modal-content has-image" style="--font-size:16px;">
 					<div>
-						<p>Pardon the interruption.... we'd like to make sure you're aware of an <a href="https://wp-events-plugin.com/blog/2023/04/21/upcoming-pro-plan-changes/?utm_source=events-manager&utm_medium=plugin-popup&utm_campaign=plugins" target="_blank">important announcement</a> about our <a href="https://eventsmanagerpro.com?utm_source=events-manager&utm_medium=plugin-popup&utm_campaign=plugins" target="_blank">Events Manager Pro</a> add-on.</p>
-						<p>Since its inception, we have included all our add-ons in our Pro plugin, all you needed to choose is the number of sites you'd like to purchase a license for.</p>
-						<p>As of <strong><em>June 7th 12:00 UTC</em></strong>, our WooCommerce add-on will be sold exclusively on woocommerce.com, additionally future 3rd party integrations we create may not be included for free with Pro either.</p>
-						<p><strong>Any licenses purchased before the price change will lock in the current conditions, which is why we're letting you know now.</strong></p>
+						<p>Pardon the interruption.... we'd like to make sure you're aware of our limited time deal. Purchase a license, renew or upgrade and get up to 42% off!</p>
 						<p>We hope you're enjoying the plugin and if you're at all considering going Pro, you still have time to make the best of this limited opportunity!</p>
-						<p><a href="https://wp-events-plugin.com/blog/2023/04/21/upcoming-pro-plan-changes/?utm_source=events-manager&utm_medium=plugin-popup&utm_campaign=plugins" target="_blank">View the full announement here.</a></p>
 					</div>
 					<div class="image">
 						<img src="<?php echo EM_DIR_URI . '/includes/images/events-manager.svg'; ?>">
@@ -486,12 +482,9 @@ class EM_Admin_Modals {
 				<img src="<?php echo EM_DIR_URI . '/includes/images/events-manager.svg'; ?>" style="width: 100%;">
 			</div>
 			<div>
-				<p>Pardon the interruption.... we'd like to make sure you're aware of an <a href="https://wp-events-plugin.com/blog/2023/04/21/upcoming-pro-plan-changes/?utm_source=events-manager&utm_medium=plugin-popup&utm_campaign=plugins" target="_blank">important announcement</a> about our <a href="https://eventsmanagerpro.com?utm_source=events-manager&utm_medium=plugin-popup&utm_campaign=plugins" target="_blank">Events Manager Pro</a> add-on.</p>
-				<p>Since its inception, we have included all our add-ons in our Pro plugin, all you needed to choose is the number of sites you'd like to purchase a license for.</p>
-				<p>As of <strong><em>June 7th 12:00 UTC</em></strong>, our WooCommerce add-on will be sold separately on woocommerce.com, additionally future 3rd party integrations we create may not be included for free with Pro either.</p>
-				<p><strong>Any licenses purchased before the price change will lock in the current conditions, which is why we're letting you know now.</strong></p>
+				<h3>Events Manager Pro - Flash Sale, 42% Off!</h3>
+				<p>Pardon the interruption.... we'd like to make sure you're aware of our limited time deal. Purchase a license, renew or upgrade and get up to 42% off!</p>
 				<p>We hope you're enjoying the plugin and if you're at all considering going Pro, you still have time to make the best of this limited opportunity!</p>
-				<p><a href="https://wp-events-plugin.com/blog/2023/04/21/upcoming-pro-plan-changes/?utm_source=events-manager&utm_medium=plugin-popup&utm_campaign=plugins" target="_blank">View the full announement here.</a></p>
 				<a href="https://eventsmanagerpro.com/gopro/?utm_source=events-manager&utm_medium=plugin-popup&utm_campaign=plugins" class="button button-primary input" target="_blank" style="margin-right:10px; --accent-color:#429543; --accent-color-hover:#429543;">Go Pro!</a>
 				<a href="<?php echo esc_url( admin_url('admin-ajax.php?action=em_dismiss_admin_notice&notice=promo-popup&redirect=1' ) ); ?>" class="button button-secondary"><?php esc_html_e('Dismiss', 'events-manager'); ?></a>
 			</div>

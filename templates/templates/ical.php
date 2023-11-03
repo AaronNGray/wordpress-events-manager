@@ -82,7 +82,8 @@ while ( count($EM_Events) > 0 ){
 		
 		//formats
 		$summary = em_mb_ical_wordwrap('SUMMARY:'.$EM_Event->output($summary_format,'ical'));
-		$description = em_mb_ical_wordwrap('DESCRIPTION:'.$EM_Event->output($description_format,'ical'));
+		$description_raw = apply_filters('em_ical_output_content_description', $EM_Event->output($description_format,'ical'), $EM_Event);
+		$description = em_mb_ical_wordwrap('DESCRIPTION:'. $description_raw);
 		$url = 'URL:'.$EM_Event->get_permalink();
 		$url = wordwrap($url, 74, "\n ", true);
 		$location = $geo = $apple_geo = $apple_location = $apple_location_title = $apple_structured_location = $categories = false;
@@ -115,7 +116,6 @@ while ( count($EM_Events) > 0 ){
 		$UID = $EM_Event->event_id . '@' . $site_domain;
 		if( is_multisite() ) $UID = absint($EM_Event->blog_id) . '-' . $UID;
 		$UID = wordwrap("UID:".$UID, 74, "\r\n ", true);
-		
 //output ical item		
 $output = "\r\n"."BEGIN:VEVENT
 {$UID}
@@ -159,6 +159,8 @@ if( !empty($include_organizer) ){
 	$EM_Person = new EM_Person($EM_Event->get_owner());
 	$output .= "\r\n" . 'ORGANIZER;CN="'. $EM_Person->get_name() .'":MAILTO:'. $EM_Person->user_email;
 }
+// allow for filters to intervene the output
+$output = apply_filters('em_ical_event_output_content', $output, $EM_Event);
 //end the event
 $output .= "
 END:VEVENT";

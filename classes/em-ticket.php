@@ -49,6 +49,26 @@ class EM_Ticket extends EM_Object{
 		'ticket_meta' => array('name'=>'ticket_meta','type'=>'%s','null'=>1),
 		'ticket_order' => array('type'=>'%d','null'=>1),
 	);
+	// array map of $fields mapping name to key
+	public static $field_shortcuts = array(
+		'id' => 'ticket_id',
+		'event_id' => 'event_id',
+		'name' => 'ticket_name',
+		'description' => 'ticket_description',
+		'price' => 'ticket_price',
+		'start' => 'ticket_start',
+		'end' => 'ticket_end',
+		'min' => 'ticket_min',
+		'max' => 'ticket_max',
+		'spaces' => 'ticket_spaces',
+		'members' => 'ticket_members',
+		'members_roles' => 'ticket_members_roles',
+		'guests' => 'ticket_guests',
+		'required' => 'ticket_required',
+		'parent' => 'ticket_parent',
+		'meta' => 'ticket_meta',
+		'order' => 'ticket_order',
+	);
 	//Other Vars
 	/**
 	 * Contains only bookings belonging to this ticket.
@@ -77,6 +97,10 @@ class EM_Ticket extends EM_Object{
 	 * @var EM_Event
 	 */
 	protected $event;
+	/**
+	 * @var bool flag whether ticket is available, saved for persistence
+	 */
+	protected $is_available;
 	
 	/**
 	 * Creates ticket object and retreives ticket data (default is a blank ticket object). Accepts either array of ticket data (from db) or a ticket id.
@@ -726,7 +750,7 @@ class EM_Ticket extends EM_Object{
 		if( $this->is_available() ) {
 		    $min_spaces = $this->get_spaces_minimum();
 		    if( $default_value > 0 ){
-			    $default_value = $min_spaces > $default_value ? $min_spaces:$default_value;
+			    $default_value = $min_spaces > $default_value ? $min_spaces:absint($default_value);
 		    }else{
 		        $default_value = $this->is_required() ? $min_spaces:0;
 		    }
@@ -740,9 +764,9 @@ class EM_Ticket extends EM_Object{
 				?>
 				<?php if($zero_value && !$this->is_required()) : ?><option>0</option><?php endif; ?>
 				<?php for( $i=$min; $i<=$available_spaces && $i<=$max; $i++ ): ?>
-					<option <?php if($i == $default_value){ echo 'selected="selected"'; $shown_default = true; } ?>><?php echo $i ?></option>
+					<option <?php if($i == $default_value){ echo 'selected="selected"'; $shown_default = true; } ?>><?php echo absint($i) ?></option>
 				<?php endfor; ?>
-				<?php if(empty($shown_default) && $default_value > 0 ): ?><option selected="selected"><?php echo $default_value; ?></option><?php endif; ?>
+				<?php if(empty($shown_default) && $default_value > 0 ): ?><option selected="selected"><?php echo absint($default_value); ?></option><?php endif; ?>
 			</select>
 			<?php 
 			return apply_filters('em_ticket_get_spaces_options', ob_get_clean(), $zero_value, $default_value, $this);

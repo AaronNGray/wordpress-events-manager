@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 6.3
-Stable tag: 6.4.5.1
+Stable tag: 6.4.6
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
@@ -16,7 +16,7 @@ Events Manager is a full-featured event registration plugin for WordPress based 
 
 *Version 6 is the biggest update to date, with a complete overhaul of our calendars, lists, searches and other front-end items. Check it out and enjoy!*
 
-* [Demo](http://demo.wp-events-plugin.com/)
+* [Demo](https://eventsmanager.site)
 * [Documentation](http://wp-events-plugin.com/documentation/)
 * [Tutorials](http://wp-events-plugin.com/tutorials/)
 
@@ -160,8 +160,24 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
-= 6.4.5.1 =
+= 6.4.6 =
 * fixed fatal error caused by use of Pro function in settings page when Pro isn't activated, bug introduced in EM 6.4.5
+* fixed XSS vulnerability, disclosure to be followed
+* fixed minor security vulnerability allowing anauthorized logged-in users to dismiss EM admin notices
+* fixed OAuth errors (such as with PayPa) due to implementations not requring a scope credential
+* fixed PHP Warnings in event editor frontend,
+* fixed EM Notices appearing twice on booking forms in backend for manual bookings in Pro,
+* fixed datetime offset issue when migrating old EM versions without timezones
+* fixed file loading issues in some server edge case environments by providing absolute include paths in events-manager.php
+* fixed multiple PHP Deprecated dynamic variables warning for PHP 8.2 by adding a $fields_shortcuts static map for short variable names, as well as storing unknown 'dynamic' variables into a dynamic_variables protected property array via __set() and __get() in EM_Object
+* changed preference for $shortnames map of field shortcuts for $fields_shortcuts although still supported in EM_Object but preferable to use one static storage for performance improvements
+* fixed issues with storage of booking and attendee/spaces meta data
+* developers should be aware that storage of array meta data going forwards takes the format of _key|subkey for associative or _key| for sequential arrays, if you stored array keys with an underscore, or subkeys with underscores, please review EM_Object::process_meta() and EM_Booking::process_meta() and the function comments for a better understanding of what to do, as a future update may involve an SQL migration script to migrate old meta fields into the new format
+* added sorting option on event search forms - enabled by default on first install, disabled for existing sites updating,
+* added international phone number picker - BETA - requires activation via define('EM_PHONE_INTL_ENABLED', true); in wp-config
+* fixed PHP 8.2 warnings in tickets
+* fixed ordering issues in attendee booking editor displays
+* added ical output filters em_ical_output_content_description and em_ical_event_output_content
 
 = 6.4.5 =
 * added RSVP functionality (re-confirming a booking)

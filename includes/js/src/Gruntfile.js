@@ -10,6 +10,7 @@ module.exports = function(grunt) {
 		'parts/modal.js',
 		'parts/search.js',
 		'parts/calendar.js',
+		'parts/phone.js',
 		'parts/externals.js'
 	];
 

@@ -61,6 +61,18 @@ class EM_Booking extends EM_Object{
 		'booking_taxes' => array('name'=>'taxes','type'=>'%f','null'=>1),
 		'booking_meta' => array('name'=>'meta','type'=>'%s')
 	);
+	public static $field_shortcuts = array(
+		'id' => 'booking_id',
+		'uuid' => 'booking_uuid',
+		'price' => 'booking_price',
+		'spaces' => 'booking_spaces',
+		'comment' => 'booking_comment',
+		'status' => 'booking_status',
+		'rsvp_status' => 'booking_rsvp_status',
+		'tax_rate' => 'booking_tax_rate',
+		'taxes' => 'booking_taxes',
+		'meta' => 'booking_meta'
+	);
 	//Other Vars
 	/**
 	 * array of notes by admins on this booking. loaded from em_meta table in construct
@@ -221,9 +233,8 @@ class EM_Booking extends EM_Object{
 			if( $this->date() !== false ) $this->date()->setTimestamp($val);
 		}elseif( $prop == 'language' ){
 			$this->booking_meta['lang'] = $val;
-		}else{
-			$this->$prop = $val;
 		}
+		parent::__set( $prop, $val );
 	}
 	
 	public function __isset( $prop ){
@@ -318,10 +329,15 @@ class EM_Booking extends EM_Object{
 				$meta_insert = array();
 				foreach( $this->booking_meta as $meta_key => $meta_value ){
 					if( is_array($meta_value) ){
+						$associative = array_keys($meta_value) !== range(0, count($meta_value) - 1);
 						// we go down one level of array
 						foreach( $meta_value as $kk => $vv ){
 							if( is_array($vv) ) $vv = serialize($vv);
-							$meta_insert[] = $wpdb->prepare('(%d, %s, %s)', $this->booking_id, '_'.$meta_key.'_'.$kk, $vv);
+							if( $associative ) {
+								$meta_insert[] = $wpdb->prepare('(%d, %s, %s)', $this->booking_id, '_'.$meta_key.'|'.$kk, $vv);
+							}else{
+								$meta_insert[] = $wpdb->prepare('(%d, %s, %s)', $this->booking_id, '_'.$meta_key.'|', $vv);
+							}
 						}
 					}else{
 						$meta_insert[] = $wpdb->prepare('(%d, %s, %s)', $this->booking_id, $meta_key, $meta_value);
@@ -1864,6 +1880,40 @@ class EM_Booking extends EM_Object{
 			$booking['person']['phone'] = $this->get_person()->phone;
 		}
 		return apply_filters('em_booking_to_api', $booking, array(), $this);
+	}
+	
+	/**
+	 * Used to process values from meta table bookings_meta. Other meta table values are processed in EM_Object.
+	 *
+	 * Processing the meta for bookings is slightly different for backwards compatibility reasons. This is because of how we split subkeys version 6.4.5.1 and below, which was with an underscore. The problem with underscores is that keys can contain underscores and we don't know where to make the split.
+	 * For bookings, we consider the first word until an underscore as a key, and the rest would be considered subkeys of an array.
+	 * Future versions of EM will split keys with a pipe so there's no confusion, and compatibility is taken into account here.
+	 *
+	 * @param array $raw_meta
+	 * @return array
+	 */
+	function process_meta( $raw_meta ){
+		$processed_meta = array();
+		foreach( $raw_meta as $meta ){
+			$meta_value = maybe_unserialize($meta['meta_value']);
+			$meta_key = $meta['meta_key'];
+			if( preg_match('/^_([a-zA-Z\-0-9 _]+)\|([a-zA-Z\-0-9 _]+)?$/', $meta_key, $match) || preg_match('/^_([a-zA-Z\-0-9]+)_([a-zA-Z\-0-9 _]+)$/', $meta_key, $match) ){
+				$key = $match[1];
+				$subkey = isset($match[2]) ? $match[2] : count($processed_meta[$key]); // allows for storing arrays without a key, such as _beverage_choice| can be stored multiple times in a row if key is not relevant
+				if( empty($processed_meta[$key]) ) $processed_meta[$key] = array();
+				if( !empty($processed_meta[$key][$subkey]) ){
+					if( !is_array($processed_meta[$key][$subkey]) ) {
+						$processed_meta[$key][$subkey] = array($processed_meta[$key][$subkey]);
+					}
+					$processed_meta[$key][$subkey][] = $meta_value;
+				}else{
+					$processed_meta[$key][$subkey] = $meta_value;
+				}
+			}else{
+				$processed_meta[$meta_key] = $meta_value;
+			}
+		}
+		return $processed_meta;
 	}
 }
 ?>

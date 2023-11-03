@@ -151,10 +151,15 @@ class EM_Ticket_Booking extends EM_Object{
 				$meta_insert = array();
 				foreach( $this->meta as $meta_key => $meta_value ){
 					if( is_array($meta_value) ){
+						$associative = array_keys($meta_value) !== range(0, count($meta_value) - 1);
 						// we go down one level of array
 						foreach( $meta_value as $kk => $vv ){
 							if( is_array($vv) ) $vv = serialize($vv);
-							$meta_insert[] = $wpdb->prepare('(%d, %s, %s)', $this->ticket_booking_id, '_'.$meta_key.'_'.$kk, $vv);
+							if ( $associative ) {
+								$meta_insert[] = $wpdb->prepare('(%d, %s, %s)', $this->ticket_booking_id, '_'.$meta_key.'|'.$kk, $vv);
+							} else {
+								$meta_insert[] = $wpdb->prepare('(%d, %s, %s)', $this->ticket_booking_id, '_'.$meta_key.'|', $vv);
+							}
 						}
 					}else{
 						$meta_insert[] = $wpdb->prepare('(%d, %s, %s)', $this->ticket_booking_id, $meta_key, $meta_value);

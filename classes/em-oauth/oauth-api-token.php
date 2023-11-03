@@ -8,6 +8,7 @@ class OAuth_API_Token {
 	public $refresh_token = '';
 	public $token_type = '';
 	public $expires_in = 0;
+	public $scope;
 	/**
 	 * @var int Timestamp when a token will expire at, which can be supplied instead of expires_in and that value will be generated from this one.
 	 */

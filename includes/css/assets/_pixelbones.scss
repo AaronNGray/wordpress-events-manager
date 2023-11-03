@@ -181,6 +181,11 @@
 		margin-bottom: 10px !important;
 	}
 
+	/* 3rd party compat */
+	&.input [data-lastpass-icon-root] {
+		display:none;
+	}
+
 
     /* Forms
     –––––––––––––––––––––––––––––––––––––––––––––––––– */

@@ -110,7 +110,7 @@
 		color: #084298 !important;
 		background-color: #cfe2ff !important;
 
-		p { margin:10px 0px !important; padding:0px; }
+		p { margin:10px 0 !important; padding:0; }
 
 		&.em-notice-error {
 			color: #842029 !important;
@@ -139,6 +139,32 @@
 		}
 		&.em-notice-thin {
 			padding: 10px 15px !important;
+		}
+	}
+
+	.iti, &.pixelbones .iti {
+
+		display: block;
+
+		.iti__selected-flag {
+			//height: calc(100% - 12px);
+		}
+
+		&.error {
+			input[type=tel] {
+				border-color: red !important;
+			}
+		}
+
+		input[type=tel], .iti--allow-dropdown input, .iti--allow-dropdown input[type=tel], .iti--allow-dropdown input[type=text], .iti--separate-dial-code input, .iti--separate-dial-code input[type=tel], .iti--separate-dial-code input[type=text] {
+			padding-right: 6px !important;
+			padding-left: 82px !important;
+			margin-left: 0 !important;
+		}
+		.iti__flag {background-image: url("../external/intl-tel-input/img/flags.png");}
+
+		@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+			.iti__flag {background-image: url("../external/intl-tel-input/img/flags@2x.png");}
 		}
 	}
 

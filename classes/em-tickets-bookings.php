@@ -264,7 +264,7 @@ class EM_Tickets_Bookings extends EM_Object implements Iterator, Countable, Arra
 		if( !$this->tickets_bookings_loaded && !empty($this->booking->booking_id) ){
 			// we could get tickets individually via EM_Ticket_Bookings, but this is one db call vs multiple
 			global $wpdb;
-			$sql = "SELECT * FROM ". EM_TICKETS_BOOKINGS_TABLE ." WHERE booking_id ='{$this->booking->booking_id}'";
+			$sql = "SELECT * FROM ". EM_TICKETS_BOOKINGS_TABLE ." WHERE booking_id ='{$this->booking->booking_id}' ORDER BY ticket_booking_id ASC";
 			$results = $wpdb->get_results($sql, ARRAY_A);
 			//Get tickets belonging to this tickets booking.
 			$tickets_bookings = array();

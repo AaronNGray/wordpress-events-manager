@@ -603,6 +603,8 @@ function em_get_search_form_defaults($base_args = array(), $context = 'events') 
 	$search_args['search_text_show'] = get_option('dbem_search_form_advanced_show'); // deprecated
 	$search_args['search_text_hide'] = get_option('dbem_search_form_advanced_hide'); // deprecated
 	$search_args['search_button'] = get_option('dbem_search_form_submit');
+	// sorting options
+	$search_args['sorting'] = get_option('dbem_search_form_sorting'); // is sorting enabled
 	//search text
 	$search_args['search'] = ''; //default search term
 	$search_args['search_term'] = $search_args['search_term_main'] = get_option('dbem_search_form_text');
@@ -747,6 +749,7 @@ function em_get_search_form_defaults($base_args = array(), $context = 'events') 
 	$main_search_count = 0; // number of search fields
 	$args['css_classes'][] = $args['show_main'] ? 'has-search-main':'no-search-main';
 	$args['css_classes'][] = !empty($args['views']) && count($args['views']) > 1 ? 'has-views':'no-views';
+	$args['css_classes'][] = $args['sorting'] ? 'has-sorting':'no-sorting';
 	$args['css_classes'][] = $args['show_advanced'] ? 'has-advanced':'no-advanced';
 	if( $args['show_advanced'] ){
 		$args['css_classes'][] = 'advanced-mode-' . $args['advanced_mode'];

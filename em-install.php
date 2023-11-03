@@ -445,6 +445,7 @@ function em_add_options() {
 		'dbem_events_default_limit' => 10,
 		//Event Search Options
 		'dbem_search_form_main' => 1,
+		'dbem_search_form_sorting' => !$already_installed,
 		'dbem_search_form_submit' => __('Search','events-manager'),
 		'dbem_search_form_views' => array('list', 'list-grouped', 'grid', 'map', 'calendar'),
 		'dbem_search_form_view' => 'list',
@@ -939,7 +940,7 @@ function em_upgrade_current_installation(){
 		update_site_option('dbem_data', $data);
 	}
 	// temp promo
-	if( time() < 1686139200 && version_compare($current_version, '6.4', '<') ) {
+	if( time() < 1699682400 ) {
 		if( empty($data['admin-modals']) ) $data['admin-modals'] = array();
 		$data['admin-modals']['promo-popup'] = true;
 		update_site_option('dbem_data', $data);
@@ -1772,7 +1773,7 @@ function em_migrate_datetime_timezones( $reset_new_fields = true, $migrate_date_
 	}else{
 		//This gets very easy... just do a single query that copies over all the times to right columns with relevant offset
 		$EM_DateTimeZone = EM_DateTimeZone::create($timezone);
-		$offset = $timezone == 'UTC' ? 0 : $EM_DateTimeZone->manual_offset / MINUTE_IN_SECONDS;
+		$offset = $timezone == 'UTC' ? 0 : $EM_DateTimeZone->getOffset() / MINUTE_IN_SECONDS;
 		$timezone = $EM_DateTimeZone->getName();
 		$migration_result = $wpdb->query($wpdb->prepare('UPDATE '. $db.'em_events'. ' SET event_start = DATE_SUB(TIMESTAMP(event_start_date,event_start_time), INTERVAL %d MINUTE), event_end = DATE_SUB(TIMESTAMP(event_end_date, event_end_time), INTERVAL %d MINUTE) WHERE event_end IS NULL '.$blog_id_and, $offset, $offset));
 		if( $migration_result === false ) $migration_errors[] = array('Event start/end UTC offset', $wpdb->last_error);

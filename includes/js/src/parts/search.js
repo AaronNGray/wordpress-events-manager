@@ -209,6 +209,20 @@ jQuery(document).ready( function($){
 			});
 		});
 
+		search.find('.em-search-sort-trigger').each( function(){
+			tooltip_vars.content = this.parentElement.getAttribute('aria-label');
+			let views_tooltip = tippy(this.parentElement, tooltip_vars);
+			search.on('keydown click', '.em-search-sort-option', function( e ){
+				// get other reference elements we need
+				let order = this.dataset.sort === 'ASC' ? 'DESC' : 'ASC';
+				this.setAttribute('data-sort', order);
+				this.parentElement.querySelector('input[name="order"]').value = order;
+				// trigger custom event in case form disabled due to no search vals
+				search_form.find('button[type="submit"]').focus();
+				search_form.trigger('forcesubmit');
+			});
+		});
+
 		// add trigger logic for advanced popup modal
 		let search_advanced_trigger_click = function(){
 			if( search.hasClass('advanced-mode-inline') ){

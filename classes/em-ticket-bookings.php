@@ -18,13 +18,15 @@ class EM_Ticket_Bookings extends EM_Tickets_Bookings {
 	 */
 	public $tickets_bookings = array();
 	/**
-	 * The ticket ID associated with these ticket bookings
-	 * @var int
+	 * @var int The ticket ID associated with these ticket bookings
 	 */
 	public $ticket_id;
 	/**
-	 * Ensures extended parent class functions use the right filter name
-	 * @var string
+	 * @var EM_Ticket The ticket associated with these booked spaces.
+	 */
+	public $ticket;
+	/**
+	 * @var string Ensures extended parent class functions use the right filter name
 	 */
 	public static $n = 'em_ticket_bookings';
 	
