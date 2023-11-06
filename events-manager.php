@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Events Manager
-Version: 6.4.6
+Version: 6.4.6.1
 Plugin URI: https://wp-events-plugin.com
 Description: Event registration and booking management for WordPress. Recurring events, locations, webinars, google maps, rss, ical, booking registration and more!
 Author: Pixelite
@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 // Setting constants
-define('EM_VERSION', '6.4.6'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
+define('EM_VERSION', '6.4.6.1'); //self expanatory, although version currently may not correspond directly with published version number. until 6.0 we're stuck updating 5.999.x
 define('EM_PRO_MIN_VERSION', '3.0'); //self expanatory
 define('EM_PRO_MIN_VERSION_CRITICAL', '3.0'); //self expanatory
 define('EM_DIR', dirname( __FILE__ )); //an absolute path to this directory
@@ -485,6 +485,7 @@ class EM_Scripts_and_Styles {
 							'processing' => get_option('dbem_bookings_submit_button_processing'),
 						),
 					),
+					'update_listener' => implode( ',', apply_filters('em_booking_form_js_fields_change_match', array() )), // if anything here matches a field in the booking form, em_booking_form_updated JS Event will be triggered
 				),
 				//booking button
 				'bb_full' =>  get_option('dbem_booking_button_msg_full'),

@@ -582,6 +582,7 @@ class EM_Bookings_Table extends EM\List_Table {
 										?><td class="em-bt-col-<?php echo esc_attr($key); ?>"class="em-bt-col-<?php echo esc_attr($key); ?>"><?php echo $row_cell; ?></td><?php
 										}
 										$this->ticket = null;
+										$count++;
 									}
 								}else{
 									$row = $this->get_row($EM_Booking);

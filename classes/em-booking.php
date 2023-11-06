@@ -404,9 +404,13 @@ class EM_Booking extends EM_Object{
 		if( is_array($meta_value) ){
 			// delete split array values by getting the generated keys as we would further down and deleting them first
 			$meta_delete_keys = array();
-			foreach( $meta_value as $kk => $vv ){
-				$meta_delete_keys[] = "'". $wpdb->_real_escape('_'.$meta_key.'_'.$kk) . "'";
+			// associative arrays are deleted by key
+			foreach( $meta_value as $kk => $vv ) {
+				$meta_delete_keys[] = "'" . $wpdb->_real_escape( '_' . $meta_key . '|' . $kk ) . "'";
+				$meta_delete_keys[] = "'" . $wpdb->_real_escape( '_' . $meta_key . '_' . $kk ) . "'"; // legacy delete, probably can never delete this
 			}
+			// sequential arrays are stored with same key value so only one delete key needed - we can't do an if( array_keys($meta_value) !== range(0, count($meta_value) - 1) ) { check because legacy strings with sequentials store the number in the key
+			$meta_delete_keys[] = "'". $wpdb->_real_escape('_'.$meta_key.'|') . "'";
 			// delete previous values so we insert new ones
 			$result = $wpdb->query( $wpdb->prepare('DELETE FROM '. EM_BOOKINGS_META_TABLE .' WHERE booking_id=%d AND meta_key IN ('. implode(',', $meta_delete_keys) .')', $this->booking_id) );
 		}else{
@@ -415,13 +419,16 @@ class EM_Booking extends EM_Object{
 		// if null, then we already deleted it and skip this
 		if( $meta_value !== null ) {
 			if( is_array($meta_value) ){
+				$associative = array_keys($meta_value) !== range(0, count($meta_value) - 1);
 				// we go down one level of array
-				$meta_insert = array();
 				foreach( $meta_value as $kk => $vv ){
 					if( is_array($vv) ) $vv = serialize($vv);
-					$meta_insert[] = $wpdb->prepare('(%d, %s, %s)', $this->booking_id, '_'.$meta_key.'_'.$kk, $vv);
+					if( $associative ) {
+						$meta_insert[] = $wpdb->prepare('(%d, %s, %s)', $this->booking_id, '_'.$meta_key.'|'.$kk, $vv);
+					}else{
+						$meta_insert[] = $wpdb->prepare('(%d, %s, %s)', $this->booking_id, '_'.$meta_key.'|', $vv);
+					}
 				}
-				// delete previous values so we insert new ones
 				$result = $wpdb->query('INSERT INTO '. EM_BOOKINGS_META_TABLE .' (booking_id, meta_key, meta_value) VALUES '. implode(',', $meta_insert));
 			}else{
 				$result = $wpdb->insert( EM_BOOKINGS_META_TABLE, array('booking_id' => $this->booking_id, 'meta_key' => $meta_key, 'meta_value' => $meta_value));
@@ -1899,9 +1906,10 @@ class EM_Booking extends EM_Object{
 			$meta_key = $meta['meta_key'];
 			if( preg_match('/^_([a-zA-Z\-0-9 _]+)\|([a-zA-Z\-0-9 _]+)?$/', $meta_key, $match) || preg_match('/^_([a-zA-Z\-0-9]+)_([a-zA-Z\-0-9 _]+)$/', $meta_key, $match) ){
 				$key = $match[1];
-				$subkey = isset($match[2]) ? $match[2] : count($processed_meta[$key]); // allows for storing arrays without a key, such as _beverage_choice| can be stored multiple times in a row if key is not relevant
 				if( empty($processed_meta[$key]) ) $processed_meta[$key] = array();
-				if( !empty($processed_meta[$key][$subkey]) ){
+				$subkey = isset($match[2]) ? $match[2] : count($processed_meta[$key]); // allows for storing arrays without a key, such as _beverage_choice| can be stored multiple times in a row if key is not relevant
+				if( !empty($processed_meta[$key][$subkey]) && preg_match('/\|$/', $meta_key) ){
+					// we create an array unsequenced array without pre-deined keys, provided the key name ends with a pipe
 					if( !is_array($processed_meta[$key][$subkey]) ) {
 						$processed_meta[$key][$subkey] = array($processed_meta[$key][$subkey]);
 					}

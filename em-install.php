@@ -940,7 +940,7 @@ function em_upgrade_current_installation(){
 		update_site_option('dbem_data', $data);
 	}
 	// temp promo
-	if( time() < 1699682400 ) {
+	if( time() < 1699682400 &&  version_compare($current_version, '6.4.6', '<')  ) {
 		if( empty($data['admin-modals']) ) $data['admin-modals'] = array();
 		$data['admin-modals']['promo-popup'] = true;
 		update_site_option('dbem_data', $data);
@@ -952,481 +952,474 @@ function em_upgrade_current_installation(){
 		$EM_Admin_Notice = new EM_Admin_Notice(array('name' => 'em-pro-updates', 'who' => 'admin', 'where' => 'all', 'message' => "$message"));
 		EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
 	}
-	if( !$current_version ){ add_option('dbem_credits',1); }
-	if( $current_version != '' && $current_version < 5 ){
-		//make events, cats and locs pages
-		update_option('dbem_cp_events_template_page',1);
-		update_option('dbem_cp_locations_template_page',1);
-		//reset orderby, or convert fields to new fieldnames
-		$EM_Event = new EM_Event();
-		$orderbyvals = explode(',', get_option('dbem_events_default_orderby'));
-		$orderby = array();
-		foreach($orderbyvals as $val){
-			if(array_key_exists('event_'.$val, $EM_Event->fields)){
-				$orderby[] = 'event_'.$val;
+	
+	if ( !empty($current_version) ) {
+		
+		add_option('dbem_credits',1);
+		
+		if( $current_version != '' && $current_version < 5 ){
+			//make events, cats and locs pages
+			update_option('dbem_cp_events_template_page',1);
+			update_option('dbem_cp_locations_template_page',1);
+			//reset orderby, or convert fields to new fieldnames
+			$EM_Event = new EM_Event();
+			$orderbyvals = explode(',', get_option('dbem_events_default_orderby'));
+			$orderby = array();
+			foreach($orderbyvals as $val){
+				if(array_key_exists('event_'.$val, $EM_Event->fields)){
+					$orderby[] = 'event_'.$val;
+				}
+			}
+			$orderby = (count($orderby) > 0) ? implode(',',$orderby): get_option('dbem_events_default_orderby');
+			update_option('dbem_events_default_orderby',$orderby);
+			//Locations and categories weren't controlled in v4, so just reset them
+			update_option('dbem_locations_default_orderby','location_name');
+			update_option('dbem_categories_default_orderby','name');
+			//Update the slugs if necessary
+			$events_page_id = get_option ( 'dbem_events_page' );
+			$events_page = get_post($events_page_id);
+			update_option('dbem_cp_events_slug', $events_page->post_name);
+			update_option('dbem_taxonomy_tag_slug', $events_page->post_name.'/tags');
+			if( defined('EM_LOCATIONS_SLUG') && EM_LOCATIONS_SLUG != 'locations' ) update_option('dbem_cp_locations_slug', EM_LOCATIONS_SLUG);
+			if( defined('EM_CATEGORIES_SLUG') && EM_CATEGORIES_SLUG != 'categories' ) update_option('dbem_taxonomy_category_slug', $events_page->post_name.'/'.EM_CATEGORIES_SLUG);
+		}
+		if( $current_version != '' && $current_version < 5.19 ){
+			update_option('dbem_event_reapproved_email_subject',  get_option('dbem_event_approved_email_subject'));
+			update_option('dbem_event_reapproved_email_body', get_option('dbem_event_approved_email_body'));
+		}
+		if( $current_version != '' && $current_version <= 5.21 ){
+			//just remove all rsvp cut-off info
+			$wpdb->query("UPDATE ".$wpdb->postmeta." SET meta_value = NULL WHERE meta_key IN ('_event_rsvp_date','_event_rsvp_time') AND post_id IN (SELECT post_id FROM ".EM_EVENTS_TABLE." WHERE recurrence_id > 0)");
+			$wpdb->query("UPDATE ".EM_EVENTS_TABLE." SET event_rsvp_time = NULL, event_rsvp_date = NULL WHERE recurrence_id > 0");
+		}
+		if( $current_version != '' && $current_version < 5.364 ){
+			if( get_option('dbem_cp_events_template_page') ){
+				update_option('dbem_cp_events_template', 'page');
+				delete_option('dbem_cp_events_template_page');
+			}
+			if( get_option('dbem_cp_locations_template_page') ){
+				update_option('dbem_cp_locations_template', 'page');
+				delete_option('dbem_cp_locations_template_page');
+			}
+			update_option('dbem_events_archive_scope', get_option('dbem_events_page_scope'));
+			update_option('em_last_modified', current_time('timestamp', true));
+			update_option('dbem_category_event_single_format',get_option('dbem_category_event_list_item_header_format').get_option('dbem_category_event_list_item_format').get_option('dbem_category_event_list_item_footer_format'));
+			update_option('dbem_category_no_event_message',get_option('dbem_category_event_list_item_header_format').get_option('dbem_category_no_events_message').get_option('dbem_category_event_list_item_footer_format'));
+			update_option('dbem_location_event_single_format',get_option('dbem_location_event_list_item_header_format').get_option('dbem_location_event_list_item_format').get_option('dbem_location_event_list_item_footer_format'));
+			update_option('dbem_location_no_event_message',get_option('dbem_location_event_list_item_header_format').get_option('dbem_location_no_events_message').get_option('dbem_location_event_list_item_footer_format'));
+			update_option('dbem_tag_event_single_format',get_option('dbem_tag_event_list_item_header_format').get_option('dbem_tag_event_list_item_format').get_option('dbem_tag_event_list_item_footer_format'));
+			update_option('dbem_tag_no_event_message',get_option('dbem_tag_event_list_item_header_format').get_option('dbem_tag_no_events_message').get_option('dbem_tag_event_list_item_footer_format'));
+		}
+		if( $current_version != '' && $current_version < 5.38 ){
+			update_option('dbem_dates_separator', get_option('dbem_dates_Seperator', get_option('dbem_dates_seperator',' - ')));
+			update_option('dbem_times_separator', get_option('dbem_times_Seperator', get_option('dbem_times_seperator',' - ')));
+			delete_option('dbem_dates_Seperator');
+			delete_option('dbem_times_Seperator');
+			delete_option('dbem_dates_seperator');
+			delete_option('dbem_times_seperator');
+		}
+		if( $current_version != '' && $current_version < 5.4 ){
+			//tax rates now saved at booking level, so that alterations to tax rates don't change previous booking prices
+			//any past bookings that don't get updated will adhere to these two values when calculating prices
+			update_option('dbem_legacy_bookings_tax_auto_add', get_option('dbem_bookings_tax_auto_add'));
+			update_option('dbem_legacy_bookings_tax', get_option('dbem_bookings_tax'));
+		}
+		if( $current_version != '' && $current_version < 5.422 ){
+			//copy registration email content into new setting
+			update_option('dbem_rss_limit',0);
+		}
+		if( $current_version != '' && $current_version < 5.4425 ){
+			//copy registration email content into new setting
+			update_option('dbem_css_editors',0);
+			update_option('dbem_css_rsvp',0);
+			update_option('dbem_css_evlist',0);
+			update_option('dbem_css_loclist',0);
+			update_option('dbem_css_rsvpadmin',0);
+			update_option('dbem_css_catlist',0);
+			update_option('dbem_css_taglist',0);
+			if( locate_template('plugins/events-manager/templates/events-search.php') ){
+				update_option('dbem_css_search', 0);
+				update_option('dbem_search_form_hide_advanced',0);
+			}
+			update_option('dbem_events_page_search_form',get_option('dbem_events_page_search'));
+			update_option('dbem_search_form_dates_separator',get_option('dbem_dates_separator'));
+			delete_option('dbem_events_page_search'); //avoids the double search form on overridden templates
+			update_option('dbem_locations_page_search_form',0); //upgrades shouldn't get extra surprises
+		}
+		if( $current_version != '' && $current_version < 5.512 ){
+			update_option('dbem_search_form_geo_units',0); //don't display units search for previous installs
+			//correcting the typo
+			update_option('dbem_search_form_submit', get_option('dbem_serach_form_submit'));
+			//if template isn't overridden, assume it is still being used
+			if( !locate_template('plugins/events-manager/templates/events-search.php') ){
+				delete_option('dbem_serach_form_submit', 0);
+			}
+			//ML translation
+			if( get_option('dbem_serach_form_submit_ml') ){
+				update_option('dbem_search_form_submit_ml', get_option('dbem_serach_form_submit_ml'));
+				delete_option('dbem_serach_form_submit_ml'); //we can assume this isn't used in templates
 			}
 		}
-		$orderby = (count($orderby) > 0) ? implode(',',$orderby): get_option('dbem_events_default_orderby');
-		update_option('dbem_events_default_orderby',$orderby);
-		//Locations and categories weren't controlled in v4, so just reset them
-		update_option('dbem_locations_default_orderby','location_name');
-		update_option('dbem_categories_default_orderby','name');
-		//Update the slugs if necessary
-		$events_page_id = get_option ( 'dbem_events_page' );
-		$events_page = get_post($events_page_id);
-		update_option('dbem_cp_events_slug', $events_page->post_name);
-		update_option('dbem_taxonomy_tag_slug', $events_page->post_name.'/tags');
-		if( defined('EM_LOCATIONS_SLUG') && EM_LOCATIONS_SLUG != 'locations' ) update_option('dbem_cp_locations_slug', EM_LOCATIONS_SLUG);
-		if( defined('EM_CATEGORIES_SLUG') && EM_CATEGORIES_SLUG != 'categories' ) update_option('dbem_taxonomy_category_slug', $events_page->post_name.'/'.EM_CATEGORIES_SLUG);
-	}
-	if( $current_version != '' && $current_version < 5.19 ){
-		update_option('dbem_event_reapproved_email_subject',  get_option('dbem_event_approved_email_subject'));
-		update_option('dbem_event_reapproved_email_body', get_option('dbem_event_approved_email_body'));
-	}
-	if( $current_version != '' && $current_version <= 5.21 ){
-		//just remove all rsvp cut-off info
-		$wpdb->query("UPDATE ".$wpdb->postmeta." SET meta_value = NULL WHERE meta_key IN ('_event_rsvp_date','_event_rsvp_time') AND post_id IN (SELECT post_id FROM ".EM_EVENTS_TABLE." WHERE recurrence_id > 0)");
-		$wpdb->query("UPDATE ".EM_EVENTS_TABLE." SET event_rsvp_time = NULL, event_rsvp_date = NULL WHERE recurrence_id > 0");
-	}
-	if( $current_version != '' && $current_version < 5.364 ){
-		if( get_option('dbem_cp_events_template_page') ){
-			update_option('dbem_cp_events_template', 'page');
-			delete_option('dbem_cp_events_template_page');
+		if( $current_version != '' && $current_version < 5.54 ){
+			update_option('dbem_cp_events_excerpt_formats',0); //don't override excerpts in previous installs
+			update_option('dbem_cp_locations_excerpt_formats',0);
 		}
-		if( get_option('dbem_cp_locations_template_page') ){
-			update_option('dbem_cp_locations_template', 'page');
-			delete_option('dbem_cp_locations_template_page');
+		if( $current_version != '' && $current_version < 5.55 ){
+			//rename email templates sent to admins on new bookings
+			update_option('dbem_bookings_contact_email_cancelled_subject',get_option('dbem_contactperson_email_cancelled_subject'));
+			update_option('dbem_bookings_contact_email_cancelled_body',get_option('dbem_contactperson_email_cancelled_body'));
+			if( get_option('dbem_bookings_approval') ){
+				//if approvals ENABLED, we should make the old 'New Booking' email the one for a pending booking
+				update_option('dbem_bookings_contact_email_pending_subject',get_option('dbem_bookings_contact_email_subject'));
+				update_option('dbem_bookings_contact_email_pending_body',get_option('dbem_bookings_contact_email_body'));
+			}else{
+				//if approvals DISABLED, we should make the old 'New Booking' email the one for a confirmed booking
+				update_option('dbem_bookings_contact_email_confirmed_subject',get_option('dbem_bookings_contact_email_subject'));
+				update_option('dbem_bookings_contact_email_confirmed_body',get_option('dbem_bookings_contact_email_body'));
+			}
+			delete_option('dbem_contactperson_email_cancelled_subject');
+			delete_option('dbem_contactperson_email_cancelled_body');
+			delete_option('dbem_bookings_contact_email_subject');
+			delete_option('dbem_bookings_contact_email_body');
 		}
-		update_option('dbem_events_archive_scope', get_option('dbem_events_page_scope'));
-		update_option('em_last_modified', current_time('timestamp', true));
-		update_option('dbem_category_event_single_format',get_option('dbem_category_event_list_item_header_format').get_option('dbem_category_event_list_item_format').get_option('dbem_category_event_list_item_footer_format'));
-		update_option('dbem_category_no_event_message',get_option('dbem_category_event_list_item_header_format').get_option('dbem_category_no_events_message').get_option('dbem_category_event_list_item_footer_format'));
-		update_option('dbem_location_event_single_format',get_option('dbem_location_event_list_item_header_format').get_option('dbem_location_event_list_item_format').get_option('dbem_location_event_list_item_footer_format'));
-		update_option('dbem_location_no_event_message',get_option('dbem_location_event_list_item_header_format').get_option('dbem_location_no_events_message').get_option('dbem_location_event_list_item_footer_format'));
-		update_option('dbem_tag_event_single_format',get_option('dbem_tag_event_list_item_header_format').get_option('dbem_tag_event_list_item_format').get_option('dbem_tag_event_list_item_footer_format'));
-		update_option('dbem_tag_no_event_message',get_option('dbem_tag_event_list_item_header_format').get_option('dbem_tag_no_events_message').get_option('dbem_tag_event_list_item_footer_format'));
-	}
-	if( $current_version != '' && $current_version < 5.38 ){
-		update_option('dbem_dates_separator', get_option('dbem_dates_Seperator', get_option('dbem_dates_seperator',' - ')));
-		update_option('dbem_times_separator', get_option('dbem_times_Seperator', get_option('dbem_times_seperator',' - ')));
-		delete_option('dbem_dates_Seperator');
-		delete_option('dbem_times_Seperator');
-		delete_option('dbem_dates_seperator');
-		delete_option('dbem_times_seperator');
-	}
-	if( $current_version != '' && $current_version < 5.4 ){
-		//tax rates now saved at booking level, so that alterations to tax rates don't change previous booking prices
-		//any past bookings that don't get updated will adhere to these two values when calculating prices
-		update_option('dbem_legacy_bookings_tax_auto_add', get_option('dbem_bookings_tax_auto_add'));
-		update_option('dbem_legacy_bookings_tax', get_option('dbem_bookings_tax'));
-	}
-	if( $current_version != '' && $current_version < 5.422 ){
-		//copy registration email content into new setting
-		update_option('dbem_rss_limit',0);
-	}
-	if( $current_version != '' && $current_version < 5.4425 ){
-		//copy registration email content into new setting
-		update_option('dbem_css_editors',0);
-		update_option('dbem_css_rsvp',0);
-		update_option('dbem_css_evlist',0);
-		update_option('dbem_css_loclist',0);
-		update_option('dbem_css_rsvpadmin',0);
-		update_option('dbem_css_catlist',0);
-		update_option('dbem_css_taglist',0);
-		if( locate_template('plugins/events-manager/templates/events-search.php') ){
-			update_option('dbem_css_search', 0);
-			update_option('dbem_search_form_hide_advanced',0);
+		if( $current_version != '' && $current_version < 5.62 ){
+			//delete all _event_created_date and _event_date_modified records in post_meta, we don't need them anymore, they were never accurate to begin with, refer to the records in em_events table if still needed
+			$wpdb->query('DELETE FROM '.$wpdb->postmeta." WHERE (meta_key='_event_date_created' OR meta_key='_event_date_modified') AND post_id IN (SELECT ID FROM ".$wpdb->posts." WHERE post_type='".EM_POST_TYPE_EVENT."' OR post_type='event-recurring')");
+			$wpdb->query('ALTER TABLE '. $wpdb->prefix.'em_bookings CHANGE event_id event_id BIGINT(20) UNSIGNED NULL');
 		}
-		update_option('dbem_events_page_search_form',get_option('dbem_events_page_search'));
-		update_option('dbem_search_form_dates_separator',get_option('dbem_dates_separator'));
-		delete_option('dbem_events_page_search'); //avoids the double search form on overridden templates
-		update_option('dbem_locations_page_search_form',0); //upgrades shouldn't get extra surprises
-	}
-	if( $current_version != '' && $current_version < 5.512 ){
-		update_option('dbem_search_form_geo_units',0); //don't display units search for previous installs
-		//correcting the typo
-		update_option('dbem_search_form_submit', get_option('dbem_serach_form_submit'));
-		//if template isn't overridden, assume it is still being used
-		if( !locate_template('plugins/events-manager/templates/events-search.php') ){
-			delete_option('dbem_serach_form_submit', 0);
+		if( $current_version != '' && $current_version < 5.66 ){
+			if( get_option('dbem_ical_description_format') == "#_EVENTNAME - #_LOCATIONNAME - #_EVENTDATES - #_EVENTTIMES" ) update_option('dbem_ical_description_format',"#_EVENTNAME");
+			if( get_option('dbem_ical_location_format') == "#_LOCATION" ) update_option('dbem_ical_location_format', "#_LOCATIONNAME, #_LOCATIONFULLLINE, #_LOCATIONCOUNTRY");
+			$old_values = array(
+					'dbem_ical_description_format' => "#_EVENTNAME - #_LOCATIONNAME - #_EVENTDATES - #_EVENTTIMES",
+					'dbem_ical_location_format' => "#_LOCATION",
+			);
 		}
-		//ML translation
-		if( get_option('dbem_serach_form_submit_ml') ){
-			update_option('dbem_search_form_submit_ml', get_option('dbem_serach_form_submit_ml'));
-			delete_option('dbem_serach_form_submit_ml'); //we can assume this isn't used in templates
-		}
-	}
-	if( $current_version != '' && $current_version < 5.54 ){
-		update_option('dbem_cp_events_excerpt_formats',0); //don't override excerpts in previous installs
-		update_option('dbem_cp_locations_excerpt_formats',0);
-	}
-	if( $current_version != '' && $current_version < 5.55 ){
-		//rename email templates sent to admins on new bookings
-		update_option('dbem_bookings_contact_email_cancelled_subject',get_option('dbem_contactperson_email_cancelled_subject'));
-		update_option('dbem_bookings_contact_email_cancelled_body',get_option('dbem_contactperson_email_cancelled_body'));
-		if( get_option('dbem_bookings_approval') ){
-			//if approvals ENABLED, we should make the old 'New Booking' email the one for a pending booking
-			update_option('dbem_bookings_contact_email_pending_subject',get_option('dbem_bookings_contact_email_subject'));
-			update_option('dbem_bookings_contact_email_pending_body',get_option('dbem_bookings_contact_email_body'));
-		}else{
-			//if approvals DISABLED, we should make the old 'New Booking' email the one for a confirmed booking
-			update_option('dbem_bookings_contact_email_confirmed_subject',get_option('dbem_bookings_contact_email_subject'));
-			update_option('dbem_bookings_contact_email_confirmed_body',get_option('dbem_bookings_contact_email_body'));
-		}
-		delete_option('dbem_contactperson_email_cancelled_subject');
-		delete_option('dbem_contactperson_email_cancelled_body');
-		delete_option('dbem_bookings_contact_email_subject');
-		delete_option('dbem_bookings_contact_email_body');
-	}
-	if( $current_version != '' && $current_version < 5.62 ){
-		//delete all _event_created_date and _event_date_modified records in post_meta, we don't need them anymore, they were never accurate to begin with, refer to the records in em_events table if still needed
-		$wpdb->query('DELETE FROM '.$wpdb->postmeta." WHERE (meta_key='_event_date_created' OR meta_key='_event_date_modified') AND post_id IN (SELECT ID FROM ".$wpdb->posts." WHERE post_type='".EM_POST_TYPE_EVENT."' OR post_type='event-recurring')");
-		$wpdb->query('ALTER TABLE '. $wpdb->prefix.'em_bookings CHANGE event_id event_id BIGINT(20) UNSIGNED NULL');
-	}
-	if( $current_version != '' && $current_version < 5.66 ){
-		if( get_option('dbem_ical_description_format') == "#_EVENTNAME - #_LOCATIONNAME - #_EVENTDATES - #_EVENTTIMES" ) update_option('dbem_ical_description_format',"#_EVENTNAME");
-		if( get_option('dbem_ical_location_format') == "#_LOCATION" ) update_option('dbem_ical_location_format', "#_LOCATIONNAME, #_LOCATIONFULLLINE, #_LOCATIONCOUNTRY");
-		$old_values = array(
-				'dbem_ical_description_format' => "#_EVENTNAME - #_LOCATIONNAME - #_EVENTDATES - #_EVENTTIMES",
-				'dbem_ical_location_format' => "#_LOCATION",
-		);
-	}
-	if( $current_version != '' && $current_version < 5.6636 ){
-		$sql = $wpdb->prepare("DELETE FROM {$wpdb->postmeta} WHERE meta_key='_post_id' AND post_id IN (SELECT ID FROM {$wpdb->posts} WHERE post_type=%s OR post_type=%s)", array(EM_POST_TYPE_EVENT, 'event-recurring'));
-		$wpdb->query($sql);
-		remove_filter('pre_option_dbem_bookings_registration_user', 'EM_People::dbem_bookings_registration_user');
-		$no_user = get_option('dbem_bookings_registration_user');
-		if( get_option('dbem_bookings_registration_disable') && is_numeric($no_user) ){
-			if( $wpdb->update(EM_BOOKINGS_TABLE, array('person_id'=>0), array('person_id'=>$no_user), '%d', '%d') ){
+		if( $current_version != '' && $current_version < 5.6636 ){
+			$sql = $wpdb->prepare("DELETE FROM {$wpdb->postmeta} WHERE meta_key='_post_id' AND post_id IN (SELECT ID FROM {$wpdb->posts} WHERE post_type=%s OR post_type=%s)", array(EM_POST_TYPE_EVENT, 'event-recurring'));
+			$wpdb->query($sql);
+			remove_filter('pre_option_dbem_bookings_registration_user', 'EM_People::dbem_bookings_registration_user');
+			$no_user = get_option('dbem_bookings_registration_user');
+			if( get_option('dbem_bookings_registration_disable') && is_numeric($no_user) ){
+				if( $wpdb->update(EM_BOOKINGS_TABLE, array('person_id'=>0), array('person_id'=>$no_user), '%d', '%d') ){
+					delete_option('dbem_bookings_registration_user');
+				}
+			}else{
 				delete_option('dbem_bookings_registration_user');
 			}
-		}else{
-			delete_option('dbem_bookings_registration_user');
 		}
-	}
-	if( $current_version != '' && $current_version < 5.821 ){
-		$admin_data = get_option('dbem_data');
-		//upgrade tables only if we didn't do it before during earlier dev versions
-		if( empty($admin_data['datetime_backcompat']) ){
-			$migration_result = em_migrate_datetime_timezones( false );
-			if( $migration_result !== true ){
-				$EM_Notices->add_error($migration_result);
-			}
-			//migrate certain options
-			$opt = get_option('dbem_tags_default_archive_orderby');
-			if( $opt == '_start_ts' ) update_option('dbem_tags_default_archive_orderby', '_event_start');
-			$opt = get_option('dbem_categories_default_archive_orderby');
-			if( $opt == '_start_ts' ) update_option('dbem_categories_default_archive_orderby', '_event_start');
-			$opt = get_option('dbem_events_default_archive_orderby');
-			if( $opt == '_start_ts' ) update_option('dbem_events_default_archive_orderby', '_event_start');
-		}else{
-			//we're doing this at multisite level instead within dev versions, so fix this for dev versions
-			unset( $admin_data['datetime_backcompat'] );
-			update_option('dbem_data', $admin_data);
-		}
-		//add backwards compatability settings and warnings
-		$admin_data = get_site_option('dbem_data');
-		if( empty($admin_data['updates']) ) $admin_data['updates'] = array(); 
-		$admin_data['updates']['timezone-backcompat'] = true;
-		update_site_option('dbem_data', $admin_data);
-		if( !is_multisite() || em_wp_is_super_admin() ){
-			$message = __('Events Manager now supports multiple timezones for your events! Your events will initially match your blog timezone.','events-manager');
-			if( is_multisite() ){
-				$url = network_admin_url('admin.php?page=events-manager-options#general+admin-tools');
-				$admin_tools_link = '<a href="'.$url.'">'.__('Network Admin').' &gt; '.__('Events Manager','events-manager').' &gt; '.__('Admin Tools','events-manager').'</a>';
-				$options_link = '<a href="'.network_admin_url('admin.php?page=events-manager-update').'">'.__('Update Network','events-manager').'</a>';
-				$message .= '</p><p>' . sprintf(__("Please update your network and when you're happy with the changes you can also finalize the migration by deleting unecessary data in the %s page.", 'events-manager'), $options_link);
-				$message .= '</p><p>' . sprintf(__('You can also reset all events of a blog to a new timezone in %s', 'events-manager'), $admin_tools_link);
+		if( $current_version != '' && $current_version < 5.821 ){
+			$admin_data = get_option('dbem_data');
+			//upgrade tables only if we didn't do it before during earlier dev versions
+			if( empty($admin_data['datetime_backcompat']) ){
+				$migration_result = em_migrate_datetime_timezones( false );
+				if( $migration_result !== true ){
+					$EM_Notices->add_error($migration_result);
+				}
+				//migrate certain options
+				$opt = get_option('dbem_tags_default_archive_orderby');
+				if( $opt == '_start_ts' ) update_option('dbem_tags_default_archive_orderby', '_event_start');
+				$opt = get_option('dbem_categories_default_archive_orderby');
+				if( $opt == '_start_ts' ) update_option('dbem_categories_default_archive_orderby', '_event_start');
+				$opt = get_option('dbem_events_default_archive_orderby');
+				if( $opt == '_start_ts' ) update_option('dbem_events_default_archive_orderby', '_event_start');
 			}else{
-				$options_link = get_admin_url(null, 'edit.php?post_type=event&page=events-manager-options#general+admin-tools');
-				$options_link = '<a href="'.$options_link.'">'.__('Settings','events-manager').' &gt; '.__('General','events-manager').' &gt; '.__('Admin Tools','events-manager').'</a>';
-				$message .= '</p><p>' . sprintf(__('You can reset your events to a new timezone and also complete the final migration step by deleting unecessary data in %s', 'events-manager'), $options_link);
+				//we're doing this at multisite level instead within dev versions, so fix this for dev versions
+				unset( $admin_data['datetime_backcompat'] );
+				update_option('dbem_data', $admin_data);
 			}
+			//add backwards compatability settings and warnings
+			$admin_data = get_site_option('dbem_data');
+			if( empty($admin_data['updates']) ) $admin_data['updates'] = array();
+			$admin_data['updates']['timezone-backcompat'] = true;
+			update_site_option('dbem_data', $admin_data);
+			if( !is_multisite() || em_wp_is_super_admin() ){
+				$message = __('Events Manager now supports multiple timezones for your events! Your events will initially match your blog timezone.','events-manager');
+				if( is_multisite() ){
+					$url = network_admin_url('admin.php?page=events-manager-options#general+admin-tools');
+					$admin_tools_link = '<a href="'.$url.'">'.__('Network Admin').' &gt; '.__('Events Manager','events-manager').' &gt; '.__('Admin Tools','events-manager').'</a>';
+					$options_link = '<a href="'.network_admin_url('admin.php?page=events-manager-update').'">'.__('Update Network','events-manager').'</a>';
+					$message .= '</p><p>' . sprintf(__("Please update your network and when you're happy with the changes you can also finalize the migration by deleting unecessary data in the %s page.", 'events-manager'), $options_link);
+					$message .= '</p><p>' . sprintf(__('You can also reset all events of a blog to a new timezone in %s', 'events-manager'), $admin_tools_link);
+				}else{
+					$options_link = get_admin_url(null, 'edit.php?post_type=event&page=events-manager-options#general+admin-tools');
+					$options_link = '<a href="'.$options_link.'">'.__('Settings','events-manager').' &gt; '.__('General','events-manager').' &gt; '.__('Admin Tools','events-manager').'</a>';
+					$message .= '</p><p>' . sprintf(__('You can reset your events to a new timezone and also complete the final migration step by deleting unecessary data in %s', 'events-manager'), $options_link);
+				}
+				$EM_Admin_Notice = new EM_Admin_Notice(array(
+					'name' => 'v-update',
+					'who' => 'admin',
+					'where' => 'all',
+					'message' => $message
+				));
+				EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
+			}
+		}
+		if( $current_version != '' && $current_version == 5.9 && is_multisite() && !EM_MS_GLOBAL && (is_network_admin() || is_main_site()) ){
+			//warning just for users who upgraded to 5.9 on multisite without global tables enabled
+			$message = 'Due to a bug in 5.9 when updating to new timezones in MultiSite installations, you may notice some of your events are missing from lists.<br><br>To fix this problem, visit %s choose your timezone, select %s and click %s to update all your blogs to the desired timezone.';
+			$url = network_admin_url('admin.php?page=events-manager-options#general+admin-tools');
+			$admin_tools_link = '<a href="'.$url.'">'.esc_html(__('Network Admin').' &gt; '.__('Events Manager','events-manager').' &gt; '.__('Admin Tools','events-manager')).'</a>';
+			$message = sprintf($message, $admin_tools_link, '<em><strong>'.esc_html__('All Blogs', 'events-manager').'</strong></em>', '<em><strong>'.esc_html__('Reset Event Timezones','events-manager').'</strong></em>');
 			$EM_Admin_Notice = new EM_Admin_Notice(array(
-				'name' => 'date_time_migration',
-				'who' => 'admin',
-				'where' => 'all',
-				'message' => $message
+			'name' => 'date_time_migration_5.9_multisite',
+			'who' => 'admin',
+			'what' => 'warning',
+			'where' => 'all',
+			'message' => $message
 			));
 			EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
 		}
-	}
-	if( $current_version != '' && $current_version == 5.9 && is_multisite() && !EM_MS_GLOBAL && (is_network_admin() || is_main_site()) ){
-		//warning just for users who upgraded to 5.9 on multisite without global tables enabled
-		$message = 'Due to a bug in 5.9 when updating to new timezones in MultiSite installations, you may notice some of your events are missing from lists.<br><br>To fix this problem, visit %s choose your timezone, select %s and click %s to update all your blogs to the desired timezone.';
-		$url = network_admin_url('admin.php?page=events-manager-options#general+admin-tools');
-		$admin_tools_link = '<a href="'.$url.'">'.esc_html(__('Network Admin').' &gt; '.__('Events Manager','events-manager').' &gt; '.__('Admin Tools','events-manager')).'</a>';
-		$message = sprintf($message, $admin_tools_link, '<em><strong>'.esc_html__('All Blogs', 'events-manager').'</strong></em>', '<em><strong>'.esc_html__('Reset Event Timezones','events-manager').'</strong></em>');
-		$EM_Admin_Notice = new EM_Admin_Notice(array(
-		'name' => 'date_time_migration_5.9_multisite',
-		'who' => 'admin',
-		'what' => 'warning',
-		'where' => 'all',
-		'message' => $message
-		));
-		EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
-	}
-	if( $current_version != '' && $current_version < 5.93 ){
-		$message = __('Events Manager has introduced new privacy tools to help you comply with international laws such as the GDPR, <a href="%s">see our documentation</a> for more information.','events-manager');
-		$message = sprintf( $message, 'https://wp-events-plugin.com/documentation/data-privacy-gdpr-compliance/?utm_source=plugin&utm_campaign=gdpr_update');
-		$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'gdpr_update', 'who' => 'admin', 'where' => 'all', 'message' => $message ));
-		EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
-	}
-	if( $current_version != '' && $current_version < 5.95 ){
-		$message = esc_html__('Google has introduced new pricing for displaying maps on your site. If you have moderate traffic levels, this may likely affect you with surprise and unexpected costs!', 'events-manager');
-		$message2 = esc_html__('Events Manager has implemented multiple ways to help prevent or reduce these costs drastically, please check our %s page for more information.', 'events-manager');
-		$message2 = sprintf($message2, '<a href="https://wp-events-plugin.com/documentation/google-maps/api-usage/?utm_source=plugin&utm_source=medium=settings&utm_campaign=gmaps-update">'.esc_html__('documentation', 'events-manager') .'</a>');
-		$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'gdpr_update', 'who' => 'admin', 'where' => 'all', 'message' => "<p>$message</p><p>$message2</p>" ));
-		EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
-	}
-	if( $current_version != '' && $current_version < 5.9618 ){
-		$multisite_cond = '';
-		if( EM_MS_GLOBAL ){
-			if( is_main_site() ){
-				$multisite_cond = ' AND (blog_id='.absint(get_current_blog_id()).' OR blog_id=0)';
-			}else{
-				$multisite_cond = ' AND blog_id='.absint(get_current_blog_id());
-			}
+		if( $current_version != '' && $current_version < 5.93 ){
+			$message = __('Events Manager has introduced new privacy tools to help you comply with international laws such as the GDPR, <a href="%s">see our documentation</a> for more information.','events-manager');
+			$message = sprintf( $message, 'https://wp-events-plugin.com/documentation/data-privacy-gdpr-compliance/?utm_source=plugin&utm_campaign=gdpr_update');
+			$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'v-update', 'who' => 'admin', 'where' => 'all', 'message' => $message ));
+			EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
 		}
-		$wpdb->query( $wpdb->prepare('UPDATE '.EM_EVENTS_TABLE.' SET event_language=%s WHERE event_language IS NULL'.$multisite_cond, EM_ML::$wplang) );
-		$wpdb->query( $wpdb->prepare('UPDATE '.EM_LOCATIONS_TABLE.' SET location_language=%s WHERE location_language IS NULL'.$multisite_cond, EM_ML::$wplang) );
-		$host = get_option('dbem_smtp_host');
-		//if port is supplied via the host address, give that precedence over the port setting
-		if( preg_match('/^(tls|ssl):\/\//', $host, $host_port_matches) ){
-			update_option('dbem_smtp_encryption', $host_port_matches[1]);
-		}else{
-			update_option('dbem_smtp_encryption', 0);
+		if( $current_version != '' && $current_version < 5.95 ){
+			$message = esc_html__('Google has introduced new pricing for displaying maps on your site. If you have moderate traffic levels, this may likely affect you with surprise and unexpected costs!', 'events-manager');
+			$message2 = esc_html__('Events Manager has implemented multiple ways to help prevent or reduce these costs drastically, please check our %s page for more information.', 'events-manager');
+			$message2 = sprintf($message2, '<a href="https://wp-events-plugin.com/documentation/google-maps/api-usage/?utm_source=plugin&utm_source=medium=settings&utm_campaign=gmaps-update">'.esc_html__('documentation', 'events-manager') .'</a>');
+			$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'v-update', 'who' => 'admin', 'where' => 'all', 'message' => "<p>$message</p><p>$message2</p>" ));
+			EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
 		}
-	}
-	if( $current_version != '' && $current_version < 5.975 ){
-		update_option('dbem_location_types', array('location'=>1));
-		$message = esc_html__('Events Manager has introduced location types, which can include online locations such as a URL or integrations with webinar platforms such as Zoom! Enable different location types in your settings page, for more information see our %s.', 'events-manager');
-		$message = sprintf( $message, '<a href="http://wp-events-plugin.com/documentation/location-types/" target="_blank">'. esc_html__('documentation', 'events-manager')).'</a>';
-		$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'location-types-update', 'who' => 'admin', 'where' => 'all', 'message' => "$message" ));
-		EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
-	}
-	if( $current_version != '' && $current_version < 5.9821 ){
-		// recreate all event_parent records in post meta
-		$sql = "DELETE FROM {$wpdb->postmeta} WHERE meta_key = '_event_parent' AND post_id IN (SELECT post_id FROM ".EM_EVENTS_TABLE.")";
-		$wpdb->query($sql);
-		$sql = "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) SELECT post_id, '_event_parent', event_parent FROM ".EM_EVENTS_TABLE." WHERE event_parent IS NOT NULL";
-		if( EM_MS_GLOBAL ){
-			// do just this blog, other blogs will update themselves when loaded
-			if( is_main_site() ){
-				$sql .= ' AND (blog_id='.absint(get_current_blog_id()).' OR blog_id=0)';
-			}else{
-				$sql .= ' AND blog_id='.absint(get_current_blog_id());
-			}
-		}
-		$wpdb->query($sql);
-	}
-	// last version check in numbers, 6 onwwards uses version_compare
-	if( $current_version != '' && version_compare($current_version, '6.0', '<') ){
-		// convert jQuery UI DateFormat for max back-compat
-		$dateformat = get_option('dbem_date_format_js');
-		// check if there's any kind of non-convertable placeholders
-		$non_convertables = '(o|oo|!|TICKS)';
-		if( !preg_match("/$non_convertables/", $dateformat) ){
-			$placeholder_convertables = array('ATOM' => 'yy-mm-dd', 'COOKIE' => 'D, dd M yy', 'ISO_8601' => 'yy-mm-dd', 'RFC_822' => 'D, d M y', 'RFC_850' => 'DD, dd-M-y', 'RFC_1036' => 'D, d M y', 'RFC_1123' => 'D, d M yy', 'RFC_2822' => 'D, d M yy', 'RSS' => 'D, d M y', 'TIMESTAMP' => '@', 'W3C' => 'yy-mm-dd',);
-			foreach( $placeholder_convertables as $k => $v ){
-				$dateformat = str_replace($k, $v, $dateformat);
-			}
-			$convertable = array( 'dd' => 'XzX' /* d */, 'd' => 'j', 'XzX' => 'd', 'DD' => 'l', 'mm' => 'ZxZ' /* m */, 'm' => 'n', 'ZxZ' => 'm', 'MM' => 'F', 'yy' => 'Y', '@' => 'U' );
-			foreach( $convertable as $k => $v ){
-				$dateformat = str_replace($k, $v, $dateformat);
-			}
-			update_option('dbem_datepicker_format', $dateformat);
-		}
-		update_option('dbem_search_form_tags', 0); // disable tags searching by default for previous users
-		// it'd be nice to do 2 sweeps for our new templates, so we'll up the recursions to 2 so we can nest once, it'll also cover most use cases
-		if( get_option('dbem_conditional_recursions') <= 1 ){
-			update_option('dbem_conditional_recursions', 2);
-		}
-		// admin optiosn for upgrade/migration
-		$admin_data = get_option('dbem_data', array());
-		$admin_data['v6'] = false;
-		update_option('dbem_data', $admin_data);
-		// notify user of new update
-		$message = esc_html__('Welcome to Events Manager v6! This latest update includes some major UI improvements, which requires you to update your formats.', 'events-manager');
-		$settings_page_url = '<a href="'.admin_url('admin.php?page=events-manager-options').'">'. esc_html__('settings page', 'events-manager-google').'</a>';
-		$message2 = sprintf(esc_html__('Please visit the %s to see migration options.', 'events-manager'), $settings_page_url);
-		$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'v6-update', 'who' => 'admin', 'where' => 'all', 'message' => "$message $message2" ));
-		EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
-	}
-	if( $current_version != '' && version_compare($current_version, '6.0', '>=') && version_compare($current_version, '6.0.1.1', '<') ){
-		$admin_data = get_option('dbem_data', array());
-		$admin_data['v6'] = false;
-		update_option('dbem_data', $admin_data);
-		// notify user of new update
-		$message = "<strong>We've made some changes to our template files since the 6.0 update which may break your currently saved formats. We're re-enabling preview/migration for you on the %s to have the chance to preview and reload our newly updated templates. Sorry for the inconvenience!</strong>";
-		$settings_page_url = '<a href="'.admin_url('admin.php?page=events-manager-options').'">'. esc_html__('settings page', 'events-manager-google').'</a>';
-		$message = sprintf($message, $settings_page_url);
-		$message .= '</p><p>'."We've also added some extra features to help transition, which can be found in <code>Settings > General > Styling Options</code> and a new Default/Advanced mode in <code>Settings > Formatting</code> which will allow your formats to automatically update themselves directly from our plugin rather than settings page.";
-		$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'v6-update2', 'who' => 'admin', 'where' => 'all', 'message' => $message, 'what'=>'warning' ));
-		EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
-	}
-	if( $current_version != '' && version_compare($current_version, '6.0.1.1', '<') ){
-		// enable advanced formatting for any previous users, looks like before, they can disable afterwards.
-		update_option('dbem_advanced_formatting', 2);
-		update_option('dbem_css_theme_font_weight', 1);
-		update_option('dbem_css_theme_font_family', 1);
-		update_option('dbem_css_theme_font_size', 1);
-		update_option('dbem_css_theme_line_height', 1);
-		update_option('dbem_dates_range_double_inputs', 1);
-	}
-	if( $current_version != '' && version_compare($current_version, '6.0.1.2', '<') ){
-		function v6012_sql_check_error( $result, $query, $table ){
-			global $wpdb;
-			if( $result === false ){
-				$message = "<strong>Events Manager is trying to update your database, but the following error occured:</strong>";
-				$message .= '</p><p>'.'<code>'. $wpdb->last_error .'</code>';
-				$message .= '</p><p>It might be that reloading this page one or more times may complete the process, if you have a large number of bookings in your database. Alternatively, you can run one of these two queries directly into your WP database:';
-				$message .= '</p><p>'.'<code>'. $query .'</code>';
-				$message .= '</p>OR<p>'.'<code>'. "UPDATE ". $table ." SET ticket_uuid= UUID()" .'</code>';
-				$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'v6.1-'.$table.'atomic-error', 'who' => 'admin', 'where' => 'all', 'message' => $message, 'what'=>'warning' ));
-				EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
-				global $em_do_not_finalize_upgrade;
-				$em_do_not_finalize_upgrade = true;
-			}else{
-				EM_Admin_Notices::remove('v6.1-'.$table.'atomic-error', is_multisite());
-			}
-		}
-		// slated for 6.1 - atomic tickets - tweaked for mariadb < 10.0 compatiability
-		$query = "UPDATE ". EM_TICKETS_BOOKINGS_TABLE ." SET ticket_uuid= MD5(RAND())";
-		//$query = "UPDATE ". EM_TICKETS_BOOKINGS_TABLE ." SET ticket_uuid= LOWER(CONCAT( HEX(RANDOM_BYTES(4)), '', HEX(RANDOM_BYTES(2)), '4', SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3), '', HEX(FLOOR(ASCII(RANDOM_BYTES(1)) / 64) + 8), SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3), '', hex(RANDOM_BYTES(6)) ))";
-		$result = $wpdb->query($query. " WHERE ticket_uuid=''");
-		if( $result !== false ) {
-			// check for duplicates, md5 has much more chnace of collision
-			$duplicate_check = 'SELECT ticket_booking_id FROM ' . EM_TICKETS_BOOKINGS_TABLE . ' GROUP BY ticket_uuid HAVING COUNT(ticket_uuid) > 1 LIMIT 1';
-			while( $result !== false && $wpdb->get_var($duplicate_check) !== null ) {
-				$query_recheck = 'UPDATE ' . EM_TICKETS_BOOKINGS_TABLE . ' SET ticket_uuid= MD5(RAND()) WHERE ticket_uuid IN (
-				    SELECT ticket_uuid FROM (SELECT ticket_uuid FROM ' . EM_TICKETS_BOOKINGS_TABLE . ' GROUP BY ticket_uuid HAVING COUNT(ticket_uuid) > 1) t2
-				)';
-				$result = $wpdb->query($query_recheck);
-			}
-		}
-		v6012_sql_check_error($result, $query, EM_TICKETS_BOOKINGS_TABLE);
-		// do the same for regular bookings, allowing for unique IDs that can be used by guest users to access (future feature)
-		$query = "UPDATE ". EM_BOOKINGS_TABLE ." SET booking_uuid= MD5(RAND())";
-		//$query = "UPDATE ". EM_BOOKINGS_TABLE ." SET booking_uuid= LOWER(CONCAT( HEX(RANDOM_BYTES(4)), '', HEX(RANDOM_BYTES(2)), '4', SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3), '', HEX(FLOOR(ASCII(RANDOM_BYTES(1)) / 64) + 8), SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3), '', hex(RANDOM_BYTES(6)) ))";
-		$result = $wpdb->query( $query . " WHERE booking_uuid=''" );
-		if( $result !== false ) {
-			// check for duplicates, md5 has much more chnace of collision
-			$duplicate_check = 'SELECT booking_id FROM ' . EM_BOOKINGS_TABLE . ' GROUP BY booking_uuid HAVING COUNT(booking_uuid) > 1 LIMIT 1';
-			while( $result !== false && $wpdb->get_var($duplicate_check) !== null ) {
-				$query_recheck = 'UPDATE ' . EM_BOOKINGS_TABLE . ' SET booking_uuid= MD5(RAND()) WHERE booking_uuid IN (
-				    SELECT booking_uuid FROM (SELECT booking_uuid FROM ' . EM_BOOKINGS_TABLE . ' GROUP BY booking_uuid HAVING COUNT(booking_uuid) > 1) t2
-				)';
-				$result = $wpdb->query($query_recheck);
-			}
-		}
-		v6012_sql_check_error($result, $query, EM_BOOKINGS_TABLE);
-		// Now go through current bookings and split the tickets up, 100 at a time
-		$query = 'SELECT ticket_booking_id, ticket_id, booking_id, ticket_booking_spaces, ticket_booking_price FROM '.EM_TICKETS_BOOKINGS_TABLE .' WHERE ticket_booking_spaces > 1 LIMIT 100';
-		$results = $wpdb->get_results( $query, ARRAY_A );
-		while( !empty($results) ){
-			$tickets_to_delete = array();
-			foreach( $results as $ticket_booking ) {
-				// first check that we maybe didn't die halfway through this and there aren't others with the same ticket/bookingid combo by simply deleting these
-				$wpdb->query('DELETE FROM '. EM_TICKETS_BOOKINGS_TABLE .' WHERE booking_id='. $ticket_booking['booking_id'] .' AND ticket_id='. $ticket_booking['ticket_id'] .' AND ticket_booking_id !='. $ticket_booking['ticket_booking_id'] .' AND ticket_booking_spaces = 1');
-				// now we generate split tickets, one space per ticket
-				$split_tickets = array();
-				$split_price = round($ticket_booking['ticket_booking_price'] / $ticket_booking['ticket_booking_spaces'], 4);
-				for( $i = 1; $i <= $ticket_booking['ticket_booking_spaces']; $i++ ){
-					$uuid = str_replace('-', '', wp_generate_uuid4());
-					$split_tickets[] = "('{$uuid}', '{$ticket_booking['ticket_id']}', '{$ticket_booking['booking_id']}', $split_price , 1)";
+		if( $current_version != '' && $current_version < 5.9618 ){
+			$multisite_cond = '';
+			if( EM_MS_GLOBAL ){
+				if( is_main_site() ){
+					$multisite_cond = ' AND (blog_id='.absint(get_current_blog_id()).' OR blog_id=0)';
+				}else{
+					$multisite_cond = ' AND blog_id='.absint(get_current_blog_id());
 				}
-				// insert the new split tickets and delete the old one, rinse and repeat
-				$wpdb->query('INSERT INTO '. EM_TICKETS_BOOKINGS_TABLE . ' (ticket_uuid, ticket_id, booking_id, ticket_booking_price, ticket_booking_spaces) VALUES '. implode(',', $split_tickets) );
-				$wpdb->query('DELETE FROM '. EM_TICKETS_BOOKINGS_TABLE . " WHERE ticket_booking_id='{$ticket_booking['ticket_booking_id']}'");
 			}
+			$wpdb->query( $wpdb->prepare('UPDATE '.EM_EVENTS_TABLE.' SET event_language=%s WHERE event_language IS NULL'.$multisite_cond, EM_ML::$wplang) );
+			$wpdb->query( $wpdb->prepare('UPDATE '.EM_LOCATIONS_TABLE.' SET location_language=%s WHERE location_language IS NULL'.$multisite_cond, EM_ML::$wplang) );
+			$host = get_option('dbem_smtp_host');
+			//if port is supplied via the host address, give that precedence over the port setting
+			if( preg_match('/^(tls|ssl):\/\//', $host, $host_port_matches) ){
+				update_option('dbem_smtp_encryption', $host_port_matches[1]);
+			}else{
+				update_option('dbem_smtp_encryption', 0);
+			}
+		}
+		if( $current_version != '' && $current_version < 5.975 ){
+			update_option('dbem_location_types', array('location'=>1));
+			$message = esc_html__('Events Manager has introduced location types, which can include online locations such as a URL or integrations with webinar platforms such as Zoom! Enable different location types in your settings page, for more information see our %s.', 'events-manager');
+			$message = sprintf( $message, '<a href="http://wp-events-plugin.com/documentation/location-types/" target="_blank">'. esc_html__('documentation', 'events-manager')).'</a>';
+			$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'v-update', 'who' => 'admin', 'where' => 'all', 'message' => "$message" ));
+			EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
+		}
+		if( $current_version != '' && $current_version < 5.9821 ){
+			// recreate all event_parent records in post meta
+			$sql = "DELETE FROM {$wpdb->postmeta} WHERE meta_key = '_event_parent' AND post_id IN (SELECT post_id FROM ".EM_EVENTS_TABLE.")";
+			$wpdb->query($sql);
+			$sql = "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) SELECT post_id, '_event_parent', event_parent FROM ".EM_EVENTS_TABLE." WHERE event_parent IS NOT NULL";
+			if( EM_MS_GLOBAL ){
+				// do just this blog, other blogs will update themselves when loaded
+				if( is_main_site() ){
+					$sql .= ' AND (blog_id='.absint(get_current_blog_id()).' OR blog_id=0)';
+				}else{
+					$sql .= ' AND blog_id='.absint(get_current_blog_id());
+				}
+			}
+			$wpdb->query($sql);
+		}
+		// last version check in numbers, 6 onwwards uses version_compare
+		if( $current_version != '' && version_compare($current_version, '6.0', '<') ){
+			// convert jQuery UI DateFormat for max back-compat
+			$dateformat = get_option('dbem_date_format_js');
+			// check if there's any kind of non-convertable placeholders
+			$non_convertables = '(o|oo|!|TICKS)';
+			if( !preg_match("/$non_convertables/", $dateformat) ){
+				$placeholder_convertables = array('ATOM' => 'yy-mm-dd', 'COOKIE' => 'D, dd M yy', 'ISO_8601' => 'yy-mm-dd', 'RFC_822' => 'D, d M y', 'RFC_850' => 'DD, dd-M-y', 'RFC_1036' => 'D, d M y', 'RFC_1123' => 'D, d M yy', 'RFC_2822' => 'D, d M yy', 'RSS' => 'D, d M y', 'TIMESTAMP' => '@', 'W3C' => 'yy-mm-dd',);
+				foreach( $placeholder_convertables as $k => $v ){
+					$dateformat = str_replace($k, $v, $dateformat);
+				}
+				$convertable = array( 'dd' => 'XzX' /* d */, 'd' => 'j', 'XzX' => 'd', 'DD' => 'l', 'mm' => 'ZxZ' /* m */, 'm' => 'n', 'ZxZ' => 'm', 'MM' => 'F', 'yy' => 'Y', '@' => 'U' );
+				foreach( $convertable as $k => $v ){
+					$dateformat = str_replace($k, $v, $dateformat);
+				}
+				update_option('dbem_datepicker_format', $dateformat);
+			}
+			update_option('dbem_search_form_tags', 0); // disable tags searching by default for previous users
+			// it'd be nice to do 2 sweeps for our new templates, so we'll up the recursions to 2 so we can nest once, it'll also cover most use cases
+			if( get_option('dbem_conditional_recursions') <= 1 ){
+				update_option('dbem_conditional_recursions', 2);
+			}
+			// admin optiosn for upgrade/migration
+			$admin_data = get_option('dbem_data', array());
+			$admin_data['v6'] = false;
+			update_option('dbem_data', $admin_data);
+			// notify user of new update
+			$message = esc_html__('Welcome to Events Manager v6! This latest update includes some major UI improvements, which requires you to update your formats.', 'events-manager');
+			$settings_page_url = '<a href="'.admin_url('admin.php?page=events-manager-options').'">'. esc_html__('settings page', 'events-manager-google').'</a>';
+			$message2 = sprintf(esc_html__('Please visit the %s to see migration options.', 'events-manager'), $settings_page_url);
+			$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'v-update', 'who' => 'admin', 'where' => 'all', 'message' => "$message $message2" ));
+			EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
+		}
+		if( $current_version != '' && version_compare($current_version, '6.0', '>=') && version_compare($current_version, '6.0.1.1', '<') ){
+			$admin_data = get_option('dbem_data', array());
+			$admin_data['v6'] = false;
+			update_option('dbem_data', $admin_data);
+			// notify user of new update
+			$message = "<strong>We've made some changes to our template files since the 6.0 update which may break your currently saved formats. We're re-enabling preview/migration for you on the %s to have the chance to preview and reload our newly updated templates. Sorry for the inconvenience!</strong>";
+			$settings_page_url = '<a href="'.admin_url('admin.php?page=events-manager-options').'">'. esc_html__('settings page', 'events-manager-google').'</a>';
+			$message = sprintf($message, $settings_page_url);
+			$message .= '</p><p>'."We've also added some extra features to help transition, which can be found in <code>Settings > General > Styling Options</code> and a new Default/Advanced mode in <code>Settings > Formatting</code> which will allow your formats to automatically update themselves directly from our plugin rather than settings page.";
+			$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'v-update', 'who' => 'admin', 'where' => 'all', 'message' => $message, 'what'=>'warning' ));
+			EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
+		}
+		if( $current_version != '' && version_compare($current_version, '6.0.1.1', '<') ){
+			// enable advanced formatting for any previous users, looks like before, they can disable afterwards.
+			update_option('dbem_advanced_formatting', 2);
+			update_option('dbem_css_theme_font_weight', 1);
+			update_option('dbem_css_theme_font_family', 1);
+			update_option('dbem_css_theme_font_size', 1);
+			update_option('dbem_css_theme_line_height', 1);
+			update_option('dbem_dates_range_double_inputs', 1);
+		}
+		if( $current_version != '' && version_compare($current_version, '6.0.1.2', '<') ){
+			function v6012_sql_check_error( $result, $query, $table ){
+				global $wpdb;
+				if( $result === false ){
+					$message = "<strong>Events Manager is trying to update your database, but the following error occured:</strong>";
+					$message .= '</p><p>'.'<code>'. $wpdb->last_error .'</code>';
+					$message .= '</p><p>It might be that reloading this page one or more times may complete the process, if you have a large number of bookings in your database. Alternatively, you can run one of these two queries directly into your WP database:';
+					$message .= '</p><p>'.'<code>'. $query .'</code>';
+					$message .= '</p>OR<p>'.'<code>'. "UPDATE ". $table ." SET ticket_uuid= UUID()" .'</code>';
+					$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'v6.1-'.$table.'atomic-error', 'who' => 'admin', 'where' => 'all', 'message' => $message, 'what'=>'warning' ));
+					EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
+					global $em_do_not_finalize_upgrade;
+					$em_do_not_finalize_upgrade = true;
+				}else{
+					EM_Admin_Notices::remove('v6.1-'.$table.'atomic-error', is_multisite());
+				}
+			}
+			// slated for 6.1 - atomic tickets - tweaked for mariadb < 10.0 compatiability
+			$query = "UPDATE ". EM_TICKETS_BOOKINGS_TABLE ." SET ticket_uuid= MD5(RAND())";
+			//$query = "UPDATE ". EM_TICKETS_BOOKINGS_TABLE ." SET ticket_uuid= LOWER(CONCAT( HEX(RANDOM_BYTES(4)), '', HEX(RANDOM_BYTES(2)), '4', SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3), '', HEX(FLOOR(ASCII(RANDOM_BYTES(1)) / 64) + 8), SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3), '', hex(RANDOM_BYTES(6)) ))";
+			$result = $wpdb->query($query. " WHERE ticket_uuid=''");
+			if( $result !== false ) {
+				// check for duplicates, md5 has much more chnace of collision
+				$duplicate_check = 'SELECT ticket_booking_id FROM ' . EM_TICKETS_BOOKINGS_TABLE . ' GROUP BY ticket_uuid HAVING COUNT(ticket_uuid) > 1 LIMIT 1';
+				while( $result !== false && $wpdb->get_var($duplicate_check) !== null ) {
+					$query_recheck = 'UPDATE ' . EM_TICKETS_BOOKINGS_TABLE . ' SET ticket_uuid= MD5(RAND()) WHERE ticket_uuid IN (
+					    SELECT ticket_uuid FROM (SELECT ticket_uuid FROM ' . EM_TICKETS_BOOKINGS_TABLE . ' GROUP BY ticket_uuid HAVING COUNT(ticket_uuid) > 1) t2
+					)';
+					$result = $wpdb->query($query_recheck);
+				}
+			}
+			v6012_sql_check_error($result, $query, EM_TICKETS_BOOKINGS_TABLE);
+			// do the same for regular bookings, allowing for unique IDs that can be used by guest users to access (future feature)
+			$query = "UPDATE ". EM_BOOKINGS_TABLE ." SET booking_uuid= MD5(RAND())";
+			//$query = "UPDATE ". EM_BOOKINGS_TABLE ." SET booking_uuid= LOWER(CONCAT( HEX(RANDOM_BYTES(4)), '', HEX(RANDOM_BYTES(2)), '4', SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3), '', HEX(FLOOR(ASCII(RANDOM_BYTES(1)) / 64) + 8), SUBSTR(HEX(RANDOM_BYTES(2)), 2, 3), '', hex(RANDOM_BYTES(6)) ))";
+			$result = $wpdb->query( $query . " WHERE booking_uuid=''" );
+			if( $result !== false ) {
+				// check for duplicates, md5 has much more chnace of collision
+				$duplicate_check = 'SELECT booking_id FROM ' . EM_BOOKINGS_TABLE . ' GROUP BY booking_uuid HAVING COUNT(booking_uuid) > 1 LIMIT 1';
+				while( $result !== false && $wpdb->get_var($duplicate_check) !== null ) {
+					$query_recheck = 'UPDATE ' . EM_BOOKINGS_TABLE . ' SET booking_uuid= MD5(RAND()) WHERE booking_uuid IN (
+					    SELECT booking_uuid FROM (SELECT booking_uuid FROM ' . EM_BOOKINGS_TABLE . ' GROUP BY booking_uuid HAVING COUNT(booking_uuid) > 1) t2
+					)';
+					$result = $wpdb->query($query_recheck);
+				}
+			}
+			v6012_sql_check_error($result, $query, EM_BOOKINGS_TABLE);
+			// Now go through current bookings and split the tickets up, 100 at a time
+			$query = 'SELECT ticket_booking_id, ticket_id, booking_id, ticket_booking_spaces, ticket_booking_price FROM '.EM_TICKETS_BOOKINGS_TABLE .' WHERE ticket_booking_spaces > 1 LIMIT 100';
 			$results = $wpdb->get_results( $query, ARRAY_A );
-		}
-	}
-	// some users experienced issues with the following updates, so we'll do a check for the booking_meta_migrated field and see if everything went through...
-	$cols = $wpdb->get_row('SELECT * FROM '. EM_BOOKINGS_TABLE . ' LIMIT 1', ARRAY_A);
-	if( is_array($cols) && array_key_exists('booking_meta_migrated', $cols) ) {
-		$query = 'SELECT count(*) FROM ' . EM_BOOKINGS_TABLE . " WHERE booking_meta_migrated IS NULL";
-		$migrated_count = $wpdb->get_var($query);
-		if ($migrated_count !== null && $migrated_count > 0) {
-			// we didn't fully migrate, so we need to go back and re-migrate the missing data
-			$current_version = '6.1';
-			update_option('dbem_version', $current_version);
-			if( get_option('em_pro_version') ){
-				update_option('em_pro_version', '2.9999'); // retrigger EM Pro after as well
-			}
-		}
-	}
-	
-	if( $current_version != '' && version_compare($current_version, '6.1.0.1', '<') ){
-		$cols = $wpdb->get_row('SELECT * FROM '. EM_BOOKINGS_TABLE . ' LIMIT 1', ARRAY_A);
-		if( is_array($cols) && !array_key_exists('booking_meta_migrated', $cols) ) {
-			$result = $wpdb->query('ALTER TABLE ' . EM_BOOKINGS_TABLE . ' ADD `booking_meta_migrated` INT(1) NULL');
-			if( $result === false ){
-				$message = "<strong>Events Manager is trying to update your database, but the following error occured whilst trying to create a new field in the ".EM_BOOKINGS_TABLE." table:</strong>";
-				$message .= '</p><p>'.'<code>'. $wpdb->last_error .'</code>';
-				$message .= '</p><p>This may likely need some sort of intervention, please get in touch with our support for more advice, we are sorry for the inconveneince.';
-				$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'v6.1-booking-atomic-meta-error', 'who' => 'admin', 'where' => 'all', 'message' => $message, 'what'=>'warning' ));
-				EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
-				global $em_do_not_finalize_upgrade;
-				$em_do_not_finalize_upgrade = true;
-			}
-		}
-		// atomic booking meta! for 6.1
-		// let's go through every booking and split it all up
-		$query = 'SELECT booking_id, booking_meta FROM '. EM_BOOKINGS_TABLE ." WHERE booking_meta_migrated IS NULL LIMIT 500";
-		$results = $wpdb->get_results( $query, ARRAY_A );
-		$timeout = ini_get('max_execution_time') >= 30 ? ini_get('max_execution_time') : 30;
-		while( !empty($results) ){
-			set_time_limit($timeout); // reset the timer, let it run for 30 if we keep hitting the loop, if it gets stuck inside this then let it time out
-			$migrated_bookings = $booking_meta_split = array();
-			foreach( $results as $booking ) {
-				// now we generate split meta, any meta in an array should be dealt with by corresponding plugin (e.g. Pro for form field meta)
-				if( !empty($booking['booking_meta']) ) {
-					$booking_meta = unserialize($booking['booking_meta']);
-					foreach( $booking_meta as $k => $v ){
-						if( is_array($v) ) {
-							// we go down one level for automated array combining
-							$prefix = '_'.$k.'_';
-							foreach( $v as $kk => $vv ){
-								$kk = $prefix . $kk;
-								if( is_array($vv) ) $vv = serialize($vv);
-								// handle emojis - copied check from wpdb
-								if ( (function_exists( 'mb_check_encoding' ) && !mb_check_encoding( $vv, 'ASCII' )) || preg_match( '/[^\x00-\x7F]/', $vv ) ) {
-									$vv = wp_encode_emoji($vv);
-								}
-								$booking_meta_split[] = $wpdb->prepare("({$booking['booking_id']}, %s, %s)", $kk, $vv);
-							}
-						}else{
-							// handle emojis - copied check from wpdb
-							if ( (function_exists( 'mb_check_encoding' ) && !mb_check_encoding( $v, 'ASCII' )) || preg_match( '/[^\x00-\x7F]/', $v ) ) {
-								$v = wp_encode_emoji($v);
-							}
-							$booking_meta_split[] = $wpdb->prepare("({$booking['booking_id']}, %s, %s)", $k, $v);
-						}
+			while( !empty($results) ){
+				$tickets_to_delete = array();
+				foreach( $results as $ticket_booking ) {
+					// first check that we maybe didn't die halfway through this and there aren't others with the same ticket/bookingid combo by simply deleting these
+					$wpdb->query('DELETE FROM '. EM_TICKETS_BOOKINGS_TABLE .' WHERE booking_id='. $ticket_booking['booking_id'] .' AND ticket_id='. $ticket_booking['ticket_id'] .' AND ticket_booking_id !='. $ticket_booking['ticket_booking_id'] .' AND ticket_booking_spaces = 1');
+					// now we generate split tickets, one space per ticket
+					$split_tickets = array();
+					$split_price = round($ticket_booking['ticket_booking_price'] / $ticket_booking['ticket_booking_spaces'], 4);
+					for( $i = 1; $i <= $ticket_booking['ticket_booking_spaces']; $i++ ){
+						$uuid = str_replace('-', '', wp_generate_uuid4());
+						$split_tickets[] = "('{$uuid}', '{$ticket_booking['ticket_id']}', '{$ticket_booking['booking_id']}', $split_price , 1)";
 					}
 					// insert the new split tickets and delete the old one, rinse and repeat
+					$wpdb->query('INSERT INTO '. EM_TICKETS_BOOKINGS_TABLE . ' (ticket_uuid, ticket_id, booking_id, ticket_booking_price, ticket_booking_spaces) VALUES '. implode(',', $split_tickets) );
+					$wpdb->query('DELETE FROM '. EM_TICKETS_BOOKINGS_TABLE . " WHERE ticket_booking_id='{$ticket_booking['ticket_booking_id']}'");
 				}
-				// finally update the booking again so we know it was migrated
-				$migrated_bookings[] = absint($booking['booking_id']);
+				$results = $wpdb->get_results( $query, ARRAY_A );
 			}
-			// first check that we maybe didn't die halfway through this and there aren't others with the same ticket/bookingid combo by simply deleting these
-			$wpdb->query('DELETE FROM '. EM_BOOKINGS_META_TABLE .' WHERE booking_id IN ('. implode(',', $migrated_bookings).')');
-			// now add the batch
-			$result = $wpdb->query('INSERT INTO '. EM_BOOKINGS_META_TABLE . ' (booking_id, meta_key, meta_value) VALUES '. implode(',', $booking_meta_split) );
-			if( $result === false ){
-				$message = "<strong>Events Manager is trying to update your database, but the following error occured whilst copying booking meta to the new ".EM_BOOKINGS_META_TABLE." table:</strong>";
-				$message .= '</p><p>'.'<code>'. $wpdb->last_error .'</code>';
-				$message .= '</p><p>This may likely need some sort of intervention, please get in touch with our support for more advice, we are sorry for the inconveneince.';
-				$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'v6.1-booking-atomic-meta-error', 'who' => 'admin', 'where' => 'all', 'message' => $message, 'what'=>'warning' ));
-				EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
-				global $em_do_not_finalize_upgrade;
-				$em_do_not_finalize_upgrade = true;
-				break;
-			} else {
-				$result = $wpdb->query('UPDATE '. EM_BOOKINGS_TABLE . ' SET booking_meta_migrated=1 WHERE booking_id IN ('. implode(',', $migrated_bookings).')');
+		}
+		// some users experienced issues with the following updates, so we'll do a check for the booking_meta_migrated field and see if everything went through...
+		$cols = $wpdb->get_row('SELECT * FROM '. EM_BOOKINGS_TABLE . ' LIMIT 1', ARRAY_A);
+		if( is_array($cols) && array_key_exists('booking_meta_migrated', $cols) ) {
+			$query = 'SELECT count(*) FROM ' . EM_BOOKINGS_TABLE . " WHERE booking_meta_migrated IS NULL";
+			$migrated_count = $wpdb->get_var($query);
+			if ($migrated_count !== null && $migrated_count > 0) {
+				// we didn't fully migrate, so we need to go back and re-migrate the missing data
+				$current_version = '6.1';
+				update_option('dbem_version', $current_version);
+				if( get_option('em_pro_version') ){
+					update_option('em_pro_version', '2.9999'); // retrigger EM Pro after as well
+				}
+			}
+		}
+		
+		if( $current_version != '' && version_compare($current_version, '6.1.0.1', '<') ){
+			$cols = $wpdb->get_row('SELECT * FROM '. EM_BOOKINGS_TABLE . ' LIMIT 1', ARRAY_A);
+			if( is_array($cols) && !array_key_exists('booking_meta_migrated', $cols) ) {
+				$result = $wpdb->query('ALTER TABLE ' . EM_BOOKINGS_TABLE . ' ADD `booking_meta_migrated` INT(1) NULL');
 				if( $result === false ){
-					$message = "<strong>Events Manager is trying to update your database, but the following error occured whilst migrating to the new ".EM_BOOKINGS_META_TABLE." table:</strong>";
+					$message = "<strong>Events Manager is trying to update your database, but the following error occured whilst trying to create a new field in the ".EM_BOOKINGS_TABLE." table:</strong>";
+					$message .= '</p><p>'.'<code>'. $wpdb->last_error .'</code>';
+					$message .= '</p><p>This may likely need some sort of intervention, please get in touch with our support for more advice, we are sorry for the inconveneince.';
+					$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'v6.1-booking-atomic-meta-error', 'who' => 'admin', 'where' => 'all', 'message' => $message, 'what'=>'warning' ));
+					EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
+					global $em_do_not_finalize_upgrade;
+					$em_do_not_finalize_upgrade = true;
+				}
+			}
+			// atomic booking meta! for 6.1
+			// let's go through every booking and split it all up
+			$query = 'SELECT booking_id, booking_meta FROM '. EM_BOOKINGS_TABLE ." WHERE booking_meta_migrated IS NULL LIMIT 500";
+			$results = $wpdb->get_results( $query, ARRAY_A );
+			$timeout = ini_get('max_execution_time') >= 30 ? ini_get('max_execution_time') : 30;
+			while( !empty($results) ){
+				set_time_limit($timeout); // reset the timer, let it run for 30 if we keep hitting the loop, if it gets stuck inside this then let it time out
+				$migrated_bookings = $booking_meta_split = array();
+				foreach( $results as $booking ) {
+					// now we generate split meta, any meta in an array should be dealt with by corresponding plugin (e.g. Pro for form field meta)
+					if( !empty($booking['booking_meta']) ) {
+						$booking_meta = unserialize($booking['booking_meta']);
+						foreach( $booking_meta as $k => $v ){
+							if( is_array($v) ) {
+								// we go down one level for automated array combining
+								$prefix = '_'.$k.'_';
+								foreach( $v as $kk => $vv ){
+									$kk = $prefix . $kk;
+									if( is_array($vv) ) $vv = serialize($vv);
+									// handle emojis - copied check from wpdb
+									if ( (function_exists( 'mb_check_encoding' ) && !mb_check_encoding( $vv, 'ASCII' )) || preg_match( '/[^\x00-\x7F]/', $vv ) ) {
+										$vv = wp_encode_emoji($vv);
+									}
+									$booking_meta_split[] = $wpdb->prepare("({$booking['booking_id']}, %s, %s)", $kk, $vv);
+								}
+							}else{
+								// handle emojis - copied check from wpdb
+								if ( (function_exists( 'mb_check_encoding' ) && !mb_check_encoding( $v, 'ASCII' )) || preg_match( '/[^\x00-\x7F]/', $v ) ) {
+									$v = wp_encode_emoji($v);
+								}
+								$booking_meta_split[] = $wpdb->prepare("({$booking['booking_id']}, %s, %s)", $k, $v);
+							}
+						}
+						// insert the new split tickets and delete the old one, rinse and repeat
+					}
+					// finally update the booking again so we know it was migrated
+					$migrated_bookings[] = absint($booking['booking_id']);
+				}
+				// first check that we maybe didn't die halfway through this and there aren't others with the same ticket/bookingid combo by simply deleting these
+				$wpdb->query('DELETE FROM '. EM_BOOKINGS_META_TABLE .' WHERE booking_id IN ('. implode(',', $migrated_bookings).')');
+				// now add the batch
+				$result = $wpdb->query('INSERT INTO '. EM_BOOKINGS_META_TABLE . ' (booking_id, meta_key, meta_value) VALUES '. implode(',', $booking_meta_split) );
+				if( $result === false ){
+					$message = "<strong>Events Manager is trying to update your database, but the following error occured whilst copying booking meta to the new ".EM_BOOKINGS_META_TABLE." table:</strong>";
 					$message .= '</p><p>'.'<code>'. $wpdb->last_error .'</code>';
 					$message .= '</p><p>This may likely need some sort of intervention, please get in touch with our support for more advice, we are sorry for the inconveneince.';
 					$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'v6.1-booking-atomic-meta-error', 'who' => 'admin', 'where' => 'all', 'message' => $message, 'what'=>'warning' ));
@@ -1435,127 +1428,139 @@ function em_upgrade_current_installation(){
 					$em_do_not_finalize_upgrade = true;
 					break;
 				} else {
-					$results = $wpdb->get_results($query, ARRAY_A);
+					$result = $wpdb->query('UPDATE '. EM_BOOKINGS_TABLE . ' SET booking_meta_migrated=1 WHERE booking_id IN ('. implode(',', $migrated_bookings).')');
+					if( $result === false ){
+						$message = "<strong>Events Manager is trying to update your database, but the following error occured whilst migrating to the new ".EM_BOOKINGS_META_TABLE." table:</strong>";
+						$message .= '</p><p>'.'<code>'. $wpdb->last_error .'</code>';
+						$message .= '</p><p>This may likely need some sort of intervention, please get in touch with our support for more advice, we are sorry for the inconveneince.';
+						$EM_Admin_Notice = new EM_Admin_Notice(array( 'name' => 'v6.1-booking-atomic-meta-error', 'who' => 'admin', 'where' => 'all', 'message' => $message, 'what'=>'warning' ));
+						EM_Admin_Notices::add($EM_Admin_Notice, is_multisite());
+						global $em_do_not_finalize_upgrade;
+						$em_do_not_finalize_upgrade = true;
+						break;
+					} else {
+						$results = $wpdb->get_results($query, ARRAY_A);
+					}
 				}
 			}
+			$wpdb->query('ALTER TABLE '. EM_BOOKINGS_TABLE . ' DROP `booking_meta_migrated`'); // flag done
+			EM_Admin_Notices::remove('v6.1-booking-atomic-meta-error', is_multisite());
+			EM_Admin_Notices::remove('v6.1-atomic-error', is_multisite());
+			update_option('dbem_version', '6.1.0.2'); // we don't need to make this happen again
 		}
-		$wpdb->query('ALTER TABLE '. EM_BOOKINGS_TABLE . ' DROP `booking_meta_migrated`'); // flag done
-		EM_Admin_Notices::remove('v6.1-booking-atomic-meta-error', is_multisite());
-		EM_Admin_Notices::remove('v6.1-atomic-error', is_multisite());
-		update_option('dbem_version', '6.1.0.2'); // we don't need to make this happen again
-	}
-	if( $current_version != '' && version_compare($current_version, '6.1.1', '<') ){
-		EM_Admin_Notices::remove('v6.1-atomic-error', is_multisite());
-	}
-	
-	
-	if( $current_version != '' && version_compare($current_version, '6.1.1.4', '<') ){
-		global $em_do_not_finalize_upgrade;
-		// we're going to fix a potential duplicate data issue that emerged in a recent update, cause unknown, fix know as below...ç
-		$sql_part = '
-				 FROM '. EM_BOOKINGS_META_TABLE .' AS t1
-				INNER JOIN '. EM_BOOKINGS_META_TABLE .' AS t2
-				WHERE t1.meta_id > t2.meta_id AND t2.booking_id = t1.booking_id AND t2.meta_key = t1.meta_key AND t2.meta_value = t1.meta_value
-			';
-		$duplicate_check = $wpdb->query('SELECT * '.$sql_part);
-		if( $duplicate_check !== false && $wpdb->num_rows > 0 ) {
-			// we have a problem...
-			$em_do_not_finalize_upgrade = true;
-			// first see if there's even a problem
-			$table_copy = 'wp_em_bookings_meta_copy';
-			$create_result = $wpdb->query('CREATE TABLE '.$table_copy.' LIKE ' . EM_BOOKINGS_META_TABLE);
-			if ($create_result === false) {
-				// try once more in case mid-dev updates were attempted between EM v6.1.1.2 and v6.1.2
-				$table_copy = $table_copy . '_2';
+		if( $current_version != '' && version_compare($current_version, '6.1.1', '<') ){
+			EM_Admin_Notices::remove('v6.1-atomic-error', is_multisite());
+		}
+		
+		
+		if( $current_version != '' && version_compare($current_version, '6.1.1.4', '<') ){
+			global $em_do_not_finalize_upgrade;
+			// we're going to fix a potential duplicate data issue that emerged in a recent update, cause unknown, fix know as below...ç
+			$sql_part = '
+					 FROM '. EM_BOOKINGS_META_TABLE .' AS t1
+					INNER JOIN '. EM_BOOKINGS_META_TABLE .' AS t2
+					WHERE t1.meta_id > t2.meta_id AND t2.booking_id = t1.booking_id AND t2.meta_key = t1.meta_key AND t2.meta_value = t1.meta_value
+				';
+			$duplicate_check = $wpdb->query('SELECT * '.$sql_part);
+			if( $duplicate_check !== false && $wpdb->num_rows > 0 ) {
+				// we have a problem...
+				$em_do_not_finalize_upgrade = true;
+				// first see if there's even a problem
+				$table_copy = 'wp_em_bookings_meta_copy';
 				$create_result = $wpdb->query('CREATE TABLE '.$table_copy.' LIKE ' . EM_BOOKINGS_META_TABLE);
-			}
-			if ($create_result !== false) {
-				// copy all the data to the duplicate table
-				$copy_result = $wpdb->query('INSERT INTO '.$table_copy.' SELECT * FROM ' . EM_BOOKINGS_META_TABLE);
-				if ($copy_result) {
-					// verify the number of rows match the original table
-					$original_count = $wpdb->get_var('SELECT count(*) FROM ' . EM_BOOKINGS_META_TABLE);
-					$copy_count = $wpdb->get_var('SELECT count(*) FROM '.$table_copy.'');
-					if ( $copy_count !== null && $original_count !== null && $copy_count === $original_count) {
-						$deletion_result = $wpdb->query('DELETE t1 ' . $sql_part);
-						if( $deletion_result !== false ){
-							$em_do_not_finalize_upgrade = false;
-							// all done! just warn the user about the deletion and the copied table, just in case
-							$message = sprintf('You have successfully updated and migrated to Events Manager %s', EM_VERSION);
-							EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.1.2-duplicate-update', 'who' => 'admin', 'where' => 'settings', 'message' => $message.$message2 )), is_multisite());
-							EM_Admin_Notices::remove('v6.1.2-update-error');
+				if ($create_result === false) {
+					// try once more in case mid-dev updates were attempted between EM v6.1.1.2 and v6.1.2
+					$table_copy = $table_copy . '_2';
+					$create_result = $wpdb->query('CREATE TABLE '.$table_copy.' LIKE ' . EM_BOOKINGS_META_TABLE);
+				}
+				if ($create_result !== false) {
+					// copy all the data to the duplicate table
+					$copy_result = $wpdb->query('INSERT INTO '.$table_copy.' SELECT * FROM ' . EM_BOOKINGS_META_TABLE);
+					if ($copy_result) {
+						// verify the number of rows match the original table
+						$original_count = $wpdb->get_var('SELECT count(*) FROM ' . EM_BOOKINGS_META_TABLE);
+						$copy_count = $wpdb->get_var('SELECT count(*) FROM '.$table_copy.'');
+						if ( $copy_count !== null && $original_count !== null && $copy_count === $original_count) {
+							$deletion_result = $wpdb->query('DELETE t1 ' . $sql_part);
+							if( $deletion_result !== false ){
+								$em_do_not_finalize_upgrade = false;
+								// all done! just warn the user about the deletion and the copied table, just in case
+								$message = sprintf('You have successfully updated and migrated to Events Manager %s', EM_VERSION);
+								EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.1.2-duplicate-update', 'who' => 'admin', 'where' => 'settings', 'message' => $message.$message2 )), is_multisite());
+								EM_Admin_Notices::remove('v6.1.2-update-error');
+							}else{
+								$message = 'There was an error upgrading your database. We could not delete redundant data from <code>'.EM_BOOKINGS_META_TABLE.'</code> for the Events Manager v6.1.2 upgrade. Please contact Events Manager Pro support for further assistance and provide this entire error. MySQL error: <code>'. $wpdb->last_error .'</code>';
+								EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.1.2-update-error', 'who' => 'admin', 'where' => 'settings', 'message' => $message )), is_multisite());
+							}
 						}else{
-							$message = 'There was an error upgrading your database. We could not delete redundant data from <code>'.EM_BOOKINGS_META_TABLE.'</code> for the Events Manager v6.1.2 upgrade. Please contact Events Manager Pro support for further assistance and provide this entire error. MySQL error: <code>'. $wpdb->last_error .'</code>';
+							$message = 'There was an error upgrading your database. We could not copy backup data from <code>'.EM_BOOKINGS_META_TABLE.'</code> for the Events Manager v6.1.2 upgrade, origin/destination quantities do not match and we will not proceed. Please contact Events Manager Pro support for further assistance and provide this entire error.';
 							EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.1.2-update-error', 'who' => 'admin', 'where' => 'settings', 'message' => $message )), is_multisite());
 						}
 					}else{
-						$message = 'There was an error upgrading your database. We could not copy backup data from <code>'.EM_BOOKINGS_META_TABLE.'</code> for the Events Manager v6.1.2 upgrade, origin/destination quantities do not match and we will not proceed. Please contact Events Manager Pro support for further assistance and provide this entire error.';
+						$message = 'There was an error upgrading your database. We could not copy backup data from <code>'.EM_BOOKINGS_META_TABLE.'</code> for the Events Manager v6.1.2 upgrade. Please contact Events Manager Pro support for further assistance and provide this entire error. MySQL error: <code>'. $wpdb->last_error .'</code>';
 						EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.1.2-update-error', 'who' => 'admin', 'where' => 'settings', 'message' => $message )), is_multisite());
 					}
 				}else{
-					$message = 'There was an error upgrading your database. We could not copy backup data from <code>'.EM_BOOKINGS_META_TABLE.'</code> for the Events Manager v6.1.2 upgrade. Please contact Events Manager Pro support for further assistance and provide this entire error. MySQL error: <code>'. $wpdb->last_error .'</code>';
+					$message = 'There was an error upgrading your database. We could not create a table copy of <code>'.EM_BOOKINGS_META_TABLE.'</code> for the Events Manager v6.1.2 upgrade. Please contact Events Manager Pro support for further assistance and provide this entire error. MySQL error: <code>'. $wpdb->last_error .'</code>';
 					EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.1.2-update-error', 'who' => 'admin', 'where' => 'settings', 'message' => $message )), is_multisite());
 				}
-			}else{
-				$message = 'There was an error upgrading your database. We could not create a table copy of <code>'.EM_BOOKINGS_META_TABLE.'</code> for the Events Manager v6.1.2 upgrade. Please contact Events Manager Pro support for further assistance and provide this entire error. MySQL error: <code>'. $wpdb->last_error .'</code>';
+			}elseif( $duplicate_check === false ){
+				$em_do_not_finalize_upgrade = true;
+				$message = 'There was an error upgrading your database. We could not check the integrity of <code>'.EM_BOOKINGS_META_TABLE.'</code> to ensure updates were successful. Please contact Events Manager Pro support for further assistance.';
 				EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.1.2-update-error', 'who' => 'admin', 'where' => 'settings', 'message' => $message )), is_multisite());
+			}else{
+				$message = sprintf(esc_html__('You have successfully updated to Events Manager %s', 'events-manager'), EM_VERSION);
+				EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.1.2-update', 'who' => 'admin', 'where' => 'settings', 'message' => $message )), is_multisite());
 			}
-		}elseif( $duplicate_check === false ){
-			$em_do_not_finalize_upgrade = true;
-			$message = 'There was an error upgrading your database. We could not check the integrity of <code>'.EM_BOOKINGS_META_TABLE.'</code> to ensure updates were successful. Please contact Events Manager Pro support for further assistance.';
-			EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.1.2-update-error', 'who' => 'admin', 'where' => 'settings', 'message' => $message )), is_multisite());
-		}else{
-			$message = sprintf(esc_html__('You have successfully updated to Events Manager %s', 'events-manager'), EM_VERSION);
-			EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.1.2-update', 'who' => 'admin', 'where' => 'settings', 'message' => $message )), is_multisite());
 		}
-	}
-	
-	if( $current_version != '' && version_compare($current_version, '6.2.2', '<') ){
-		if( !get_option('dbem_css') ){
-			// prevent grids just to avoid styling snafus
-			update_option('dbem_search_form_views', array('list', 'list-grouped', 'map', 'calendar'));
+		
+		if( $current_version != '' && version_compare($current_version, '6.2.2', '<') ){
+			if( !get_option('dbem_css') ){
+				// prevent grids just to avoid styling snafus
+				update_option('dbem_search_form_views', array('list', 'list-grouped', 'map', 'calendar'));
+			}
+			// groups now are part of view settings for a list type
+			if( !get_option('dbem_event_list_groupby')){
+				update_option('dbem_event_list_groupby', 'monthly');
+			}else{
+				update_option('dbem_search_form_view', 'list-grouped');
+			}
 		}
-		// groups now are part of view settings for a list type
-		if( !get_option('dbem_event_list_groupby')){
-			update_option('dbem_event_list_groupby', 'monthly');
-		}else{
-			update_option('dbem_search_form_view', 'list-grouped');
+		
+		// do pro retrofit of bookings that previously had a uuid in booking meta, make that the uuid of the booking itself so we can transition out of uuid in booking meta
+		if( version_compare($current_version, '6.3.0.5', '<') ){
+			// get all bookings with a uuid meta, leave that meta for backcompat old code but move the same uuid into the booking and overwrite
+			$uuid_sql = 'UPDATE ' . EM_BOOKINGS_TABLE . ' b INNER JOIN ' . EM_BOOKINGS_META_TABLE . " bm ON b.booking_id=bm.booking_id AND meta_key='uuid' SET booking_uuid=REPLACE(meta_value,'-','') WHERE meta_value IS NOT NULL AND REPLACE(meta_value,'-','') != booking_uuid";
+			$wpdb->query($uuid_sql);
+			// add new advanced search option values to default to main/previous settings for user
+			$search_advanced = array(
+				'dbem_search_form_text_advanced' => get_option('dbem_search_form_text'),
+				'dbem_search_form_text_label_advanced' => get_option('dbem_search_form_text_label'),
+				'dbem_search_form_geo_advanced' => get_option('dbem_search_form_geo'),
+				'dbem_search_form_geo_label_advanced' => get_option('dbem_search_form_geo_label'),
+				'dbem_search_form_dates_advanced' => get_option('dbem_search_form_dates'),
+				'dbem_search_form_dates_label_advanced' => get_option('dbem_search_form_dates_label'),
+				'dbem_search_form_dates_separator_advanced' => get_option('dbem_search_form_dates_separator'),
+				'dbem_search_form_dates_format_advanced' => get_option('dbem_search_form_dates_format'),
+			);
+			foreach ( $search_advanced as $k => $v ){
+				update_option($k, $v);
+			}
 		}
-	}
-	
-	// do pro retrofit of bookings that previously had a uuid in booking meta, make that the uuid of the booking itself so we can transition out of uuid in booking meta
-	if( version_compare($current_version, '6.3.0.5', '<') ){
-		// get all bookings with a uuid meta, leave that meta for backcompat old code but move the same uuid into the booking and overwrite
-		$uuid_sql = 'UPDATE ' . EM_BOOKINGS_TABLE . ' b INNER JOIN ' . EM_BOOKINGS_META_TABLE . " bm ON b.booking_id=bm.booking_id AND meta_key='uuid' SET booking_uuid=REPLACE(meta_value,'-','') WHERE meta_value IS NOT NULL AND REPLACE(meta_value,'-','') != booking_uuid";
-		$wpdb->query($uuid_sql);
-		// add new advanced search option values to default to main/previous settings for user
-		$search_advanced = array(
-			'dbem_search_form_text_advanced' => get_option('dbem_search_form_text'),
-			'dbem_search_form_text_label_advanced' => get_option('dbem_search_form_text_label'),
-			'dbem_search_form_geo_advanced' => get_option('dbem_search_form_geo'),
-			'dbem_search_form_geo_label_advanced' => get_option('dbem_search_form_geo_label'),
-			'dbem_search_form_dates_advanced' => get_option('dbem_search_form_dates'),
-			'dbem_search_form_dates_label_advanced' => get_option('dbem_search_form_dates_label'),
-			'dbem_search_form_dates_separator_advanced' => get_option('dbem_search_form_dates_separator'),
-			'dbem_search_form_dates_format_advanced' => get_option('dbem_search_form_dates_format'),
-		);
-		foreach ( $search_advanced as $k => $v ){
-			update_option($k, $v);
+		if( version_compare( $current_version, '6.4', '<') ){
+			// new 'pay' button will by default be worded same as free button
+			update_option('dbem_bookings_submit_button_paid', get_option('dbem_bookings_submit_button') );
+			// update message
+			$settings_page_url = '<a href="'.admin_url('admin.php?page=events-manager-options').'">Settings > Bookings > Booking Form Options</a>';
+			$message = 'Welcome to Events Manager 6.4! This version introduces some new booking form upgrades, including a dynamic price breakdown before confirming a booking! Enable this feature in <a href=""><em>'. $settings_page_url .'</em></a>';
+			EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v-update', 'who' => 'admin', 'where' => 'plugin', 'message' => $message )), is_multisite());
 		}
-	}
-	if( version_compare( $current_version, '6.4', '<') ){
-		// new 'pay' button will by default be worded same as free button
-		update_option('dbem_bookings_submit_button_paid', get_option('dbem_bookings_submit_button') );
-		// update message
-		$settings_page_url = '<a href="'.admin_url('admin.php?page=events-manager-options').'">Settings > Bookings > Booking Form Options</a>';
-		$message = 'Welcome to Events Manager 6.4! This version introduces some new booking form upgrades, including a dynamic price breakdown before confirming a booking! Enable this feature in <a href=""><em>'. $settings_page_url .'</em></a>';
-		EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.4-update', 'who' => 'admin', 'where' => 'plugin', 'message' => $message )), is_multisite());
-	}
-	if( version_compare( $current_version, '6.4.2', '<') ){
-		// update message
-		$settings_page_url = '<a href="'.admin_url('admin.php?page=events-manager-options#general+general').'">'. esc_html__('Settings', 'events-manager').' > '. esc_html__('General','events-manager') .' > '. esc_html__('General Options', 'events-manager') . '</a>' . ' > ' . esc_html__('Enable Event Status?', 'events-manager');
-		$message = 'Welcome to Events Manager 6.4.2! This version introduces event status options including cancellation of an event! Enable this feature in <a href=""><em>'. $settings_page_url .'</em></a>';
-		EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v6.4.2-update', 'who' => 'admin', 'where' => 'plugin', 'message' => $message )), is_multisite());
+		if( version_compare( $current_version, '6.4.2', '<') ){
+			// update message
+			$settings_page_url = '<a href="'.admin_url('admin.php?page=events-manager-options#general+general').'">'. esc_html__('Settings', 'events-manager').' > '. esc_html__('General','events-manager') .' > '. esc_html__('General Options', 'events-manager') . '</a>' . ' > ' . esc_html__('Enable Event Status?', 'events-manager');
+			$message = 'Welcome to Events Manager 6.4.2! This version introduces event status options including cancellation of an event! Enable this feature in <a href=""><em>'. $settings_page_url .'</em></a>';
+			EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v-update', 'who' => 'admin', 'where' => 'plugin', 'message' => $message )), is_multisite());
+		}
 	}
 }
 
@@ -1773,7 +1778,7 @@ function em_migrate_datetime_timezones( $reset_new_fields = true, $migrate_date_
 	}else{
 		//This gets very easy... just do a single query that copies over all the times to right columns with relevant offset
 		$EM_DateTimeZone = EM_DateTimeZone::create($timezone);
-		$offset = $timezone == 'UTC' ? 0 : $EM_DateTimeZone->getOffset() / MINUTE_IN_SECONDS;
+		$offset = $timezone == 'UTC' ? 0 : $EM_DateTimeZone->getOffset( new EM_DateTime() ) / MINUTE_IN_SECONDS;
 		$timezone = $EM_DateTimeZone->getName();
 		$migration_result = $wpdb->query($wpdb->prepare('UPDATE '. $db.'em_events'. ' SET event_start = DATE_SUB(TIMESTAMP(event_start_date,event_start_time), INTERVAL %d MINUTE), event_end = DATE_SUB(TIMESTAMP(event_end_date, event_end_time), INTERVAL %d MINUTE) WHERE event_end IS NULL '.$blog_id_and, $offset, $offset));
 		if( $migration_result === false ) $migration_errors[] = array('Event start/end UTC offset', $wpdb->last_error);

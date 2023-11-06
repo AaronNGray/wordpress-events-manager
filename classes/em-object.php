@@ -1804,7 +1804,7 @@ class EM_Object {
 				$key = $match[1];
 				if( empty($processed_meta[$key]) ) $processed_meta[$key] = array();
 				$subkey = isset($match[2]) ? $match[2] : count($processed_meta[$key]); // allows for storing arrays without a key, such as _beverage_choice| can be stored multiple times in a row if key is not relevant
-				if( !empty($processed_meta[$key][$subkey]) ){
+				if( !empty($processed_meta[$key][$subkey]) && preg_match('/\|$/', $meta_key) ){
 					if( !is_array($processed_meta[$key][$subkey]) ) {
 						$processed_meta[$key][$subkey] = array($processed_meta[$key][$subkey]);
 					}

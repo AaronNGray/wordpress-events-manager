@@ -59,7 +59,7 @@ var em_booking_form_init = function( booking_form ){
 	 * When ticket selection changes, trigger booking form update event
 	 */
 	booking_form.addEventListener("change", function( e ){
-		if ( e.target.matches('.em-ticket-select') ){
+		if ( e.target.matches('.em-ticket-select') || (EM.bookings.update_listener && e.target.matches(EM.bookings.update_listener)) ){
 			// trigger spaces refresh
 			em_booking_form_count_spaces( booking_form );
 			// let others do similar stuff
