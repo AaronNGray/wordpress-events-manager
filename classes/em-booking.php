@@ -1060,6 +1060,8 @@ class EM_Booking extends EM_Object{
 		global $wpdb;
 		$result = false;
 		if( $this->can_manage('manage_bookings','manage_others_bookings') ){
+			$this->tickets_bookings = null; // reload tickets
+			$this->get_tickets_bookings(); // get this before bookings deleted from DB
 			$sql = $wpdb->prepare("DELETE FROM ". EM_BOOKINGS_TABLE . " WHERE booking_id=%d", $this->booking_id);
 			$result = $wpdb->query( $sql );
 			if( $result !== false ){
@@ -1159,9 +1161,6 @@ class EM_Booking extends EM_Object{
 	 */
 	function set_status($status, $email = true, $ignore_spaces = false ){
 		global $wpdb;
-		$func_args = func_get_args();
-		$email_args = !empty($func_args[3]) ? $func_args[3] : array();
-		$email_args = array_merge( array('email_admin'=> true, 'force_resend' => false, 'email_attendee' => true), $email_args );
 		$action_string = strtolower($this->status_array[$status]);
 		//if we're approving we can't approve a booking if spaces are full, so check before it's approved.
 		if(!$ignore_spaces && $status == 1){
@@ -1181,6 +1180,9 @@ class EM_Booking extends EM_Object{
 			if( $result && $this->previous_status != $this->booking_status ){ //email if status has changed
 				do_action('em_booking_status_changed', $this, array('status' => $status, 'email' => $email, 'ignore_spaces' => $ignore_spaces)); // method params passed as array
 				if( $email ){
+					$func_args = func_get_args();
+					$email_args = !empty($func_args[3]) ? $func_args[3] : array();
+					$email_args = array_merge( array('email_admin'=> true, 'force_resend' => false, 'email_attendee' => true), $email_args );
 					if( $this->email( !empty($email_args['email_admin']), !empty($email_args['force_resend']), !empty($email_args['email_attendee'])) ){
 					    if( $this->mails_sent > 0 ){
 					        $this->feedback_message .= " ".__('Email Sent.','events-manager');

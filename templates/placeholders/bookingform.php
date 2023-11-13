@@ -127,7 +127,7 @@ do_action('em_booking_form_start', $EM_Event); // do not delete
 					/*
 					 * BOOKING SUMMARY
 					 */
-					if( get_option('dbem_bookings_summary') ){
+					if( get_option('dbem_bookings_summary') && (!$EM_Event->is_free() || get_option('dbem_bookings_summary_free')) ){
 						do_action('em_booking_form_before_summary', $EM_Event, $EM_Booking); // do not delete
 						?>
 						<section class="em-booking-form-section-summary" id="em-booking-form-section-summary-<?php echo $id; ?>">

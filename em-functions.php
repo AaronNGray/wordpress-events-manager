@@ -269,6 +269,7 @@ function em_get_currency_formatted($price, $currency=false, $format=false, $prec
 	$formatted_price = '';
 	if(!$format) $format = get_option('dbem_bookings_currency_format','@#');
 	if(!$currency) $currency = get_option('dbem_bookings_currency');
+	if( empty($price) ) $price = 0;
 	$formatted_price = str_replace('#', number_format( $price, $precision, get_option('dbem_bookings_currency_decimal_point','.'), get_option('dbem_bookings_currency_thousands_sep',',') ), $format);
 	$formatted_price = str_replace('@', em_get_currency_symbol(true,$currency), $formatted_price);
 	return apply_filters('em_get_currency_formatted', $formatted_price, $price, $currency, $format);

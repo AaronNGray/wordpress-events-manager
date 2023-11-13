@@ -707,6 +707,12 @@ class Dashboard {
 			// get data
 			$sql = 'SELECT ' . implode( ', ', $summaries) .' , '. implode( ', ', $averages ) . ' FROM ' . EM_BOOKINGS_TABLE . $where;
 			$booking_data = $wpdb->get_row( $sql, ARRAY_A );
+			// clean null data to 0 and add to stats
+			foreach ( $booking_data as $k => $v ) {
+				if( $v === null ) {
+					$booking_data[ $k ] = 0;
+				}
+			}
 			$stats->stats[$stack] = $booking_data;
 		}
 		return $stats;
