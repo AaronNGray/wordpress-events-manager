@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 6.3
-Stable tag: 6.4.6.2
+Stable tag: 6.4.6.3
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
@@ -160,6 +160,9 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
+= 6.4.6.3 =
+* Fixed telephone field auto-enabling and ignoring EM_PHONE_INTL_ENABLED constant introduced in 6.4.6
+
 = 6.4.6.2 =
 * Fixed booking summary showing for free events despite setting set to no.
 * Fixed edge cases where bookings do not get deleted properly due to unloaded ticket data.

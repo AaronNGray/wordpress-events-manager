@@ -1,7 +1,8 @@
 // phone numbers
 window.addEventListener('load', function(){
 	// enable for now only in beta if EM_PHONE_INTL_ENABLED PHP Constant is true
-	if( EM.phone === false ) return false;
+	if ( !EM.phone ) return false;
+
 	/*!
 	 * International Telephone Input v18.2.1
 	 * https://github.com/jackocnr/intl-tel-input.git
