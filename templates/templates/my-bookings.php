@@ -93,8 +93,9 @@
 												$cancel_links[] = '<a class="em-bookings-rsvp-maybe" href="'.esc_url($url).'">'. EM_Booking::get_rsvp_statuses(2)->label_action .'</a>';
 											}
 										}
-										$cancel_link_text = implode( '<br>', $cancel_links );
-										// @deprecated - stop using this and use em_my_bookings_booking_action_links below
+										$action_links = apply_filters('em_my_bookings_booking_action_links', $cancel_links, $EM_Booking, $cancel_links);
+										$cancel_link_text = implode( '<br>', $action_links );
+										// @deprecated - stop using this and use em_my_bookings_booking_action_links above
 										$actions_text =	apply_filters('em_my_bookings_booking_actions', $cancel_link_text, $EM_Booking, $cancel_links);
 										if( strstr( $actions_text, $cancel_link_text ) ) {
 											// remove the links created here, put them in a button, and output whatever else is in the filtered text var
@@ -102,7 +103,7 @@
 											?>
 											<button type="button" class="em-tooltip-ddm em-clickable input button-secondary" data-button-width="match" data-tooltip-class="em-my-bookings-actions-tooltip"><?php esc_html_e('Actions', 'events-manager-pro'); ?></button>
 											<div class="em-tooltip-ddm-content em-my-bookings-actions-content">
-												<?php foreach( $cancel_links as $link ): ?>
+												<?php foreach( $action_links as $link ): ?>
 													<?php echo $link; ?>
 												<?php endforeach; ?>
 											</div>

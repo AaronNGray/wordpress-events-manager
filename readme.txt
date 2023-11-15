@@ -5,7 +5,7 @@ Tags: bookings, calendar, tickets, events, buddypress, event management, google 
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 6.3
-Stable tag: 6.4.6.3
+Stable tag: 6.4.6.4
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
@@ -160,6 +160,13 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
+= 6.4.6.4 =
+* Fixed issues with multiple bookings and anonymous bookings that could rewrite the user name of the account making the booking with the latest user information.
+* Fixed setting `is_available` to `EM_Ticket` not having any effect due to protected visibility, which can cause unpredictable behavior.
+* Fixed form `.em-ajax-form` not outputting the correct notice box on success.
+* Added JS for `em-cancel` button to include custom data into AJAX via the `data-` attribute.
+* Added `em_my_bookings_booking_action_links` filter allowing for array insertion of action links for my booking page bookings.
+
 = 6.4.6.3 =
 * Fixed telephone field auto-enabling and ignoring EM_PHONE_INTL_ENABLED constant introduced in 6.4.6
 

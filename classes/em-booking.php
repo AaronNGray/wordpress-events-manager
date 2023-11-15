@@ -233,6 +233,14 @@ class EM_Booking extends EM_Object{
 			if( $this->date() !== false ) $this->date()->setTimestamp($val);
 		}elseif( $prop == 'language' ){
 			$this->booking_meta['lang'] = $val;
+		}elseif( $prop == 'person' ){
+			// prevent non EM_Person objects from being set
+			if( $val instanceof EM_Person ) {
+				$this->person_id = $val->ID;
+				$this->person = $val;
+			} else {
+				$this->person = null;
+			}
 		}
 		parent::__set( $prop, $val );
 	}

@@ -196,6 +196,9 @@ class EM_Ticket extends EM_Object{
 			if( !$EM_DateTime->valid ) return false;
 			$when_prop = 'ticket_'.$prop;
 			$this->{$when_prop} = $EM_DateTime->getDateTime();
+		}elseif( $prop == 'is_available' && $val === null ) {
+			// reset available value so it forces a refresh
+			$this->is_available = null;
 		}
 		parent::__set( $prop, $val );
 	}

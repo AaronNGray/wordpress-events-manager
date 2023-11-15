@@ -642,15 +642,22 @@ jQuery(document).ready( function($){
 		var button = $(this);
 		if( button.text() != EM.bb_cancelled && button.text() != EM.bb_canceling){
 			button.text(EM.bb_canceling);
+			// old method is splitting id with _ and second/third items are id and nonce, otherwise supply it all via data attributes
 			var button_data = button.attr('id').split('_');
+			let button_ajax = {};
+			if( button_data.length < 3 ){
+				// legacy support
+				button_ajax = {
+					booking_id : button_data[1],
+					_wpnonce : button_data[2],
+					action : 'booking_cancel',
+				};
+			}
+			let ajax_data = Object.assign( button_ajax, button[0].dataset);
 			$.ajax({
 				url: EM.ajaxurl,
 				dataType: 'jsonp',
-				data: {
-					booking_id : button_data[1],
-					_wpnonce : button_data[2],
-					action : 'booking_cancel'
-				},
+				data: ajax_data,
 				success : function(response, statusText, xhr, $form) {
 					if(response.result){
 						button.text(EM.bb_cancelled);

@@ -390,7 +390,7 @@ document.addEventListener('DOMContentLoaded', function () {
 						if( !form.classList.contains('no-inline-notice') ){
 							notice = form.querySelector('.em-notice');
 							if( !notice ){
-								notice = document.createElement('li');
+								notice = document.createElement('div');
 								form.prepend(notice);
 								if( formData.get('action') ){
 									form.dispatchEvent( new CustomEvent( 'em_ajax_form_success_' + formData.get('action'), {
