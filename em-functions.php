@@ -763,6 +763,7 @@ function em_get_search_form_defaults($base_args = array(), $context = 'events') 
 	if( empty($args['advanced_hidden']) ){
 		$args['css_classes_advanced'][] = ' visible';
 	}
+	$args['css_classes'][] = get_option('dbem_search_form_responsive', 'one-line');
 	
 	//overwrite with $_REQUEST defaults in event of a submitted search
 	if( isset($_REQUEST['view_id']) ) $args['id'] = absint($_REQUEST['view_id']); // id used for element ids

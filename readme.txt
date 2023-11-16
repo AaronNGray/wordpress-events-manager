@@ -160,6 +160,13 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
+= 6.4.6.4.1 (dev) =
+* Fixed PHP warning on my-bookings page.
+* Fixed ticket selection dropdown not showing max spaces if `EM_Bookings::$disable_restrictions` is enabled (such as for manual bookings).
+* Fixed export and view setting overlays not working for booking admins table front-end after filtering once or more.
+* Fixed issues with category/tag selection in Firefox.
+* Added responsive options to the search form, allowing search form fields to stack on smaller screen sizes and also choose which main search options are hidden.
+
 = 6.4.6.4 =
 * Fixed issues with multiple bookings and anonymous bookings that could rewrite the user name of the account making the booking with the latest user information.
 * Fixed setting `is_available` to `EM_Ticket` not having any effect due to protected visibility, which can cause unpredictable behavior.

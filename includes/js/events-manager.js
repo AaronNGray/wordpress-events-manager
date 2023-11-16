@@ -520,10 +520,13 @@ jQuery(document).ready( function($){
 			//ajax call
 			$.post( EM.ajaxurl, el.serializeArray(), function(data){
 				let $data = $(data);
-				root.find('.em-bookings-table-trigger').each( function(){
-					let modal = $(this.getAttribute('rel'));
-					modal.remove();
-				});
+				if( !root.hasClass('frontend') ) {
+					// remove modals as they are supplied again on the backend
+					root.find('.em-bookings-table-trigger').each( function(){
+						let modal = $(this.getAttribute('rel'));
+						modal.remove();
+					});
+				}
 				root.replaceWith($data);
 				// re-setup bookings table
 				setup_bookings_table($data);
@@ -1350,7 +1353,6 @@ function em_setup_selectize( container ){
 				s.refreshOptions();
 				return false;
 			});
-
 		}
 	});
 	jQuery(document).triggerHandler('em_selectize_loaded', [container]);
@@ -3778,7 +3780,7 @@ window.addEventListener('load', function(){
 /*!
  * selectize click2deselect (custom)
  */
-Selectize.define("click2deselect",function(options){var self=this;var setup=self.setup;this.setup=function(){setup.apply(self,arguments);self.$dropdown.on("click","[data-selectable]",function(e){let value=this.getAttribute("data-value");if(this.classList.contains("selected")){self.removeItem(value);self.refreshItems();self.refreshOptions()}return false});self.on("item_remove",function(value){self.getOption(value).removeClass("selected")})}});
+Selectize.define("click2deselect",function(options){var self=this;var setup=self.setup;this.setup=function(){setup.apply(self,arguments);self.$dropdown.each(function(){this.addEventListener("click",function(e){if(this.matches(".selected[data-selectable]")){let value=this.getAttribute("data-value");self.removeItem(value);self.refreshItems();self.refreshOptions()}return false})});self.on("item_remove",function(value){self.getOption(value).removeClass("selected")})}});
 
 /*!
  * International Telephone Input v18.2.1

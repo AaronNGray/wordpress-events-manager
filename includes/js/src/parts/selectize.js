@@ -57,7 +57,6 @@ function em_setup_selectize( container ){
 				s.refreshOptions();
 				return false;
 			});
-
 		}
 	});
 	jQuery(document).triggerHandler('em_selectize_loaded', [container]);

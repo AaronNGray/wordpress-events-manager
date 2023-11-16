@@ -7,6 +7,8 @@
 	if ( !empty($args['search_term']) ) em_locate_template('templates/search/search.php',true,array('args'=>$args));
 	if ( !empty($args['search_geo']) ) em_locate_template('templates/search/geo.php',true,array('args'=>$args));
 	if ( !empty($args['search_scope']) ) em_locate_template('templates/search/scope.php',true,array('args'=>$args));
+	?>
+	<?php
 	if ( !empty($args['show_advanced']) ) { //show the advanced search toggle if advanced fields are collapsed
 		em_locate_template('templates/search/form-advanced-trigger.php', true, array('args'=>$args));
 	}

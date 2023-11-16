@@ -520,10 +520,13 @@ jQuery(document).ready( function($){
 			//ajax call
 			$.post( EM.ajaxurl, el.serializeArray(), function(data){
 				let $data = $(data);
-				root.find('.em-bookings-table-trigger').each( function(){
-					let modal = $(this.getAttribute('rel'));
-					modal.remove();
-				});
+				if( !root.hasClass('frontend') ) {
+					// remove modals as they are supplied again on the backend
+					root.find('.em-bookings-table-trigger').each( function(){
+						let modal = $(this.getAttribute('rel'));
+						modal.remove();
+					});
+				}
 				root.replaceWith($data);
 				// re-setup bookings table
 				setup_bookings_table($data);

@@ -292,51 +292,97 @@
 		}
 	}
 
+	&.size-medium, &.size-small {
+		&.multi-line {
+			.em-search-main-bar {
+				padding: 10px 15px 15px 10px;
+				flex-wrap: wrap;
+
+				.em-search-field {
+					flex: 1 0 100% !important;
+					border-bottom: 1px solid var(--border-color) !important;
+					border-right: 0 !important;
+					padding-bottom: 5px;
+					margin-bottom: 5px;
+
+					&:nth-last-child(1 of .em-search-field) {
+						padding-bottom: 8px;
+						margin-bottom: 18px;
+					}
+				}
+
+				.em-search-submit {
+					flex: 1;
+
+					button {
+						width: 100%;
+					}
+				}
+			}
+		}
+	}
+
 	&.size-small {
-		padding: 5px !important;
 
-		.em-search-main-bar {
-			> .em-search-field:not(:first-child) {
-				display: none;
-				visibility: hidden;
+		.hide-small {
+			display : none;
+			visibility : hidden;
+		}
+
+		.one-line {
+			padding: 5px !important;
+
+			.em-search-main-bar {
+				> .em-search-field:not(:first-child) {
+					display: none;
+					visibility: hidden;
+				}
+
+				> .em-search-field:first-child input {
+					padding-left: 30px !important;
+					padding-right: 5px !important;
+					background-position-x: 3px !important;
+					background-size: 16px !important;
+				}
+
+				.em-search-scope {
+					flex: auto;
+				}
 			}
 
-			> .em-search-field:first-child input {
-				padding-left: 30px !important;
-				padding-right: 5px !important;
-				background-position-x: 3px !important;
-				background-size: 16px !important;
+			.em-search-advanced-trigger {
+				width: 45px;
+				padding: 0 10px;
+				flex: 0 0 25px !important;
 			}
-			.em-search-scope {
-				flex: auto;
+
+			&.has-advanced.has-sorting .em-search-sort {
+				width: 36px;
+				padding: 0 5px;
+				flex: 0 0 36px !important;
 			}
-		}
-		.em-search-advanced-trigger {
-			width: 45px;
-			padding: 0 10px;
-			flex: 0 0 25px !important;
-		}
-		&.has-advanced.has-sorting .em-search-sort {
-			width: 36px;
-			padding: 0 5px;
-			flex: 0 0 36px !important;
-		}
-		&.has-advanced.has-views .em-search-views {
-			width: 62px !important;
-			padding-left: 10px !important;
+
+			&.has-advanced.has-views .em-search-views {
+				width: 62px !important;
+				padding-left: 10px !important;
+			}
 		}
 	}
 
 	&.size-medium {
-		.em-search-main-bar {
-			> .em-search-field:not(:first-child):not(:last-child) {
-				display: none;
-				visibility: hidden;
-			}
-			> .em-search-field:first-child input {
-				padding-left: 40px !important;
-				padding-right: 10px !important;
-				background-position-x: 8px !important;
+
+		.hide-medium {
+			display : none;
+			visibility : hidden;
+		}
+
+		& .one-line {
+			.em-search-main-bar {
+				> .em-search-field:first-child input {
+					padding-left: 40px !important;
+					padding-right: 10px !important;
+					background-position-x: 8px !important;
+				}
 			}
 		}
 	}

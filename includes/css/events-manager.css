@@ -2298,41 +2298,66 @@
 .em.em-search.has-search-main .em-search-advanced-inline {
   margin-top: 20px;
 }
-.em.em-search.size-small {
-  padding: 5px !important;
+.em.em-search.size-medium.multi-line .em-search-main-bar, .em.em-search.size-small.multi-line .em-search-main-bar {
+  padding: 10px 15px 15px 10px;
+  flex-wrap: wrap;
 }
-.em.em-search.size-small .em-search-main-bar > .em-search-field:not(:first-child) {
+.em.em-search.size-medium.multi-line .em-search-main-bar .em-search-field, .em.em-search.size-small.multi-line .em-search-main-bar .em-search-field {
+  flex: 1 0 100% !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  border-right: 0 !important;
+  padding-bottom: 5px;
+  margin-bottom: 5px;
+}
+.em.em-search.size-medium.multi-line .em-search-main-bar .em-search-field:nth-last-child(1 of .em-search-field), .em.em-search.size-small.multi-line .em-search-main-bar .em-search-field:nth-last-child(1 of .em-search-field) {
+  padding-bottom: 8px;
+  margin-bottom: 18px;
+}
+.em.em-search.size-medium.multi-line .em-search-main-bar .em-search-submit, .em.em-search.size-small.multi-line .em-search-main-bar .em-search-submit {
+  flex: 1;
+}
+.em.em-search.size-medium.multi-line .em-search-main-bar .em-search-submit button, .em.em-search.size-small.multi-line .em-search-main-bar .em-search-submit button {
+  width: 100%;
+}
+.em.em-search.size-small .hide-small {
   display: none;
   visibility: hidden;
 }
-.em.em-search.size-small .em-search-main-bar > .em-search-field:first-child input {
+.em.em-search.size-small .one-line {
+  padding: 5px !important;
+}
+.em.em-search.size-small .one-line .em-search-main-bar > .em-search-field:not(:first-child) {
+  display: none;
+  visibility: hidden;
+}
+.em.em-search.size-small .one-line .em-search-main-bar > .em-search-field:first-child input {
   padding-left: 30px !important;
   padding-right: 5px !important;
   background-position-x: 3px !important;
   background-size: 16px !important;
 }
-.em.em-search.size-small .em-search-main-bar .em-search-scope {
+.em.em-search.size-small .one-line .em-search-main-bar .em-search-scope {
   flex: auto;
 }
-.em.em-search.size-small .em-search-advanced-trigger {
+.em.em-search.size-small .one-line .em-search-advanced-trigger {
   width: 45px;
   padding: 0 10px;
   flex: 0 0 25px !important;
 }
-.em.em-search.size-small.has-advanced.has-sorting .em-search-sort {
+.em.em-search.size-small .one-line.has-advanced.has-sorting .em-search-sort {
   width: 36px;
   padding: 0 5px;
   flex: 0 0 36px !important;
 }
-.em.em-search.size-small.has-advanced.has-views .em-search-views {
+.em.em-search.size-small .one-line.has-advanced.has-views .em-search-views {
   width: 62px !important;
   padding-left: 10px !important;
 }
-.em.em-search.size-medium .em-search-main-bar > .em-search-field:not(:first-child):not(:last-child) {
+.em.em-search.size-medium .hide-medium {
   display: none;
   visibility: hidden;
 }
-.em.em-search.size-medium .em-search-main-bar > .em-search-field:first-child input {
+.em.em-search.size-medium .one-line .em-search-main-bar > .em-search-field:first-child input {
   padding-left: 40px !important;
   padding-right: 10px !important;
   background-position-x: 8px !important;

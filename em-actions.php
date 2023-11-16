@@ -804,6 +804,9 @@ function em_ajax_bookings_table(){
 	}else{
 		check_admin_referer('em_bookings_table');
 		$EM_Bookings_Table = new EM_Bookings_Table();
+		if( !empty($_REQUEST['table_id']) ) { // so modals work linked to the ID
+			$EM_Bookings_Table->uid = $EM_Bookings_Table->id . '-' . absint($_REQUEST['table_id']);
+		}
 		$EM_Bookings_Table->output_table();
 	}
 	exit();
