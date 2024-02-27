@@ -1,4 +1,4 @@
-=== Events Manager - Events Calendar, Bookings (Registrations), Tickets, and more!  ===
+=== Events Manager - Calendar, Bookings (Registrations), Tickets, and more!  ===
 Contributors: msykes, pxlite, nutsmuggler, netweblogic
 Donate link: https://wp-events-plugin.com
 Tags: events, calendar, tickets, bookings, appointments
