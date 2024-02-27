@@ -10,6 +10,6 @@ if( get_option('dbem_search_form_text_hide_s') ) $classes[] = 'hide-small';
 	<label for="em-search-text-<?php echo absint($args['id']); ?>" class="screen-reader-text">
 		<?php echo esc_html($args['search_term_label']); ?>
 	</label>
-	<input type="text" name="em_search" class="em-search-text" id="em-search-text-<?php echo absint($args['id']); ?>"  placeholder="<?php echo esc_js($args['search_term_label']); ?>" >
+	<input type="text" name="em_search" class="em-search-text" id="em-search-text-<?php echo absint($args['id']); ?>"  placeholder="<?php echo esc_attr($args['search_term_label']); ?>" value="<?php echo esc_attr($args['search']); ?>">
 </div>
 <!-- END General Search -->

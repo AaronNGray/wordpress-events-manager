@@ -277,17 +277,24 @@
 			<tbody class="em-search-form-advanced">
 				<?php
 				em_options_input_text ( __( 'Search button text', 'events-manager'), 'dbem_search_form_submit', __("If there's no fields to show in the main search section, this button will be used instead at the bottom of the advanced fields.",'events-manager'));
+				em_options_select ( __( 'Advanced search style', 'events-manager'), 'dbem_search_form_advanced_style', array('accordion'=> __('Accordion', 'events-manager'),'headings'=> __('Headings', 'events-manager')), __('The advanced search can be styled in a section-based format, with expandable sections, or directly inline with static headings. If you want headings for some sections and not others, choose Headings and leave specific section heading labels blank in settings further down.','events-manager'), '');
+
 				$triggers = array('inline' => '#dbem_search_form_advanced_hidden_row, #dbem_search_form_advanced_hide_row');
 				em_options_select ( __( 'Advanced search mode', 'events-manager'), 'dbem_search_form_advanced_mode', array('inline'=> __('Inline', 'events-manager'),'modal'=> __('Modal', 'events-manager')), __('You can choose to show a popup modal or inline under the main search bar triggered by an icon on the main search bar.','events-manager'), '', $triggers);
 				?>
 			</tbody>
 			<tbody class="em-search-form-advanced em-search-form-advanced-hidden">
 				<?php
-				em_options_radio_binary ( __( 'Hidden by default?', 'events-manager'), 'dbem_search_form_advanced_hidden', __('If set to yes, advanced search fields will be hidden by default and can be revealed by clicking the "Advanced Search" link.','events-manager') );
-				em_options_input_text ( __( 'Show label', 'events-manager'), 'dbem_search_form_advanced_show', __('The tip text that is shown for the advanced search trigger.','events-manager') );
-				em_options_input_text ( __( 'Hide label', 'events-manager'), 'dbem_search_form_advanced_hide', __('The tip text that is shown for the advanced search trigger.','events-manager') );
+				em_options_radio_binary ( __( 'Hidden by default?', 'events-manager'), 'dbem_search_form_advanced_hidden', __('If set to yes, advanced search fields will be hidden by default and can be revealed by clicking the "Advanced Search" icon.','events-manager'), '', '#dbem_search_form_advanced_trigger_row', true );
+				em_options_radio_binary ( __( 'Show hide/show trigger?', 'events-manager'), 'dbem_search_form_advanced_trigger', __('If set to yes, advanced search fields can toggled by clicking the "Advanced Search" icon.','events-manager'), '', '.em-search-form-advanced-trigger' );
 				?>
 			</tbody>
+            <tbody class="em-search-form-advanced em-search-form-advanced-trigger em-search-form-advanced-hidden">
+                <?php
+                em_options_input_text ( __( 'Show label', 'events-manager'), 'dbem_search_form_advanced_show', __('The tip text that is shown for the advanced search trigger.','events-manager') );
+                em_options_input_text ( __( 'Hide label', 'events-manager'), 'dbem_search_form_advanced_hide', __('The tip text that is shown for the advanced search trigger.','events-manager') );
+                ?>
+            </tbody>
 			<tbody class="em-search-form-advanced em-subsection">
 				<tr class="em-subheader"><td colspan="2"><h5><?php esc_html_e( 'Search', 'events-manager'); ?></h5></td></tr>
 				<?php

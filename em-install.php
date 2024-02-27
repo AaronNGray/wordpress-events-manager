@@ -450,9 +450,12 @@ function em_add_options() {
 		'dbem_search_form_submit' => __('Search','events-manager'),
 		'dbem_search_form_views' => array('list', 'list-grouped', 'grid', 'map', 'calendar'),
 		'dbem_search_form_view' => 'list',
+        'dbem_search_form_saved_searches' => !$already_installed,
 		'dbem_search_form_advanced' => 1,
 		'dbem_search_form_advanced_mode' => 'modal',
+		'dbem_search_form_advanced_style' => $already_installed ? 'accordion' : 'headings',
 		'dbem_search_form_advanced_hidden' => 1,
+        'dbem_search_form_advanced_trigger' => 1,
 		'dbem_search_form_advanced_show' => __('Show Advanced Search','events-manager'),
 		'dbem_search_form_advanced_hide' => __('Hide Advanced Search','events-manager'),
 		'dbem_search_form_text' => 1,
@@ -947,7 +950,7 @@ function em_upgrade_current_installation(){
 		update_site_option('dbem_data', $data);
 	}
 	// temp promo
-	if( time() < 1699682400 &&  version_compare($current_version, '6.4.6', '<')  ) {
+	if( time() < 1710028800 &&  version_compare($current_version, '6.4.7', '<')  ) {
 		if( empty($data['admin-modals']) ) $data['admin-modals'] = array();
 		$data['admin-modals']['promo-popup'] = true;
 		update_site_option('dbem_data', $data);

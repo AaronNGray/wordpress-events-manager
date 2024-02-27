@@ -1,20 +1,20 @@
-=== Events Manager ===
+=== Events Manager - Events Calendar, Bookings (Registrations), Tickets, and more!  ===
 Contributors: msykes, pxlite, nutsmuggler, netweblogic
 Donate link: https://wp-events-plugin.com
-Tags: bookings, calendar, tickets, events, buddypress, event management, google maps, maps, locations, registration, zoom
+Tags: events, calendar, tickets, bookings, appointments, buddypress
 Text Domain: events-manager
 Requires at least: 5.2
-Tested up to: 6.4.1
-Stable tag: 6.4.6.4
+Tested up to: 6.4.3
+Stable tag: 6.4.7
 Requires PHP: 5.3
 
 Fully featured event registration management including recurring events, locations management, calendar, Google map integration, booking management
 
 == Description ==
 
-Events Manager is a full-featured event registration plugin for WordPress based on the principles of flexibility, reliability and powerful features!
+Events Manager is a full-featured event registration, bookings and calenadr plugin for WordPress based on the principles of flexibility, reliability and powerful features!
 
-*Version 6 is the biggest update to date, with a complete overhaul of our calendars, lists, searches and other front-end items. Check it out and enjoy!*
+* Limited-Time Offer - Up to 30% our current price plans! [Get Pro Now](https://wp-events-plugin.com/pricing/?utm_source=repo&utm_medium=readme&utm_campaign=promo2024-02) *
 
 * [Demo](https://eventsmanager.site)
 * [Documentation](http://wp-events-plugin.com/documentation/)
@@ -27,13 +27,17 @@ Events Manager is a full-featured event registration plugin for WordPress based 
 * Recurring and long (multi-day) event registration
 * Bookings Management (including approval/rejections, export CVS, and more!)
 * Multiple Tickets
-* *(New)* Fully-featured graph and statistics including bar/line/pie with comparison and stacking
-* MultiSite Support
+* Fully-featured graph and statistics including bar/line/pie with comparison and stacking
+* MultiSite Event Support
+ * Cross-Network Event Sharing - show your events and booking fromss on other subsites or main site
+ * Network-wide Global Booking Management
+ * BuddyPress and BuddyBoss Support
+ * Create modular (independent) event subsites or inter-networked events
 * Multiple Location Types
  * Physical Locations
  * Online Events (URLs)
  * [Zoom Webinars/Meetings Integration](https://wordpress.org/plugins/events-manager-zoom/)
-* BuddyPress Support
+* BuddyPress & BuddyBoss Support
  * Submit Events
  * Group Events
  * Personal Events
@@ -67,11 +71,9 @@ We provide the tools to [help you be GDPR compliant](http://wp-events-plugin.com
 
 = Premium Features =
 
-*NEW* Check out our [WooCommerce add-on](https://wp-events-plugin.com/woocommerce/)! Sell bookings directly with WooCommerce.
-
 We have a premium [Pro add-on for Events Manager](http://eventsmanagerpro.com/gopro/) which not only demonstrates the flexibility of Events Manager, but also adds some important features including but not limited to:
 
-* WooCommerce integration included FREE (limited-time offer)
+* WooCommerce integration ([sold separately](https://wp-events-plugin.com/woocommerce/))
 * PayPal, Stripe, Authorize.net and Offline Payments
 * Custom booking forms
 * Individual Attendee custom forms
@@ -160,12 +162,15 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page, which is upd
 18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
-= 6.4.6.4.1 (dev) =
+= 6.4.7 =
 * Fixed PHP warning on my-bookings page.
 * Fixed ticket selection dropdown not showing max spaces if `EM_Bookings::$disable_restrictions` is enabled (such as for manual bookings).
 * Fixed export and view setting overlays not working for booking admins table front-end after filtering once or more.
 * Fixed issues with category/tag selection in Firefox.
 * Added responsive options to the search form, allowing search form fields to stack on smaller screen sizes and also choose which main search options are hidden.
+* Fixed localized times via #_EVENTDATES_LOCAL not working in AJAX calls such as searches or pagination
+* Fixed cache PHP error in taxonomy objects if accessing a blank taxonomy
+* Fixed 2 vulnerabilities, reported by PatchStack and WordFence
 
 = 6.4.6.4 =
 * Fixed issues with multiple bookings and anonymous bookings that could rewrite the user name of the account making the booking with the latest user information.
