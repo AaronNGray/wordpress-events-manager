@@ -4,7 +4,7 @@ Donate link: https://wp-events-plugin.com
 Tags: events, calendar, tickets, bookings, appointments
 Text Domain: events-manager
 Requires at least: 5.2
-Tested up to: 6.4.3
+Tested up to: 6.5
 Stable tag: 6.4.7.2
 Requires PHP: 5.3
 
