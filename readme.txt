@@ -7,6 +7,7 @@ Requires at least: 5.2
 Tested up to: 6.5
 Stable tag: 6.4.8
 Requires PHP: 5.3
+License: GPLv2
 
 Fully featured events calendar, booking registration (RSVP), recurring events, locations management, Google Maps
 
