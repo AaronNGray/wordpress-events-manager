@@ -1388,15 +1388,17 @@
   border-left: none;
 }
 .em.em-calendar .em-cal-body {
-  --grid-auto-rows: auto;
-  grid-auto-rows: var(--grid-auto-rows);
   border-bottom: var(--date-box-border);
   background-color: var(--calendar-background);
+  --grid-auto-rows: auto;
   /*
   --- Display Option Flags ---
   */
   /* Display date cells with even height, taking the highest cell as the minimum height */
   /* Event Items in Pill Form */
+}
+.em.em-calendar .em-cal-body:not(.auto-aspect) {
+  grid-auto-rows: var(--grid-auto-rows);
 }
 .em.em-calendar .em-cal-body .em-cal-day {
   text-align: right;

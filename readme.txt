@@ -5,7 +5,7 @@ Tags: events, calendar, tickets, bookings, appointments
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 6.5
-Stable tag: 6.4.7.3
+Stable tag: 6.4.8
 Requires PHP: 5.3
 
 Fully featured events calendar, booking registration (RSVP), recurring events, locations management, Google Maps
@@ -162,6 +162,27 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page for helps wit
 18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
+= 6.4.8 =
+* fixed XSS vulnerability in shortcodes we recommend updating if you allow guest event submissions and shortcdoes (props to WordFence Security for responsible disclosure)
+* fixed permalink clashes for location/taxonomy ical links getting overriden by general events if their permalinks path are within the events subdirectory
+* improved location search parameters to accept comma-separated values for filtering by multiple towns,countries,states,postcodes and regions, including exclusions
+* added format value to events_calendar shortcode, [event_tags] and [event_tag] shortcodes
+* added EM_UNFILTERED_HTML constant, which does not apply wp_kses_post to settings if user has 'unfiltered_html' capability
+* fixed calendar navigation issues when supplying a format argument,
+* fixed calendar navigation not persisting when using some new options such as calendar_preview_mode_date,
+* fixed calendar property calendar_dates_height 'auto' value being ignored,
+* fixed calendar show_search being ignored and not showing search bar above calendars in shortcode/php calls,
+* fixed display issues for selectize in wp admin area
+* fixed #_EVENTTAGSLINE showing 'no categories' message if empty,
+* added 'missing' #_EVENTOFFICE365LINK placeholder
+* tweaked category/tag shortcode to use em_get_ functions instead of directly invoking class
+* fixed some situations showing incorrect URLS on login redirect_to rather than current page reload
+* added telephone field type to booking form phone input field (should default to text if not enabled)
+* fixed extra line breaks in bookings table actions dropdown
+* fixed typo translation domain in "my bookings" page button
+* added mail filters em_mailer_send_parameters (for all email methods) and em_mailer_wp_mail (for wp_mail)
+* fixed aesthetic display issues in admin for selectize by loading all partials into .wp-admin selector context
+
 = 6.4.7.3 =
 * fixed pagination issues in non-event lists where PAGE is double url-encoded
 * fixed array to string conversion PHP warning in calendars

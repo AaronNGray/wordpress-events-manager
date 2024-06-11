@@ -1041,7 +1041,7 @@ class EM_Booking extends EM_Object{
 		<table class="em-form-fields">
 			<tr><th><?php _e('Name','events-manager'); ?> : </th><td><input type="text" name="user_name" value="<?php echo esc_attr($name); ?>" /></td></tr>
 			<tr><th><?php _e('Email','events-manager'); ?> : </th><td><input type="text" name="user_email" value="<?php echo esc_attr($email); ?>" /></td></tr>
-			<tr><th><?php _e('Phone','events-manager'); ?> : </th><td><input type="text" name="dbem_phone" value="<?php echo esc_attr($phone); ?>" /></td></tr>
+			<tr><th><?php _e('Phone','events-manager'); ?> : </th><td><input type="tel" name="dbem_phone" value="<?php echo esc_attr($phone); ?>" /></td></tr>
 		</table>
 		<?php
 		return apply_filters('em_booking_get_person_editor', ob_get_clean(), $this);
@@ -1265,7 +1265,8 @@ class EM_Booking extends EM_Object{
 	}
 	
 	/**
-	 * Returns true if booking is either pending or reserved but not confirmed (which is assumed pending) 
+	 * Returns true if booking is either pending but not confirmed (which is assumed pending).
+	 * Pending bookings do not mean they are necessarily reserved spaces, check is_reserved() for that.
 	 */
 	function is_pending(){
 		$result = ($this->is_reserved() || $this->booking_status == 0) && $this->booking_status != 1;

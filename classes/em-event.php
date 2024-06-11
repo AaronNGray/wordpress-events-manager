@@ -2835,7 +2835,7 @@ class EM_Event extends EM_Object{
 					if( !empty($tags_list) ) {
 						$replace = implode(', ', $tags_list);
 					}else{
-						$replace = get_option ( 'dbem_no_categories_message' );
+						$replace = get_option ( 'dbem_no_tags_message' );
 					}
 					break;
 				case '#_CATEGORIES': //deprecated
@@ -2909,6 +2909,8 @@ class EM_Event extends EM_Object{
 					$replace = $this->generate_ical_url( $url, $dateStart, $dateEnd );
 					if( $result == '#_EVENTOUTLOOKLIVELINK' ){
 						$replace = '<a href="'.esc_url($replace).'" target="_blank">Outlook Live</a>';
+					} elseif ( $result == '#_EVENTOFFICE365LINK' ){
+						$replace = '<a href="'.esc_url($replace).'" target="_blank">Office 365</a>';
 					}
 					break;
 				//Event location (not physical location)
