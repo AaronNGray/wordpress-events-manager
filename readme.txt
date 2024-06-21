@@ -4,7 +4,7 @@ Donate link: https://wp-events-plugin.com
 Tags: events, calendar, tickets, bookings, appointments
 Text Domain: events-manager
 Requires at least: 5.2
-Tested up to: 6.5
+Tested up to: 6.6
 Stable tag: 6.4.8
 Requires PHP: 5.3
 License: GPLv2
@@ -163,6 +163,9 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page for helps wit
 18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
+= 6.4.8.1 =
+* changed escaping of HTML so that admins with unflitered_html cap can submit anything to settings or alternatively allows if EM_UNFILTERED_HTML is defined true
+
 = 6.4.8 =
 * fixed XSS vulnerability in shortcodes we recommend updating if you allow guest event submissions and shortcdoes (props to WordFence Security for responsible disclosure)
 * fixed permalink clashes for location/taxonomy ical links getting overriden by general events if their permalinks path are within the events subdirectory
