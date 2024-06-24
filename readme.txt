@@ -5,7 +5,7 @@ Tags: events, calendar, tickets, bookings, appointments
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 6.6
-Stable tag: 6.4.8
+Stable tag: 6.4.9
 Requires PHP: 5.3
 License: GPLv2
 
@@ -163,8 +163,17 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page for helps wit
 18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
-= 6.4.8.1 =
+= 6.4.9 =
 * changed escaping of HTML so that admins with unflitered_html cap can submit anything to settings or alternatively allows if EM_UNFILTERED_HTML is defined true
+* fixed bookings graph views not comparing previous periods in some filter combinations, showing only the first period
+* Fixed vertical scrolling issues with multidropdown mode (headings) on advanced search modals.
+* Fixed hidden advanced search modal blocking trigger buttons from re-displaying advanced search on mobile view.
+* Fixed #_EVENTTIMES_LOCAL and #_EVENTDATES_LOCAL not working when supplied JS formatting unless placeholder supplied beforehand without formatting.
+* Fixed #_BOOKINGBUTTON issues with cancellation clicks.
+* Fixed PHP error with errant redirected permalink with sites using legacy permalink structures.
+* Added missing_creds error to OAuth API EM_Exception.
+* Removed id query param from calendar nav links to improve SEO and reduce server load.
+* Added calendar_nav_nofollow parameter for shortcode, allowing nav links to be nofollow.
 
 = 6.4.8 =
 * fixed XSS vulnerability in shortcodes we recommend updating if you allow guest event submissions and shortcdoes (props to WordFence Security for responsible disclosure)

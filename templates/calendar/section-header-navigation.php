@@ -20,14 +20,13 @@
 		<?php endif; ?>
 	</div>
 	<div class="month-nav input">
-		<a class="em-calnav em-calnav-prev" href="<?php echo esc_url($calendar['links']['previous_url']); ?>" data-disabled="<?php echo empty($calendar['links']['previous_url']) ? 1 : 0; ?>">
+		<a class="em-calnav em-calnav-prev" href="<?php echo esc_url($calendar['links']['previous_url']); ?>" data-disabled="<?php echo empty($calendar['links']['previous_url']) ? 1 : 0; ?>" <?php if( !empty($args['calendar_nav_nofollow'] ) ) echo 'rel="nofollow"' ?>>
 			<svg viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg"><path d="M10 14L3 7.5L10 1" stroke="#555" stroke-linecap="square"></path></svg>
-
 		</a>
-		<a  href="<?php echo esc_url($calendar['links']['today_url']); ?>" class="em-calnav-today button button-secondary size-large size-medium <?php if( date('Y-m') === $EM_DateTime->format('Y-m') ) echo 'is-today'; ?>">
+		<a  href="<?php echo esc_url($calendar['links']['today_url']); ?>" class="em-calnav-today button button-secondary size-large size-medium <?php if( date('Y-m') === $EM_DateTime->format('Y-m') ) echo 'is-today'; ?>" <?php if( !empty($args['calendar_nav_nofollow'] ) ) echo 'rel="nofollow"' ?>>
 			<?php esc_html_e('Today', 'events-manager'); ?>
 		</a>
-		<a class="em-calnav em-calnav-next" href="<?php echo esc_url($calendar['links']['next_url']); ?>" data-disabled="<?php echo empty($calendar['links']['next_url']) ? 1 : 0; ?>">
+		<a class="em-calnav em-calnav-next" href="<?php echo esc_url($calendar['links']['next_url']); ?>" data-disabled="<?php echo empty($calendar['links']['next_url']) ? 1 : 0; ?>" <?php if( !empty($args['calendar_nav_nofollow'] ) ) echo 'rel="nofollow"' ?>>
 			<svg viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg"><path d="M5 14L12 7.5L5 1" stroke="#555" stroke-linecap="square"></path></svg>
 		</a>
 	</div>

@@ -581,7 +581,7 @@ class EM_Booking extends EM_Object{
 	}
 	
 	/**
-	 * Total of tickets without taxes, discounts or any other modification. No filter given here for that very reason!
+	 * Total of tickets without taxes, discounts or any other modification.
 	 * @param boolean $format
 	 * @return double|string
 	 */
@@ -593,6 +593,13 @@ class EM_Booking extends EM_Object{
 	    return $price;
 	}
 	
+	/**
+	 * Get total price of booking before taxes are applied, this includes discounts and surcharges.
+	 * @param $format
+	 * @param $include_adjustments
+	 *
+	 * @return int|string
+	 */
 	function get_price_pre_taxes( $format = false, $include_adjustments = true ){
 	    $price = $base_price = $this->get_price_base();
 	    //apply pre-tax discounts

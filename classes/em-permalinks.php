@@ -76,7 +76,7 @@ if( !class_exists('EM_Permalinks') ){
 				}elseif( $wp_query->get('category_slug') ){
 					$url = get_term_link($wp_query->get('category_slug'), EM_TAXONOMY_CATEGORY);
 				}
-				if(!empty($url)){
+				if( !empty($url) && is_string($url) ){
 					wp_safe_redirect($url,301);
 					exit();
 				}

@@ -178,14 +178,14 @@ class EM_Calendar extends EM_Object {
 		//Get an array of arguments that don't include default valued args
 		$link_args = urlencode_deep( self::get_query_args($args) );
 		$link_args['ajaxCalendar'] = 1;
-		$next_url = esc_url_raw(add_query_arg( array_merge($link_args, array('mo'=>$month_next, 'yr'=>$year_next)) ));
+		$next_url = esc_url_raw(add_query_arg( array_merge($link_args, array('mo'=>$month_next, 'yr'=>$year_next, 'id' => null)) ));
 		$calendar_array['links'] = array( 'previous_url'=>'', 'next_url'=>$next_url, 'today_url' => '');
 		// add today and previous links if scope permits
 		if( $today->format('Y-n') != $year.'-'.absint($month) ) {
 			$calendar_array['links']['today_url'] = esc_url_raw(add_query_arg( array_merge($link_args, array('mo'=>$today->format('m'), 'yr'=>$today->format('Y'))) ));
 		}
 		if( $args['scope'] !== 'future' || $today->format('Y-n') !== $year.'-'.absint($month) ){ // don't show if future scope and this month
-			$calendar_array['links']['previous_url'] = esc_url_raw(add_query_arg( array_merge($link_args, array('mo'=>$month_last, 'yr'=>$year_last)) ));
+			$calendar_array['links']['previous_url'] = esc_url_raw(add_query_arg( array_merge($link_args, array('mo'=>$month_last, 'yr'=>$year_last, 'id' => null)) ));
 		}
 		// Set up weekday headers
 	 	$weekdays = array(
@@ -661,7 +661,8 @@ class EM_Calendar extends EM_Object {
 			'css_classes' => false,
 			'calendar_event_style' => 'pill', // default is pill view
 			'calendar_preview_mode' => get_option('dbem_calendar_preview_mode'), //modal, tooltips, none
-			'calendar_preview_mode_date' => get_option('dbem_calendar_preview_mode_date') //modal, none
+			'calendar_preview_mode_date' => get_option('dbem_calendar_preview_mode_date'), //modal, none
+			'calendar_nav_nofollow' => false,
 		);
 		// Set the calendar_size conditionally based on allowed sizes
 		if( empty($args['calendar_size']) && isset($args['full']) ){ // legacy arg

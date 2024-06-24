@@ -5143,6 +5143,8 @@
   transition: all 0.3s cubic-bezier(0.55, 0, 0.1, 1) !important;
   transition-delay: 0.15s !important;
   z-index: 99999 !important;
+  pointer-events: none;
+  touch-action: none;
   /**
    * Mobile styling for popups
    */
@@ -5151,6 +5153,8 @@
   visibility: visible !important;
   opacity: 1 !important;
   transform: scale(1) !important;
+  pointer-events: auto;
+  touch-action: auto;
 }
 .wp-admin .em.em-modal .em-modal-popup.active .em-modal-content, .wp-admin .em.em-modal .em-modal-popup.active .em-close-modal {
   opacity: 1 !important;
