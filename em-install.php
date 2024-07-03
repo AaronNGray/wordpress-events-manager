@@ -848,6 +848,9 @@ function em_add_options() {
 		'dbem_css_categories' => 1,
 		'dbem_css_tags' => 1,
 		'dbem_css_myrsvp' => 1,
+		// Optimization settings
+		'dbem_css_minified' => 1,
+		'dbem_js_minified' => 0,
 		/*
 		 * Custom Post Options - set up to mimick old EM settings and install with minimal setup for most users
 		 */
@@ -1578,6 +1581,11 @@ function em_upgrade_current_installation(){
 		if( version_compare( $current_version, '6.4.7.2', '<') ){
 			// remove flag for admin notice
 			delete_option('dbem_hello_to_user');
+		}
+		if( version_compare( $current_version, '6.4.9.1', '<') ){
+			// remove flag for admin notice
+			$message = 'Events Manager 6.4.10 automatically disables minified JS files from being loaded, which addresses a false positive security threat from Avast Anti-Virus. For more information, please <a target="_blank" href="https://wp-events-plugin.com/blog/2024/07/03/false-positive-avast-anti-virus-security-threats/">check our blog post</a>';
+			EM_Admin_Notices::add(new EM_Admin_Notice(array( 'name' => 'v-update', 'who' => 'admin', 'what' => 'warning', 'where' => 'all', 'message' => $message )), is_multisite());
 		}
 	}
 }

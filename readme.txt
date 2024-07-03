@@ -5,7 +5,7 @@ Tags: events, calendar, tickets, bookings, appointments
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 6.6
-Stable tag: 6.4.9
+Stable tag: 6.4.10
 Requires PHP: 5.3
 License: GPLv2
 
@@ -163,6 +163,14 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page for helps wit
 18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
+= 6.4.10 =
+* 'fixed' false positive Avast vulnerability alert on browsers, caused by the minified EM js file
+* added option to include minified or non-minified JS/CSS files in Advanced Optimization settings, JS turned off by default due to above errors
+* fixed taxonomy images size display issues in admin area if too large
+* fixed taxonomy colors not seeming being saved due to caching issues (now clears color cache upon save)
+* added calendar_month_nav and calendar_nav args for calendars
+* added future events only option for calendar widget
+
 = 6.4.9 =
 * changed escaping of HTML so that admins with unflitered_html cap can submit anything to settings or alternatively allows if EM_UNFILTERED_HTML is defined true
 * fixed bookings graph views not comparing previous periods in some filter combinations, showing only the first period

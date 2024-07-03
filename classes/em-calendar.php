@@ -663,6 +663,8 @@ class EM_Calendar extends EM_Object {
 			'calendar_preview_mode' => get_option('dbem_calendar_preview_mode'), //modal, tooltips, none
 			'calendar_preview_mode_date' => get_option('dbem_calendar_preview_mode_date'), //modal, none
 			'calendar_nav_nofollow' => false,
+			'calendar_nav' => true,
+			'calendar_month_nav' => true,
 		);
 		// Set the calendar_size conditionally based on allowed sizes
 		if( empty($args['calendar_size']) && isset($args['full']) ){ // legacy arg

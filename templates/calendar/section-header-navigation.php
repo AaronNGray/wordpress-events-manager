@@ -10,7 +10,7 @@
 		<button class="em-search-advanced-trigger em-clickable" data-search-advanced-id="em-search-advanced-<?php echo $id; ?>"  data-parent-trigger="em-search-advanced-trigger-<?php echo $id; ?>"></button>
 	<?php endif; ?>
 	<div class="month input">
-		<?php if( empty($args['calendar_month_nav']) ): ?>
+		<?php if( !empty($args['calendar_nav']) && !empty($args['calendar_month_nav']) ): ?>
 			<form action="" method="get">
 				<input type="month" class="em-month-picker" value="<?php echo $EM_DateTime->i18n('Y-m') ?>" data-month-value="<?php echo $EM_DateTime->i18n('F Y') ?>">
 				<span class="toggle"></span>
@@ -19,6 +19,7 @@
 			<?php echo esc_html($EM_DateTime->i18n(get_option('dbem_full_calendar_month_format'))); ?>
 		<?php endif; ?>
 	</div>
+	<?php if( !empty($args['calendar_nav']) ) : ?>
 	<div class="month-nav input">
 		<a class="em-calnav em-calnav-prev" href="<?php echo esc_url($calendar['links']['previous_url']); ?>" data-disabled="<?php echo empty($calendar['links']['previous_url']) ? 1 : 0; ?>" <?php if( !empty($args['calendar_nav_nofollow'] ) ) echo 'rel="nofollow"' ?>>
 			<svg viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg"><path d="M10 14L3 7.5L10 1" stroke="#555" stroke-linecap="square"></path></svg>
@@ -30,4 +31,5 @@
 			<svg viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg"><path d="M5 14L12 7.5L5 1" stroke="#555" stroke-linecap="square"></path></svg>
 		</a>
 	</div>
+	<?php endif; ?>
 </section>
