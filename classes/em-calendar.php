@@ -469,7 +469,7 @@ class EM_Calendar extends EM_Object {
 			// sanitize calendar size
 			if( !empty($args['calendar_size']) ){
 				$allowed_sizes = apply_filters('em_calendar_output_sizes', array('large', 'medium', 'small'));
-				$args['calendar_size'] = in_array($args['calendar_size'], $allowed_sizes) ? $args['calendar_size'] : $default_args['calendar_size']; //large will sort itself out
+				$args['calendar_size'] = in_array($args['calendar_size'], $allowed_sizes) ? $args['calendar_size'] : null;
 			}
 			// generate CSS classes based on $args
 			$calendar_array['css'] = array(

@@ -165,6 +165,9 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page for helps wit
 == Changelog ==
 = 6.4.10.1 (Dev) =
 * added default calendar size option to settings page
+* fixed bug in calendar widget preventing saving/loading on widget area
+* added calendar_size option to calendar widget
+* fixed PHP warning when calendar_size is undefined
 
 = 6.4.10 =
 * 'fixed' false positive Avast vulnerability alert on browsers, caused by the minified EM js file
