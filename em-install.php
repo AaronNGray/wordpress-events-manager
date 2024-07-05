@@ -695,6 +695,7 @@ function em_add_options() {
 		'dbem_display_calendar_orderby' => 'event_name,event_start_time',
 		'dbem_display_calendar_events_limit' => get_option('dbem_full_calendar_events_limit',3),
 		'dbem_display_calendar_events_limit_msg' => __('more...','events-manager'),
+		'dbem_calendar_size' => 'auto',
 		'dbem_calendar_direct_links' => 1,
 		'dbem_calendar_preview_mode' => 'modal',
 		'dbem_calendar_preview_mode_date' => 'modal',

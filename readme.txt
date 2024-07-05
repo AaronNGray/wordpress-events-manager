@@ -5,7 +5,7 @@ Tags: events, calendar, tickets, bookings, appointments
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 6.6
-Stable tag: 6.4.10
+Stable tag: 6.4.10.1
 Requires PHP: 5.3
 License: GPLv2
 
@@ -163,6 +163,9 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page for helps wit
 18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
+= 6.4.10.1 (Dev) =
+* added default calendar size option to settings page
+
 = 6.4.10 =
 * 'fixed' false positive Avast vulnerability alert on browsers, caused by the minified EM js file
 * added option to include minified or non-minified JS/CSS files in Advanced Optimization settings, JS turned off by default due to above errors
