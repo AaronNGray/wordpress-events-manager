@@ -5,7 +5,7 @@ Tags: events, calendar, tickets, bookings, appointments
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 6.6
-Stable tag: 6.4.10.1
+Stable tag: 6.4.10.2
 Requires PHP: 5.3
 License: GPLv2
 
@@ -163,7 +163,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page for helps wit
 18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
-= 6.4.10.2 (Dev) =
+= 6.4.10.2 =
 * added default calendar size option to settings page
 * fixed bug in calendar widget preventing saving/loading on widget area
 * added calendar_size option to calendar widget
