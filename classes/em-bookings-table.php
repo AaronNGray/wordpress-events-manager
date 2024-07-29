@@ -107,7 +107,7 @@ class EM_Bookings_Table extends EM\List_Table {
 			$this->statuses['confirmed']['search'] = array(0,1);
 		}
 		// set default status to search for
-		$this->fitler_vars['status']['default'] = get_option('dbem_bookings_approval') ? 'needs-attention':'confirmed';
+		$this->filter_vars['status']['default'] = get_option('dbem_bookings_approval') ? 'needs-attention':'confirmed';
 		
 		// set/translate Attendee column header previd accordingly
 		if ( !defined('EM_BOOKINGS_TABLE_ATTENDEE_PREFIX') || constant('EM_BOOKINGS_TABLE_ATTENDEE_PREFIX') === true ) {
