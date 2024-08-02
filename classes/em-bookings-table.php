@@ -10,7 +10,7 @@ use EM\List_Table;
 
 //Builds a table of bookings, still work in progress...
 class EM_Bookings_Table extends EM\List_Table {
-	public static $cols_allowed_html = array('user_login' => 1, 'user_name' => 1, 'event_name' => 1, 'actions' => 1, 'ticket_name' => 0, 'ticket_description' => 0, 'ticket_price' => 0, 'ticket_total' => 0, 'ticket_spaces' => 0, 'ticket_id' => 0);
+	public static $cols_allowed_html = array('user_login' => 1, 'user_name' => 1, 'event_name' => 1, 'actions' => 1, 'ticket_name' => 0, 'ticket_description' => 0, 'ticket_price' => 0, 'ticket_total' => 0, 'ticket_spaces' => 0, 'ticket_booking_spaces' => 0, 'ticket_id' => 0);
 	public static $has_filters = true;
 	public static $filter_vars = [
 		'search' => [
@@ -135,10 +135,10 @@ class EM_Bookings_Table extends EM\List_Table {
 				'label' => __('Tickets','events-manager'),
 				'label_singular' => __('Ticket', 'events_manager'),
 				'limit' => 20,
-				'cols' => array('user_name','event_name', 'event_date', 'event_time','ticket_name', 'ticket_price', 'ticket_total','ticket_spaces','booking_status'),
+				'cols' => array('user_name','event_name', 'event_date', 'event_time','ticket_name', 'ticket_price', 'ticket_total','ticket_booking_spaces','booking_status'),
 				'contexts' => array(
 					'event' => array(
-						'cols' => array('user_name', 'ticket_name', 'booking_status', 'ticket_price', 'ticket_spaces', 'ticket_total'),
+						'cols' => array('user_name', 'ticket_name', 'booking_status', 'ticket_price', 'ticket_booking_spaces', 'ticket_total'),
 					),
 				)
 			),
@@ -214,7 +214,8 @@ class EM_Bookings_Table extends EM\List_Table {
 			),
 		), $this);
 		$this->cols_tickets_template = apply_filters('em_bookings_table_cols_tickets_template', array(
-			'ticket_spaces'=>__('Ticket Spaces','events-manager'),
+			'ticket_spaces'=>__('Ticket Capacity','events-manager'),
+			'ticket_booking_spaces'=>__('Ticket Spaces','events-manager'),
 			'ticket_name'=>__('Ticket Name','events-manager'),
 			'ticket_description'=>__('Ticket Description','events-manager'),
 			'ticket_price'=>__('Ticket Price','events-manager'),
@@ -871,7 +872,7 @@ class EM_Bookings_Table extends EM\List_Table {
 			$val = $EM_Booking->get_spaces();
 		}elseif( $col == 'booking_id' ){
 			$val = $EM_Booking->booking_id;
-		}elseif( $col == 'ticket_spaces' ){
+		}elseif( $col == 'ticket_booking_spaces' ){
 			static::$cols_allowed_html[$col] = false; // guilty until proven innocent each time
 			if( !empty($EM_Ticket_Bookings) || !empty($EM_Ticket_Booking) ) {
 				$EM_Ticket_Bookings = !empty($EM_Ticket_Bookings) ? $EM_Ticket_Bookings : $EM_Ticket_Booking;
@@ -887,7 +888,7 @@ class EM_Bookings_Table extends EM\List_Table {
 				$val = $this->get_tickets_multiple_col( $tickets_array, $col, $EM_Booking );
 				static::$cols_allowed_html[$col] = true;
 			}
-		}elseif( $col == 'ticket_description' || $col == 'ticket_name' ){
+		}elseif( $col == 'ticket_description' || $col == 'ticket_name' || $col == 'ticket_spaces' ){
 			static::$cols_allowed_html[$col] = false; // guilty until proven innocent each time
 			if( !empty($EM_Ticket_Bookings) || !empty($EM_Ticket_Booking) ) {
 				$EM_Ticket_Bookings = !empty($EM_Ticket_Bookings) ? $EM_Ticket_Bookings : $EM_Ticket_Booking;
@@ -1037,7 +1038,7 @@ class EM_Bookings_Table extends EM\List_Table {
 	 */
 	public function get_tickets_multiple_col( $tickets_array, $col, $EM_Booking ){
 		ob_start();
-		$value = $col === 'ticket_spaces' ? $EM_Booking->get_spaces() : __( 'View', 'events-manager' );
+		$value = $col === 'ticket_booking_spaces' ? $EM_Booking->get_spaces() : __( 'View', 'events-manager' );
 		if( !in_array( $this->format, ['csv', 'xls', 'xlsx'] ) ){
 			$id = $this->uid . '-col-tickets-tooltip-content-' . $EM_Booking->booking_id . '-' . $col;
 			?>
