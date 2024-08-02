@@ -5,7 +5,7 @@ Tags: events, calendar, tickets, bookings, appointments
 Text Domain: events-manager
 Requires at least: 5.2
 Tested up to: 6.6
-Stable tag: 6.5
+Stable tag: 6.5.1
 Requires PHP: 5.3
 License: GPLv2
 
