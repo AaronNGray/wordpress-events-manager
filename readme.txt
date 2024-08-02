@@ -163,12 +163,13 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page for helps wit
 18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
-= 6.5.0.1 =
+= (dev) 6.5.0.2 =
 * Fixed hard-coded naming of bookings table for SQL query affecting list table searches on WP installs with custom DB prefixes.
 * Fixed PHP warning on bookings list tables.
 * Fixed some default settings not saving properly.
 * Added em_bookings_table_get_item_limits filter to add/modify custom limits, applicable to other tables such as em_taransactions_table_get_item_limits.
 * Fixed status filter not working in bookings admin table.
+* Fixed fatal error when grouping events using groupby (bug introduced in 6.5).
 
 = 6.5 =
 * Added multi-array support for EM_Bookings_Table::get_booking_actions() allowing for separate sections of actions
