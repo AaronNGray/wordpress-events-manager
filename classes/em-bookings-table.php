@@ -70,7 +70,6 @@ class EM_Bookings_Table extends EM\List_Table {
 	 * @var array
 	 */
 	public $statuses = array();
-	public $status = 'confirmed';
 	public $show_tickets = false;
 	public $show_attendees = false;
 	/**
@@ -107,7 +106,7 @@ class EM_Bookings_Table extends EM\List_Table {
 			$this->statuses['confirmed']['search'] = array(0,1);
 		}
 		// set default status to search for
-		$this->filter_vars['status']['default'] = get_option('dbem_bookings_approval') ? 'needs-attention':'confirmed';
+		static::$filter_vars['status']['default'] = get_option('dbem_bookings_approval') ? 'needs-attention':'confirmed';
 		
 		// set/translate Attendee column header previd accordingly
 		if ( !defined('EM_BOOKINGS_TABLE_ATTENDEE_PREFIX') || constant('EM_BOOKINGS_TABLE_ATTENDEE_PREFIX') === true ) {
@@ -463,6 +462,18 @@ class EM_Bookings_Table extends EM\List_Table {
 	}
 	
 	/**
+	 * Returns a compatible search arg value for searching bookings by status, which may contain one or more statuses based on name of status, e.g. needs-attention could contain custom statuses.
+	 * @return string|int
+	 */
+	function get_status_search() {
+		$status = $this->filters['status'] ?? false;
+		if ( is_array( $this->statuses[ $status ]['search'] ) ) {
+			return implode( ',', $this->statuses[ $status ]['search'] );
+		}
+		return $this->statuses[ $status ]['search'];
+	}
+	
+	/**
 	 * Gets the bookings for this object instance according to its settings
 	 *
 	 * @return EM_Bookings[]|EM_Ticket_Bookings[]|EM_Ticket_Booking[]
@@ -474,7 +485,7 @@ class EM_Bookings_Table extends EM\List_Table {
 			$EM_Person = $this->get_person();
 			$base_args = array( 'limit'=>$this->limit, 'offset'=>$this->offset );
 			$default_args = array(
-				'status'=> $this->filters['status'],
+				'status'=> $this->get_status_search(),
 				'search' => $this->filters['search'],
 				'order' => $this->order,
 				'orderby'=>$this->orderby,
