@@ -211,7 +211,7 @@ namespace EM {
 			
 			// clean any columns from saved views that no longer exist - at this point they shoudl have been added
 			foreach($this->cols as $col_key => $col_name){
-				if( !array_key_exists($col_name, $this->cols_template)){
+				if( !is_string($col_name) || !array_key_exists($col_name, $this->cols_template)){
 					unset($this->cols[$col_key]);
 				}
 			}

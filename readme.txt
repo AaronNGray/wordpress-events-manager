@@ -163,6 +163,12 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page for helps wit
 18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
+= 6.5.1.1 (dev) =
+* fixed fatal error on dashboard with Charts widget enabled,
+* fixed 'array_key_exists' fatal error (not reproduced) on bookings dashboard in limited cases - pending further confirmation to reproduce/fix potential underlying issue,
+* fixed JS issues preventing event links from being clicked on the 'events with bookings' list table,
+* minor CSS fixes showing button outlines when clicked
+
 = 6.5.1 =
 * Fixed hard-coded naming of bookings table for SQL query affecting list table searches on WP installs with custom DB prefixes.
 * Fixed PHP warning on bookings list tables.
