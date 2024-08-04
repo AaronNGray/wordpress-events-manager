@@ -262,6 +262,7 @@ namespace EM {
 			$this->cols = $settings['cols'] ?? $this->cols;
 			$this->limit = $settings['limit'] ?? $this->limit;
 			$this->filters = $settings['filters'] ?? $this->filters;
+			$this->orderby = $settings['orderby'] ?? $this->orderby;
 			// set default filters - child classes could set them here or after this parent constructor is called
 			foreach ( static::$filter_vars as $filter_key => $filter_var ) {
 				$default = false;
@@ -370,6 +371,12 @@ namespace EM {
 					$settings['filters'] = $filters;
 				} else {
 					unset( $settings['filters'] );
+				}
+				// save orderby as well
+				if( $this->orderby ) {
+					$settings['orderby'] = $this->orderby;
+				} else {
+					unset( $settings['orderby'] );
 				}
 			}
 			return $settings;
