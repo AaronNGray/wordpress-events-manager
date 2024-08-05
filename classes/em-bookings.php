@@ -714,7 +714,7 @@ class EM_Bookings extends EM_Object implements Iterator, ArrayAccess {
 		
 		//check if we need to join a location table for this search, which is necessary if any location-specific are supplied, or if certain arguments such as orderby contain location fields
 		$table_joins = array();
-		$required_tables = array();
+		$required_tables = EM_MS_GLOBAL ? array(EM_EVENTS_TABLE) : array(); // we always need to join events table to determine blog id when in MS Global mode
 		$join_check_queue = array_keys($accepted_fields['tables']);
 		do {
 			$table_name = reset($join_check_queue); // rather than current, because we keep shifting things off the beginning on each loop, avoiding pointer issues

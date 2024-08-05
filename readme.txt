@@ -163,6 +163,9 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page for helps wit
 18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
+= 6.5.2.1 (dev) =
+* Fixed bookings not showing in bookings table when in Multisite Global Mode
+
 = 6.5.2 =
 * Fixed fatal error on dashboard with Charts widget enabled.
 * Fixed 'array_key_exists' fatal error (not reproduced) on bookings dashboard in limited cases - pending further confirmation to reproduce/fix potential underlying issue.
