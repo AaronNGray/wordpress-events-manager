@@ -117,7 +117,7 @@ namespace EM {
 				'param' => 'em_search',
 				'default' => '',
 			],
-			'scope' => [ 'default' => 'all' ]
+			'scope' => [ 'default' => 'future' ]
 		];
 		/**
 		 * Show or hide filters by default
@@ -359,7 +359,7 @@ namespace EM {
 				$filters = array();
 				foreach ( static::$filter_vars as $filter_key => $filter_var ) {
 					if( is_array($filter_var) ) {
-						$filter_var = $filter_var['param']; // allows for further expansion such as special filtering etc.
+						$filter_var = $filter_var['param'] ?? $filter_key; // allows for further expansion such as special filtering etc.
 					} elseif ( is_int($filter_key) ) {
 						$filter_key = $filter_var;
 					}

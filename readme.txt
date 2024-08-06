@@ -163,8 +163,10 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page for helps wit
 18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
-= 6.5.2.1 (dev) =
+= 6.5.2.2 (dev) =
 * Fixed bookings not showing in bookings table when in Multisite Global Mode
+* fixed scope filter saving issues in booking/event-booking admin tables
+* changed default scope to 'future' for booking/event-booking admin tables
 
 = 6.5.2 =
 * Fixed fatal error on dashboard with Charts widget enabled.
