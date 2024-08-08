@@ -163,10 +163,34 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page for helps wit
 18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
-= 6.5.2.2 (dev) =
+= 6.5.3 (dev) =
+* Added communications consent. Ask or require users to consent to being contacted, with history of last acceptance or revocation accross all bookings/user (if admin has caps)
+* Added international phone number input field and validation, see the Phone Numbers section on Settings > General
 * Fixed bookings not showing in bookings table when in Multisite Global Mode
-* fixed scope filter saving issues in booking/event-booking admin tables
-* changed default scope to 'future' for booking/event-booking admin tables
+* Fixed scope filter saving issues in booking/event-booking admin tables
+* Changed default scope to 'future' for booking/event-booking admin tables
+* Transitioned known booking meta keys from legacy to new format for storage, with plans to phase out support for previous format of _x_... for arrays, opting for _x|... instead ('registration', 'attendees', 'coupon', 'booking', 'zoom', 'test', 'discounts', 'surcharges')
+* Updated countries list to include more translations, file-separated storage for optimal loading, and extra missing countries - Kosovans, we've migrated the KV country code to the more recognized XK code including migrating previous location data
+* Moved admin-settings.js into external included file rather than inline.
+* Transitioned phone numbers into real feature.
+* Added example real-time input in settings.
+* Added `EM_Booking->get_meta()`, `EM_Booking->update_user_meta()`, and `EM_Booking->get_user_meta()`.
+* Added `em_bookings_get_sql_orderby_joins` filter for custom ordering options.
+* Added `EM_DateTime::create()` for chaining quick dates.
+* Added `em_person_display_summary_bottom` action.
+* Updated intlTelInput to 23.0.8.
+* Fixed selectize.js not allowing custom data- properties in non-multiple selectize dropdowns.
+* Fixed JS modal.remove() JS error in list tables introduced in dev versions.
+* Moved all JS UI setups (datepicker, time, tippy, phone, selectize) into `em_setup_ui_elements()` for easy reloading in containers.
+* Added `em_nouser_booking_details_modified` action.
+* Moved data privacy/consent into own classes folder with parent/child structure and standardized functionality between privacy/comms consent.
+* Transitioned known booking meta keys into newer piped format to break up arrays rather than underscores including (registration, attendees, coupon, booking, zoom, test, discounts, surcharges).
+* Fixed some display issues on view person bookings admin page.
+* Fixed PHP warnings on empty graphs in booking dashboards.
+* Fixed empty graph data when viewing booking data as event admins without manage_others_bookings capabilities.
+* Added more WP_Screen compatibility on front-end in case other plugins load template.php but not WP_Class which results in a fatal error.
+* Fixed backend events with bookings admin tables linking to front-end.
+* Fixed PHP notices on bookings admin tables.
 
 = 6.5.2 =
 * Fixed fatal error on dashboard with Charts widget enabled.

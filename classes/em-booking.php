@@ -391,6 +391,50 @@ class EM_Booking extends EM_Object{
 		return apply_filters('em_booking_save', false, $this, false);
 	}
 	
+	
+	/**
+	 * Gets the user meta for this booking, which may reside withih the booking context or in the user meta context.
+	 *
+	 * Returns null if not defined.
+	 *
+	 * @param $meta_key
+	 *
+	 * @return mixed
+	 */
+	public function get_user_meta( $meta_key ) {
+		if( $this->person_id == 0 ) {
+			$meta_value = $this->booking_meta['registration'][ $meta_key ] ?? null;
+		} else {
+			$meta_value = get_user_meta( $this->person_id, $meta_key, true );
+			if( $meta_value === '' ) $meta_value = null;
+		}
+		return apply_filters('em_booking_get_user_meta', $meta_value, $meta_key, $this);
+	}
+	
+	/**
+	 * Gets meta stored in booking meta, useful especially for data that may require interception such as at a multiple booking level.
+	 *
+	 * @param $meta_key
+	 *
+	 * @return mixed|null
+	 */
+	public function get_meta( $meta_key ) {
+		$meta_value = $this->booking_meta[$meta_key] ?? null;
+		return apply_filters('em_booking_get_meta', $meta_value, $meta_key, $this);
+	}
+	
+	public function update_user_meta( $meta_key, $meta_value ) {
+		global $wpdb;
+		// set the meta in booking object first
+		$this->booking_meta['registration'][$meta_key] = $meta_key;
+		// check if this is in no-user mode, if so we save directly to the DB, otherwise we save it directly to the usermeta table
+		if( $this->person_id === 0 ) {
+			$wpdb->update( EM_BOOKINGS_META_TABLE, array('meta_key' => '_registration|'.$meta_key, 'meta_value' => $meta_value), array('booking_id' => $this->booking_id) );
+		} else {
+			update_user_meta( $this->person_id, $meta_key, $meta_value );
+		}
+	}
+	
 	/**
 	 * Update a specific key value in the booking meta data, or create one if it doesn't exist. If set to null it'll remove that value
 	 * @param $meta_key
@@ -420,7 +464,7 @@ class EM_Booking extends EM_Object{
 			// sequential arrays are stored with same key value so only one delete key needed - we can't do an if( array_keys($meta_value) !== range(0, count($meta_value) - 1) ) { check because legacy strings with sequentials store the number in the key
 			$meta_delete_keys[] = "'". $wpdb->_real_escape('_'.$meta_key.'|') . "'";
 			// delete previous values so we insert new ones
-			$result = $wpdb->query( $wpdb->prepare('DELETE FROM '. EM_BOOKINGS_META_TABLE .' WHERE booking_id=%d AND meta_key IN ('. implode(',', $meta_delete_keys) .')', $this->booking_id) );
+			$result = $wpdb->query( $wpdb->prepare('DELETE FROM '. EM_BOOKINGS_META_TABLE .' WHERE booking_id=%d AND (meta_key LIKE %s OR meta_key LIKE %s)', $this->booking_id) );
 		}else{
 			$result = $wpdb->delete( EM_BOOKINGS_META_TABLE, array('booking_id' => $this->booking_id, 'meta_key' => $meta_key) );
 		}
@@ -1023,7 +1067,7 @@ class EM_Booking extends EM_Object{
 	    if( $registration ){
 		    $this->booking_meta['registration'] = array_merge($this->booking_meta['registration'], $user_data);	//in case someone else added stuff
 	    }
-	    $registration = apply_filters('em_booking_get_person_post', $registration, $this);
+	    $registration = apply_filters('em_booking_get_person_post', $registration, $this, $user_data);
 	    if( $registration ){
 	        $this->feedback_message = __('Personal details have successfully been modified.', 'events-manager');
 	    }
@@ -1046,12 +1090,13 @@ class EM_Booking extends EM_Object{
 		}
 		?>
 		<table class="em-form-fields">
-			<tr><th><?php _e('Name','events-manager'); ?> : </th><td><input type="text" name="user_name" value="<?php echo esc_attr($name); ?>" /></td></tr>
-			<tr><th><?php _e('Email','events-manager'); ?> : </th><td><input type="text" name="user_email" value="<?php echo esc_attr($email); ?>" /></td></tr>
-			<tr><th><?php _e('Phone','events-manager'); ?> : </th><td><input type="tel" name="dbem_phone" value="<?php echo esc_attr($phone); ?>" /></td></tr>
+			<tr><th><?php _e('Name','events-manager'); ?> : </th><td><input type="text" name="user_name" value="<?php echo esc_attr($name); ?>" ></td></tr>
+			<tr><th><?php _e('Email','events-manager'); ?> : </th><td><input type="text" name="user_email" value="<?php echo esc_attr($email); ?>" ></td></tr>
+			<tr><th><?php _e('Phone','events-manager'); ?> : </th><td><input type="tel" name="dbem_phone" value="<?php echo esc_attr($phone); ?>" ></td></tr>
+			<?php do_action('em_booking_get_person_editor_bottom', $this ); ?>
 		</table>
 		<?php
-		return apply_filters('em_booking_get_person_editor', ob_get_clean(), $this);
+		return apply_filters('em_booking_get_person_editor', ob_get_clean(), $this );
 	}
 
 	/**
