@@ -163,7 +163,7 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page for helps wit
 18. Grid view for displaying your upcoming events at a glance
 
 == Changelog ==
-= 6.5.3 (dev) =
+= 6.5.4 (dev) =
 * Added communications consent. Ask or require users to consent to being contacted, with history of last acceptance or revocation accross all bookings/user (if admin has caps)
 * Added international phone number input field and validation, see the Phone Numbers section on Settings > General
 * Fixed bookings not showing in bookings table when in Multisite Global Mode
@@ -191,6 +191,8 @@ See our [FAQ](http://wp-events-plugin.com/documentation/faq/) page for helps wit
 * Added more WP_Screen compatibility on front-end in case other plugins load template.php but not WP_Class which results in a fatal error.
 * Fixed backend events with bookings admin tables linking to front-end.
 * Fixed PHP notices on bookings admin tables.
+* Fixed $location_fields fatal PHP errors when loading maps and location-dependent event search queries.
+* Added option to exclude taxes from subtotal in booking summary pricing.
 
 = 6.5.2 =
 * Fixed fatal error on dashboard with Charts widget enabled.

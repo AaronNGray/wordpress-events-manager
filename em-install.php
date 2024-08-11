@@ -741,6 +741,7 @@ function em_add_options() {
 			'dbem_bookings_form_hide_dynamic' => get_option('dbem_version', false) === false, //show login form on booking area
 			'dbem_bookings_summary' => 1,
 			'dbem_bookings_summary_taxes_itemized' => !get_option('dbem_bookings_tax_auto_add', 0),
+			'dbem_bookings_summary_subtotal_exc_taxes' => false,
 			'dbem_bookings_summary_free' => 1,
 			'dbem_bookings_summary_message' => __('Please select at least one space to proceed with your booking.', 'events-manager'),
 			'dbem_bookings_anonymous' => 1,
